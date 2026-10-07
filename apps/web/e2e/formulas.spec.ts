@@ -80,8 +80,7 @@ const shapeText = (page: Page, id: string) =>
     id,
   );
 
-// enabled by the lead after wiring: needs the ModelCalculator in ModelView (panel, validation, scene).
-test.describe.skip('formula uses', () => {
+test.describe('formula uses', () => {
   test('editing Effort updates the panel, the validation message and the shape', async ({
     page,
   }) => {

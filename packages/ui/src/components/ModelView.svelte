@@ -23,6 +23,7 @@
   import {
     buildLayoutPanelFor,
     buildPanel,
+    objectMessages,
     editCommands,
     unknownAttributes,
     type Field,
@@ -122,7 +123,23 @@
       .filter((id) => id in model.elements || id in model.connectors)
       .map((id) => ({ id }));
   });
-  const sections = $derived(buildPanel(tool, model, targets, issues));
+  const calculator = behaviour.calculator;
+  const sections = $derived(
+    buildPanel(
+      tool,
+      model,
+      targets,
+      issues,
+      tool.manifest.languages[0] ?? 'en',
+      { calculator },
+    ),
+  );
+  const panelMessages = $derived(
+    objectMessages(
+      issues,
+      targets.map((t) => t.id),
+    ),
+  );
   // The tool's panel layout for the selection, when it has one; conditions follow the values.
   const layoutPanel = $derived(
     buildLayoutPanelFor(
@@ -131,6 +148,7 @@
       targets,
       issues,
       tool.manifest.languages[0] ?? 'en',
+      { calculator },
     ),
   );
   /** Stored values that the class no longer defines, for a single selected object. */
@@ -254,12 +272,12 @@
   function scheduleValidation() {
     clearTimeout(validateTimer);
     validateTimer = setTimeout(() => {
-      issues = validateModel(tool, store.state as Model);
+      issues = validateModel(tool, store.state as Model, calculator);
     }, 200);
   }
 
   onMount(() => {
-    scene = new Scene(store.state as Model, tool);
+    scene = new Scene(store.state as Model, tool, { calculator });
     stopStore = scene.attach(store);
     view = new CanvasView(host, scene, { grid: tool.settings.grid });
     editor = new Editor({
@@ -329,6 +347,7 @@
     clearTimeout(messageTimer);
     clearTimeout(validateTimer);
     stopStore();
+    scene?.destroy();
     editor?.destroy();
     minimap?.destroy();
     view?.destroy();
@@ -756,6 +775,7 @@
       {layoutPanel}
       {unknown}
       onRemoveUnknown={removeUnknown}
+      messages={panelMessages}
     />
   </div>
 </div>
