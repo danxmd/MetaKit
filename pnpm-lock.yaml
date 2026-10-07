@@ -145,6 +145,10 @@ importers:
       '@metakit-app/formula':
         specifier: workspace:*
         version: link:../formula
+    devDependencies:
+      fast-check:
+        specifier: ^4.0.0
+        version: 4.10.2
 
   packages/storage:
     dependencies:
@@ -177,6 +181,12 @@ importers:
       '@metakit-app/core':
         specifier: workspace:*
         version: link:../core
+      '@metakit-app/formula':
+        specifier: workspace:*
+        version: link:../formula
+      '@metakit-app/shapes':
+        specifier: workspace:*
+        version: link:../shapes
       '@metakit-app/storage':
         specifier: workspace:*
         version: link:../storage

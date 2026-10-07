@@ -9,5 +9,8 @@
   "dependencies": {
     "@metakit-app/core": "workspace:*",
     "@metakit-app/formula": "workspace:*"
+  },
+  "devDependencies": {
+    "fast-check": "^4.0.0"
   }
 }
