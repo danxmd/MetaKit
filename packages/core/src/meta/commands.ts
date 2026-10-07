@@ -17,6 +17,8 @@ import {
   type KeyScope,
 } from './keys';
 import type { Constraint, Rule, RuleId } from './rule-types';
+import { MAX_SCRIPT_CHARS } from './script-guards';
+import type { Script, ScriptId, ToolPermissions } from './script-types';
 import type { PanelLayout, ShapeDef } from './shape-types';
 import {
   DocumentStore,
@@ -40,6 +42,7 @@ export type ToolCommand =
       name?: string;
       version?: string;
       languages?: string[];
+      permissions?: ToolPermissions;
     }
   | {
       type: 'updateSettings';
@@ -65,6 +68,8 @@ export type ToolCommand =
   | { type: 'moveAttribute'; owner: KeyOwner; id: AttributeId; to: number }
   | { type: 'putRule'; rule: Rule }
   | { type: 'removeRule'; id: RuleId }
+  | { type: 'putScript'; script: Script }
+  | { type: 'removeScript'; id: ScriptId }
   | {
       type: 'putConstraint';
       owner: KeyOwner;
@@ -197,6 +202,8 @@ function applyToolCommand(tx: Tx<ToolLibrary>, command: ToolCommand): unknown {
       if (command.name !== undefined) patch.name = command.name;
       if (command.version !== undefined) patch.version = command.version;
       if (command.languages !== undefined) patch.languages = command.languages;
+      if (command.permissions !== undefined)
+        patch.permissions = command.permissions;
       for (const [k, v] of Object.entries(patch)) tx.set(['manifest', k], v);
       return undefined;
     }
@@ -353,6 +360,33 @@ function applyToolCommand(tx: Tx<ToolLibrary>, command: ToolCommand): unknown {
       if (!tool.rules?.[command.id])
         throw new CommandError(`The rule ${command.id} does not exist.`);
       tx.remove(['rules', command.id]);
+      return undefined;
+    }
+    case 'putScript': {
+      const script = command.script;
+      if (
+        script === null ||
+        typeof script !== 'object' ||
+        !isId('script', script.id)
+      )
+        throw new CommandError(
+          `The script needs an id of the form scr_something (it is ${JSON.stringify((script as { id?: unknown } | null)?.id)}).`,
+        );
+      if (typeof script.name !== 'string' || script.name.trim() === '')
+        throw new CommandError('The script needs a name.');
+      if (typeof script.source !== 'string')
+        throw new CommandError('The script source must be text.');
+      if (script.source.length > MAX_SCRIPT_CHARS)
+        throw new CommandError(
+          `The script is longer than ${MAX_SCRIPT_CHARS} characters.`,
+        );
+      tx.set(['scripts', script.id], script);
+      return script.id;
+    }
+    case 'removeScript': {
+      if (!tool.scripts?.[command.id])
+        throw new CommandError(`The script ${command.id} does not exist.`);
+      tx.remove(['scripts', command.id]);
       return undefined;
     }
     case 'putConstraint': {

@@ -1,6 +1,7 @@
 import { defineConfig } from '@playwright/test';
 
-const port = 4173;
+// Several checkouts can run the tests on one machine: PW_PORT picks another port.
+const port = Number(process.env.PW_PORT ?? 4173);
 // Served from a sub-path on purpose: GitHub Pages hosts the app under /<repo>/.
 export const basePath = '/MetaKit/';
 

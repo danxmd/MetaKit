@@ -340,7 +340,15 @@ export function materialize(state: SyncState): Record<string, Json> {
 function collectionsOf(kind: DocKind): string[] {
   return kind === 'model'
     ? ['elements', 'connectors']
-    : ['classes', 'relations', 'modelTypes', 'shapes', 'panels', 'rules'];
+    : [
+        'classes',
+        'relations',
+        'modelTypes',
+        'shapes',
+        'panels',
+        'rules',
+        'scripts',
+      ];
 }
 
 /** True when a connector record has both ends in `elements`. */

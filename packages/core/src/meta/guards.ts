@@ -5,6 +5,7 @@ import {
   checkRuleReferences,
   checkRules,
 } from './rule-guards';
+import { checkPermissions, checkScripts } from './script-guards';
 import {
   ATTRIBUTE_TYPES,
   CLASS_KINDS,
@@ -185,6 +186,7 @@ function kindPrefix(kind: IdKind): string {
     model: 'mdl',
     view: 'vw',
     rule: 'rule',
+    script: 'scr',
   }[kind];
 }
 
@@ -557,6 +559,7 @@ export function validateToolLibrary(value: unknown): Issue[] {
       'shapes',
       'panels',
       'rules',
+      'scripts',
     ],
     'The tool library',
   );
@@ -569,10 +572,11 @@ export function validateToolLibrary(value: unknown): Issue[] {
   const manifest = c.object(
     root.manifest,
     'manifest',
-    ['id', 'name', 'version', 'languages'],
+    ['id', 'name', 'version', 'languages', 'permissions'],
     'The manifest',
   );
   if (manifest) {
+    checkPermissions(c, manifest.permissions);
     c.id('tool', manifest.id, 'manifest.id', 'The tool id');
     c.string(manifest.name, 'manifest.name', 'The tool name');
     if (
@@ -1197,7 +1201,7 @@ export function validateToolLibrary(value: unknown): Issue[] {
     }
   }
 
-  for (const key of ['shapes', 'panels', 'rules'])
+  for (const key of ['shapes', 'panels', 'rules', 'scripts'])
     if (root[key] === undefined)
       c.add(
         key,
@@ -1205,6 +1209,7 @@ export function validateToolLibrary(value: unknown): Issue[] {
       );
   checkShapeTables(c, root);
   checkRules(c, root.rules);
+  checkScripts(c, root.scripts);
   if (c.issues.length === 0) {
     checkShapeReferences(c, value as ToolLibrary);
     checkRuleReferences(c, value as ToolLibrary);

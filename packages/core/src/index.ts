@@ -5,6 +5,8 @@ export * from './meta/shape-types';
 export * from './meta/shape-guards';
 export * from './meta/rule-types';
 export * from './meta/rule-guards';
+export * from './meta/script-types';
+export * from './meta/script-guards';
 export * from './meta/keys';
 export * from './meta/create';
 export * from './calc/calculator';

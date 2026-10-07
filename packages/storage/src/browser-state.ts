@@ -161,3 +161,67 @@ export function setProfile(
 ): Promise<void> {
   return kvSet('profile', profile, factory);
 }
+
+/**
+ * What the person allowed the scripts of each tool to do in this browser. It lives in IndexedDB of
+ * this browser profile and nowhere else: a permission is never written to the workspace folder or
+ * the repository, so a shared tool cannot arrive with permissions already granted (rule 9).
+ */
+export interface ToolPermissionRecord {
+  toolId: string;
+  granted: { network: boolean; files: boolean };
+  /** What was ever asked, so that a refusal is not asked again and a new permission is. */
+  asked: { network: boolean; files: boolean };
+  decidedAt: string;
+}
+
+export interface KeyValue {
+  get<T>(key: string): Promise<T | undefined>;
+  set(key: string, value: unknown): Promise<void>;
+}
+
+const PERMISSIONS_KEY = 'toolPermissions';
+
+const isPermissionRecord = (r: unknown): r is ToolPermissionRecord => {
+  const x = r as Partial<ToolPermissionRecord> | null;
+  return (
+    !!x &&
+    typeof x.toolId === 'string' &&
+    typeof x.decidedAt === 'string' &&
+    typeof x.granted?.network === 'boolean' &&
+    typeof x.granted.files === 'boolean' &&
+    typeof x.asked?.network === 'boolean' &&
+    typeof x.asked.files === 'boolean'
+  );
+};
+
+/** The store that the permission logic of the behaviour package saves through. */
+export function createToolPermissionBacking(
+  kv: KeyValue = { get: (k) => kvGet(k), set: (k, v) => kvSet(k, v) },
+): {
+  load(): Promise<ToolPermissionRecord[]>;
+  save(record: ToolPermissionRecord): Promise<void>;
+  remove(toolId: string): Promise<void>;
+} {
+  const all = async (): Promise<Record<string, ToolPermissionRecord>> => {
+    const stored = await kv.get<Record<string, unknown>>(PERMISSIONS_KEY);
+    const out: Record<string, ToolPermissionRecord> = {};
+    for (const [id, r] of Object.entries(stored ?? {}))
+      if (isPermissionRecord(r) && r.toolId === id) out[id] = r;
+    return out;
+  };
+  return {
+    load: async () => Object.values(await all()),
+    save: async (record) => {
+      await kv.set(PERMISSIONS_KEY, {
+        ...(await all()),
+        [record.toolId]: record,
+      });
+    },
+    remove: async (toolId) => {
+      const rest = await all();
+      delete rest[toolId];
+      await kv.set(PERMISSIONS_KEY, rest);
+    },
+  };
+}

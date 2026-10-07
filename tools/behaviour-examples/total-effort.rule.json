@@ -1,0 +1,13 @@
+{
+  "id": "rule_total_effort",
+  "label": "Total effort",
+  "when": { "event": "command" },
+  "then": [
+    {
+      "action": "message",
+      "kind": "info",
+      "text": "= 'Total effort: ' + sum(objects('Task').Effort) + ' h in ' + count(objects('Task')) + ' tasks.'"
+    }
+  ],
+  "command": { "label": "Total effort", "place": "model" }
+}

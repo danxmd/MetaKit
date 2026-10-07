@@ -136,7 +136,7 @@ describe('snapshot format 2', () => {
   });
 });
 
-describe('tool library formats 2 and 3', () => {
+describe('tool library formats 2, 3 and 4', () => {
   it('adds empty shapes, panels and rules to a version 1 library and keeps the rest', () => {
     const v1 = {
       formatVersion: 1,
@@ -152,13 +152,14 @@ describe('tool library formats 2 and 3', () => {
       modelTypes: {},
     };
     const { value, from, to } = migrate('tool-document', v1);
-    expect([from, to]).toEqual([1, 3]);
+    expect([from, to]).toEqual([1, 4]);
     expect(value).toEqual({
       ...v1,
-      formatVersion: 3,
+      formatVersion: 4,
       shapes: {},
       panels: {},
       rules: {},
+      scripts: {},
     });
   });
 
@@ -169,19 +170,35 @@ describe('tool library formats 2 and 3', () => {
       panels: {},
     };
     const { value, from, to } = migrate('tool-document', v2);
-    expect([from, to]).toEqual([2, 3]);
-    expect(value).toEqual({ ...v2, formatVersion: 3, rules: {} });
+    expect([from, to]).toEqual([2, 4]);
+    expect(value).toEqual({
+      ...v2,
+      formatVersion: 4,
+      rules: {},
+      scripts: {},
+    });
   });
 
-  it('leaves a version 3 library alone, and refuses one from a newer release', () => {
+  it('adds only the scripts to a version 3 library and keeps its rules', () => {
     const v3 = {
       formatVersion: 3,
       shapes: {},
       panels: {},
       rules: { rule_a: { id: 'rule_a' } },
     };
-    expect(migrate('tool-document', v3).value).toEqual(v3);
-    expect(() => migrate('tool-document', { formatVersion: 4 })).toThrow(
+    const { value, from, to } = migrate('tool-document', v3);
+    expect([from, to]).toEqual([3, 4]);
+    expect(value).toEqual({ ...v3, formatVersion: 4, scripts: {} });
+  });
+
+  it('leaves a version 4 library alone, and refuses one from a newer release', () => {
+    const v4 = {
+      formatVersion: 4,
+      rules: {},
+      scripts: { scr_a: { id: 'scr_a', name: 'A', source: '' } },
+    };
+    expect(migrate('tool-document', v4).value).toEqual(v4);
+    expect(() => migrate('tool-document', { formatVersion: 5 })).toThrow(
       /newer version/,
     );
   });

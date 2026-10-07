@@ -4,3 +4,4 @@ export * from './build/panel-layout-model';
 export * from './build/shape-editor-model';
 export * from './build/part-properties';
 export * from './build/rule-editor-model';
+export * from './build/scripts-model';

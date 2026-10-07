@@ -189,6 +189,7 @@ export function sampleTool(): ToolLibrary {
     shapes: {},
     panels: {},
     rules: {},
+    scripts: {},
   } as unknown as ToolLibrary;
 }
 
