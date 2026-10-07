@@ -104,6 +104,16 @@ export type ModelCommand =
       padding?: number;
     }
   | { type: 'setBends'; id: ConnectorId; bends: Point[] }
+  | {
+      /**
+       * Sets absolute positions, sizes and bend points in one step (auto-layout). Unlike `move`,
+       * contents do not travel along: the layout lists every element it wants placed.
+       */
+      type: 'applyLayout';
+      moves: { id: ElementId; x: number; y: number }[];
+      resizes?: { id: ElementId; w: number; h: number }[];
+      bends?: { id: ConnectorId; bends: Point[] }[];
+    }
   | { type: 'reconnect'; id: ConnectorId; from?: ElementId; to?: ElementId }
   | { type: 'delete'; id: ElementId | ConnectorId }
   | {
@@ -605,6 +615,42 @@ function applyModelCommand(
       const bends = checkPoints(command.bends, 'The bend points');
       if (!deepEqual(model.connectors[command.id]!.bends, bends))
         tx.set(['connectors', command.id, 'bends'], bends);
+      return undefined;
+    }
+    case 'applyLayout': {
+      // Validate everything before the first write so a bad entry changes nothing.
+      const moves = (command.moves ?? []).map((m) => ({
+        el: requireElement(model, m.id),
+        x: finite(m.x, 'x'),
+        y: finite(m.y, 'y'),
+      }));
+      const resizes = (command.resizes ?? []).map((r) => ({
+        el: requireElement(model, r.id),
+        w: positive(r.w, 'The width'),
+        h: positive(r.h, 'The height'),
+      }));
+      const bendLists = (command.bends ?? []).map((b) => {
+        if (!model.connectors[b.id])
+          throw new CommandError(
+            `The connector ${b.id} does not exist in this model.`,
+          );
+        return { id: b.id, bends: checkPoints(b.bends, 'The bend points') };
+      });
+      const parents = new Set<ElementId>();
+      for (const m of moves) {
+        if (m.el.x !== m.x) tx.set(['elements', m.el.id, 'x'], m.x);
+        if (m.el.y !== m.y) tx.set(['elements', m.el.id, 'y'], m.y);
+        if (m.el.parent) parents.add(m.el.parent);
+      }
+      for (const r of resizes) {
+        if (r.el.w !== r.w) tx.set(['elements', r.el.id, 'w'], r.w);
+        if (r.el.h !== r.h) tx.set(['elements', r.el.id, 'h'], r.h);
+        if (r.el.parent) parents.add(r.el.parent);
+      }
+      for (const b of bendLists)
+        if (!deepEqual(model.connectors[b.id]!.bends, b.bends))
+          tx.set(['connectors', b.id, 'bends'], b.bends);
+      for (const parent of parents) fitUp(tx, parent, tool);
       return undefined;
     }
     case 'reconnect': {

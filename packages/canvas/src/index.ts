@@ -17,3 +17,4 @@ export * from './export/content';
 export * from './export/svg';
 export * from './export/png';
 export * from './export/pdf';
+export * from './layout';
