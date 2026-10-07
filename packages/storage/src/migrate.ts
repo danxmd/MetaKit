@@ -10,7 +10,9 @@ export type FileKind =
   | 'trash'
   | 'mkmodel'
   | 'tool-document'
-  | 'model-document';
+  | 'model-document'
+  | 'bundle'
+  | 'tool-package';
 
 /** The format version this release writes for each kind. Raising one needs a migration step below and a test (rule 8). */
 export const CURRENT_FORMAT: Readonly<Record<FileKind, number>> = {
@@ -22,6 +24,9 @@ export const CURRENT_FORMAT: Readonly<Record<FileKind, number>> = {
   mkmodel: 1,
   'tool-document': 3,
   'model-document': 1,
+  // .mkbundle (bundle.json) and .mktool (package.json), phase 6.
+  bundle: 1,
+  'tool-package': 1,
 };
 
 export interface Migration {
@@ -83,6 +88,8 @@ export const MIGRATIONS: MigrationRegistry = {
     },
   ],
   'model-document': [],
+  bundle: [],
+  'tool-package': [],
 };
 
 export interface Migrated {

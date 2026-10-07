@@ -26,11 +26,14 @@ import {
   type Point,
   type RandomSource,
   type RelationId,
+  type ToolId,
   type ToolLibrary,
 } from '@metakit-app/core';
 import { FormatError } from './errors';
 import { stringifyCanonical } from './json';
 import { migrate } from './migrate';
+import type { Workspace } from './workspace';
+import { slugify } from './slugify';
 
 /** One problem in an editable model file: where, and what. */
 export interface MkModelIssue {
@@ -537,4 +540,182 @@ export function importMkModel(
       structure.map((s) => ({ path: s.path, message: s.message })),
     );
   return model;
+}
+
+// --- from the user interface: files, workspace and a report -----------------------------------
+
+/** What an import did and what the person should know about it, in plain English. */
+export interface MkModelImportReport {
+  /** The tool library in the workspace that the model was read with. */
+  tool: { id: ToolId; name: string; version: string };
+  /** What the file says about its tool. */
+  fileTool: { id?: string; name?: string; version?: string };
+  /** The file was written with another version of the tool library than the one in the workspace. */
+  toolVersionDiffers: boolean;
+  /** Values the file holds for attributes the tool library does not define; they are kept as stored values. */
+  unknownAttributes: number;
+  /** The model got a new id because the workspace already has a model with the id from the file. */
+  idChanged: boolean;
+  messages: string[];
+}
+
+export interface MkModelImportResult {
+  slug: string;
+  model: Model;
+  report: MkModelImportReport;
+}
+
+/** How many stored values belong to attributes the tool library does not define. */
+export function countUnknownAttributes(
+  tool: ToolLibrary,
+  model: Model,
+): number {
+  const count = (values: Record<string, Json>, defs: AttributeDef[]) =>
+    Object.keys(values).filter((id) => !defs.some((d) => d.id === id)).length;
+  let total = count(
+    model.attrs,
+    tool.modelTypes[model.manifest.modelType]?.attributes ?? [],
+  );
+  for (const e of Object.values(model.elements))
+    total += count(
+      e.attrs,
+      tool.classes[e.class]
+        ? defsOf(() => effectiveAttributes(tool, e.class))
+        : [],
+    );
+  for (const c of Object.values(model.connectors))
+    total += count(
+      c.attrs,
+      tool.relations[c.relation]
+        ? defsOf(() => effectiveRelationAttributes(tool, c.relation))
+        : [],
+    );
+  return total;
+}
+
+/** The report for a model read with `tool` from a file that said `fileTool`. */
+export function describeMkModelImport(
+  tool: ToolLibrary,
+  fileTool: MkModelFile['tool'],
+  model: Model,
+  idChanged: boolean,
+): MkModelImportReport {
+  const unknownAttributes = countUnknownAttributes(tool, model);
+  const toolVersionDiffers =
+    fileTool?.version !== undefined &&
+    fileTool.version !== tool.manifest.version;
+  const messages = [
+    `Read with the tool library "${tool.manifest.name}" (version ${tool.manifest.version}).`,
+  ];
+  if (toolVersionDiffers)
+    messages.push(
+      `The file was written with version ${fileTool?.version} of the tool library, but this workspace has version ${tool.manifest.version}. The model was imported as it is; check it for changes.`,
+    );
+  if (unknownAttributes > 0)
+    messages.push(
+      `${unknownAttributes} value${unknownAttributes === 1 ? '' : 's'} belong${unknownAttributes === 1 ? 's' : ''} to attributes that this version of the tool library does not have. They are kept and shown under "Unknown attributes".`,
+    );
+  if (idChanged)
+    messages.push(
+      'This workspace already has a model with the same id, so the imported model got a new id.',
+    );
+  return {
+    tool: {
+      id: tool.manifest.id,
+      name: tool.manifest.name,
+      version: tool.manifest.version,
+    },
+    fileTool: { ...fileTool },
+    toolVersionDiffers,
+    unknownAttributes,
+    idChanged,
+    messages,
+  };
+}
+
+/** A name for a downloaded model file, such as `order-process.mkmodel.json`. */
+export function mkModelFileName(name: string): string {
+  return `${slugify(name)}.mkmodel.json`;
+}
+
+/** The text of a model in the workspace as an editable model file, with the name to save it under. */
+export async function exportModelFile(
+  workspace: Workspace,
+  slug: string,
+): Promise<{ fileName: string; text: string }> {
+  const { document } = await workspace.loadModel(slug);
+  return {
+    fileName: mkModelFileName(document.manifest.name),
+    text: await workspace.exportModel(slug),
+  };
+}
+
+export interface ImportModelFileOptions {
+  /** The tool library to read the file with. By default the one the file names. */
+  toolSlug?: string;
+  slug?: string;
+  /** Always give the model a new id (a bundle does). By default the id of the file is kept unless it is taken. */
+  newId?: boolean;
+  random?: RandomSource;
+}
+
+/**
+ * Adds the model of an editable model file to the workspace. The tool library is found by the id
+ * the file names. Nothing is changed when the file has problems (`MkModelError` lists them all).
+ */
+export async function importModelFile(
+  workspace: Workspace,
+  text: string,
+  options: ImportModelFileOptions = {},
+): Promise<MkModelImportResult> {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch (error) {
+    throw new FormatError(
+      `The model file is not valid JSON: ${(error as Error).message}`,
+    );
+  }
+  const { value } = migrate('mkmodel', parsed);
+  const file = value as unknown as MkModelFile;
+  let toolSlug = options.toolSlug ?? null;
+  if (toolSlug === null) {
+    const wanted = file.tool?.id;
+    if (typeof wanted !== 'string')
+      throw new FormatError(
+        'The model file does not say which tool library it was made with, so choose one.',
+      );
+    toolSlug = await workspace.findToolSlug(wanted as ToolId);
+    if (toolSlug === null)
+      throw new FormatError(
+        `The model file was made with the tool library ${file.tool?.name ? `"${file.tool.name}" ` : ''}(${wanted}), which is not in this workspace. Import the tool package or the bundle first.`,
+      );
+  }
+  const tool = (await workspace.loadTool(toolSlug)).document;
+  const read = importMkModel(tool, value, {
+    ...(options.random ? { random: options.random } : {}),
+  });
+  const taken = (await workspace.listModels({ includeTrashed: true })).some(
+    (m) => m.id === read.manifest.id,
+  );
+  const idChanged = taken && options.newId !== true;
+  const model: Model =
+    options.newId === true || taken
+      ? {
+          ...read,
+          manifest: {
+            ...read.manifest,
+            id: newId('model', options.random),
+          },
+        }
+      : read;
+  const slug = await workspace.createModel(
+    model,
+    options.slug ? { slug: options.slug } : {},
+  );
+  return {
+    slug,
+    model,
+    report: describeMkModelImport(tool, file.tool, model, idChanged),
+  };
 }
