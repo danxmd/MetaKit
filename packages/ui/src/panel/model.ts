@@ -66,7 +66,7 @@ export interface PanelTarget {
   id: ElementId | ConnectorId;
 }
 
-function text(
+export function pickLabel(
   labels: Labels | undefined,
   language: string,
 ): string | undefined {
@@ -79,11 +79,12 @@ function optionsOf(
 ): PanelOption[] {
   return options.map((o) => ({
     value: optionValue(o),
-    label: typeof o === 'string' ? o : (text(o.labels, language) ?? o.value),
+    label:
+      typeof o === 'string' ? o : (pickLabel(o.labels, language) ?? o.value),
   }));
 }
 
-function controlFor(attr: AttributeDef): ControlKind {
+export function controlFor(attr: AttributeDef): ControlKind {
   switch (attr.type) {
     case 'text':
       return attr.multiline ? 'textarea' : 'text';
@@ -111,6 +112,39 @@ function controlFor(attr: AttributeDef): ControlKind {
     case 'action':
       return 'button';
   }
+}
+
+/**
+ * The field model of one attribute for the given targets' values (one entry per target; an unset
+ * value is `undefined`). Shared by the generated panel and the layout panel so both look the same.
+ */
+export function buildField(
+  attr: AttributeDef,
+  values: readonly (Json | undefined)[],
+  issues: string[],
+  language = 'en',
+): Field {
+  const mixed = values.some((v) => !deepEqual(v, values[0]));
+  const field: Field = {
+    attr,
+    label: pickLabel(attr.labels, language) ?? attr.key,
+    control: controlFor(attr),
+    value: mixed ? undefined : values[0],
+    mixed,
+    readOnly: attr.type === 'formula' || attr.type === 'action',
+    required: attr.required === true,
+    issues,
+  };
+  const help = pickLabel(attr.help, language);
+  if (help !== undefined) field.help = help;
+  if (attr.type === 'choice' || attr.type === 'multi-choice')
+    field.options = optionsOf(attr.options, language);
+  if (attr.type === 'number') {
+    if (attr.unit !== undefined) field.unit = attr.unit;
+    if (attr.decimals !== undefined) field.decimals = attr.decimals;
+  }
+  if (attr.group !== undefined) field.group = attr.group;
+  return field;
 }
 
 function attributesOf(
@@ -172,34 +206,18 @@ export function buildPanel(
   sections.push(ungrouped);
 
   for (const attr of common) {
-    const values = targets.map((t) => storedValue(model, t.id, attr));
-    const mixed = values.some((v) => !deepEqual(v, values[0]));
-    const control = controlFor(attr);
-    const field: Field = {
+    const field = buildField(
       attr,
-      label: text(attr.labels, language) ?? attr.key,
-      control,
-      value: mixed ? undefined : values[0],
-      mixed,
-      readOnly: attr.type === 'formula' || attr.type === 'action',
-      required: attr.required === true,
-      issues: [
+      targets.map((t) => storedValue(model, t.id, attr)),
+      [
         ...new Set(
           issues
             .filter((i) => ids.has(i.id) && i.attr === attr.id)
             .map((i) => i.message),
         ),
       ],
-    };
-    const help = text(attr.help, language);
-    if (help !== undefined) field.help = help;
-    if (attr.type === 'choice' || attr.type === 'multi-choice')
-      field.options = optionsOf(attr.options, language);
-    if (attr.type === 'number') {
-      if (attr.unit !== undefined) field.unit = attr.unit;
-      if (attr.decimals !== undefined) field.decimals = attr.decimals;
-    }
-    if (attr.group !== undefined) field.group = attr.group;
+      language,
+    );
 
     let section = byTitle.get(attr.group);
     if (!section) {

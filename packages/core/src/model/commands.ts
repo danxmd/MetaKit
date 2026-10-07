@@ -61,6 +61,12 @@ export type ModelCommand =
       value: Json;
     }
   | {
+      /** Drops a stored value whose attribute the class no longer defines ("Unknown attributes"). */
+      type: 'removeAttributeValue';
+      target: ElementId | ConnectorId | 'model';
+      attr: string;
+    }
+  | {
       type: 'move';
       id: ElementId;
       x: number;
@@ -348,6 +354,40 @@ function applyModelCommand(
       requireJson(command.value, 'The attribute value');
       if (deepEqual(tx.get(path), command.value)) return undefined;
       tx.set(path, command.value);
+      return undefined;
+    }
+    case 'removeAttributeValue': {
+      let path: string[];
+      let values: Record<string, Json>;
+      if (command.target === 'model') {
+        path = ['attrs', command.attr];
+        values = model.attrs;
+      } else if (idKind(command.target) === 'element') {
+        values = requireElement(model, command.target).attrs;
+        path = ['elements', command.target, 'attrs', command.attr];
+      } else if (idKind(command.target) === 'connector') {
+        const cn = model.connectors[command.target as ConnectorId];
+        if (!cn)
+          throw new CommandError(
+            `The connector ${command.target} does not exist in this model.`,
+          );
+        values = cn.attrs;
+        path = ['connectors', command.target, 'attrs', command.attr];
+      } else {
+        throw new CommandError(
+          `${String(command.target)} is neither an element, a connector nor "model".`,
+        );
+      }
+      if (tool) {
+        const defs = attributeDefsFor(model, command.target, tool);
+        const def = defs?.find((d) => d.id === command.attr);
+        if (def)
+          throw new CommandError(
+            `The attribute "${def.key}" is still defined, so its value is not unknown. Clear it instead.`,
+          );
+      }
+      if (!Object.hasOwn(values, command.attr)) return undefined;
+      tx.remove(path);
       return undefined;
     }
     case 'move': {

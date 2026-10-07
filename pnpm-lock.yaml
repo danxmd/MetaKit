@@ -181,6 +181,12 @@ importers:
       '@metakit-app/core':
         specifier: workspace:*
         version: link:../core
+      '@metakit-app/formula':
+        specifier: workspace:*
+        version: link:../formula
+      '@metakit-app/shapes':
+        specifier: workspace:*
+        version: link:../shapes
       '@metakit-app/storage':
         specifier: workspace:*
         version: link:../storage
