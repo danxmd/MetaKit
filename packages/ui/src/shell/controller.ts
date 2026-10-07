@@ -484,7 +484,10 @@ export class AppController {
     const open = this.current.open;
     if (!open) return;
     const tool = open.toolStore.state;
-    if (tool !== open.tool) this.set({ open: { ...open, tool } });
+    if (tool === open.tool) return;
+    // Commands on the model are checked against the new tool library from now on.
+    open.store.updateContext({ tool });
+    this.set({ open: { ...open, tool } });
   }
 
   private clashed(clash: Clash): void {

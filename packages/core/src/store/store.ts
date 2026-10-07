@@ -109,6 +109,14 @@ export class DocumentStore<S, C extends BaseCommand, Ctx = undefined> {
   }
 
   /** The current state. It is frozen: assigning to it throws. */
+  /**
+   * Changes what commands are checked against, for example the tool library of a model after the
+   * tool was edited. The state and the undo history are left as they are.
+   */
+  updateContext(patch: Partial<Ctx>): void {
+    Object.assign(this.context as object, patch);
+  }
+
   get state(): S {
     return this.current;
   }
