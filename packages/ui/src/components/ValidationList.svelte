@@ -168,25 +168,24 @@
 <style>
   .validation {
     display: grid;
-    gap: 0.4rem;
+    gap: var(--gap-2);
     align-content: start;
     min-height: 0;
-    padding: 0.5rem 0.75rem;
+    padding: var(--gap-3) var(--gap-4);
     overflow: auto;
   }
   header {
     display: flex;
     align-items: baseline;
-    gap: 0.6rem;
+    gap: var(--gap-3);
   }
   h3 {
-    margin: 0;
-    font-size: 1rem;
+    font-size: var(--text-m);
   }
   .summary,
   .empty {
-    color: var(--muted, #6b7280);
-    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-size: var(--text-s);
   }
   .empty {
     margin: 0;
@@ -195,7 +194,7 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.4rem 0.8rem;
+    gap: var(--gap-2) var(--gap-3);
   }
   .controls input[type='search'] {
     flex: 1;
@@ -204,24 +203,23 @@
   .toggle {
     display: inline-flex;
     align-items: center;
-    gap: 0.25rem;
-    font-size: 0.85rem;
+    gap: var(--gap-1);
   }
   h4 {
-    margin: 0.5rem 0 0.2rem;
-    font-size: 0.85rem;
+    margin: var(--gap-2) 0 var(--gap-1);
+    font-size: var(--text-s);
   }
   h4.error,
   .issue.error .mark {
-    color: var(--danger, #c92a2a);
+    color: var(--danger);
   }
   h4.warning,
   .issue.warning .mark {
-    color: #e8590c;
+    color: var(--warning);
   }
   h4.info,
   .issue.info .mark {
-    color: var(--accent, #364fc7);
+    color: var(--accent);
   }
   ul {
     list-style: none;
@@ -234,35 +232,36 @@
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: start;
-    gap: 0.5rem;
+    gap: var(--gap-2);
     width: 100%;
     text-align: left;
     background: none;
     border-color: transparent;
-    padding: 0.25rem 0.4rem;
+    padding: var(--gap-1) var(--gap-2);
   }
   .issue:hover,
   .issue:focus-visible {
-    background: var(--hover, #e9ecef);
+    background: var(--hover-bg);
   }
   .text {
     display: grid;
     min-width: 0;
   }
   .class {
-    margin-left: 0.4rem;
-    color: var(--muted, #6b7280);
-    font-size: 0.8rem;
+    margin-left: var(--gap-2);
+    color: var(--text-muted);
+    font-size: 0.75rem;
   }
   .message {
     overflow-wrap: anywhere;
-    font-size: 0.9rem;
+    font-size: var(--text-s);
+    font-weight: 400;
   }
   .code {
-    font-family: ui-monospace, monospace;
+    font-family: var(--font-mono);
     font-size: 0.7rem;
-    color: var(--muted, #6b7280);
-    border: 1px solid var(--line, #dee2e6);
+    color: var(--text-muted);
+    border: 1px solid var(--line);
     border-radius: 999px;
     padding: 0 0.4rem;
     white-space: nowrap;

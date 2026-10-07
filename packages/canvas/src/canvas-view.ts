@@ -4,6 +4,7 @@ import {
   isActiveEmpty,
   Renderer,
   type ActiveState,
+  type CanvasPalette,
   type GridSettings,
 } from './renderer';
 import type { Scene } from './scene';
@@ -176,6 +177,20 @@ export class CanvasView {
       this.dirtyScene = true;
     }
     this.dirtyActive = true;
+    this.schedule();
+  }
+
+  /**
+   * Follows the page theme: the surface, grid and selection colours. Only the grid and the active
+   * layer are drawn again; the cached scene bitmap is transparent and stays as it is.
+   */
+  setPalette(palette: Partial<CanvasPalette>): void {
+    this.renderer.palette = { ...this.renderer.palette, ...palette };
+    if (palette.background) this.root.style.background = palette.background;
+    this.dirtyBackground = true;
+    this.dirtyActive = true;
+    // Connector labels in the default text colour change with the theme, and they sit in the scene.
+    if (palette.text) this.dirtyScene = true;
     this.schedule();
   }
 
