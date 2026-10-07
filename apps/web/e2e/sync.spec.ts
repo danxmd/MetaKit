@@ -262,6 +262,10 @@ test('asks for a name and a colour on the first visit, and not again', async ({
       remember: false,
     };
   });
+  const warnings: string[] = [];
+  page.on('console', (m) => {
+    if (m.type() === 'warning' || m.type() === 'error') warnings.push(m.text());
+  });
   await page.goto('/MetaKit/');
   await expect(page.getByTestId('profile-dialog')).toBeVisible();
   await expect(page.getByTestId('profile-save')).toBeDisabled();
@@ -269,6 +273,23 @@ test('asks for a name and a colour on the first visit, and not again', async ({
   await page.getByRole('radio', { name: '#2f9e44' }).check({ force: true });
   await page.getByTestId('profile-save').click();
   await expect(page.getByTestId('profile-dialog')).toBeHidden();
+  // Say what is stored before reloading, so a failure names the cause.
+  const stored = await page.evaluate(
+    () =>
+      new Promise((resolve) => {
+        const open = indexedDB.open('metakit', 1);
+        open.onerror = () => resolve(`open failed: ${open.error?.message}`);
+        open.onsuccess = () => {
+          const get = open.result
+            .transaction('kv')
+            .objectStore('kv')
+            .get('profile');
+          get.onsuccess = () => resolve(get.result ?? 'nothing stored');
+          get.onerror = () => resolve(`read failed: ${get.error?.message}`);
+        };
+      }),
+  );
+  expect({ stored, warnings }).toMatchObject({ stored: { name: 'Cleo' } });
   await page.reload();
   await expect(page.getByTestId('open-folder')).toBeVisible();
   await expect(page.getByTestId('profile-dialog')).toHaveCount(0);

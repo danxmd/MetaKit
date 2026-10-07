@@ -92,7 +92,8 @@ export async function saveProfile(profile: Profile): Promise<void> {
   if (hooks()?.profile) return;
   try {
     await setProfile(profile);
-  } catch {
+  } catch (error) {
     // Without storage the question is asked again next time.
+    console.warn('The name and colour could not be stored.', error);
   }
 }
