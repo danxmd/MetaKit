@@ -19,7 +19,6 @@ import type { AttributeDef, TableAttribute, ToolLibrary } from '../meta/types';
 import type { Model } from '../model/types';
 import type { Patch } from '../store/tx';
 
-type ObjectId = ElementId | ConnectorId;
 type Reads = Set<string>;
 
 interface Entry {
