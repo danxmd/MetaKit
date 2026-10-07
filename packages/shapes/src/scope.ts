@@ -18,6 +18,40 @@ export interface ScopeExtras {
   /** Follows a reference value (an element id) to that element's attribute values by key. */
   resolve?: (id: string) => Record<string, Value> | undefined;
   language?: string;
+  /** The calculated value of a formula attribute by key; undefined when there is none. */
+  computed?: (key: string) => Value | undefined;
+  /**
+   * The model-aware part of a formula scope (a `ModelCalculator` scope): `call` gives
+   * `objects()`, `children()`, `incoming()` and `outgoing()`, `member` follows references with
+   * computed values, and `special` gives names such as `self`, `parent`, `from` and `to`.
+   */
+  host?: Pick<Scope, 'call' | 'member'> & {
+    special?: (name: string) => Value | undefined;
+  };
+}
+
+const READ_SEP = '\u0000';
+
+/**
+ * Reads that are not plain names are recorded under a made-up name so that the compile cache
+ * can ask the scope again and compare: `call` for a helper result, `member` for a value reached
+ * through a reference. Names of attributes never contain a NUL, so the two cannot be confused.
+ */
+export function callReadName(fn: string, args: Value[]): string {
+  return `call${READ_SEP}${fn}${READ_SEP}${JSON.stringify(args)}`;
+}
+
+export function memberReadName(value: Value, key: string): string {
+  return `member${READ_SEP}${key}${READ_SEP}${JSON.stringify(value)}`;
+}
+
+/** The current value of a recorded read, whether a plain name, a helper call or a member access. */
+export function probeRead(scope: Scope, name: string): Value | undefined {
+  if (!name.includes(READ_SEP)) return scope.get(name);
+  const [kind, head, rest] = name.split(READ_SEP) as [string, string, string];
+  const json = JSON.parse(rest) as Value;
+  if (kind === 'call') return scope.call?.(head, json as Value[]);
+  return scope.member?.(json, head);
 }
 
 function tableRows(def: TableAttribute, value: Json | undefined): Value {
@@ -119,14 +153,23 @@ export function makeScope(
         return undefined;
     }
   };
-  return {
-    get: (name) =>
-      name.startsWith('$')
-        ? dollar(name)
-        : Object.hasOwn(values, name)
-          ? values[name]
-          : undefined,
+  const computed = extras.computed;
+  const formulaKeys = computed
+    ? new Set(defs.filter((d) => d.type === 'formula').map((d) => d.key))
+    : undefined;
+  const host = extras.host;
+  const scope: Scope = {
+    get: (name) => {
+      if (name.startsWith('$')) return dollar(name);
+      if (Object.hasOwn(values, name)) {
+        if (formulaKeys?.has(name)) return computed!(name) ?? null;
+        return values[name];
+      }
+      return host?.special?.(name);
+    },
     member: (v, key) => {
+      const hosted = host?.member?.(v, key);
+      if (hosted !== undefined) return hosted;
       if (typeof v === 'string' && extras.resolve) {
         const target = extras.resolve(v);
         if (target) return Object.hasOwn(target, key) ? target[key] : null;
@@ -134,4 +177,6 @@ export function makeScope(
       return undefined;
     },
   };
+  if (host?.call) scope.call = (name, args) => host.call!(name, args);
+  return scope;
 }

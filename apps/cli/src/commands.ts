@@ -1,6 +1,7 @@
 import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
 import {
+  ModelCalculator,
   validateModel,
   validateModelDocument,
   type Model,
@@ -35,7 +36,9 @@ export interface Io {
 }
 
 function modelIssues(tool: ToolLibrary, model: Model): ReportIssue[] {
-  return validateModel(tool, model).map((i) => ({
+  // Constraints and formula attributes need the calculator; the model never changes here.
+  const calculator = new ModelCalculator(tool, () => model);
+  return validateModel(tool, model, calculator).map((i) => ({
     severity: i.severity,
     location: i.attr ? `${i.id}.${i.attr}` : i.id,
     code: i.code,

@@ -14,6 +14,7 @@ import {
   type ConnectorId,
   type ElementId,
   type Model,
+  type ModelCalculator,
   type ModelCommand,
   type Point,
   type RelationId,
@@ -40,7 +41,7 @@ import {
   type CompiledRelation,
   type OutlineKind,
 } from '@metakit-app/shapes';
-import type { Value } from '@metakit-app/formula';
+import type { Scope, Value } from '@metakit-app/formula';
 
 export interface ElementItem {
   kind: 'element';
@@ -87,6 +88,11 @@ export interface SceneOptions {
   /** Language for class labels used as fallback text. */
   language?: string;
   cache?: CompileCache;
+  /**
+   * Gives shapes the values of formula attributes and the helpers (`objects()`, `parent`, ...),
+   * and redraws the items it reports as changed.
+   */
+  calculator?: ModelCalculator;
 }
 
 export interface SceneChange {
@@ -129,6 +135,14 @@ export class Scene {
   /** Relation looks that do not depend on the connector's values are compiled once per shape. */
   private readonly staticLooks = new WeakMap<RelationShape, CompiledRelation>();
   private model: Model;
+  private calculator: ModelCalculator | undefined;
+  private stopCalculator: (() => void) | undefined;
+  /**
+   * Items whose shapes read a helper result or a value behind a reference. The calculator cannot
+   * say which of them a change affects, so each of them is checked again after every change; the
+   * compile cache then redraws only those whose recorded reads really differ.
+   */
+  private readonly volatile = new Set<string>();
 
   constructor(
     model: Model,
@@ -138,7 +152,51 @@ export class Scene {
     this.model = model;
     this.language = options.language ?? 'en';
     this.cache = options.cache ?? new CompileCache();
+    this.calculator = options.calculator;
+    this.listen();
     this.rebuild(model);
+  }
+
+  /** Takes another calculator (or none) and draws everything again with it. */
+  setCalculator(calculator: ModelCalculator | undefined): void {
+    this.stopCalculator?.();
+    this.calculator = calculator;
+    this.listen();
+    this.rebuild(this.model);
+  }
+
+  /** Stops listening to the calculator. Call it when the scene is no longer used. */
+  destroy(): void {
+    this.stopCalculator?.();
+    this.stopCalculator = undefined;
+  }
+
+  private listen(): void {
+    this.stopCalculator = this.calculator?.onChange((ids) =>
+      this.recalculated(ids),
+    );
+  }
+
+  /** Draws again the items whose calculated values changed, and those that read helper results. */
+  private recalculated(ids: ReadonlySet<string>): void {
+    const todo = new Set<string>([...ids, ...this.volatile]);
+    const touched = new Set<string>();
+    const connectors = new Set<ConnectorId>();
+    for (const id of todo) {
+      if (id in this.model.elements) {
+        this.putElement(this.model, id as ElementId);
+        touched.add(id);
+        for (const c of this.adjacency.get(id as ElementId) ?? [])
+          connectors.add(c);
+      } else if (id in this.model.connectors) connectors.add(id as ConnectorId);
+    }
+    for (const id of connectors) {
+      this.putConnector(this.model, id);
+      touched.add(id);
+    }
+    if (touched.size === 0) return;
+    this.assignRanks();
+    this.emit({ ids: touched, structural: false });
   }
 
   /** Takes a changed tool library (hot reload) and redraws everything that depends on it. */
@@ -167,6 +225,7 @@ export class Scene {
     this.index.clear();
     this.classCache.clear();
     this.relationCache.clear();
+    this.volatile.clear();
     for (const e of Object.values(model.elements)) this.putElement(model, e.id);
     for (const c of Object.values(model.connectors))
       this.putConnector(model, c.id);
@@ -274,6 +333,18 @@ export class Scene {
     return info;
   }
 
+  /** What `makeScope` needs from a calculator scope: computed values and the model helpers. */
+  private hostOf(calc: Scope) {
+    return {
+      computed: (key: string) => calc.get(key),
+      host: {
+        ...(calc.call ? { call: calc.call.bind(calc) } : {}),
+        ...(calc.member ? { member: calc.member.bind(calc) } : {}),
+        special: (name: string) => calc.get(name),
+      },
+    };
+  }
+
   private resolveRef = (id: string): Record<string, Value> | undefined => {
     const e = this.model.elements[id as ElementId];
     if (!e) return undefined;
@@ -282,6 +353,7 @@ export class Scene {
 
   private scopeFor(
     data: {
+      id: string;
       class: ClassId;
       attrs: Record<string, never> | Record<string, unknown>;
     },
@@ -294,6 +366,7 @@ export class Scene {
       ? this.labelFor(data.class, attrs)
       : `Unknown class ${data.class}`;
     const labelKey = info?.defs.find((a) => a.id === info.textAttrs[0])?.key;
+    const calc = this.calculator?.scope(data.id);
     return {
       info,
       label,
@@ -310,6 +383,7 @@ export class Scene {
           fill: info ? fillFor(info.def) : '#e9ecef',
           resolve: this.resolveRef,
           language: this.language,
+          ...(calc ? this.hostOf(calc) : {}),
         },
         labelKey,
       ),
@@ -388,6 +462,7 @@ export class Scene {
       rank: existing?.rank ?? 0,
     };
     this.elements.set(id, item);
+    this.track(id, compiled.compiled.reads);
     this.setBox(id, 'element', rectOf(item.x, item.y, item.w, item.h));
   }
 
@@ -432,10 +507,18 @@ export class Scene {
       rank: existing?.rank ?? 0,
     };
     this.connectors.set(id, item);
+    this.track(id, look.reads);
     this.setBox(id, 'connector', routeBounds(route));
   }
 
+  /** Remembers whether an item's shape reads helper results or values behind references. */
+  private track(id: string, reads: readonly string[]): void {
+    if (reads.some((r) => r.includes('\u0000'))) this.volatile.add(id);
+    else this.volatile.delete(id);
+  }
+
   private lookFor(data: {
+    id: string;
     relation: RelationId;
     attrs: Record<string, unknown>;
   }): CompiledRelation {
@@ -449,6 +532,7 @@ export class Scene {
       return look;
     }
     const def = this.tool.relations[data.relation];
+    const calc = this.calculator?.scope(data.id);
     return compileRelation(
       info.shape,
       makeScope(info.defs, data.attrs as Record<string, never>, {
@@ -459,6 +543,7 @@ export class Scene {
         fill: '',
         resolve: this.resolveRef,
         language: this.language,
+        ...(calc ? this.hostOf(calc) : {}),
       }),
     );
   }
@@ -483,6 +568,7 @@ export class Scene {
   private ready = false;
 
   private removeItem(id: string): void {
+    this.volatile.delete(id);
     const box = this.boxes.get(id);
     if (box) {
       this.index.remove(box);

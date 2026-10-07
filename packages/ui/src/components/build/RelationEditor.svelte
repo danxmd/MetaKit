@@ -10,6 +10,7 @@
   import { toggled, withPatch } from '../../build/attributes';
   import type { CommandResult } from '../../shell/controller';
   import AttributeList from './AttributeList.svelte';
+  import ConstraintsEditor from './ConstraintsEditor.svelte';
   import KeyField from './KeyField.svelte';
   import LabelsField from './LabelsField.svelte';
 
@@ -170,6 +171,12 @@
       {tool}
       {run}
       {usages}
+    />
+    <ConstraintsEditor
+      owner={{ kind: 'relation', id }}
+      constraints={def.constraints ?? []}
+      {tool}
+      {run}
     />
     {#if error}<p class="problem" role="alert" data-testid="relation-problem">
         {error}

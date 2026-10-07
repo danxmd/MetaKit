@@ -1,4 +1,5 @@
 import {
+  describeFormulaProblem,
   evaluate,
   parseCached,
   type EvalResult,
@@ -218,13 +219,19 @@ export class ModelCalculator {
     extras?: Record<string, Value>,
   ): EvalResult {
     const parsed = parseCached(source);
-    if ('error' in parsed)
-      return {
-        value: null,
-        reads: [],
-        error: `${parsed.error} (at ${parsed.at})`,
-      };
-    return evaluate(parsed.expr, this.scope(id, extras));
+    const result: EvalResult =
+      'error' in parsed
+        ? {
+            value: null,
+            reads: [],
+            error: `${parsed.error} (at ${parsed.at})`,
+            code: parsed.code as EvalResult['code'] & string,
+          }
+        : evaluate(parsed.expr, this.scope(id, extras));
+    // One place words every problem the same way for panels, shapes, validation and rules.
+    return result.error
+      ? { ...result, error: describeFormulaProblem(result) }
+      : result;
   }
 
   /**
@@ -256,6 +263,14 @@ export class ModelCalculator {
           this.note(`pa:${id}`);
           return this.getModel().elements[id as ElementId]?.parent ?? null;
         }
+        // The ends of a connector, for constraints of relation classes.
+        if (name === 'from' || name === 'to') {
+          const cn = this.getModel().connectors[id as ConnectorId];
+          if (cn) {
+            this.note(`x:${id}`);
+            return cn[name];
+          }
+        }
         return undefined;
       },
       member: (v, key) => this.member(v, key),
@@ -281,6 +296,9 @@ export class ModelCalculator {
       case 'parent':
         this.note(`pa:${v}`);
         return el?.parent ?? null;
+      case 'from':
+      case 'to':
+        return cn ? cn[key] : null;
       case 'x':
       case 'y':
       case 'w':

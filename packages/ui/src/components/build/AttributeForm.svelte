@@ -12,6 +12,7 @@
     toggled,
     textToOptions,
   } from '../../build/attributes';
+  import { formulaProblem } from '../../build/formula-check';
   import KeyField from './KeyField.svelte';
   import LabelsField from './LabelsField.svelte';
 
@@ -425,6 +426,36 @@
         ><option value="file">A file in the workspace</option>
       </select>
     </label>
+  {/if}
+  {#if def.type !== 'formula' && def.type !== 'table' && def.type !== 'action'}
+    {@const defaultProblem = formulaProblem(def.defaultFormula ?? '')}
+    <label>
+      Default formula (for new objects, for example <code>today()</code>)
+      <input
+        value={def.defaultFormula ?? ''}
+        placeholder="= today()"
+        spellcheck="false"
+        onchange={(e) => {
+          const text = e.currentTarget.value.trim();
+          change({
+            defaultFormula:
+              text === ''
+                ? undefined
+                : text.startsWith('=')
+                  ? text
+                  : `= ${text}`,
+          });
+        }}
+        data-testid="attr-default-formula"
+      />
+    </label>
+    {#if defaultProblem}<p
+        class="problem"
+        role="alert"
+        data-testid="attr-default-formula-problem"
+      >
+        {defaultProblem}
+      </p>{/if}
   {/if}
   {#if problem}<p class="problem" role="alert" data-testid="attr-problem">
       {problem}
