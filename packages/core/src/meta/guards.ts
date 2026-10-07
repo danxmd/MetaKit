@@ -900,6 +900,7 @@ export function validateToolLibrary(value: unknown): Issue[] {
         'relations',
         'views',
         'cardinalities',
+        'containers',
         'attributes',
         'background',
         'help',
@@ -1054,6 +1055,39 @@ export function validateToolLibrary(value: unknown): Issue[] {
       if (o.min === undefined && o.max === undefined)
         c.add(p, 'A cardinality needs a minimum, a maximum or both.');
     });
+    if (d.containers !== undefined) {
+      const rules = c.object(
+        d.containers,
+        `${path}.containers`,
+        Object.keys((d.containers as Rec | null) ?? {}),
+        'The container rules',
+      );
+      for (const [containerId, accepted] of Object.entries(rules ?? {})) {
+        const p = `${path}.containers.${containerId}`;
+        if (
+          c.id('class', containerId, p, 'A container class id') !== null &&
+          !allowedClasses.has(containerId)
+        )
+          c.add(
+            p,
+            `The container rule is for the class ${containerId}, which the model type does not allow.`,
+          );
+        const kind = (classes as Record<string, Rec> | null)?.[containerId]
+          ?.kind;
+        if (kind !== undefined && kind !== 'container' && kind !== 'swimlane')
+          c.add(p, `The class ${containerId} is not a container or swimlane.`);
+        c.array(accepted, p, 'The accepted classes')?.forEach((x, i) => {
+          if (
+            c.id('class', x, `${p}[${i}]`, 'The accepted class id') !== null &&
+            !allowedClasses.has(x as string)
+          )
+            c.add(
+              `${p}[${i}]`,
+              `The class ${x as string} is accepted, but the model type does not allow it.`,
+            );
+        });
+      }
+    }
     checkAttributes(c, d.attributes, `${path}.attributes`, languages);
     if (d.background !== undefined)
       c.id('shape', d.background, `${path}.background`, 'The background shape');

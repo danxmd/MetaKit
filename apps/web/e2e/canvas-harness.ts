@@ -3,6 +3,7 @@
 import {
   createModelStore,
   MODEL_FORMAT_VERSION,
+  type ClassId,
   type ConnectorId,
   type ElementId,
   type Model,
@@ -152,6 +153,16 @@ const api = {
     }));
   },
   guides: () => need().view.active.guides,
+  /** The element highlighted as the drop target during a drag, or null. */
+  dropTarget: () => need().view.active.target,
+  /** Creates an element of a class centred at a world point, as a click from the palette does. */
+  placeAt(cls: string, at: Point) {
+    const id = need().editor.placeAt(cls as ClassId, at);
+    flush();
+    return id;
+  },
+  /** How many undo steps the model has. */
+  historyLength: () => need().store.history().length,
   excluded: () => [...need().view.renderer.excluded],
   stats: () => ({ ...need().view.renderer.stats }),
   drawListBuilds: () => need().scene.cache.builds,

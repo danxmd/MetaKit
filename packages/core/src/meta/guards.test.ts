@@ -309,6 +309,27 @@ describe('model types', () => {
     ).toMatch(/does not allow/);
   });
 
+  it('checks container rules', () => {
+    const ok = base();
+    ok.modelTypes[mt].containers = { [SAMPLE.lane]: [SAMPLE.task] };
+    expect(issuesOf(ok)).toEqual([]);
+
+    const notAContainer = base();
+    notAContainer.modelTypes[mt].containers = { [SAMPLE.task]: [SAMPLE.end] };
+    expect(
+      messageAt(notAContainer, `modelTypes.${mt}.containers.${SAMPLE.task}`)[0],
+    ).toMatch(/not a container or swimlane/);
+
+    const unknownChild = base();
+    unknownChild.modelTypes[mt].containers = { [SAMPLE.lane]: ['cls_nope'] };
+    expect(
+      messageAt(
+        unknownChild,
+        `modelTypes.${mt}.containers.${SAMPLE.lane}[0]`,
+      )[0],
+    ).toMatch(/does not allow it/);
+  });
+
   it('checks cardinality bounds', () => {
     const tool = base();
     tool.modelTypes[mt].cardinalities[0] = {

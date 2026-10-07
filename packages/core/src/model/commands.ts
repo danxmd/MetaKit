@@ -23,6 +23,13 @@ import {
 import { positionBetween } from '../store/position';
 import { CommandError, requireJson, type Tx } from '../store/tx';
 import {
+  FIT_PADDING,
+  containerAt,
+  descendantsOf,
+  isContainerClass,
+  isSwimlaneClass,
+} from './containers';
+import {
   DEFAULT_ELEMENT_SIZE,
   inDrawingOrder,
   type ConnectorData,
@@ -67,6 +74,12 @@ export type ModelCommand =
       y: number;
       /** A container to move into, `null` to move to the top level, absent to keep the container. */
       parent?: ElementId | null;
+      /**
+       * The element was dropped here: with no explicit `parent`, its new container is the deepest
+       * container that holds its centre and accepts its class (none puts it at the top level).
+       * Needs a tool library; without one the container is kept.
+       */
+      drop?: boolean;
     }
   | {
       type: 'resize';
@@ -75,6 +88,13 @@ export type ModelCommand =
       h: number;
       x?: number;
       y?: number;
+    }
+  | {
+      /** Grows a swimlane so that it holds all its children with `padding` around them; never shrinks it. */
+      type: 'fitContainer';
+      id: ElementId;
+      /** Defaults to `FIT_PADDING` (10). */
+      padding?: number;
     }
   | { type: 'setBends'; id: ConnectorId; bends: Point[] }
   | { type: 'reconnect'; id: ConnectorId; from?: ElementId; to?: ElementId }
@@ -144,19 +164,85 @@ function defaultsOf(attributes: AttributeDef[]): Record<string, Json> {
   return defaults;
 }
 
-function descendants(model: Model, id: ElementId): ElementId[] {
-  const found: ElementId[] = [];
-  const queue: ElementId[] = [id];
-  while (queue.length > 0) {
-    const parent = queue.shift()!;
-    for (const el of Object.values(model.elements)) {
-      if (el.parent === parent && !found.includes(el.id)) {
-        found.push(el.id);
-        queue.push(el.id);
-      }
-    }
+/** The highest drawing-order key in use, or null for an empty model. */
+function topPos(model: Model): string | null {
+  let top: string | null = null;
+  for (const el of Object.values(model.elements))
+    if (top === null || el.pos > top) top = el.pos;
+  return top;
+}
+
+/**
+ * Keeps children drawn above their container: when the element sits at or below its new
+ * container, it and everything inside it go to the front, in their current order.
+ */
+function raiseAbove(
+  tx: Tx<Model>,
+  id: ElementId,
+  container: ElementId,
+  random?: RandomSource,
+): void {
+  const model = tx.view;
+  const el = model.elements[id]!;
+  if (el.pos > model.elements[container]!.pos) return;
+  const inside = descendantsOf(model, id)
+    .map((d) => model.elements[d]!)
+    .sort((a, b) =>
+      a.pos === b.pos ? (a.id < b.id ? -1 : 1) : a.pos < b.pos ? -1 : 1,
+    );
+  let last = topPos(model);
+  for (const item of [el, ...inside]) {
+    last = positionBetween(last, null, random);
+    tx.set(['elements', item.id, 'pos'], last);
   }
-  return found;
+}
+
+/** Grows one swimlane to hold its direct children. Writes nothing when they already fit. */
+function growToFit(tx: Tx<Model>, id: ElementId, padding: number): void {
+  const model = tx.view;
+  const lane = model.elements[id]!;
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  for (const el of Object.values(model.elements)) {
+    if (el.parent !== id) continue;
+    minX = Math.min(minX, el.x);
+    minY = Math.min(minY, el.y);
+    maxX = Math.max(maxX, el.x + el.w);
+    maxY = Math.max(maxY, el.y + el.h);
+  }
+  if (minX === Infinity) return;
+  const x = Math.min(lane.x, minX - padding);
+  const y = Math.min(lane.y, minY - padding);
+  const w = Math.max(lane.x + lane.w, maxX + padding) - x;
+  const h = Math.max(lane.y + lane.h, maxY + padding) - y;
+  if (lane.x !== x) tx.set(['elements', id, 'x'], x);
+  if (lane.y !== y) tx.set(['elements', id, 'y'], y);
+  if (lane.w !== w) tx.set(['elements', id, 'w'], w);
+  if (lane.h !== h) tx.set(['elements', id, 'h'], h);
+}
+
+/**
+ * After a child was placed, moved or resized: the swimlane it sits in grows to hold it, and so do
+ * swimlanes around that one. Plain containers never grow and end the climb.
+ */
+function fitUp(
+  tx: Tx<Model>,
+  start: ElementId | undefined,
+  tool: ToolLibrary | undefined,
+  padding = FIT_PADDING,
+): void {
+  if (!tool) return;
+  const seen = new Set<ElementId>();
+  let current = start;
+  while (current !== undefined && !seen.has(current)) {
+    seen.add(current);
+    const lane = tx.view.elements[current];
+    if (!lane || !isSwimlaneClass(tool, lane.class)) return;
+    growToFit(tx, current, padding);
+    current = tx.view.elements[current]!.parent;
+  }
 }
 
 function requireElement(
@@ -256,6 +342,7 @@ function applyModelCommand(
         pos: positionBetween(last, null, ctx.random),
       };
       tx.set(['elements', id], element);
+      fitUp(tx, command.parent, tool);
       return id;
     }
     case 'createConnector': {
@@ -356,7 +443,7 @@ function applyModelCommand(
         requireElement(model, command.parent, 'The container');
         if (
           command.parent === command.id ||
-          descendants(model, command.id).includes(command.parent)
+          descendantsOf(model, el.id).includes(command.parent)
         ) {
           throw new CommandError(
             'An element cannot be moved into itself or into something it contains.',
@@ -365,11 +452,55 @@ function applyModelCommand(
       }
       const x = finite(command.x, 'x');
       const y = finite(command.y, 'y');
+      // Read everything before the first write: later reads see the changed state.
+      const dx = x - el.x;
+      const dy = y - el.y;
+      // Without a tool library the kind is unknown, so every element is checked for contents.
+      const inside =
+        (dx !== 0 || dy !== 0) && (!tool || isContainerClass(tool, el.class))
+          ? descendantsOf(model, el.id).map((id) => model.elements[id]!)
+          : [];
+      let parent: ElementId | null | undefined = command.parent;
+      if (parent === undefined && command.drop && tool)
+        parent = containerAt(
+          model,
+          tool,
+          model.manifest.modelType,
+          { x: x + el.w / 2, y: y + el.h / 2 },
+          [el.id],
+          el.class,
+        );
+      const was = el.parent;
       if (el.x !== x) tx.set(['elements', el.id, 'x'], x);
       if (el.y !== y) tx.set(['elements', el.id, 'y'], y);
-      if (command.parent === null) tx.remove(['elements', el.id, 'parent']);
-      else if (command.parent !== undefined && command.parent !== el.parent)
-        tx.set(['elements', el.id, 'parent'], command.parent);
+      // The contents travel with their container by the same offset.
+      for (const d of inside) {
+        tx.set(['elements', d.id, 'x'], d.x + dx);
+        tx.set(['elements', d.id, 'y'], d.y + dy);
+      }
+      if (parent === null) tx.remove(['elements', el.id, 'parent']);
+      else if (parent !== undefined && parent !== was) {
+        tx.set(['elements', el.id, 'parent'], parent);
+        raiseAbove(tx, el.id, parent, ctx.random);
+      }
+      fitUp(tx, parent === undefined ? was : (parent ?? undefined), tool);
+      return undefined;
+    }
+    case 'fitContainer': {
+      const lane = requireElement(model, command.id);
+      if (tool && !isSwimlaneClass(tool, lane.class))
+        throw new CommandError(
+          'Only a swimlane can be fitted to its contents.',
+        );
+      const padding =
+        command.padding === undefined
+          ? FIT_PADDING
+          : finite(command.padding, 'The padding');
+      if (padding < 0)
+        throw new CommandError(
+          `The padding must be 0 or more (it is ${padding}).`,
+        );
+      growToFit(tx, lane.id, padding);
       return undefined;
     }
     case 'resize': {
@@ -382,6 +513,7 @@ function applyModelCommand(
         tx.set(['elements', el.id, 'x'], finite(command.x, 'x'));
       if (command.y !== undefined && el.y !== command.y)
         tx.set(['elements', el.id, 'y'], finite(command.y, 'y'));
+      fitUp(tx, el.parent, tool);
       return undefined;
     }
     case 'setBends': {
@@ -425,17 +557,20 @@ function applyModelCommand(
         tx.remove(['connectors', command.id]);
         return undefined;
       }
-      requireElement(model, command.id);
-      // The element, what it contains, and every connector that would be left without an end.
-      const doomed = new Set<string>([
-        command.id,
-        ...descendants(model, command.id as ElementId),
-      ]);
+      const doomed = requireElement(model, command.id);
+      // What the element contains is kept and moves up to the element's own container.
+      for (const child of Object.values(model.elements)) {
+        if (child.parent !== doomed.id) continue;
+        if (doomed.parent === undefined)
+          tx.remove(['elements', child.id, 'parent']);
+        else tx.set(['elements', child.id, 'parent'], doomed.parent);
+      }
+      // Connectors that would be left without an end go too.
       for (const cn of Object.values(model.connectors)) {
-        if (doomed.has(cn.from) || doomed.has(cn.to))
+        if (cn.from === doomed.id || cn.to === doomed.id)
           tx.remove(['connectors', cn.id]);
       }
-      for (const id of doomed) tx.remove(['elements', id]);
+      tx.remove(['elements', doomed.id]);
       return undefined;
     }
     case 'reorder': {
