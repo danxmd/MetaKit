@@ -782,7 +782,6 @@ commands.register({ id: "x", label: "X", run: () => {
   });
 
   it('keeps the newest 500 console lines, with timestamps and script names, and lets a view subscribe', async () => {
-    let clock = 1000;
     const r = await rig([
       script(
         `import { commands } from "metakit";
@@ -790,7 +789,6 @@ commands.register({ id: "x", label: "X", run: () => {
         'Spammer',
       ),
     ]);
-    void clock;
     let heard = 0;
     r.engine.onLog(() => heard++);
     await r.engine.runScript(Object.keys(r.tool.scripts)[0]!, null);
@@ -805,7 +803,6 @@ commands.register({ id: "x", label: "X", run: () => {
     expect(heard).toBeGreaterThanOrEqual(600);
     r.engine.clearLog();
     expect(r.engine.log).toHaveLength(0);
-    clock++;
   });
 
   it('runs a script that has no command again by hand, once, in a sandbox of its own, keeping no handlers from that run', async () => {
@@ -850,6 +847,48 @@ commands.register({ id: "x", label: "X", run: () => {
     r.addTask(0, 0);
     expect(lines(r)).toEqual([]);
     expect(r.engine.status(off.id).state).toBe('disabled');
+  });
+
+  it('gives a script no way to the host except the metakit module', async () => {
+    const r = await rig([
+      script(
+        `import { commands } from "metakit";
+         commands.register({ id: "probe", label: "Probe", run: () => {
+           const g = globalThis as Record<string, unknown>;
+           console.log(["__host", "__host_async", "require", "fetch", "process", "window", "setTimeout"].map((n) => typeof g[n]).join(","));
+           console.log(Object.getOwnPropertyNames(globalThis).filter((n) => n.startsWith("__")).sort().join(","));
+           for (const name of ["__fire", "__run", "__settle", "console"]) {
+             try { g[name] = () => 1; console.log(name + " was replaced"); } catch (e) { console.log(name + " is locked"); }
+           }
+           console.log(String(new Function("return typeof this.__host")()), String(eval("typeof __host_async")));
+           console.log("x".repeat(20000).length);
+         }});`,
+      ),
+    ]);
+    await r.engine.runScript(Object.keys(r.tool.scripts)[0]!, null);
+    expect(lines(r)).toEqual([
+      'log: undefined,undefined,undefined,undefined,undefined,undefined,undefined',
+      'log: __fire,__loadScript,__run,__runOnce,__setOneShot,__settle',
+      'log: __fire is locked',
+      'log: __run is locked',
+      'log: __settle is locked',
+      'log: console is locked',
+      'log: undefined undefined',
+      'log: 20000',
+    ]);
+  });
+
+  it('cuts a console line that is enormous', async () => {
+    const r = await rig([
+      script(
+        `import { commands } from "metakit";
+         commands.register({ id: "big", label: "Big", run: () => { console.log("y".repeat(50000)); } });`,
+      ),
+    ]);
+    await r.engine.runScript(Object.keys(r.tool.scripts)[0]!, null);
+    const text = r.engine.log[0]!.text;
+    expect(text.length).toBeLessThan(10_100);
+    expect(text).toMatch(/… \(40000 more characters\)$/);
   });
 
   it('does not touch the sandbox code when no script is enabled', async () => {

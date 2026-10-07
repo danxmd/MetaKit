@@ -43,6 +43,7 @@ export interface ConsoleLine {
 }
 
 export const MAX_CONSOLE_LINES = 500;
+const MAX_CONSOLE_CHARS = 10_000;
 
 /**
  * `running`: loaded and listening. `disabled`: switched off. `error`: it does not compile or its
@@ -169,6 +170,9 @@ export class ScriptEngine {
     const script = scriptId
       ? this.options.tool().scripts?.[scriptId]
       : undefined;
+    // A script cannot fill the console (or the page) with one enormous line.
+    if (text.length > MAX_CONSOLE_CHARS)
+      text = `${text.slice(0, MAX_CONSOLE_CHARS)}… (${text.length - MAX_CONSOLE_CHARS} more characters)`;
     this.lines.push({
       id: ++this.lineId,
       time: this.now(),

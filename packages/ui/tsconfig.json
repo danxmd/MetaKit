@@ -28,6 +28,9 @@
     },
     {
       "path": "../shapes"
+    },
+    {
+      "path": "../behaviour"
     }
   ]
 }

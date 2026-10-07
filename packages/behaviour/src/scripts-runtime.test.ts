@@ -97,7 +97,10 @@ describe('attachScripts', () => {
       scripts: {
         [SCRIPT.id]: {
           ...SCRIPT,
-          source: SCRIPT.source.replace('message("created")', 'message("again")'),
+          source: SCRIPT.source.replace(
+            'message("created")',
+            'message("again")',
+          ),
         },
       },
     };

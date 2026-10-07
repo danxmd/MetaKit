@@ -208,10 +208,10 @@ describe('running scripts', () => {
   });
 
   it('supports a handler being called while another one is running', async () => {
-    let s!: Sandbox;
+    const later: { s?: Sandbox } = {};
     hostCall = (op) =>
-      op === 'inner' ? s.call('__fire', ['inner', {}]) : null;
-    s = await sandbox();
+      op === 'inner' ? later.s!.call('__fire', ['inner', {}]) : null;
+    const s = (later.s = await sandbox());
     await load(
       s,
       `on('outer', () => { const r = hostOp('inner'); return { cancel: r }; });
@@ -273,19 +273,19 @@ describe('limits', () => {
   });
 
   it('stops a handler that runs away inside another one, and the outer one carries on', async () => {
-    let s!: Sandbox;
+    const later: { s?: Sandbox } = {};
     let inner: SandboxError | undefined;
     hostCall = (op) => {
       if (op === 'inner') {
         try {
-          s.call('__fire', ['inner', {}]);
+          later.s!.call('__fire', ['inner', {}]);
         } catch (e) {
           inner = e as SandboxError;
         }
       }
       return null;
     };
-    s = await sandbox({ handlerMs: 50, runMs: 2000 });
+    const s = (later.s = await sandbox({ handlerMs: 50, runMs: 2000 }));
     await load(
       s,
       `on('outer', () => { hostOp('inner'); return undefined; });

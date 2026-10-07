@@ -71,6 +71,9 @@ importers:
 
   apps/web:
     devDependencies:
+      '@metakit-app/behaviour':
+        specifier: workspace:*
+        version: link:../../packages/behaviour
       '@metakit-app/canvas':
         specifier: workspace:*
         version: link:../../packages/canvas

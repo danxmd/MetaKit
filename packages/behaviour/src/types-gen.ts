@@ -163,6 +163,24 @@ ${family.join('\n')}
 ${modelType ? members(modelType.attributes) : ''}
   }
 
+  type IsUnion<T, U = T> = T extends unknown ? ([U] extends [T] ? false : true) : never;
+  type KeysOfUnion<T> = T extends unknown ? keyof T : never;
+  type ValueOfUnion<T, K extends PropertyKey> = T extends unknown ? (K extends keyof T ? T[K] : never) : never;
+  /**
+   * The attributes of one class, exactly. For several classes at once (an object whose class is
+   * not known yet) every attribute of any of them, each optional: check \`class\` to narrow it.
+   */
+  export type AttrsOf<C extends ClassName> = [C] extends [never]
+    ? never
+    : IsUnion<C> extends true
+      ? { [K in KeysOfUnion<ClassAttributes[C]>]?: ValueOfUnion<ClassAttributes[C], K> }
+      : ClassAttributes[C];
+  export type RelationAttrsOf<R extends RelationName> = [R] extends [never]
+    ? never
+    : IsUnion<R> extends true
+      ? { [K in KeysOfUnion<RelationAttributes[R]>]?: ValueOfUnion<RelationAttributes[R], K> }
+      : RelationAttributes[R];
+
   export interface ModelObject<C extends ClassName = ClassName> {
     readonly id: string;
     /** The class of the object, for example "Task". */
@@ -172,7 +190,7 @@ ${modelType ? members(modelType.attributes) : ''}
     w: number;
     h: number;
     /** Read an attribute, or set it with \`task.attrs.Priority = "High"\`. */
-    readonly attrs: ClassAttributes[C];
+    readonly attrs: AttrsOf<C>;
     readonly parent: ModelObject | null;
     children(): ModelObject[];
     incoming(relation?: RelationName): ModelObject[];
@@ -184,7 +202,7 @@ ${modelType ? members(modelType.attributes) : ''}
       w?: number;
       h?: number;
       parent?: ModelObject | string | null;
-      attrs?: Partial<{ -readonly [K in keyof ClassAttributes[C]]: ClassAttributes[C][K] }>;
+      attrs?: Partial<{ -readonly [K in keyof AttrsOf<C>]: AttrsOf<C>[K] }>;
     }): void;
     delete(): void;
   }
@@ -194,9 +212,9 @@ ${modelType ? members(modelType.attributes) : ''}
     readonly relation: R;
     readonly from: ModelObject;
     readonly to: ModelObject;
-    readonly attrs: RelationAttributes[R];
+    readonly attrs: RelationAttrsOf<R>;
     update(patch: {
-      attrs?: Partial<{ -readonly [K in keyof RelationAttributes[R]]: RelationAttributes[R][K] }>;
+      attrs?: Partial<{ -readonly [K in keyof RelationAttrsOf<R>]: RelationAttrsOf<R>[K] }>;
     }): void;
     delete(): void;
   }

@@ -77,7 +77,7 @@ function text(value: unknown, what: string): string {
   return value;
 }
 
-function json(value: unknown, what: string): Json {
+function json(value: unknown): Json {
   if (value === undefined) return null;
   return value as Json;
 }
@@ -261,7 +261,7 @@ function attrsIn(
     return fail('"attrs" must be an object of attribute values by key.');
   for (const [key, value] of Object.entries(attrs)) {
     const def = definition(c, s, key);
-    out[def.id] = valueIn(def, json(value, key));
+    out[def.id] = valueIn(def, json(value));
   }
   return out as Record<AttributeId, Json>;
 }
@@ -627,7 +627,7 @@ export function createOps(c: OpsContext): (op: string, args: Args) => unknown {
       case 'attr.set': {
         const s = subjectOf(c, a[0]);
         const def = definition(c, s, a[1]);
-        const value = valueIn(def, json(a[2], 'The value'));
+        const value = valueIn(def, json(a[2]));
         run(c, {
           type: 'setAttribute',
           target: (s.kind === 'model' ? 'model' : s.id) as ElementId,
