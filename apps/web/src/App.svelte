@@ -12,6 +12,7 @@
   import NewModelDialog from '@metakit-app/ui/components/NewModelDialog.svelte';
   import ProfileDialog from '@metakit-app/ui/components/ProfileDialog.svelte';
   import StartPage from '@metakit-app/ui/components/StartPage.svelte';
+  import { findAcrossModels } from '@metakit-app/ui';
   import { PROFILE_COLOURS, type Profile } from '@metakit-app/storage';
   import {
     adapterFor,
@@ -182,6 +183,29 @@
     onTrashTool={(slug) => controller.trashTool(slug)}
     onRestoreTool={(slug) => controller.restoreTool(slug)}
     onClose={() => controller.closeWorkspace()}
+    notes={app.notes}
+    toolImport={app.toolImport}
+    search={async (query) =>
+      findAcrossModels(
+        (await controller.readAllModels()).map(({ entry, model, tool }) => ({
+          slug: entry.slug,
+          name: entry.name,
+          model,
+          tool,
+        })),
+        query,
+      )}
+    onOpenHit={async (hit) => {
+      await controller.openModel(hit.slug);
+      selectElement?.(hit.element);
+    }}
+    onExportModel={(slug) => controller.exportModelFile(slug)}
+    onExportBundle={(slugs) => controller.exportBundle(slugs)}
+    onExportCsv={(slug) => controller.exportCsv(slug)}
+    onExportTool={(slug) => controller.exportToolPackage(slug)}
+    onImport={(files) => controller.importFiles(files)}
+    onConfirmToolImport={() => controller.confirmToolImport()}
+    onCancelToolImport={() => controller.cancelToolImport()}
   />
   {#if showNew}
     <NewModelDialog

@@ -17,14 +17,24 @@ import {
   type ToolStore,
 } from '@metakit-app/core';
 import {
+  applyToolUpdate,
+  exportBundle,
+  exportCsvZip,
+  exportModelFile,
+  exportToolPackageFrom,
+  importBundle,
+  importModelFile,
   migrate,
   NewerFormatError,
   NotFoundError,
   Workspace,
+  prepareToolImport,
   type HealthFinding,
   type ModelEntry,
+  type PreparedToolImport,
   type StorageAdapter,
   type ToolEntry,
+  type ToolUpdatePlan,
 } from '@metakit-app/storage';
 import {
   detectDivergence,
@@ -44,6 +54,7 @@ import {
   type Behaviour,
   type BehaviourHost,
 } from '@metakit-app/behaviour';
+import { downloadFile, importFiles } from './files';
 import { describeClash, type ClashNotice } from './clash';
 import { normalizeFolder } from './explorer';
 
@@ -122,6 +133,10 @@ export interface AppState {
   /** The last problem, in plain English; cleared by the next successful action. */
   error: string | null;
   warnings: string[];
+  /** What the last import did, in plain English; cleared by the next import. */
+  notes: string[];
+  /** A tool library file waiting for the user to confirm it (see `importToolPackage`). */
+  toolImport: ToolUpdatePlan | null;
 }
 
 export interface ControllerOptions {
@@ -195,6 +210,8 @@ const initial = (): AppState => ({
   health: [],
   error: null,
   warnings: [],
+  notes: [],
+  toolImport: null,
 });
 
 const message = (error: unknown) =>
@@ -770,6 +787,120 @@ export class AppController {
       }
     }
     return result;
+  }
+
+  // Files and packages --------------------------------------------------------------------------
+
+  private pendingTool: PreparedToolImport | null = null;
+
+  /** Downloads one model as a `.mkmodel.json` file. */
+  exportModelFile(slug: string): Promise<void | undefined> {
+    return this.attempt(async () => {
+      const { fileName, text } = await exportModelFile(this.need(), slug);
+      downloadFile(fileName, text, 'application/json');
+    });
+  }
+
+  /** Downloads models, with their tool library, as one `.mkbundle` file. */
+  exportBundle(slugs: string[]): Promise<void | undefined> {
+    return this.attempt(async () => {
+      const { fileName, bytes } = await exportBundle(this.need(), {
+        models: slugs,
+        includeTool: true,
+      });
+      downloadFile(fileName, bytes);
+    });
+  }
+
+  /** Downloads one CSV file per class of a model, zipped. */
+  exportCsv(slug: string): Promise<void | undefined> {
+    return this.attempt(async () => {
+      const ws = this.need();
+      const model = (await ws.loadModel(slug)).document;
+      const toolSlug = await ws.findToolSlug(model.manifest.tool);
+      if (!toolSlug)
+        throw new Error('The tool library of this model is missing.');
+      const tool = (await ws.loadTool(toolSlug)).document;
+      downloadFile(
+        `${slug}.csv.zip`,
+        exportCsvZip(tool, model, { bom: true }),
+        'application/zip',
+      );
+    });
+  }
+
+  exportToolPackage(toolSlug: string): Promise<void | undefined> {
+    return this.attempt(async () => {
+      const { fileName, bytes } = await exportToolPackageFrom(
+        this.need(),
+        toolSlug,
+      );
+      downloadFile(fileName, bytes, 'application/zip');
+    });
+  }
+
+  /** Reads a `.mktool` file and asks for confirmation through `state.toolImport`. */
+  async importToolPackage(bytes: Uint8Array): Promise<void> {
+    this.pendingTool = await prepareToolImport(this.need(), bytes);
+    this.set({ toolImport: this.pendingTool.plan });
+  }
+
+  confirmToolImport(): Promise<void | undefined> {
+    return this.attempt(async () => {
+      const prepared = this.pendingTool;
+      if (!prepared) return;
+      this.pendingTool = null;
+      const { slug, created } = await applyToolUpdate(this.need(), prepared);
+      this.set({
+        toolImport: null,
+        notes: [
+          `${created ? 'Added' : 'Updated'} the tool library "${prepared.incoming.manifest.name}".`,
+        ],
+      });
+      await this.refresh();
+      // A tool library that is open in Build mode was rewritten under it.
+      if (this.current.build?.slug === slug) await this.openBuild(slug);
+    });
+  }
+
+  cancelToolImport(): void {
+    this.pendingTool = null;
+    this.set({ toolImport: null });
+  }
+
+  /** Imports the files the user chose or dropped: models, bundles and tool packages. */
+  importFiles(files: File[]): Promise<void | undefined> {
+    return this.attempt(async () => {
+      const ws = this.need();
+      const ordered = [...files].sort(
+        (a, b) =>
+          Number(/\.mkmodel\.json$/i.test(a.name)) -
+          Number(/\.mkmodel\.json$/i.test(b.name)),
+      );
+      const results = await importFiles(ordered, {
+        model: (text) => importModelFile(ws, text),
+        bundle: (bytes) => importBundle(ws, bytes),
+        tool: (bytes) => this.importToolPackage(bytes),
+      });
+      const notes: string[] = [];
+      for (const r of results) {
+        if (!r.ok) notes.push(r.message);
+        else if (r.kind === 'model')
+          notes.push(
+            r.value.report.messages.length > 0
+              ? r.value.report.messages.join(' ')
+              : `Imported "${r.fileName}".`,
+          );
+        else if (r.kind === 'bundle')
+          notes.push(
+            r.value.messages.length > 0
+              ? r.value.messages.join(' ')
+              : `Imported "${r.fileName}".`,
+          );
+      }
+      this.set({ notes });
+      await this.refresh();
+    });
   }
 
   // Organising --------------------------------------------------------------------------------

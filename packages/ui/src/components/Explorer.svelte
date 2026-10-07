@@ -3,9 +3,14 @@
     HealthFinding,
     ModelEntry,
     ToolEntry,
+    ToolUpdatePlan,
   } from '@metakit-app/storage';
   import { buildExplorerTree, folderPaths } from '../shell/explorer';
+  import type { FindAllHit } from '../shell/find-all';
+  import FindAll from './FindAll.svelte';
   import FolderTree from './FolderTree.svelte';
+  import ImportExportMenu from './ImportExportMenu.svelte';
+  import ToolImportDialog from './ToolImportDialog.svelte';
 
   let {
     workspaceName,
@@ -27,6 +32,17 @@
     onRestore,
     onTrashTool,
     onRestoreTool,
+    notes = [],
+    toolImport = null,
+    search,
+    onOpenHit,
+    onExportModel,
+    onExportBundle,
+    onExportCsv,
+    onExportTool,
+    onImport,
+    onConfirmToolImport,
+    onCancelToolImport,
     onClose,
   }: {
     workspaceName: string;
@@ -52,7 +68,35 @@
     onTrashTool: (slug: string) => void;
     onRestoreTool: (slug: string) => void;
     onClose: () => void;
+    /** What the last import did. */
+    notes?: string[];
+    /** A tool library file waiting for confirmation. */
+    toolImport?: ToolUpdatePlan | null;
+    /** Find across all models of the workspace. */
+    search: (query: string) => Promise<FindAllHit[]>;
+    onOpenHit: (hit: FindAllHit) => void;
+    onExportModel: (slug: string) => void;
+    onExportBundle: (slugs: string[]) => void;
+    onExportCsv: (slug: string) => void;
+    onExportTool: (slug: string) => void;
+    onImport: (files: File[]) => void;
+    onConfirmToolImport: () => void;
+    onCancelToolImport: () => void;
   } = $props();
+
+  // The model and the tool library the export buttons act on.
+  let exportSlug = $state('');
+  let exportToolSlug = $state('');
+  const chosenModel = $derived(
+    models.some((m) => m.slug === exportSlug)
+      ? exportSlug
+      : (models[0]?.slug ?? ''),
+  );
+  const chosenTool = $derived(
+    tools.some((t) => t.slug === exportToolSlug)
+      ? exportToolSlug
+      : (tools[0]?.slug ?? ''),
+  );
 
   let fileInput: HTMLInputElement | undefined = $state();
   let toolName = $state('');
@@ -109,6 +153,50 @@
       <button onclick={onClose}>Close workspace</button>
     </div>
   </header>
+
+  <section class="files" aria-label="Import and export">
+    <label
+      >Model to export
+      <select bind:value={exportSlug} data-testid="export-model-choice">
+        {#each models as m (m.slug)}<option
+            value={m.slug}
+            selected={m.slug === chosenModel}>{m.name}</option
+          >{/each}
+      </select></label
+    >
+    <ImportExportMenu
+      hasModel={chosenModel !== ''}
+      onExportModel={() => onExportModel(chosenModel)}
+      onExportBundle={() => onExportBundle([chosenModel])}
+      onExportCsv={() => onExportCsv(chosenModel)}
+      {onImport}
+    />
+    <label
+      >Tool library to export
+      <select bind:value={exportToolSlug} data-testid="export-tool-choice">
+        {#each tools as t (t.slug)}<option
+            value={t.slug}
+            selected={t.slug === chosenTool}>{t.name}</option
+          >{/each}
+      </select></label
+    >
+    <button
+      disabled={chosenTool === ''}
+      onclick={() => onExportTool(chosenTool)}
+      data-testid="export-tool">Export tool library</button
+    >
+  </section>
+  <FindAll {search} onOpen={onOpenHit} />
+  {#each notes as note (note)}<p class="notice" data-testid="import-note">
+      {note}
+    </p>{/each}
+  {#if toolImport}
+    <ToolImportDialog
+      plan={toolImport}
+      onConfirm={onConfirmToolImport}
+      onCancel={onCancelToolImport}
+    />
+  {/if}
 
   {#if naming}
     <form class="naming" onsubmit={createTool}>
