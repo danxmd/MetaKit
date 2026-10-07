@@ -348,14 +348,6 @@
       >
         {field.error}
       </p>{/if}
-  {:else if field.control === 'button'}
-    <button
-      {id}
-      type="button"
-      disabled
-      title="Buttons start working when rules and scripts arrive."
-      >{field.label}</button
-    >
   {/if}
 
   {#if message}<p class="message" role="alert">
