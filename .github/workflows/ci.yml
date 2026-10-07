@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+      - run: pnpm build
+      - name: Install Chromium
+        run: pnpm --filter @metakit-app/web exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+      - name: Bundle-size report
+        run: |
+          raw=$(find apps/web/dist -type f -exec cat {} + | wc -c)
+          gz=$(find apps/web/dist -type f -exec gzip -9 -c {} \; | wc -c)
+          {
+            echo "### Web app bundle size"
+            echo
+            echo "| | Bytes |"
+            echo "| --- | --- |"
+            echo "| Raw | $raw |"
+            echo "| Compressed (gzip) | $gz |"
+            echo
+            echo "Budget: 1,500,000 bytes compressed (reported only until phase 2)."
+          } >> "$GITHUB_STEP_SUMMARY"

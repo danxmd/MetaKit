@@ -716,7 +716,7 @@ Your answers raised six new questions. Only 24 and 25 are needed before phase 0 
 | 23 | Git mode for tool libraries only, or for models too? | Tool libraries only; models stay in synced folders for live editing |  |
 | 24 | How many hours a week can you review and test? | The roadmap assumes about 6 |  |
 | 25 | Where should the code and the app live? | A public GitHub repository under your account; the app on GitHub Pages |  |
-| 26 | "MetaKit" is also the name of a [dormant embedded database](https://en.wikipedia.org/wiki/Metakit) (last release 2015), and `metakit` is taken on npm. Keep it? | Keep MetaKit; publish packages under a scope such as `@metakit-app/` |  |
+| 26 | "MetaKit" is also the name of a [dormant embedded database](https://en.wikipedia.org/wiki/Metakit) (last release 2015), and `metakit` is taken on npm. Keep it? | Keep MetaKit; publish packages under a scope such as `@metakit-app/` | Keep the MetaKit name; packages go under `@metakit-app/` |
 
 ## Sources
 

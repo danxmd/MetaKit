@@ -63,21 +63,22 @@ Production code starts in phase 1. Spike code may be copied into `packages/` lat
 
 ## Commands
 
-Fill this section in once the scaffold exists, and keep it current whenever scripts change.
+Keep this section current whenever scripts change.
 
 - `pnpm install`
 - `pnpm dev`: run the web app locally
-- `pnpm typecheck`
-- `pnpm lint`
+- `pnpm typecheck`: `tsc -b` for packages, `tsc` for the CLI, `svelte-check` for the web app
+- `pnpm lint`: ESLint, then a Prettier check
+- `pnpm format`: apply Prettier
 - `pnpm test`: unit and property tests (Vitest)
-- `pnpm test:e2e`: end-to-end tests (Playwright, Chromium)
-- `pnpm bench`: benchmarks
-- `pnpm build`
+- `pnpm test:e2e`: end-to-end tests (Playwright, Chromium); builds the web app first
+- `pnpm bench`: benchmarks (a placeholder until phase 2)
+- `pnpm build`: build the web app and the CLI
 
 ## Workflow
 
 - **Spec first.** Every feature and spike starts as an OpenSpec change (`/opsx:propose`). Do not write implementation code until Danial has approved the proposal.
-- **One change, one branch, one pull request.** Branch names: `feat/<change-id>`, `spike/<name>`, `fix/<topic>`. Keep PRs small, ideally under about 400 changed lines excluding lockfiles and generated files.
+- **One change, one branch, one pull request.** Branch names: `feat/<change-id>`, `spike/<name>`, `fix/<topic>`. Cloud sessions may use the `claude/*` branch they are assigned instead. Keep PRs small, ideally under about 400 changed lines excluding lockfiles and generated files.
 - **Before opening a PR:** typecheck, lint, unit tests and end-to-end tests pass locally. Include benchmark numbers when performance is involved.
 - **PR description:** what changed, which spec it implements, how it was tested, open questions.
 - **Never push to `main` directly.** Never force-push a branch someone else may have pulled.
