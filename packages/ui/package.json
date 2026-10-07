@@ -8,12 +8,22 @@
     "./components/*": "./src/components/*"
   },
   "dependencies": {
+    "@codemirror/autocomplete": "^6.20.3",
+    "@codemirror/commands": "^6.11.1",
+    "@codemirror/lang-javascript": "^6.2.5",
+    "@codemirror/language": "^6.13.1",
+    "@codemirror/lint": "^6.9.7",
+    "@codemirror/state": "^6.7.6",
+    "@codemirror/view": "^6.43.14",
+    "@metakit-app/behaviour": "workspace:*",
     "@metakit-app/canvas": "workspace:*",
     "@metakit-app/core": "workspace:*",
     "@metakit-app/formula": "workspace:*",
     "@metakit-app/shapes": "workspace:*",
     "@metakit-app/storage": "workspace:*",
-    "@metakit-app/sync": "workspace:*"
+    "@metakit-app/sync": "workspace:*",
+    "codemirror": "^6.0.2",
+    "typescript": "^6.0.3"
   },
   "devDependencies": {
     "fast-check": "^4.0.0"

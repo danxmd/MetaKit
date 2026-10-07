@@ -10,7 +10,8 @@
   },
   "dependencies": {
     "@metakit-app/core": "workspace:*",
-    "@metakit-app/sync": "workspace:*"
+    "@metakit-app/sync": "workspace:*",
+    "fflate": "^0.8.3"
   },
   "devDependencies": {
     "fast-check": "^4.0.0"
