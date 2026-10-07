@@ -1,7 +1,7 @@
 # model-mode Specification
 
 ## Purpose
-Describes the Model mode shell around the canvas.
+Describes the Model mode shell around the canvas: the start page, explorer, new models, tool libraries, palette and views, find, and saving.
 
 ## Requirements
 

@@ -1,7 +1,7 @@
 # attribute-panel Specification
 
 ## Purpose
-Describes the generated attribute panel.
+Describes the generated attribute panel: its controls for every attribute type, editing several objects at once, inline messages, tables and text editing on the canvas.
 
 ## Requirements
 
