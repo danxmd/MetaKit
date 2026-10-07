@@ -9,11 +9,15 @@
   import Explorer from '@metakit-app/ui/components/Explorer.svelte';
   import ModelView from '@metakit-app/ui/components/ModelView.svelte';
   import NewModelDialog from '@metakit-app/ui/components/NewModelDialog.svelte';
+  import ProfileDialog from '@metakit-app/ui/components/ProfileDialog.svelte';
   import StartPage from '@metakit-app/ui/components/StartPage.svelte';
+  import { PROFILE_COLOURS, type Profile } from '@metakit-app/storage';
   import {
     adapterFor,
     askAccess,
+    loadProfile,
     pickFolder,
+    saveProfile,
     rememberedFolder,
     type RememberedFolder,
   } from './access';
@@ -21,6 +25,8 @@
 
   const supported = supportsLocalFolders(window);
   const controller = new AppController();
+  // undefined while it is being read; null on the first visit, when the app asks.
+  let profile = $state<Profile | null | undefined>(undefined);
   let app = $state(controller.state);
   controller.subscribe((s) => (app = s));
 
@@ -33,8 +39,17 @@
   let showNew = $state(false);
 
   onMount(async () => {
+    const stored = await loadProfile();
+    if (stored) controller.setProfile(stored);
+    profile = stored;
     if (supported) remembered = await rememberedFolder();
   });
+
+  async function chooseProfile(chosen: Profile) {
+    profile = chosen;
+    controller.setProfile(chosen);
+    await saveProfile(chosen);
+  }
 
   async function openHandle(handle: FileSystemDirectoryHandle) {
     busy = true;
@@ -144,7 +159,9 @@
     workspaceName={app.workspaceName}
     models={app.models}
     trashed={app.trashed}
-    toolCount={app.tools.length}
+    tools={app.tools}
+    trashedTools={app.trashedTools}
+    health={app.health}
     warnings={app.warnings}
     error={app.error}
     onNew={() => (showNew = true)}
@@ -154,6 +171,8 @@
     onMove={(slug, folder) => controller.moveModel(slug, folder)}
     onTrash={(slug) => controller.trashModel(slug)}
     onRestore={(slug) => controller.restoreModel(slug)}
+    onTrashTool={(slug) => controller.trashTool(slug)}
+    onRestoreTool={(slug) => controller.restoreTool(slug)}
     onClose={() => controller.closeWorkspace()}
   />
   {#if showNew}
@@ -169,13 +188,25 @@
 {:else}
   {#key app.open.slug}
     <ModelView
-      open={app.open}
-      save={app.save}
+      {app}
+      {controller}
       {references}
       registerOpenElement={(fn) => (selectElement = fn)}
       onBack={() => controller.closeModel()}
     />
   {/key}
+{/if}
+
+{#if profile === null && supported}
+  <ProfileDialog
+    initial={{
+      name: '',
+      colour:
+        PROFILE_COLOURS[Math.floor(Math.random() * PROFILE_COLOURS.length)]!,
+    }}
+    colours={PROFILE_COLOURS}
+    onSave={chooseProfile}
+  />
 {/if}
 
 <style>

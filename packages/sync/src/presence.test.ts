@@ -205,4 +205,21 @@ describe('PresenceService', () => {
       parsePresence(folder.text('_presence/aaaa0001.json')).selection,
     ).toEqual(['el_9']);
   });
+
+  it("reads a change in somebody else's file at once without writing its own", async () => {
+    const { folder, time, a, b } = pair();
+    a.start();
+    b.start();
+    await a.refresh();
+    await b.refresh();
+    const writesOfB = () =>
+      folder.log.filter((l) => l.by === 'bbbb0002' && l.op === 'overwrite')
+        .length;
+    const before = writesOfB();
+    a.setEditing('el_text');
+    await a.refresh(); // a writes its file, which the folder reports to b's watcher
+    await time.advance(300); // b's short delay before it reads
+    expect(b.people.map((p) => p.editing)).toEqual(['el_text']);
+    expect(writesOfB()).toBe(before);
+  });
 });

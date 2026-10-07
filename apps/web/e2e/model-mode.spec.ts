@@ -18,6 +18,7 @@ test.describe('start and explorer', () => {
     await page.addInitScript(() => {
       (window as unknown as { __METAKIT_TEST__: unknown }).__METAKIT_TEST__ = {
         remember: false,
+        profile: { name: 'Tester', colour: '#1971c2' },
         pickFolder: async () => {
           const root = await navigator.storage.getDirectory();
           return root.getDirectoryHandle(
@@ -42,6 +43,7 @@ test.describe('start and explorer', () => {
     await page.addInitScript(() => {
       (window as unknown as { __METAKIT_TEST__: unknown }).__METAKIT_TEST__ = {
         remember: false,
+        profile: { name: 'Tester', colour: '#1971c2' },
         pickFolder: async () =>
           (await navigator.storage.getDirectory()).getDirectoryHandle(
             `bare-${Math.random().toString(36).slice(2)}`,
@@ -64,6 +66,7 @@ test.describe('start and explorer', () => {
     await page.addInitScript(() => {
       (window as unknown as { __METAKIT_TEST__: unknown }).__METAKIT_TEST__ = {
         remember: false,
+        profile: { name: 'Tester', colour: '#1971c2' },
         pickFolder: async () =>
           (await navigator.storage.getDirectory()).getDirectoryHandle(
             `tools-${Math.random().toString(36).slice(2)}`,
@@ -127,7 +130,7 @@ test.describe('start and explorer', () => {
     await page.locator('[data-testid^="model-"]').first().hover();
     await page.getByRole('button', { name: 'Delete Alpha two' }).click();
     await expect(page.getByTestId('no-models')).toBeVisible();
-    await page.getByText('Deleted models (1)').click();
+    await page.getByText('Deleted (1), kept for 30 days').click();
     await page.getByRole('button', { name: 'Restore Alpha two' }).click();
     await expect(
       page.getByRole('button', { name: 'Alpha two', exact: true }),

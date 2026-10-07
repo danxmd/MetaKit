@@ -187,6 +187,8 @@ export class PresenceService {
   private gapTimer: unknown = null;
   private lastWrite = -Infinity;
   private running = false;
+  private unwatch: (() => void) | null = null;
+  private watchTimer: unknown = null;
   private current: PresenceFile[] = [];
   private queue: Promise<unknown> = Promise.resolve();
 
@@ -247,7 +249,31 @@ export class PresenceService {
   start(): void {
     if (this.running) return;
     this.running = true;
+    // A change in someone else's file is read at once (without writing our own, which would make
+    // the others read in turn, for ever); the timer covers adapters that cannot report changes.
+    this.unwatch = this.options.adapter.watch('_presence', () => {
+      if (this.watchTimer !== null) return;
+      this.watchTimer = this.timers.setTimeout(() => {
+        this.watchTimer = null;
+        void this.readOnly().catch(() => undefined);
+      }, 300);
+    });
     void this.refresh().catch(() => undefined);
+  }
+
+  /** Reads the others' files without writing ours. */
+  readOnly(): Promise<PresenceFile[]> {
+    const job = this.queue.then(async () => {
+      if (!this.running) return this.current;
+      const people = await this.read();
+      if (JSON.stringify(people) !== JSON.stringify(this.current)) {
+        this.current = people;
+        this.options.onPeople?.(people);
+      }
+      return this.current;
+    });
+    this.queue = job.catch(() => undefined);
+    return job;
   }
 
   /** Writes this instance's file and reads the others'. */

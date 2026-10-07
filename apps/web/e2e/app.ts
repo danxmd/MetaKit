@@ -21,25 +21,41 @@ export type Model = {
   >;
 };
 
-export async function prepare(page: Page) {
+export interface PrepareOptions {
+  /** The folder of the browser's private file system to use; a second window passes the first one's. */
+  folder?: string;
+  /** Make the workspace and its tool library (the first window does; a second one joins). */
+  seed?: boolean;
+  name?: string;
+  colour?: string;
+}
+
+export async function prepare(page: Page, options: PrepareOptions = {}) {
   // The folder dialog cannot be driven, so the app picks a folder of the browser's private file
   // system. It is not remembered: the headless browser used in CI crashes when it is stored.
-  await page.addInitScript(() => {
-    if (!sessionStorage.getItem('e2e-folder'))
-      sessionStorage.setItem(
-        'e2e-folder',
-        `ws-${Math.random().toString(36).slice(2)}`,
-      );
-    (window as unknown as { __METAKIT_TEST__: unknown }).__METAKIT_TEST__ = {
-      remember: false,
-      pickFolder: async () => {
-        const root = await navigator.storage.getDirectory();
-        return root.getDirectoryHandle(sessionStorage.getItem('e2e-folder')!, {
-          create: true,
-        });
-      },
-    };
-  });
+  const folder = options.folder ?? `ws-${Math.random().toString(36).slice(2)}`;
+  await page.addInitScript(
+    ([name, colour, wanted]) => {
+      if (!sessionStorage.getItem('e2e-folder'))
+        sessionStorage.setItem('e2e-folder', wanted!);
+      (window as unknown as { __METAKIT_TEST__: unknown }).__METAKIT_TEST__ = {
+        remember: false,
+        profile: { name, colour },
+        pickFolder: async () => {
+          const root = await navigator.storage.getDirectory();
+          return root.getDirectoryHandle(
+            sessionStorage.getItem('e2e-folder')!,
+            { create: true },
+          );
+        },
+      };
+    },
+    [options.name ?? 'Tester', options.colour ?? '#1971c2', folder],
+  );
+  if (options.seed === false) {
+    await page.goto('/MetaKit/');
+    return folder;
+  }
   await loadHarness(page, './seed-harness.ts');
   await page.evaluate(
     (json) =>
@@ -47,6 +63,7 @@ export async function prepare(page: Page) {
     toolJson,
   );
   await page.reload();
+  return folder;
 }
 
 export const model = (page: Page) =>

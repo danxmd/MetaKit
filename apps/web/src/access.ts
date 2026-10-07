@@ -1,9 +1,12 @@
 import {
   LocalFolderAdapter,
-  getInstanceId,
+  getProfile,
+  getTabInstanceId,
   recallWorkspaceFolder,
   rememberWorkspaceFolder,
   requestAccess,
+  setProfile,
+  type Profile,
   type StorageAdapter,
 } from '@metakit-app/storage';
 
@@ -15,6 +18,8 @@ import {
 export interface TestHooks {
   pickFolder?: () => Promise<FileSystemDirectoryHandle>;
   remember?: boolean;
+  /** Skips the first-visit question about name and colour. */
+  profile?: Profile;
 }
 
 function hooks(): TestHooks | undefined {
@@ -68,5 +73,26 @@ export function askAccess(handle: FileSystemDirectoryHandle): Promise<boolean> {
 export async function adapterFor(
   handle: FileSystemDirectoryHandle,
 ): Promise<StorageAdapter> {
-  return new LocalFolderAdapter(handle, await getInstanceId());
+  // One id per tab (ADR 0003), so that two tabs never write the same files.
+  return new LocalFolderAdapter(handle, getTabInstanceId());
+}
+
+/** The name and colour kept for this browser profile, or null on the first visit. */
+export async function loadProfile(): Promise<Profile | null> {
+  const test = hooks()?.profile;
+  if (test) return test;
+  try {
+    return await getProfile();
+  } catch {
+    return null;
+  }
+}
+
+export async function saveProfile(profile: Profile): Promise<void> {
+  if (hooks()?.profile) return;
+  try {
+    await setProfile(profile);
+  } catch {
+    // Without storage the question is asked again next time.
+  }
 }

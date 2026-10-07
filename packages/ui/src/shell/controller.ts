@@ -90,6 +90,17 @@ export interface ControllerOptions {
   now?: () => number;
 }
 
+/**
+ * What the model view asks of the controller. A narrow interface rather than the class, so that
+ * the view does not depend on how the controller is built (and compiles against a copy of it).
+ */
+export interface ControllerPort {
+  setSelection(ids: Iterable<string>): void;
+  setEditing(item: string | null): void;
+  editorsOf(item: string): PresenceFile[];
+  dismissNotice(id: number): void;
+}
+
 const NO_SYNC: SyncStatus = {
   pending: 0,
   lastFlushAt: null,
