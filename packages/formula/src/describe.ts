@@ -29,5 +29,13 @@ export function describeFormulaProblem(
   if (!head) return detail;
   // The zero-division message says the same as its lead.
   if (result.code === 'zero') return head;
-  return `${head} ${detail}`;
+  return `${head} ${detail}${wordOperatorHint(detail)}`;
+}
+
+/** People who know spreadsheets write `or` and `and`; the formulas here use `||` and `&&`. */
+function wordOperatorHint(detail: string): string {
+  const word = /Unexpected "(or|and|not)"/i.exec(detail)?.[1]?.toLowerCase();
+  if (!word) return '';
+  const symbol = word === 'or' ? '||' : word === 'and' ? '&&' : '!';
+  return ` Write ${symbol} instead of "${word}", or use ${word.toUpperCase()}(...) as a function.`;
 }

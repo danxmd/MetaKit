@@ -519,9 +519,9 @@
         },
         {
           "type": "text",
-          "x": 0,
-          "y": 0,
-          "width": "100%",
+          "x": -66,
+          "y": "50% - 14",
+          "width": 160,
           "height": 28,
           "text": "= $label",
           "align": "center",
@@ -531,9 +531,7 @@
             "weight": 600
           },
           "transform": {
-            "rotate": -90,
-            "translateX": 14,
-            "translateY": "50% - 14"
+            "rotate": -90
           }
         }
       ]

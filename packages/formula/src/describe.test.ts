@@ -15,6 +15,11 @@ describe('describeFormulaProblem', () => {
   ])('describes %s', (source, part) => {
     expect(describeFormulaProblem(run(source, scope))).toContain(part);
   });
+  it('points people who write "or" to || and OR()', () => {
+    const said = describeFormulaProblem(run('1 or 2', scope));
+    expect(said).toContain('Write || instead of "or"');
+    expect(said).toContain('OR(...)');
+  });
   it('passes through a message without a code', () => {
     expect(describeFormulaProblem({ error: 'Odd.' })).toBe('Odd.');
   });

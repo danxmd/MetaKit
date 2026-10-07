@@ -281,9 +281,11 @@ const STARTERS: ShapeDef[] = [
       },
       {
         type: 'text',
-        x: 0,
-        y: 0,
-        width: '100%',
+        // A box 160 wide whose centre is the middle of the strip: it turns around its own centre,
+        // so it must already be there before it is rotated.
+        x: -66,
+        y: '50% - 14',
+        width: 160,
         height: 28,
         text: '= $label',
         align: 'center',
@@ -291,7 +293,7 @@ const STARTERS: ShapeDef[] = [
         wrap: false,
         font: { weight: 600 },
         // Rotated so the lane name reads along the strip at the left edge.
-        transform: { rotate: -90, translateX: 14, translateY: '50% - 14' },
+        transform: { rotate: -90 },
       } as Part,
     ],
   },
