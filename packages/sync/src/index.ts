@@ -8,3 +8,4 @@ export * from './adapter';
 export * from './files';
 export * from './scanner';
 export * from './session';
+export * from './presence';

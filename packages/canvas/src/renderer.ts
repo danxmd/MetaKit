@@ -48,6 +48,15 @@ export interface ActiveState {
   target: ElementId | null;
   /** Show resize handles on a single selected element. */
   handles: boolean;
+  /** Elements other people have selected, outlined in their colour with their initials. */
+  remote: readonly RemoteSelection[];
+}
+
+export interface RemoteSelection {
+  colour: string;
+  /** Short text drawn on the outline, for example the person's initials. */
+  label: string;
+  elements: readonly ElementId[];
 }
 
 /** True when the active layer has nothing to show, so that it can be left out of a gesture. */
@@ -59,6 +68,7 @@ export function isActiveEmpty(state: ActiveState): boolean {
     state.routes.size === 0 &&
     state.band === null &&
     state.link === null &&
+    state.remote.length === 0 &&
     state.guides.x.length === 0 &&
     state.guides.y.length === 0
   );
@@ -75,6 +85,7 @@ export function emptyActiveState(): ActiveState {
     link: null,
     target: null,
     handles: true,
+    remote: [],
   };
 }
 
@@ -501,6 +512,8 @@ export class Renderer {
       ctx.stroke();
     }
 
+    for (const remote of state.remote) this.drawRemote(ctx, remote, s, area);
+
     if (state.target) {
       const rect = this.boxOf(state.target, state);
       if (rect) {
@@ -551,6 +564,44 @@ export class Renderer {
       ctx.strokeRect(b.minX, b.minY, b.maxX - b.minX, b.maxY - b.minY);
     }
     this.stats = { ...this.stats, activeMs: performance.now() - started };
+  }
+
+  /** Someone else's selection: an outline in their colour and a small tag with their initials. */
+  private drawRemote(
+    ctx: CanvasRenderingContext2D,
+    remote: RemoteSelection,
+    s: number,
+    area: Rect,
+  ): void {
+    ctx.strokeStyle = remote.colour;
+    ctx.fillStyle = remote.colour;
+    ctx.lineWidth = Math.max(2, 2 / s);
+    const pad = 5 / s;
+    for (const id of remote.elements) {
+      const e = this.scene.elements.get(id);
+      if (
+        !e ||
+        !intersects(area, {
+          minX: e.x,
+          minY: e.y,
+          maxX: e.x + e.w,
+          maxY: e.y + e.h,
+        })
+      )
+        continue;
+      ctx.setLineDash([6 / s, 3 / s]);
+      ctx.strokeRect(e.x - pad, e.y - pad, e.w + 2 * pad, e.h + 2 * pad);
+      ctx.setLineDash([]);
+      const tag = Math.max(16, 16 / s);
+      const width = Math.max(tag, (remote.label.length * 9) / s + 8 / s);
+      ctx.fillRect(e.x - pad, e.y - pad - tag, width, tag);
+      ctx.fillStyle = '#fff';
+      ctx.font = `${Math.max(10, 10 / s)}px system-ui, sans-serif`;
+      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'left';
+      ctx.fillText(remote.label, e.x - pad + 4 / s, e.y - pad - tag / 2);
+      ctx.fillStyle = remote.colour;
+    }
   }
 
   private boxOf(id: ElementId, state: ActiveState): Rect | null {

@@ -29,6 +29,11 @@ import {
   NewerFormatError,
   NotFoundError,
 } from './errors';
+import {
+  checkFolderHealth,
+  type HealthFinding,
+  type HealthOptions,
+} from './health';
 import { jsonBytes, readJsonFile, type ReadOptions } from './json';
 import { exportMkModel, importMkModel } from './mkmodel';
 import { CURRENT_FORMAT, migrate } from './migrate';
@@ -65,7 +70,13 @@ export interface ToolEntry {
   id: ToolId;
   name: string;
   version: string;
+  trashed?: boolean;
+  trashedAt?: string;
+  expired?: boolean;
 }
+
+/** How long a deleted model or tool library can be restored. */
+export const TRASH_DAYS = 30;
 
 export interface ModelEntry {
   slug: string;
@@ -76,6 +87,9 @@ export interface ModelEntry {
   folder?: string;
   /** Only present when trashed models were asked for. */
   trashed?: boolean;
+  trashedAt?: string;
+  /** In the trash for more than 30 days: no longer offered for restoring. */
+  expired?: boolean;
 }
 
 export interface WorkspaceOptions {
@@ -190,6 +204,11 @@ export class Workspace {
   /** Things worth telling the user that were found while reading, such as a marker from a newer release. */
   readonly warnings: string[] = [];
 
+  /** Looks at the folder for signs that sync is not set up well (see `checkFolderHealth`). */
+  checkHealth(options: HealthOptions = {}): Promise<HealthFinding[]> {
+    return checkFolderHealth(this.adapter, options);
+  }
+
   /** Reports changes anywhere in the workspace, for example another instance saving a document. */
   watch(callback: (changed: string[]) => void): Unwatch {
     return this.adapter.watch('', callback);
@@ -295,13 +314,23 @@ export class Workspace {
 
   // --- tool libraries ----------------------------------------------------------------------
 
-  async listTools(): Promise<ToolEntry[]> {
+  async listTools(
+    options: { includeTrashed?: boolean } = {},
+  ): Promise<ToolEntry[]> {
     const entries: ToolEntry[] = [];
     for (const slug of await this.slugs('tool')) {
       try {
+        const trash = await this.trashState('tool', slug);
+        if (trash.trashed && !options.includeTrashed) continue;
         const { loaded } = await this.load<ToolLibrary>('tool', slug);
         const m = loaded.document.manifest;
-        entries.push({ slug, id: m.id, name: m.name, version: m.version });
+        entries.push({
+          slug,
+          id: m.id,
+          name: m.name,
+          version: m.version,
+          ...(options.includeTrashed ? this.trashFields(trash) : {}),
+        });
       } catch {
         // A folder that is not a readable tool is not listed; opening it by name explains why.
       }
@@ -376,7 +405,9 @@ export class Workspace {
 
   /** The folder of the tool library with this id. */
   async findToolSlug(id: ToolId): Promise<string | null> {
-    for (const t of await this.listTools()) if (t.id === id) return t.slug;
+    // A deleted tool library still serves the models made with it, until it is gone for good.
+    for (const t of await this.listTools({ includeTrashed: true }))
+      if (t.id === id) return t.slug;
     return null;
   }
 
@@ -409,8 +440,8 @@ export class Workspace {
     const entries: ModelEntry[] = [];
     for (const slug of await this.slugs('model')) {
       try {
-        const trashed = await this.isTrashed(slug);
-        if (trashed && !options.includeTrashed) continue;
+        const trash = await this.trashState('model', slug);
+        if (trash.trashed && !options.includeTrashed) continue;
         const { loaded } = await this.load<Model>('model', slug);
         const m = loaded.document.manifest;
         entries.push({
@@ -420,7 +451,7 @@ export class Workspace {
           tool: m.tool,
           modelType: m.modelType,
           ...(m.folder === undefined ? {} : { folder: m.folder }),
-          ...(options.includeTrashed ? { trashed } : {}),
+          ...(options.includeTrashed ? this.trashFields(trash) : {}),
         });
       } catch {
         // See listTools.
@@ -434,12 +465,15 @@ export class Workspace {
   }
 
   private async writeTrashMarker(
+    kind: DocumentKind,
     slug: string,
     trashed: boolean,
   ): Promise<void> {
-    const folder = this.folder('model', slug);
-    if (!(await this.adapter.exists(joinPath(folder, IDENTITY_FILE.model))))
-      throw new NotFoundError(`There is no model "${slug}" in this workspace.`);
+    const folder = this.folder(kind, slug);
+    if (!(await this.adapter.exists(joinPath(folder, IDENTITY_FILE[kind]))))
+      throw new NotFoundError(
+        `There is no ${kind} "${slug}" in this workspace.`,
+      );
     await this.adapter.overwrite(
       this.trashPath(folder),
       jsonBytes({
@@ -453,18 +487,42 @@ export class Workspace {
   /**
    * Moves a model to the trash. Nothing is removed: an instance may not delete files that other
    * instances wrote, so this writes a marker in its own state folder, and the newest marker of all
-   * instances decides.
+   * instances decides. An item that has been in the trash for 30 days is no longer offered for
+   * restoring (it is listed as expired).
    */
   trashModel(slug: string): Promise<void> {
-    return this.writeTrashMarker(slug, true);
+    return this.writeTrashMarker('model', slug, true);
   }
 
   restoreModel(slug: string): Promise<void> {
-    return this.writeTrashMarker(slug, false);
+    return this.writeTrashMarker('model', slug, false);
   }
 
-  private async isTrashed(slug: string): Promise<boolean> {
-    const state = joinPath(this.folder('model', slug), '_state');
+  trashTool(slug: string): Promise<void> {
+    return this.writeTrashMarker('tool', slug, true);
+  }
+
+  restoreTool(slug: string): Promise<void> {
+    return this.writeTrashMarker('tool', slug, false);
+  }
+
+  private trashFields(t: { trashed: boolean; at?: string }): {
+    trashed: boolean;
+    trashedAt?: string;
+    expired?: boolean;
+  } {
+    if (!t.trashed) return { trashed: false };
+    const expired =
+      t.at !== undefined &&
+      this.now.getTime() - Date.parse(t.at) > TRASH_DAYS * 24 * 3600 * 1000;
+    return { trashed: true, ...(t.at ? { trashedAt: t.at } : {}), expired };
+  }
+
+  private async trashState(
+    kind: DocumentKind,
+    slug: string,
+  ): Promise<{ trashed: boolean; at?: string }> {
+    const state = joinPath(this.folder(kind, slug), '_state');
     let newest: { at: string; instance: string; trashed: boolean } | null =
       null;
     for (const entry of await this.adapter.list(state)) {
@@ -490,12 +548,14 @@ export class Workspace {
       } catch (error) {
         const note =
           error instanceof Error && error.name === 'NewerFormatError'
-            ? `The trash marker of instance ${entry.name} for model "${slug}" is from a newer version of MetaKit and was ignored.`
-            : `The trash marker of instance ${entry.name} for model "${slug}" could not be read and was ignored: ${(error as Error).message}`;
+            ? `The trash marker of instance ${entry.name} for ${kind} "${slug}" is from a newer version of MetaKit and was ignored.`
+            : `The trash marker of instance ${entry.name} for ${kind} "${slug}" could not be read and was ignored: ${(error as Error).message}`;
         if (!this.warnings.includes(note)) this.warnings.push(note);
       }
     }
-    return newest?.trashed ?? false;
+    return newest
+      ? { trashed: newest.trashed, at: newest.at }
+      : { trashed: false };
   }
 
   /** Adds a model and returns its folder name, such as `order-to-cash-9xk2`. */

@@ -110,3 +110,54 @@ export async function requestAccess(
     return true;
   return (await handle.requestPermission({ mode: 'readwrite' })) === 'granted';
 }
+
+/**
+ * The instance id of this tab (ADR 0003). It is kept in `sessionStorage`, so a reload keeps it and
+ * a new tab gets its own, which keeps two tabs of one profile from writing the same files.
+ */
+export function getTabInstanceId(
+  storage: Pick<Storage, 'getItem' | 'setItem'> = sessionStorage,
+): string {
+  const existing = storage.getItem('metakit.instanceId');
+  if (existing && /^[0-9a-f]{8}$/.test(existing)) return existing;
+  const bytes = crypto.getRandomValues(new Uint8Array(4));
+  const created = [...bytes]
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+  storage.setItem('metakit.instanceId', created);
+  return created;
+}
+
+/** How a person shows up to others: a display name and a colour, kept per browser profile. */
+export interface Profile {
+  name: string;
+  colour: string;
+}
+
+/** Colours offered on the first visit; every one is readable with white initials. */
+export const PROFILE_COLOURS = [
+  '#e8590c',
+  '#2f9e44',
+  '#1971c2',
+  '#9c36b5',
+  '#c2255c',
+  '#0c8599',
+  '#5f3dc4',
+  '#e67700',
+] as const;
+
+export async function getProfile(
+  factory: IDBFactory = indexedDB,
+): Promise<Profile | null> {
+  const p = await kvGet<Profile>('profile', factory);
+  return p && typeof p.name === 'string' && typeof p.colour === 'string'
+    ? p
+    : null;
+}
+
+export function setProfile(
+  profile: Profile,
+  factory: IDBFactory = indexedDB,
+): Promise<void> {
+  return kvSet('profile', profile, factory);
+}

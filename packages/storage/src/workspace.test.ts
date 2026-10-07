@@ -608,3 +608,62 @@ describe('editing together', () => {
     await expect(ws.openModel('ghost', tool)).rejects.toThrow(NotFoundError);
   });
 });
+
+describe('the 30-day trash', () => {
+  const day = 24 * 3600 * 1000;
+
+  async function atTime() {
+    let now = Date.parse('2026-10-07T09:00:00.000Z');
+    const adapter = new MemoryAdapter('aaaa0001');
+    const ws = await Workspace.create(
+      adapter,
+      { name: 'W' },
+      { now: () => new Date(now) },
+    );
+    return {
+      ws,
+      adapter,
+      later: (ms: number) => {
+        now += ms;
+      },
+    };
+  }
+
+  it('trashes and restores a tool library like a model', async () => {
+    const { ws } = await atTime();
+    const slug = await ws.createTool(tool);
+    await ws.trashTool(slug);
+    expect(await ws.listTools()).toEqual([]);
+    const all = await ws.listTools({ includeTrashed: true });
+    expect(all[0]).toMatchObject({ slug, trashed: true, expired: false });
+    expect(await ws.findToolSlug(SAMPLE.tool)).toBe(slug);
+    await ws.restoreTool(slug);
+    expect((await ws.listTools()).map((t) => t.slug)).toEqual([slug]);
+  });
+
+  it('lists a model deleted more than 30 days ago as expired, and 29 days ago as restorable', async () => {
+    const { ws, later } = await atTime();
+    const slug = await ws.createModel(aModel(), { slug: 'm' });
+    await ws.trashModel(slug);
+    later(29 * day);
+    expect((await ws.listModels({ includeTrashed: true }))[0]).toMatchObject({
+      trashed: true,
+      expired: false,
+    });
+    later(2 * day);
+    const [entry] = await ws.listModels({ includeTrashed: true });
+    expect(entry).toMatchObject({ trashed: true, expired: true });
+    expect(entry!.trashedAt).toBe('2026-10-07T09:00:00.000Z');
+  });
+
+  it('removes no file when something is trashed, expired or restored', async () => {
+    const { ws, adapter, later } = await atTime();
+    const slug = await ws.createTool(tool);
+    const before = adapter.paths();
+    await ws.trashTool(slug);
+    later(40 * day);
+    await ws.listTools({ includeTrashed: true });
+    await ws.restoreTool(slug);
+    for (const p of before) expect(adapter.paths()).toContain(p);
+  });
+});

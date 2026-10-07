@@ -11,3 +11,4 @@ export * from './mkmodel';
 export * from './workspace';
 export * from './local-folder';
 export * from './browser-state';
+export * from './health';
