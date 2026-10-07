@@ -4,6 +4,8 @@ import {
   instanceFolder,
   parseChangeFile,
   parseSnapshot,
+  parseSnapshotHeader,
+  type SnapshotHeader,
   sequenceOf,
   stateFolder,
   snapshotPath,
@@ -12,6 +14,25 @@ import {
 import type { StampedOp } from './ops';
 import type { DocKind } from './path';
 import { SyncState } from './state';
+
+/** True when `a` has read everything `b` has: no instance is further along in `b`. */
+export function covers(
+  a: Record<string, number>,
+  b: Record<string, number>,
+): boolean {
+  return Object.entries(b).every(([inst, n]) => (a[inst] ?? 0) >= n);
+}
+
+/** Of two snapshots that cover each other, the later one (then the larger instance id) is kept. */
+function preferred(
+  a: { inst: string; header: SnapshotHeader | null },
+  b: { inst: string; header: SnapshotHeader | null },
+): boolean {
+  const x = a.header!;
+  const y = b.header!;
+  if (x.savedAt !== y.savedAt) return x.savedAt > y.savedAt;
+  return a.inst > b.inst;
+}
 
 export interface ScanBatch {
   by: string;
@@ -54,6 +75,8 @@ export class Scanner {
   private readonly snapshotSig = new Map<string, string>();
   private readonly broken = new Set<string>();
   private readonly highest = new Map<string, number>();
+  /** True once a snapshot was read: its content (the document as it was made) is not in any `seen`. */
+  private haveBase = false;
   private readonly retries: number;
   private readonly delayMs: number;
 
@@ -92,6 +115,11 @@ export class Scanner {
     let set = this.applied.get(instance);
     if (!set) this.applied.set(instance, (set = new Set()));
     set.add(seq);
+  }
+
+  /** Tells the scanner that the caller already holds a document (its base), as a session does. */
+  assumeBase(): void {
+    this.haveBase = true;
   }
 
   /** Records what a snapshot this instance wrote covers. */
@@ -138,7 +166,16 @@ export class Scanner {
         await this.adapter.list(instanceFolder(this.folder, inst)),
       );
 
-    // Snapshots first: what they cover need not be read from change files.
+    // Snapshots first: what they cover need not be read from change files. Only the small header
+    // of each is read to decide which ones are needed: a snapshot that another covers, or that
+    // this reader already has everything of, is skipped without parsing its body.
+    interface Candidate {
+      inst: string;
+      sig: string;
+      text: string;
+      header: SnapshotHeader | null;
+    }
+    const candidates: Candidate[] = [];
     for (const inst of dirs) {
       const entry = listings
         .get(inst)!
@@ -147,14 +184,49 @@ export class Scanner {
       const sig = `${entry.size ?? '?'}:${entry.modified ?? '?'}`;
       if (this.snapshotSig.get(inst) === sig) continue;
       try {
-        const parsed = parseSnapshot(
-          await this.readText(snapshotPath(this.folder, inst)),
-          this.kind,
+        const text = await this.readText(snapshotPath(this.folder, inst));
+        candidates.push({
+          inst,
+          sig,
+          text,
+          header: parseSnapshotHeader(text, this.kind),
+        });
+      } catch (error) {
+        if (error instanceof NewerFormatError) throw error;
+        // Not complete yet, or damaged: the change files still carry what happened, and the next scan tries again.
+        result.warnings.push(
+          `The snapshot of instance ${inst} could not be read yet: ${(error as Error).message}`,
         );
-        this.snapshotSig.set(inst, sig);
+      }
+    }
+    const known = this.seen();
+    // Until a first snapshot is read nothing can be skipped: the base of a document is in no `seen`.
+    const wanted = candidates.filter(
+      (c) =>
+        c.header === null || !this.haveBase || !covers(known, c.header.seen),
+    );
+    const selected = wanted.filter(
+      (c) =>
+        c.header === null ||
+        !wanted.some(
+          (o) =>
+            o !== c &&
+            o.header !== null &&
+            covers(o.header.seen, c.header!.seen) &&
+            (!covers(c.header!.seen, o.header.seen) || preferred(o, c)),
+        ),
+    );
+    for (const c of candidates) {
+      if (!selected.includes(c)) this.snapshotSig.set(c.inst, c.sig);
+    }
+    for (const c of selected) {
+      try {
+        const parsed = parseSnapshot(c.text, this.kind);
+        this.snapshotSig.set(c.inst, c.sig);
         this.markCovered(parsed.seen);
+        this.haveBase = true;
         result.snapshots.push({
-          instance: inst,
+          instance: c.inst,
           state: parsed.state,
           seen: parsed.seen,
           savedAt: parsed.savedAt,
@@ -162,9 +234,8 @@ export class Scanner {
         });
       } catch (error) {
         if (error instanceof NewerFormatError) throw error;
-        // Not complete yet, or damaged: the change files still carry what happened, and the next scan tries again.
         result.warnings.push(
-          `The snapshot of instance ${inst} could not be read yet: ${(error as Error).message}`,
+          `The snapshot of instance ${c.inst} could not be read yet: ${(error as Error).message}`,
         );
       }
     }
@@ -231,8 +302,10 @@ export async function loadDocument(
 ): Promise<LoadedDocument> {
   const scanner = new Scanner(adapter, folder, kind, options);
   const result = await scanner.scan();
-  const state = new SyncState(kind);
-  for (const s of result.snapshots) state.mergeFrom(s.state);
+  // The first snapshot is taken over as it is (it is already merged); further ones are merged in.
+  const [first, ...rest] = result.snapshots;
+  const state = first ? first.state : new SyncState(kind);
+  for (const s of rest) state.mergeFrom(s.state);
   for (const b of result.batches) state.applyAll(b.ops);
   return {
     state,

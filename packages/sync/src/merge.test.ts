@@ -4,8 +4,8 @@ import type { Json, Model } from '@metakit-app/core';
 import { SAMPLE, emptySampleModel } from '@metakit-app/core/testing';
 import { HybridClock } from './clock';
 import { updateDocument } from './doc';
-import { flatten, patchesToOps, type Op, type StampedOp } from './ops';
-import { materialize, stateFromDocument, SyncState } from './state';
+import { flatten, type Op, type StampedOp } from './ops';
+import { materialize, stateFromDocument } from './state';
 import { GENESIS, genesisState, Peer } from './testing';
 
 const stamp = (n: number) =>

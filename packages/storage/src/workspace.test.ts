@@ -196,7 +196,6 @@ describe('saving and reading back', () => {
     expect(loadedTool.warnings).toEqual([]);
     expect(loadedTool.issues).toEqual([]);
     expect(loadedModel.issues).toEqual([]);
-    expect(loadedModel).toMatchObject({ instance: 'aaaa0001' });
   });
 
   it('writes the same bytes when the same document is saved again', async () => {
@@ -209,19 +208,17 @@ describe('saving and reading back', () => {
     expect(await text(adapter, path)).toBe(first);
   });
 
-  it('writes keys in sorted order and ends the file with a newline', async () => {
+  it('writes the first snapshot in format 2, one entity per line, ending with a newline', async () => {
     const { adapter, ws } = await fresh();
     await ws.createModel(aModel(), { slug: 'm' });
     const raw = await text(adapter, 'models/m/_state/aaaa0001/snapshot.json');
     expect(raw.endsWith('}\n')).toBe(true);
-    const keys = (obj: object) => Object.keys(obj);
     const parsed = JSON.parse(raw);
-    expect(keys(parsed)).toEqual([...keys(parsed)].sort());
-    expect(raw.split('\n').slice(0, 3)).toEqual([
-      '{',
-      '  "document": {',
-      '    "attrs": {},',
-    ]);
+    expect(parsed.formatVersion).toBe(2);
+    expect(parsed.kind).toBe('model');
+    expect(
+      raw.split('\n').filter((l) => l.startsWith('    "elements/el_')),
+    ).toHaveLength(2);
   });
 
   it('keeps the folder when a model is renamed', async () => {
@@ -301,7 +298,7 @@ describe('saving and reading back', () => {
 });
 
 describe('several instances', () => {
-  it('each write only their own snapshot, and the newest one is loaded with a warning', async () => {
+  it('each instance writes only its own files, and a reader merges them without a warning', async () => {
     let clock = Date.parse('2026-10-07T09:00:00.000Z');
     const now = () => new Date((clock += 60_000));
     const a = new MemoryAdapter('aaaa0001');
@@ -314,22 +311,20 @@ describe('several instances', () => {
     });
     edited.execute({ type: 'updateManifest', name: 'Edited by B' });
     await wsB.saveModel(slug, edited.state as Model);
-    expect(a.paths().filter((p) => p.endsWith('snapshot.json'))).toEqual([
-      'models/m/_state/aaaa0001/snapshot.json',
-      'models/m/_state/bbbb0002/snapshot.json',
-    ]);
+    const own = a.paths().filter((p) => p.includes('/_state/bbbb0002/'));
+    expect(own.length).toBeGreaterThan(0);
+    expect(
+      a.paths().filter((p) => p.endsWith('/aaaa0001/snapshot.json')),
+    ).toHaveLength(1);
     const loaded = await wsA.loadModel(slug);
     expect(loaded.document.manifest.name).toBe('Edited by B');
-    expect(loaded.instance).toBe('bbbb0002');
-    expect(loaded.warnings).toHaveLength(1);
-    expect(loaded.warnings[0]).toMatch(
-      /Instance aaaa0001 also saved this model.*newest snapshot, from instance bbbb0002/,
-    );
-    // The older snapshot is untouched.
+    expect(loaded.warnings).toEqual([]);
+    // The first instance's snapshot is untouched.
     expect(
-      JSON.parse(await text(a, 'models/m/_state/aaaa0001/snapshot.json'))
-        .document.manifest.name,
-    ).toBe('Order process');
+      (await text(a, 'models/m/_state/aaaa0001/snapshot.json')).includes(
+        'Edited by B',
+      ),
+    ).toBe(false);
   });
 
   it("cannot be made to write into another instance's area", async () => {
@@ -344,9 +339,9 @@ describe('several instances', () => {
     await ws.createModel(aModel(), { slug: 'm' });
     adapter.plant('models/m/_state/cccc0003/snapshot.json', '{ broken json\n');
     const loaded = await ws.loadModel('m');
-    expect(loaded.instance).toBe('aaaa0001');
+    expect(loaded.document.manifest.id).toBe('mdl_sample');
     expect(loaded.warnings[0]).toMatch(
-      /snapshot of instance cccc0003 could not be read and was skipped/,
+      /snapshot of instance cccc0003 could not be read/,
     );
   });
 
@@ -358,7 +353,7 @@ describe('several instances', () => {
       '{\n  "document": {},\n  "formatVersion": 1,\n  "instance": "cccc0003",\n  "kind": "tool",\n  "savedAt": "2099-01-01T00:00:00.000Z"\n}\n',
     );
     const loaded = await ws.loadModel('m');
-    expect(loaded.instance).toBe('aaaa0001');
+    expect(loaded.document.manifest.id).toBe('mdl_sample');
     expect(loaded.warnings[0]).toMatch(/holds a tool, not a model/);
   });
 
@@ -552,5 +547,64 @@ describe('trashing models', () => {
   it('refuses to trash a model that is not there', async () => {
     const { ws } = await fresh();
     await expect(ws.trashModel('nope')).rejects.toThrow(NotFoundError);
+  });
+});
+
+describe('editing together', () => {
+  it('two instances see each other through the folder, and the folder keeps no old change files after closing', async () => {
+    const a = new MemoryAdapter('aaaa0001');
+    const b = a.asInstance('bbbb0002');
+    const wsA = await Workspace.create(a, { name: 'W' }, { now: fixedNow });
+    await wsA.createTool(tool);
+    const slug = await wsA.createModel(aModel(), { slug: 'm' });
+    const wsB = await Workspace.open(b, { now: fixedNow });
+    const openA = await wsA.openModel(slug, tool, { retries: 0 });
+    const openB = await wsB.openModel(slug, tool, { retries: 0 });
+    const id = (
+      openA.store.execute({
+        type: 'createElement',
+        class: SAMPLE.task,
+        x: 5,
+        y: 6,
+        attrs: { [SAMPLE.attName]: 'Together' },
+      }) as unknown as { value: never }
+    ).value as string;
+    await openA.session.flush();
+    await openB.session.rescan();
+    expect((openB.store.state as Model).elements[id as never]).toMatchObject({
+      x: 5,
+      y: 6,
+    });
+    openB.store.execute({ type: 'move', id: id as never, x: 50, y: 60 });
+    await openB.session.close();
+    await openA.session.rescan();
+    expect((openA.store.state as Model).elements[id as never]).toMatchObject({
+      x: 50,
+      y: 60,
+    });
+    await openA.session.close();
+    expect(a.paths().filter((p) => p.endsWith('.jsonl'))).toEqual([]);
+    const again = await wsA.loadModel(slug);
+    expect(again.document.elements[id as never]).toMatchObject({
+      x: 50,
+      y: 60,
+    });
+    expect(again.warnings).toEqual([]);
+  });
+
+  it('edits a tool library live and leaves its assets alone', async () => {
+    const { ws } = await fresh();
+    const slug = await ws.createTool(tool);
+    const opened = await ws.openTool(slug, { retries: 0 });
+    opened.store.execute({ type: 'updateManifest', name: 'Renamed tool' });
+    await opened.session.close();
+    expect((await ws.loadTool(slug)).document.manifest.name).toBe(
+      'Renamed tool',
+    );
+  });
+
+  it('refuses to open something that is not in the workspace', async () => {
+    const { ws } = await fresh();
+    await expect(ws.openModel('ghost', tool)).rejects.toThrow(NotFoundError);
   });
 });

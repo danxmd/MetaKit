@@ -3,7 +3,12 @@ import { isTimestamp } from './clock';
 import { NewerFormatError, SyncFormatError } from './errors';
 import { checkOp, flatten, type Op, type StampedOp } from './ops';
 import type { DocKind } from './path';
-import { stateFromDocument, SyncState, type Register } from './state';
+import {
+  stateFromDocument,
+  SyncState,
+  type Entity,
+  type Register,
+} from './state';
 
 export const CHANGE_FORMAT = 1;
 export const SNAPSHOT_FORMAT = 2;
@@ -91,55 +96,74 @@ export function parseChangeFile(text: string, by: string): ParsedChangeFile {
 
 // Snapshots ---------------------------------------------------------------------------------
 
-type Cell = [string, number] | [string, number, Json];
+/** A register in a snapshot: the index of its stamp, and its value unless it was unset. */
+type Cell = [number] | [number, Json];
 
 interface SnapshotEntity {
-  b?: [string, number];
-  d?: [string, number];
+  b?: number;
+  d?: number;
   f: Record<string, Cell>;
 }
 
-export interface SnapshotFile {
+export interface SnapshotHeader {
   formatVersion: number;
   kind: DocKind;
   instance: string;
   savedAt: string;
   /** The highest change-file sequence folded in, per instance (this one included). */
   seen: Record<string, number>;
+  /** Hash of the merged state, so that a reader can adopt it without recomputing. */
+  hash: string;
+}
+
+export interface SnapshotFile extends SnapshotHeader {
   instances: string[];
-  entities: Record<string, SnapshotEntity>;
+  /** Every distinct stamp once: `[time, index into instances]`. */
+  stamps: [string, number][];
   plain: Record<string, Cell>;
+  entities: Record<string, SnapshotEntity>;
 }
 
 /**
- * The text of a snapshot. It is meant for machines: one entity per line, so that a file with tens
- * of thousands of registers stays small and a diff still shows which entity changed.
+ * The text of a snapshot. It is meant for machines: stamps are listed once and shared, and each
+ * entity is one line, so a file with tens of thousands of registers stays small and a diff still
+ * shows which entity changed. The small header comes first so that it can be read alone.
  */
 export function formatSnapshot(
   state: SyncState,
   meta: { instance: string; savedAt: string; seen: Record<string, number> },
 ): string {
-  const instances = new Set<string>([meta.instance]);
-  const idx = (by: string) => {
-    instances.add(by);
-    return [...instances].indexOf(by);
+  const instances: string[] = [meta.instance];
+  const stampIndex = new Map<string, number>();
+  const stamps: [string, number][] = [];
+  const stampOf = (s: { t: string; by: string }): number => {
+    const key = `${s.t}|${s.by}`;
+    let i = stampIndex.get(key);
+    if (i === undefined) {
+      let by = instances.indexOf(s.by);
+      if (by < 0) by = instances.push(s.by) - 1;
+      i = stamps.push([s.t, by]) - 1;
+      stampIndex.set(key, i);
+    }
+    return i;
   };
   const cell = (r: Register): Cell =>
-    r.v === undefined ? [r.t, idx(r.by)] : [r.t, idx(r.by), r.v];
-  const entities: Record<string, SnapshotEntity> = {};
-  for (const key of [...state.entities.keys()].sort()) {
+    r.v === undefined ? [stampOf(r)] : [stampOf(r), r.v];
+  const plainLines = [...state.plain.keys()]
+    .sort()
+    .map(
+      (k) =>
+        `    ${JSON.stringify(k)}: ${JSON.stringify(cell(state.plain.get(k)!))}`,
+    );
+  const entityLines = [...state.entities.keys()].sort().map((key) => {
     const e = state.entities.get(key)!;
     const out: SnapshotEntity = { f: {} };
-    if (e.birth) out.b = [e.birth.t, idx(e.birth.by)];
-    if (e.death) out.d = [e.death.t, idx(e.death.by)];
+    if (e.birth) out.b = stampOf(e.birth);
+    if (e.death) out.d = stampOf(e.death);
     for (const k of [...e.fields.keys()].sort())
       out.f[k] = cell(e.fields.get(k)!);
-    entities[key] = out;
-  }
-  const plain: Record<string, Cell> = {};
-  for (const k of [...state.plain.keys()].sort())
-    plain[k] = cell(state.plain.get(k)!);
-
+    return `    ${JSON.stringify(key)}: ${JSON.stringify(out)}`;
+  });
   const sortedSeen = Object.fromEntries(
     Object.entries(meta.seen).sort(([a], [b]) => (a < b ? -1 : 1)),
   );
@@ -150,22 +174,18 @@ export function formatSnapshot(
     `  "instance": ${JSON.stringify(meta.instance)},`,
     `  "savedAt": ${JSON.stringify(meta.savedAt)},`,
     `  "seen": ${JSON.stringify(sortedSeen)},`,
-    `  "instances": ${JSON.stringify([...instances])},`,
+    `  "hash": ${JSON.stringify(state.hash)},`,
+    `  "instances": ${JSON.stringify(instances)},`,
+    `  "stamps": ${JSON.stringify(stamps)},`,
     '  "plain": {',
-    ...Object.entries(plain).map(
-      ([k, c], i, a) =>
-        `    ${JSON.stringify(k)}: ${JSON.stringify(c)}${i < a.length - 1 ? ',' : ''}`,
-    ),
+    plainLines.join(',\n'),
     '  },',
     '  "entities": {',
-    ...Object.entries(entities).map(
-      ([k, e], i, a) =>
-        `    ${JSON.stringify(k)}: ${JSON.stringify(e)}${i < a.length - 1 ? ',' : ''}`,
-    ),
+    entityLines.join(',\n'),
     '  }',
     '}',
   ];
-  return `${lines.join('\n')}\n`;
+  return `${lines.join('\n').replace(/\n\n/g, '\n')}\n`;
 }
 
 /**
@@ -208,14 +228,51 @@ export interface ParsedSnapshot {
   from: number;
 }
 
-export function parseSnapshot(
-  text: string,
-  expectedKind?: DocKind,
-): ParsedSnapshot {
+function check(text: string): void {
   if (!text.endsWith('\n'))
     throw new SyncFormatError(
       'The snapshot is not complete (no final newline).',
     );
+}
+
+/**
+ * Reads only the small header of a snapshot: who wrote it, when, and how far it had read. Returns
+ * null for format 1, which has no such header and is read as a whole.
+ */
+export function parseSnapshotHeader(
+  text: string,
+  expectedKind?: DocKind,
+): SnapshotHeader | null {
+  check(text);
+  const cut = text.indexOf('\n  "instances"');
+  if (cut < 0) {
+    // A format 1 file, or something else: let the full parser say which.
+    return null;
+  }
+  let header: SnapshotHeader;
+  try {
+    header = JSON.parse(
+      `${text.slice(0, cut).replace(/,\s*$/, '')}\n}`,
+    ) as SnapshotHeader;
+  } catch {
+    throw new SyncFormatError('The header of the snapshot is not valid JSON.');
+  }
+  if (header.formatVersion > SNAPSHOT_FORMAT)
+    throw new NewerFormatError(
+      `The snapshot is in format ${header.formatVersion}, newer than this version understands (${SNAPSHOT_FORMAT}).`,
+    );
+  if (expectedKind && header.kind !== expectedKind)
+    throw new SyncFormatError(
+      `The snapshot holds a ${String(header.kind)}, not a ${expectedKind}.`,
+    );
+  return header;
+}
+
+export function parseSnapshot(
+  text: string,
+  expectedKind?: DocKind,
+): ParsedSnapshot {
+  check(text);
   let value: unknown;
   try {
     value = JSON.parse(text);
@@ -241,27 +298,51 @@ export function parseSnapshot(
     throw new SyncFormatError(`Unknown snapshot format ${version}.`);
 
   const f = file as unknown as SnapshotFile;
-  const state = new SyncState(f.kind);
-  const stamp = (c: [string, number]) => {
-    if (!isTimestamp(c[0]) || f.instances[c[1]] === undefined)
+  const stamps = f.stamps.map(([t, i]) => {
+    const by = f.instances[i];
+    if (!isTimestamp(t) || by === undefined)
       throw new SyncFormatError('The snapshot has a malformed stamp.');
-    return { t: c[0], by: f.instances[c[1]]! };
+    return { t, by };
+  });
+  const stampAt = (i: number) => {
+    const s = stamps[i];
+    if (!s)
+      throw new SyncFormatError(
+        'The snapshot refers to a stamp that is not listed.',
+      );
+    return s;
   };
-  const ops: StampedOp[] = [];
-  const cellOp = (p: string[], c: Cell): StampedOp => {
-    const at = stamp([c[0], c[1]]);
-    return c.length === 2 ? { ...at, p, u: 1 } : { ...at, p, v: c[2] };
+  let maxT = '';
+  const register = (p: string[], c: Cell): Register => {
+    const s = stampAt(c[0]);
+    if (s.t > maxT) maxT = s.t;
+    return { t: s.t, by: s.by, p, v: c.length === 1 ? undefined : c[1] };
   };
+  const plain = new Map<string, Register>();
   for (const [k, c] of Object.entries(f.plain))
-    ops.push(cellOp(k === '' ? [] : keyPath(k), c));
+    plain.set(k, register(keyPath(k), c));
+  const entities = new Map<string, Entity>();
   for (const [ek, e] of Object.entries(f.entities)) {
-    const base = ek.split('/');
-    if (e.b) ops.push({ ...stamp(e.b), p: base, b: 1 });
-    if (e.d) ops.push({ ...stamp(e.d), p: base, d: 1 });
+    const slash = ek.indexOf('/');
+    const entity: Entity = {
+      collection: ek.slice(0, slash),
+      id: ek.slice(slash + 1),
+      fields: new Map(),
+    };
+    if (e.b !== undefined) entity.birth = stampAt(e.b);
+    if (e.d !== undefined) entity.death = stampAt(e.d);
     for (const [k, c] of Object.entries(e.f))
-      ops.push(cellOp([...base, ...keyPath(k)], c));
+      entity.fields.set(k, register(keyPath(k), c));
+    for (const s of [entity.birth, entity.death])
+      if (s && s.t > maxT) maxT = s.t;
+    entities.set(ek, entity);
   }
-  state.applyAll(ops);
+  const state = SyncState.adopt(f.kind, {
+    entities,
+    plain,
+    hash: f.hash,
+    maxT,
+  });
   return {
     state,
     seen: f.seen ?? {},
@@ -276,3 +357,16 @@ function keyPath(key: string): string[] {
 }
 
 export { flatten };
+
+/**
+ * Migration of the `snapshot` file kind from format 1 (a plain document) to format 2 (registers),
+ * as JSON text for the storage layer's migration registry.
+ */
+export function snapshotV1ToV2(
+  file: Record<string, unknown>,
+): Record<string, unknown> {
+  const { state, instance, savedAt } = snapshotV1ToState(file);
+  return JSON.parse(
+    formatSnapshot(state, { instance, savedAt, seen: {} }),
+  ) as Record<string, unknown>;
+}

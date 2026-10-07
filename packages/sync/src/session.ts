@@ -1,8 +1,6 @@
 import {
   deepEqual,
   freezeCopy,
-  type BaseCommand,
-  type ChangeEvent,
   type Json,
   type Patch,
 } from '@metakit-app/core';
@@ -19,15 +17,20 @@ import {
   snapshotPath,
   stateFolder,
 } from './files';
-import { patchesToOps, type StampedOp } from './ops';
+import { patchesToOps, toLine, type StampedOp } from './ops';
 import { pathKey, type DocKind } from './path';
 import { loadDocument, Scanner } from './scanner';
-import { materialize, type SyncState } from './state';
+import { materialize, stateFromDocument, type SyncState } from './state';
 
 /** What the session needs from a document store: its state, its change events and a way to take in remote changes. */
+export interface SyncEvent {
+  origin: 'execute' | 'undo' | 'redo' | 'remote';
+  patches: readonly Patch[];
+}
+
 export interface SyncableStore {
   readonly state: unknown;
-  subscribe(listener: (event: ChangeEvent<never, never>) => void): () => void;
+  subscribe(listener: (event: SyncEvent) => void): () => void;
   applyRemote(next: never, patches: readonly Patch[]): void;
 }
 
@@ -136,9 +139,7 @@ export class SyncSession {
       scanner.seen()[this.me] ?? 0,
     );
     this.nextSeq = this.lastOwnSeq + 1;
-    this.unsubscribe = store.subscribe((event) =>
-      this.onStoreEvent(event as ChangeEvent<unknown, BaseCommand>),
-    );
+    this.unsubscribe = store.subscribe((event) => this.onStoreEvent(event));
   }
 
   /**
@@ -161,7 +162,7 @@ export class SyncSession {
     // From here on this session's own changes are known to it; other instances' are read by `rescan`.
     const clock = options.clock ?? new HybridClock(options.now);
     if (loaded.state.maxT) clock.observe(loaded.state.maxT);
-    const doc = freezeCopy(materialize(loaded.state)) as Record<string, Json>;
+    const doc = materialize(loaded.state);
     const store = makeStore(doc);
     const scanner = new Scanner(options.adapter, options.folder, options.kind, {
       skipOwn: true,
@@ -169,6 +170,7 @@ export class SyncSession {
       ...(options.delayMs === undefined ? {} : { delayMs: options.delayMs }),
     });
     // Carry over how far everything has been read; own files were read by the loader.
+    scanner.assumeBase();
     scanner.markCovered(loaded.scanner.seen());
     for (const [inst, n] of Object.entries(loaded.scanner.seen()))
       for (let i = 1; i <= n; i++) scanner.markApplied(inst, i);
@@ -213,7 +215,7 @@ export class SyncSession {
 
   // Local edits -------------------------------------------------------------------------------
 
-  private onStoreEvent(event: ChangeEvent<unknown, BaseCommand>): void {
+  private onStoreEvent(event: SyncEvent): void {
     if (this.closed || event.origin === 'remote') return;
     const patches =
       event.origin === 'undo' ? inverse(event.patches) : event.patches;
@@ -250,7 +252,7 @@ export class SyncSession {
     if (this.pending.length === 0) return;
     const batch = this.pending;
     this.pending = [];
-    const lines = batch.map(({ by: _by, ...op }) => op);
+    const lines = batch.map(toLine);
     let seq = this.nextSeq;
     for (let attempt = 0; ; attempt++) {
       const text = formatChangeFile(
@@ -314,7 +316,6 @@ export class SyncSession {
       for (const w of result.warnings) this.options.onWarning?.(w);
       const touches = [];
       let lastBy: string | null = null;
-      let changes = 0;
       for (const snap of result.snapshots) {
         for (const op of opsOf(snap.state)) this.clock.observe(op.t);
         const t = this.state.mergeFrom(snap.state);
@@ -342,7 +343,7 @@ export class SyncSession {
         this.store.state as Record<string, Json>,
         touches,
       );
-      changes = patches.length;
+      const changes = patches.length;
       if (changes > 0) this.store.applyRemote(doc as never, patches);
       this.dirty = true;
       if (lastBy !== null && changes > 0) {
@@ -469,4 +470,90 @@ export class SyncSession {
 function* opsOf(state: SyncState): Generator<{ t: string }> {
   // Only the largest stamp matters to the clock, and the state tracks it.
   if (state.maxT) yield { t: state.maxT };
+}
+
+/**
+ * Writes the first snapshot of a new document, as the instance that makes it: every register is
+ * stamped with the creation time.
+ */
+export async function writeNewDocument(
+  adapter: SyncAdapter,
+  folder: string,
+  kind: DocKind,
+  doc: Record<string, Json>,
+  now: () => number = Date.now,
+): Promise<void> {
+  const at = now();
+  const state = stateFromDocument(kind, doc, {
+    t: `${new Date(at).toISOString()}/000000`,
+    by: adapter.instanceId,
+  });
+  await adapter.overwrite(
+    snapshotPath(folder, adapter.instanceId),
+    encode(
+      formatSnapshot(state, {
+        instance: adapter.instanceId,
+        savedAt: new Date(at).toISOString(),
+        seen: {},
+      }),
+    ),
+  );
+}
+
+/** A store that is only a document: what `replaceDocument` uses to write a whole new version through a session. */
+class PlainStore implements SyncableStore {
+  state: Json;
+  private listeners = new Set<(event: SyncEvent) => void>();
+
+  constructor(doc: Json) {
+    this.state = doc;
+  }
+
+  subscribe(listener: (event: SyncEvent) => void): () => void {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  }
+
+  applyRemote(next: never): void {
+    this.state = next;
+  }
+
+  /** Makes `next` the document, announcing it as one write per top-level key. */
+  replace(next: Record<string, Json>): void {
+    const previous = this.state as Record<string, Json>;
+    const patches: Patch[] = [];
+    for (const key of new Set([
+      ...Object.keys(previous),
+      ...Object.keys(next),
+    ])) {
+      if (
+        deepEqual(previous[key] ?? null, next[key] ?? null) &&
+        key in previous === key in next
+      )
+        continue;
+      patches.push({
+        path: [key],
+        ...(key in previous ? { before: previous[key]! } : {}),
+        ...(key in next ? { after: next[key]! } : {}),
+      });
+    }
+    this.state = next;
+    for (const l of this.listeners) l({ origin: 'execute', patches });
+  }
+}
+
+/**
+ * Writes a whole document as the changes from what the folder holds now: what differs becomes
+ * change lines, so a person who edited meanwhile keeps what they changed in fields this does not touch.
+ */
+export async function replaceDocument(
+  options: Omit<SessionOptions, 'timers'>,
+  next: Record<string, Json>,
+): Promise<void> {
+  const { session, store } = await SyncSession.open(
+    options,
+    (doc) => new PlainStore(doc),
+  );
+  store.replace(next);
+  await session.close();
 }

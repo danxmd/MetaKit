@@ -1,3 +1,4 @@
+import { snapshotV1ToV2 } from '@metakit-app/sync';
 import { FormatError, NewerFormatError } from './errors';
 
 /** The kinds of versioned file, each with its own format version. */
@@ -16,7 +17,7 @@ export const CURRENT_FORMAT: Readonly<Record<FileKind, number>> = {
   workspace: 1,
   tool: 1,
   model: 1,
-  snapshot: 1,
+  snapshot: 2,
   trash: 1,
   mkmodel: 1,
   'tool-document': 1,
@@ -53,7 +54,14 @@ export const MIGRATIONS: MigrationRegistry = {
   ],
   tool: [],
   model: [],
-  snapshot: [],
+  snapshot: [
+    {
+      // Format 1 held a plain document; format 2 holds registers (ADR 0002).
+      from: 1,
+      to: 2,
+      up: (file) => snapshotV1ToV2(file),
+    },
+  ],
   trash: [],
   mkmodel: [],
   'tool-document': [],

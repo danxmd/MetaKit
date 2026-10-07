@@ -81,6 +81,28 @@ export class SyncState {
     );
   }
 
+  /**
+   * Builds a state from registers that are already merged (a snapshot), without comparing each
+   * one: much faster than applying them as ops. `hash` is the hash the snapshot was written with.
+   */
+  static adopt(
+    kind: DocKind,
+    parts: {
+      entities: Map<string, Entity>;
+      plain: Map<string, Register>;
+      hash: string;
+      maxT: string;
+    },
+  ): SyncState {
+    const state = new SyncState(kind);
+    for (const [k, e] of parts.entities) state.entities.set(k, e);
+    for (const [k, r] of parts.plain) state.plain.set(k, r);
+    state.maxT = parts.maxT;
+    state.sumA = parseInt(parts.hash.slice(0, 8), 16) >>> 0;
+    state.sumB = parseInt(parts.hash.slice(8, 16), 16) >>> 0;
+    return state;
+  }
+
   /** Applies one op; returns what changed, or null if the op did not win (or was already there). */
   apply(op: StampedOp): Touch | null {
     if (op.t > this.maxT) this.maxT = op.t;

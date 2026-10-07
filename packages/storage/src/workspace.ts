@@ -1,19 +1,34 @@
 import {
-  MODEL_FORMAT_VERSION,
-  TOOL_FORMAT_VERSION,
+  createModelStore,
+  createToolStore,
   validateModelDocument,
   validateToolLibrary,
   type Issue,
   type Json,
   type Model,
   type ModelId,
+  type ModelStore,
   type ModelTypeId,
   type ToolId,
   type ToolLibrary,
+  type ToolStore,
 } from '@metakit-app/core';
+import {
+  loadDocument,
+  materialize,
+  replaceDocument,
+  SyncSession,
+  writeNewDocument,
+  type SessionOptions,
+} from '@metakit-app/sync';
 import type { StorageAdapter, Unwatch } from './adapter';
 import { addAsset, readAsset } from './assets';
-import { AlreadyExistsError, FormatError, NotFoundError } from './errors';
+import {
+  AlreadyExistsError,
+  FormatError,
+  NewerFormatError,
+  NotFoundError,
+} from './errors';
 import { jsonBytes, readJsonFile, type ReadOptions } from './json';
 import { exportMkModel, importMkModel } from './mkmodel';
 import { CURRENT_FORMAT, migrate } from './migrate';
@@ -29,12 +44,19 @@ export interface WorkspaceInfo {
 /** A document read from the workspace, with what was found while reading it. */
 export interface Loaded<T> {
   document: T;
-  /** When the loaded snapshot was written, and by which instance. */
+  /** The time of the newest change in what was loaded. */
   savedAt: string;
-  instance: string;
   /** Things to tell the user, such as snapshots of other instances that were not loaded. */
   warnings: string[];
   /** Problems with the definition itself (not with its content). The document is returned anyway, so nothing is lost. */
+  issues: Issue[];
+}
+
+/** A document opened for live editing. */
+export interface OpenedDocument<S> {
+  store: S;
+  session: SyncSession;
+  warnings: string[];
   issues: Issue[];
 }
 
@@ -59,6 +81,17 @@ export interface ModelEntry {
 export interface WorkspaceOptions {
   now?: () => Date;
   read?: ReadOptions;
+}
+
+/** The sync layer's refusal of a newer file, as the storage layer's own error. */
+function newerAsStorageError(error: unknown): never {
+  if (
+    error instanceof Error &&
+    error.name === 'NewerFormatError' &&
+    !(error instanceof NewerFormatError)
+  )
+    throw new NewerFormatError(error.message);
+  throw error;
 }
 
 const FOLDERS: Record<DocumentKind, string> = {
@@ -195,98 +228,56 @@ export class Workspace {
     throw new Error('Could not find a free folder name.');
   }
 
-  private snapshotPath(folder: string): string {
-    return joinPath(folder, '_state', this.adapter.instanceId, 'snapshot.json');
+  private syncOptions(kind: DocumentKind, slug: string) {
+    return {
+      adapter: this.adapter,
+      folder: this.folder(kind, slug),
+      kind,
+      now: () => this.now.getTime(),
+      ...(this.options.read?.retries === undefined
+        ? {}
+        : { retries: this.options.read.retries }),
+      ...(this.options.read?.delayMs === undefined
+        ? {}
+        : { delayMs: this.options.read.delayMs }),
+    } satisfies SessionOptions;
   }
 
-  private async writeSnapshot(
+  private async readIdentity(
     kind: DocumentKind,
-    folder: string,
-    document: Json,
-  ): Promise<void> {
-    await this.adapter.overwrite(
-      this.snapshotPath(folder),
-      jsonBytes({
-        formatVersion: CURRENT_FORMAT.snapshot,
-        kind,
-        instance: this.adapter.instanceId,
-        savedAt: this.now.toISOString(),
-        document,
-      }),
-    );
+    slug: string,
+  ): Promise<Record<string, unknown>> {
+    const identityPath = joinPath(this.folder(kind, slug), IDENTITY_FILE[kind]);
+    if (!(await this.adapter.exists(identityPath)))
+      throw new NotFoundError(
+        `There is no ${kind} "${slug}" in this workspace.`,
+      );
+    return migrate(
+      kind,
+      await readJsonFile(this.adapter, identityPath, this.options.read),
+    ).value;
   }
 
   private async load<T>(
     kind: DocumentKind,
     slug: string,
   ): Promise<{ identity: Record<string, unknown>; loaded: Loaded<T> }> {
-    const folder = this.folder(kind, slug);
-    const identityPath = joinPath(folder, IDENTITY_FILE[kind]);
-    if (!(await this.adapter.exists(identityPath)))
-      throw new NotFoundError(
-        `There is no ${kind} "${slug}" in this workspace.`,
-      );
-    const identity = migrate(
+    const identity = await this.readIdentity(kind, slug);
+    const options = this.syncOptions(kind, slug);
+    const { state, warnings } = await loadDocument(
+      this.adapter,
+      options.folder,
       kind,
-      await readJsonFile(this.adapter, identityPath, this.options.read),
-    ).value;
-
-    const warnings: string[] = [];
-    const found: {
-      instance: string;
-      savedAt: string;
-      document: Record<string, unknown>;
-    }[] = [];
-    for (const entry of await this.adapter.list(joinPath(folder, '_state'))) {
-      if (entry.kind !== 'directory') continue;
-      const path = joinPath(folder, '_state', entry.name, 'snapshot.json');
-      if (!(await this.adapter.exists(path))) continue;
-      try {
-        const snapshot = migrate(
-          'snapshot',
-          await readJsonFile(this.adapter, path, this.options.read),
-        ).value;
-        if (snapshot.kind !== kind)
-          throw new FormatError(
-            `it holds a ${String(snapshot.kind)}, not a ${kind}`,
-          );
-        const document = migrate(
-          kind === 'tool' ? 'tool-document' : 'model-document',
-          snapshot.document,
-        ).value;
-        found.push({
-          instance: entry.name,
-          savedAt: String(snapshot.savedAt),
-          document,
-        });
-      } catch (error) {
-        if (error instanceof Error && error.name === 'NewerFormatError')
-          throw error;
-        warnings.push(
-          `The snapshot of instance ${entry.name} could not be read and was skipped: ${(error as Error).message}`,
-        );
-      }
-    }
-    if (found.length === 0)
+      {
+        ...(options.retries === undefined ? {} : { retries: options.retries }),
+        ...(options.delayMs === undefined ? {} : { delayMs: options.delayMs }),
+      },
+    ).catch(newerAsStorageError);
+    if (state.size === 0)
       throw new NotFoundError(
         `The ${kind} "${slug}" has no saved content yet.${warnings.length ? ` ${warnings.join(' ')}` : ''}`,
       );
-    found.sort((a, b) =>
-      a.savedAt === b.savedAt
-        ? a.instance < b.instance
-          ? -1
-          : 1
-        : a.savedAt < b.savedAt
-          ? -1
-          : 1,
-    );
-    const latest = found.at(-1)!;
-    for (const other of found.slice(0, -1)) {
-      warnings.push(
-        `Instance ${other.instance} also saved this ${kind} (at ${other.savedAt}). The newest snapshot, from instance ${latest.instance}, was loaded. Changes from several instances are merged in a later version.`,
-      );
-    }
-    const document = latest.document as unknown;
+    const document = materialize(state);
     const issues =
       kind === 'tool'
         ? validateToolLibrary(document)
@@ -295,8 +286,7 @@ export class Workspace {
       identity,
       loaded: {
         document: document as T,
-        savedAt: latest.savedAt,
-        instance: latest.instance,
+        savedAt: state.maxT ? state.maxT.slice(0, state.maxT.indexOf('/')) : '',
         warnings,
         issues,
       },
@@ -338,7 +328,13 @@ export class Workspace {
         created: this.now.toISOString(),
       }),
     );
-    await this.writeSnapshot('tool', folder, tool as unknown as Json);
+    await writeNewDocument(
+      this.adapter,
+      folder,
+      'tool',
+      tool as unknown as Record<string, Json>,
+      () => this.now.getTime(),
+    );
     return slug;
   }
 
@@ -346,16 +342,36 @@ export class Workspace {
     return this.load<ToolLibrary>('tool', slug).then((r) => r.loaded);
   }
 
+  /** Writes a whole tool library as the changes from what the folder holds; see `openTool` for live editing. */
   async saveTool(slug: string, tool: ToolLibrary): Promise<void> {
-    const folder = this.folder('tool', slug);
-    if (!(await this.adapter.exists(joinPath(folder, IDENTITY_FILE.tool))))
+    await this.readIdentity('tool', slug).catch(() => {
       throw new NotFoundError(
         `There is no tool "${slug}" in this workspace. Use createTool first.`,
       );
-    await this.writeSnapshot('tool', folder, {
-      ...(tool as unknown as Record<string, Json>),
-      formatVersion: TOOL_FORMAT_VERSION,
     });
+    await replaceDocument(
+      this.syncOptions('tool', slug),
+      tool as unknown as Record<string, Json>,
+    );
+  }
+
+  /**
+   * Opens a tool library for editing: the store holds the merged content, and the session keeps it
+   * in step with the other people working in the folder.
+   */
+  async openTool(
+    slug: string,
+    session: Partial<SessionOptions> = {},
+  ): Promise<OpenedDocument<ToolStore>> {
+    await this.readIdentity('tool', slug);
+    const opened = await SyncSession.open(
+      { ...this.syncOptions('tool', slug), ...session },
+      (doc) => createToolStore(doc as unknown as ToolLibrary),
+    ).catch(newerAsStorageError);
+    return {
+      ...opened,
+      issues: validateToolLibrary(opened.store.state),
+    };
   }
 
   /** The folder of the tool library with this id. */
@@ -502,7 +518,13 @@ export class Workspace {
         created: this.now.toISOString(),
       }),
     );
-    await this.writeSnapshot('model', folder, model as unknown as Json);
+    await writeNewDocument(
+      this.adapter,
+      folder,
+      'model',
+      model as unknown as Record<string, Json>,
+      () => this.now.getTime(),
+    );
     return slug;
   }
 
@@ -510,16 +532,35 @@ export class Workspace {
     return this.load<Model>('model', slug).then((r) => r.loaded);
   }
 
+  /** Writes a whole model as the changes from what the folder holds; see `openModel` for live editing. */
   async saveModel(slug: string, model: Model): Promise<void> {
-    const folder = this.folder('model', slug);
-    if (!(await this.adapter.exists(joinPath(folder, IDENTITY_FILE.model))))
+    await this.readIdentity('model', slug).catch(() => {
       throw new NotFoundError(
         `There is no model "${slug}" in this workspace. Use createModel first.`,
       );
-    await this.writeSnapshot('model', folder, {
-      ...(model as unknown as Record<string, Json>),
-      formatVersion: MODEL_FORMAT_VERSION,
     });
+    await replaceDocument(
+      this.syncOptions('model', slug),
+      model as unknown as Record<string, Json>,
+    );
+  }
+
+  /**
+   * Opens a model for editing with the tool library it was made with. Changes made in the store
+   * are written to the folder within two seconds, and changes of other people arrive through
+   * the session.
+   */
+  async openModel(
+    slug: string,
+    tool: ToolLibrary,
+    session: Partial<SessionOptions> = {},
+  ): Promise<OpenedDocument<ModelStore>> {
+    await this.readIdentity('model', slug);
+    const opened = await SyncSession.open(
+      { ...this.syncOptions('model', slug), ...session },
+      (doc) => createModelStore(doc as unknown as Model, { tool }),
+    ).catch(newerAsStorageError);
+    return { ...opened, issues: validateModelDocument(opened.store.state) };
   }
 
   /** The model as an editable `.mkmodel.json` text, using the tool library it was made with. */

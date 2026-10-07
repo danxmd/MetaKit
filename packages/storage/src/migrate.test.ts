@@ -106,3 +106,32 @@ describe('migration', () => {
       expect(MIGRATIONS).toHaveProperty(kind);
   });
 });
+
+describe('snapshot format 2', () => {
+  it('turns a format 1 snapshot (a plain document) into registers without losing anything', async () => {
+    const { parseSnapshot, materialize } = await import('@metakit-app/sync');
+    const document = {
+      attrs: {},
+      connectors: {},
+      elements: { el_a: { attrs: { att_n: 'A' }, id: 'el_a', x: 1 } },
+      formatVersion: 1,
+      manifest: { id: 'mdl_x', name: 'X' },
+    };
+    const v1 = {
+      document,
+      formatVersion: 1,
+      instance: 'aaaa0001',
+      kind: 'model',
+      savedAt: '2026-10-07T09:00:00.000Z',
+    };
+    const migrated = migrate('snapshot', v1);
+    expect(migrated).toMatchObject({ from: 1, to: 2 });
+    expect(migrated.value['formatVersion']).toBe(2);
+    const parsed = parseSnapshot(
+      `${JSON.stringify(migrated.value)}\n`,
+      'model',
+    );
+    expect(materialize(parsed.state)).toEqual(document);
+    expect(parsed.instance).toBe('aaaa0001');
+  });
+});

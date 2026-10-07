@@ -143,3 +143,10 @@ export function patchesToOps(
   }
   return ops;
 }
+
+/** The line as stored in a change file: the instance is the folder, so it is left out. */
+export function toLine(op: StampedOp): Op {
+  const line: Partial<StampedOp> = { ...op };
+  delete line.by;
+  return line as Op;
+}
