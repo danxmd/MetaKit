@@ -1,3 +1,5 @@
+import { namesIn, parseCached, toText, truthy } from '@metakit-app/formula';
+import type { ModelCalculator } from '../calc/calculator';
 import type { AttributeId, ConnectorId, ElementId } from '../ids';
 import {
   effectiveAttributes,
@@ -8,7 +10,10 @@ import {
   modelTypeAllowsClass,
   modelTypeAllowsRelation,
   relationIsA,
+  classChain,
+  relationChain,
 } from '../meta/inherit';
+import type { Constraint } from '../meta/rule-types';
 import type {
   AttributeDef,
   ClassDef,
@@ -38,7 +43,10 @@ export interface ValidationIssue {
   id: ElementId | ConnectorId | 'model';
   severity: Severity;
   code: string;
+  /** The attribute the problem is about; for a constraint, the one its formula names, if only one. */
   attr?: AttributeId;
+  /** The id of the violated constraint (code `constraint`). */
+  constraint?: string;
   message: string;
 }
 
@@ -139,6 +147,67 @@ function checkValues(
   }
 }
 
+/**
+ * Runs the constraints and the formula attributes of one object. A constraint holds when its
+ * formula is true; a formula that cannot be evaluated is reported as a warning because it says
+ * nothing about the object, only about the tool library.
+ */
+function checkFormulas(
+  calc: ModelCalculator,
+  tool: ToolLibrary,
+  who: string,
+  id: ValidationIssue['id'],
+  defs: AttributeDef[],
+  constraints: Constraint[],
+  out: ValidationIssue[],
+): void {
+  for (const def of defs) {
+    if (def.type !== 'formula') continue;
+    const problem = calc.errorOf(id, def.key);
+    if (problem)
+      out.push({
+        id,
+        severity: 'warning',
+        code: 'formula-error',
+        attr: def.id,
+        message: `${who}: the formula of ${attrLabel(tool, def)} cannot be calculated. ${problem}`,
+      });
+  }
+  const byKey = new Map(defs.map((d) => [d.key, d]));
+  for (const c of constraints) {
+    const result = calc.evaluate(id === 'model' ? null : id, c.formula);
+    if (result.error) {
+      out.push({
+        id,
+        severity: 'warning',
+        code: 'formula-error',
+        constraint: c.id,
+        message: `${who}: the constraint "${c.message.startsWith('=') ? c.formula : c.message}" cannot be checked. ${result.error}`,
+      });
+      continue;
+    }
+    if (truthy(result.value)) continue;
+    let message = c.message;
+    if (message.startsWith('=')) {
+      const m = calc.evaluate(id === 'model' ? null : id, message);
+      message = m.error ? `${who}: a constraint is not met.` : toText(m.value);
+    }
+    const parsed = parseCached(c.formula.trim().replace(/^=/, ''));
+    const named =
+      'expr' in parsed
+        ? [...namesIn(parsed.expr)].flatMap((n) => byKey.get(n) ?? [])
+        : [];
+    out.push({
+      id,
+      severity: c.severity ?? 'error',
+      code: 'constraint',
+      constraint: c.id,
+      ...(named.length === 1 ? { attr: named[0]!.id } : {}),
+      message,
+    });
+  }
+}
+
 function safely<T>(fallback: T, run: () => T): T {
   try {
     return run();
@@ -151,10 +220,13 @@ function safely<T>(fallback: T, run: () => T): T {
  * Checks a model against its tool library and returns every problem found. It never changes the
  * model and never blocks an edit: the application decides what to show and when.
  * Order: the model itself, then elements, then connectors, each in drawing order.
+ * With a calculator it also reports violated constraints and formulas that cannot be
+ * calculated; without one those checks are skipped.
  */
 export function validateModel(
   tool: ToolLibrary,
   model: Model,
+  calculator?: ModelCalculator,
 ): ValidationIssue[] {
   const out: ValidationIssue[] = [];
   const modelType: ModelTypeDef | undefined =
@@ -186,6 +258,16 @@ export function validateModel(
       out,
       'the model type',
     );
+    if (calculator)
+      checkFormulas(
+        calculator,
+        tool,
+        `Model "${model.manifest.name}"`,
+        'model',
+        modelType.attributes,
+        modelType.constraints ?? [],
+        out,
+      );
   }
 
   const elements = inDrawingOrder(model.elements);
@@ -295,6 +377,18 @@ export function validateModel(
       out,
       'its class',
     );
+    if (calculator)
+      checkFormulas(
+        calculator,
+        tool,
+        who,
+        el.id,
+        safely([], () => effectiveAttributes(tool, el.class)),
+        safely([] as ClassDef[], () => classChain(tool, el.class)).flatMap(
+          (c) => c.constraints ?? [],
+        ),
+        out,
+      );
     if (modelType) {
       for (const card of modelType.cardinalities) {
         if (card.kind !== 'degree' || !isA(tool, el.class, card.class))
@@ -394,6 +488,18 @@ export function validateModel(
       out,
       'its relation class',
     );
+    if (calculator)
+      checkFormulas(
+        calculator,
+        tool,
+        who,
+        cn.id,
+        safely([], () => effectiveRelationAttributes(tool, cn.relation)),
+        safely([] as RelationDef[], () =>
+          relationChain(tool, cn.relation),
+        ).flatMap((r) => r.constraints ?? []),
+        out,
+      );
   }
   return out;
 }

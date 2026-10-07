@@ -330,9 +330,16 @@
       {field.mixed
         ? '—'
         : field.value === undefined
-          ? 'Calculated when formulas arrive'
+          ? '—'
           : displayText(field.value)}
     </output>
+    {#if field.error}<p
+        class="message"
+        role="alert"
+        data-testid="formula-error"
+      >
+        {field.error}
+      </p>{/if}
   {:else if field.control === 'button'}
     <button
       {id}

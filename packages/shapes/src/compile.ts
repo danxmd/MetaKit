@@ -11,6 +11,7 @@ import {
   type ShapeId,
 } from '@metakit-app/core';
 import {
+  describeFormulaProblem,
   evaluate,
   parse,
   toText,
@@ -19,6 +20,7 @@ import {
   type Scope,
   type Value,
 } from '@metakit-app/formula';
+import { callReadName, memberReadName } from './scope';
 import { FONT_PX, LINE_HEIGHT, resolveDim, wrapText } from './dim';
 import type {
   Box,
@@ -81,16 +83,34 @@ class Context {
           const v = this.frames[i]!.get(name);
           if (v !== undefined) return v;
         }
-        if (!this.readSet.has(name)) {
-          this.readSet.add(name);
-          this.reads.push(name);
-        }
+        this.read(name);
         return this.base.get(name);
       },
       ...(this.base.member
-        ? { member: (v, k) => this.base.member!(v, k) }
+        ? {
+            member: (v, k) => {
+              const found = this.base.member!(v, k);
+              if (found !== undefined) this.read(memberReadName(v, k));
+              return found;
+            },
+          }
+        : {}),
+      ...(this.base.call
+        ? {
+            call: (name, args) => {
+              const found = this.base.call!(name, args);
+              if (found !== undefined) this.read(callReadName(name, args));
+              return found;
+            },
+          }
         : {}),
     };
+  }
+
+  private read(name: string): void {
+    if (this.readSet.has(name)) return;
+    this.readSet.add(name);
+    this.reads.push(name);
   }
 
   push(frame: Map<string, Value> = new Map()): Map<string, Value> {
@@ -112,11 +132,14 @@ class Context {
     if (!isFormula(raw)) return raw as Value;
     const expr = parseCached(formulaSource(raw));
     if (typeof expr === 'string') {
-      this.message(`${label}: ${expr}`);
+      this.message(
+        `${label}: ${describeFormulaProblem({ error: expr, code: 'syntax' })}`,
+      );
       return null;
     }
     const result = evaluate(expr, this.scope);
-    if (result.error) this.message(`${label}: ${result.error}`);
+    if (result.error)
+      this.message(`${label}: ${describeFormulaProblem(result)}`);
     return result.value;
   }
 

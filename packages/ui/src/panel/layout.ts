@@ -9,6 +9,7 @@ import {
   type Json,
   type Labels,
   type Model,
+  type ModelCalculator,
   type PanelAttributeItem,
   type PanelControl,
   type PanelItem,
@@ -20,6 +21,8 @@ import { run, truthy, type Value } from '@metakit-app/formula';
 import { makeScope } from '@metakit-app/shapes';
 import {
   buildField,
+  computedValue,
+  fieldIssues,
   pickLabel,
   type ControlKind,
   type Field,
@@ -68,6 +71,13 @@ export interface LayoutOptions {
   issues?: Readonly<Record<string, readonly string[]>>;
   /** Follows a reference value to that element's values by key, for formulas such as `Owner.Name`. */
   resolve?: (id: string) => Record<string, Value> | undefined;
+  /**
+   * Evaluates conditions with the helpers and computed attributes, and fills formula attributes.
+   * Needs `ids`.
+   */
+  calculator?: ModelCalculator;
+  /** The ids of the selected objects, in the order of `targets`; conditions use the first. */
+  ids?: readonly string[];
 }
 
 /** The panel controls that suit each attribute type; the first is not necessarily the default. */
@@ -150,7 +160,11 @@ export function buildLayoutPanel(
       );
       return fallback;
     }
-    const result = run(formulaSource(value), scope);
+    const first = options.ids?.[0];
+    const result =
+      options.calculator && first !== undefined
+        ? options.calculator.evaluate(first, value)
+        : run(formulaSource(value), scope);
     if (result.error !== undefined) {
       notes.push(
         `${where}: the formula ${value} could not be calculated (${result.error}), so the default is used.`,
@@ -166,15 +180,24 @@ export function buildLayoutPanel(
     attr: AttributeDef,
   ): LayoutFieldNode => {
     const where = `Attribute ${attr.key}`;
+    const calc = options.calculator;
+    const computed =
+      attr.type === 'formula' && calc && options.ids && options.ids.length > 0
+        ? options.ids.map((id) => computedValue(calc, id, attr))
+        : undefined;
     const field = buildField(
       attr,
-      targets.map((t) => {
-        const v = t[attr.id];
-        return v === null ? undefined : v;
-      }),
+      computed
+        ? computed.map((c) => c.value)
+        : targets.map((t) => {
+            const v = t[attr.id];
+            return v === null ? undefined : v;
+          }),
       [...(options.issues?.[attr.id] ?? [])],
       language,
     );
+    const problem = computed?.find((c) => c.error !== undefined)?.error;
+    if (problem !== undefined) field.error = problem;
     if (item.control !== undefined) {
       const kind = CONTROLS_FOR[attr.type]?.[item.control];
       if (kind) field.control = kind;
@@ -261,6 +284,7 @@ export function buildLayoutPanelFor(
   targets: readonly PanelTarget[],
   issues: readonly ValidationIssue[],
   language = 'en',
+  options: { calculator?: ModelCalculator } = {},
 ): LayoutPanel | null {
   const first = targets[0];
   if (first === undefined) return null;
@@ -292,15 +316,22 @@ export function buildLayoutPanelFor(
   }
   const ids = new Set<string>(targets.map((t) => t.id));
   const byAttr: Record<string, string[]> = {};
-  for (const i of issues) {
-    if (!ids.has(i.id) || i.attr === undefined) continue;
-    const list = (byAttr[i.attr] ??= []);
-    if (!list.includes(i.message)) list.push(i.message);
+  for (const def of defs) {
+    const list = fieldIssues(
+      issues,
+      ids,
+      def,
+      options.calculator !== undefined,
+    );
+    if (list.length > 0) byAttr[def.id] = list;
   }
   const valueSets = data.map((d) => d!.attrs as Record<string, Json>);
   return buildLayoutPanel(layout, defs, valueSets[0]!, {
     language,
     targets: valueSets,
     issues: byAttr,
+    ...(options.calculator
+      ? { calculator: options.calculator, ids: targets.map((t) => t.id) }
+      : {}),
   });
 }

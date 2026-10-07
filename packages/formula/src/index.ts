@@ -1,6 +1,7 @@
 import { evaluate, type EvalResult, type Scope } from './eval';
 import { parse, type Expr } from './parser';
 
+export { describeFormulaProblem, type FormulaProblem } from './describe';
 export {
   FormulaSyntaxError,
   LIMITS,

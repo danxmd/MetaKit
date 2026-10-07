@@ -7,6 +7,7 @@ import {
 } from '@metakit-app/core';
 import type { Scope, Value } from '@metakit-app/formula';
 import { compileNode } from './compile';
+import { probeRead } from './scope';
 import type { Compiled } from './ops';
 
 export interface CachedCompile {
@@ -39,7 +40,7 @@ export class CompileCache {
     return {
       shape,
       compiled,
-      seen: compiled.reads.map((name) => scope.get(name)),
+      seen: compiled.reads.map((name) => probeRead(scope, name)),
     };
   }
 
@@ -56,7 +57,10 @@ export class CompileCache {
     for (const [id, def] of c.compiled.uses)
       if (shapes(id) !== def) return false;
     return c.compiled.reads.every((name, i) =>
-      deepEqual(scope.get(name) as Json | undefined as Json, c.seen[i] as Json),
+      deepEqual(
+        probeRead(scope, name) as Json | undefined as Json,
+        c.seen[i] as Json,
+      ),
     );
   }
 }

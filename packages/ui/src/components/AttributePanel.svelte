@@ -19,6 +19,7 @@
     layoutPanel = null,
     unknown = [],
     onRemoveUnknown,
+    messages = [],
   }: {
     sections: PanelSection[];
     /** How many objects are selected. */
@@ -31,6 +32,8 @@
     /** Stored values the class no longer defines; shown for a single selected object. */
     unknown?: UnknownAttribute[];
     onRemoveUnknown?: (entry: UnknownAttribute) => void;
+    /** Constraint and formula problems of the selection that belong to no single field (see `objectMessages`). */
+    messages?: string[];
   } = $props();
 
   // The open tab is remembered by its label so that a rebuilt panel keeps it.
@@ -98,6 +101,11 @@
         {count} objects selected. Only attributes they all have are shown; a dash
         means the values differ.
       </p>
+    {/if}
+    {#if messages.length > 0}
+      <ul class="messages" role="alert" data-testid="panel-messages">
+        {#each messages as message (message)}<li>{message}</li>{/each}
+      </ul>
     {/if}
     {#if layoutPanel}
       {#if shownTabs.length > 1}
@@ -196,6 +204,12 @@
   .empty {
     color: var(--muted);
     font-size: 0.85rem;
+  }
+  .messages {
+    color: var(--danger);
+    font-size: 0.8rem;
+    margin: 0 0 0.6rem;
+    padding-left: 1.1rem;
   }
   .tabs {
     display: flex;

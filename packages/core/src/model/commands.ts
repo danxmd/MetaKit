@@ -9,6 +9,7 @@ import {
   type RandomSource,
   type RelationId,
 } from '../ids';
+import { run } from '@metakit-app/formula';
 import { deepEqual, type Json } from '../json';
 import {
   effectiveAttributes,
@@ -170,6 +171,36 @@ function defaultsOf(attributes: AttributeDef[]): Record<string, Json> {
   return defaults;
 }
 
+/**
+ * Fills attributes the command did not set from their default formulas, in list order, so a
+ * later default can read an earlier one. A formula that fails leaves the attribute empty:
+ * creating an object must never fail because of a tool library formula.
+ */
+function applyDefaultFormulas(
+  attributes: AttributeDef[],
+  given: Record<string, Json> | undefined,
+  attrs: Record<string, Json>,
+): void {
+  const byKey = new Map<string, AttributeDef>();
+  for (const a of attributes) byKey.set(a.key, a);
+  for (const a of attributes) {
+    if (!a.defaultFormula || a.type === 'formula' || a.type === 'action')
+      continue;
+    if (given && given[a.id] !== undefined) continue;
+    const source = a.defaultFormula.trim().replace(/^=/, '');
+    const result = run(source, {
+      get: (name) => {
+        const def = byKey.get(name);
+        if (!def) return undefined;
+        const v = attrs[def.id];
+        return v === undefined ? null : (v as never);
+      },
+    });
+    if (result.error || result.value === null) continue;
+    attrs[a.id] = result.value as Json;
+  }
+}
+
 /** The highest drawing-order key in use, or null for an empty model. */
 function topPos(model: Model): string | null {
   let top: string | null = null;
@@ -326,12 +357,18 @@ function applyModelCommand(
             `An element with the id ${id} already exists.`,
           );
       }
-      const attrs = {
+      const attrs: Record<string, Json> = {
         ...(tool && cls
           ? defaultsOf(effectiveAttributes(tool, command.class))
           : {}),
         ...(command.attrs ?? {}),
       };
+      if (tool && cls)
+        applyDefaultFormulas(
+          effectiveAttributes(tool, command.class),
+          command.attrs,
+          attrs,
+        );
       for (const key of Object.keys(attrs))
         if (!isId('attribute', key))
           throw new CommandError(`${key} is not an attribute id.`);
@@ -355,6 +392,7 @@ function applyModelCommand(
       requireElement(model, command.from, 'The FROM element');
       requireElement(model, command.to, 'The TO element');
       let defaults: Record<string, Json> = {};
+      let relDefs: AttributeDef[] = [];
       if (tool) {
         const rel = tool.relations[command.relation];
         if (!rel)
@@ -365,9 +403,8 @@ function applyModelCommand(
           throw new CommandError(
             `The relation class "${rel.key}" is abstract, so connectors of it cannot be created.`,
           );
-        defaults = defaultsOf(
-          effectiveRelationAttributes(tool, command.relation),
-        );
+        relDefs = effectiveRelationAttributes(tool, command.relation);
+        defaults = defaultsOf(relDefs);
       } else if (!isId('relation', command.relation)) {
         throw new CommandError(
           `${String(command.relation)} is not a relation class id.`,
@@ -390,7 +427,11 @@ function applyModelCommand(
             `A connector with the id ${id} already exists.`,
           );
       }
-      const attrs = { ...defaults, ...(command.attrs ?? {}) };
+      const attrs: Record<string, Json> = {
+        ...defaults,
+        ...(command.attrs ?? {}),
+      };
+      applyDefaultFormulas(relDefs, command.attrs, attrs);
       const last = inDrawingOrder(model.connectors).at(-1)?.pos ?? null;
       const connector: ConnectorData = {
         id,

@@ -12,6 +12,7 @@
   import { withPatch } from '../../build/attributes';
   import type { CommandResult } from '../../shell/controller';
   import AttributeList from './AttributeList.svelte';
+  import ConstraintsEditor from './ConstraintsEditor.svelte';
   import KeyField from './KeyField.svelte';
   import LabelsField from './LabelsField.svelte';
 
@@ -178,6 +179,12 @@
       {run}
       taken={parentKeys}
       {usages}
+    />
+    <ConstraintsEditor
+      owner={{ kind: 'class', id }}
+      constraints={def.constraints ?? []}
+      {tool}
+      {run}
     />
     {#if error}<p class="problem" role="alert" data-testid="class-problem">
         {error}
