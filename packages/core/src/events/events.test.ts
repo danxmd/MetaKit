@@ -364,3 +364,28 @@ describe('merged changes', () => {
     expect(seen).toEqual([]);
   });
 });
+
+describe('the state an event was announced with', () => {
+  it('shows the step in progress to handlers, and nothing for events the app emits', () => {
+    const base = sampleTool();
+    const store = createModelStore(emptySampleModel(), { tool: base });
+    const bus = new EventBus();
+    attachEvents(store, bus, { tool: () => base });
+    const live: (number | undefined)[] = [];
+    bus.on('object.created', () => {
+      const m = bus.state as Model | undefined;
+      live.push(m ? Object.keys(m.elements).length : undefined);
+    });
+    store.execute({
+      type: 'createElement',
+      class: SAMPLE.task as never,
+      x: 0,
+      y: 0,
+    });
+    // The store's own state is not updated until the step ends; the bus shows the new object.
+    expect(live).toEqual([1]);
+    bus.emit({ event: 'object.created', target: null, user: 'u' });
+    expect(live).toEqual([1, undefined]);
+    expect(bus.state).toBeUndefined();
+  });
+});
