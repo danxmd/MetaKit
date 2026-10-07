@@ -27,6 +27,8 @@ import {
 } from './geometry';
 import { CURSORS, hitHandle, resizeRect, type HandleName } from './handles';
 import type { ActiveState } from './renderer';
+import { LayoutService } from './layout/layout-service';
+import type { LayoutOptions } from './layout/elk-layout';
 import { edgePoint } from './route';
 import type { ConnectorItem, ElementItem } from './scene';
 import {
@@ -76,6 +78,8 @@ export interface EditorOptions {
   host?: EditorHost;
   /** Relations offered in the current view; others are not used for new connectors. */
   allowedRelations?: () => ReadonlySet<string> | undefined;
+  /** Runs auto-layout. Defaults to a Web Worker that starts on first use. */
+  layout?: LayoutService;
 }
 
 /** Pointer moves under this many screen pixels are clicks, not drags. */
@@ -449,6 +453,59 @@ export class Editor {
   destroy(): void {
     for (const c of this.cleanups) c();
     this.cleanups.length = 0;
+    this.layoutAbort?.abort();
+    // A service handed in by the host is the host's to dispose.
+    if (!this.options.layout) this.layoutService?.dispose();
+  }
+
+  private layoutService: LayoutService | null = null;
+  private layoutAbort: AbortController | null = null;
+
+  /**
+   * Arranges the model, or the selection when two or more elements are selected, as one undo
+   * step. ELK runs in a worker, so the canvas stays responsive. Resolves true when it changed
+   * something; a layout started while another runs replaces it.
+   */
+  async autoLayout(
+    options: Pick<LayoutOptions, 'direction' | 'spacing' | 'keepFixed'> & {
+      selectionOnly?: boolean;
+    } = {},
+  ): Promise<boolean> {
+    this.layoutAbort?.abort();
+    const abort = new AbortController();
+    this.layoutAbort = abort;
+    const service = (this.layoutService ??=
+      this.options.layout ?? new LayoutService());
+    const picked = [...this.selectionState.elements];
+    const selectionOnly = options.selectionOnly ?? picked.length > 1;
+    try {
+      const result = await service.layout(this.model, {
+        ...options,
+        selectionOnly,
+        selection: picked,
+        signal: abort.signal,
+      });
+      // The model may have changed while ELK worked; skip what no longer exists.
+      const model = this.model;
+      const moves = result.moves.filter((m) => model.elements[m.id]);
+      const resizes = result.resizes.filter((r) => model.elements[r.id]);
+      const bends = result.bends.filter((b) => model.connectors[b.id]);
+      if (moves.length === 0 && bends.length === 0) {
+        this.host.onMessage?.('There is nothing to arrange.');
+        return false;
+      }
+      return (
+        this.run([{ type: 'applyLayout', moves, resizes, bends }]) !== null
+      );
+    } catch (error) {
+      if (abort.signal.aborted && this.layoutAbort !== abort) return false;
+      this.host.onMessage?.(
+        error instanceof Error ? error.message : 'The layout failed.',
+      );
+      return false;
+    } finally {
+      if (this.layoutAbort === abort) this.layoutAbort = null;
+    }
   }
 
   private cancelGesture(): void {

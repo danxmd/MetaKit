@@ -15,6 +15,7 @@ import {
 import {
   CanvasView,
   Editor,
+  LayoutService,
   Minimap,
   Scene,
   type EditorTool,
@@ -50,7 +51,11 @@ function newModel(tool: ToolLibrary): Model {
   };
 }
 
-function mount(tool: ToolLibrary): void {
+/**
+ * `workerSource` is the bundled ELK worker as text: this harness is itself bundled without the
+ * app's build tool, which is what resolves `new Worker(new URL(...))` in the app.
+ */
+function mount(tool: ToolLibrary, workerSource?: string): void {
   current?.editor.destroy();
   current?.minimap.destroy();
   current?.view.destroy();
@@ -71,6 +76,16 @@ function mount(tool: ToolLibrary): void {
     tool,
     view,
     host: { onMessage: (t) => messages.push(t) },
+    layout: workerSource
+      ? new LayoutService({
+          workerFactory: () =>
+            new Worker(
+              URL.createObjectURL(
+                new Blob([workerSource], { type: 'text/javascript' }),
+              ),
+            ) as never,
+        })
+      : undefined,
   });
   const mapHost = document.createElement('div');
   mapHost.style.cssText = 'position:absolute;right:8px;bottom:8px;';
@@ -181,6 +196,85 @@ const api = {
     ];
   },
   sceneTransform: () => need().view.renderer.sceneCanvas.style.transform,
+  autoLayout: (options?: Parameters<Editor['autoLayout']>[0]) =>
+    need()
+      .editor.autoLayout(options)
+      .then((changed) => {
+        flush();
+        return changed;
+      }),
+  /**
+   * Fills the model with `count` shapes and about `links` connectors that mostly point forward,
+   * as a flow does. Returns the element ids.
+   */
+  seedGraph(count: number, links: number, cls: string, relation: string) {
+    const store = need().store;
+    const made = store.execute({
+      type: 'batch',
+      commands: Array.from({ length: count }, (_, i) => ({
+        type: 'createElement' as const,
+        class: cls as ClassId,
+        x: (i % 25) * 10,
+        y: Math.floor(i / 25) * 10,
+      })),
+    });
+    if (!made.ok) throw new Error(made.reason);
+    const ids = made.value as ElementId[];
+    let seed = 12345;
+    const rand = () => (seed = (seed * 1103515245 + 12345) % 2147483648);
+    const commands: ModelCommand[] = [];
+    for (let i = 0; i < links; i++) {
+      const from = rand() % count;
+      const to = Math.min(count - 1, from + 1 + (rand() % 8));
+      if (from === to) continue;
+      commands.push({
+        type: 'createConnector',
+        relation: relation as never,
+        from: ids[from]!,
+        to: ids[to]!,
+      });
+    }
+    const linked = store.execute({ type: 'batch', commands });
+    if (!linked.ok) throw new Error(linked.reason);
+    flush();
+    return ids;
+  },
+  /**
+   * Runs an auto-layout and watches the page meanwhile: the longest gap between animation frames
+   * and between 10 ms timer ticks says whether the main thread stayed free.
+   */
+  async timedLayout() {
+    let last = performance.now();
+    let maxFrameGap = 0;
+    let running = true;
+    const frame = () => {
+      const now = performance.now();
+      maxFrameGap = Math.max(maxFrameGap, now - last);
+      last = now;
+      if (running) requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
+    let lastTick = performance.now();
+    let maxTickGap = 0;
+    const timer = setInterval(() => {
+      const now = performance.now();
+      maxTickGap = Math.max(maxTickGap, now - lastTick);
+      lastTick = now;
+    }, 10);
+    const started = performance.now();
+    const changed = await need().editor.autoLayout();
+    const ms = performance.now() - started;
+    running = false;
+    clearInterval(timer);
+    flush();
+    return {
+      changed,
+      ms,
+      maxFrameGap,
+      maxTickGap,
+      messages: [...need().messages],
+    };
+  },
   copy: () => need().editor.copy(),
   paste: (text?: string) => need().editor.paste(text),
 };

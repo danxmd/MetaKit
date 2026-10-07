@@ -13,3 +13,4 @@ export * from './tools/snap';
 export * from './tools/arrange';
 export * from './tools/clipboard';
 export * from './minimap';
+export * from './layout';
