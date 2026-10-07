@@ -46,9 +46,10 @@
   });
 
   async function chooseProfile(chosen: Profile) {
-    profile = chosen;
     controller.setProfile(chosen);
+    // The dialog closes only once the choice is stored, so a quick reload does not ask again.
     await saveProfile(chosen);
+    profile = chosen;
   }
 
   async function openHandle(handle: FileSystemDirectoryHandle) {
