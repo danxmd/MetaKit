@@ -2,6 +2,7 @@ import {
   allowsEnd,
   modelTypeAllowsRelation,
   type ClassId,
+  type RelationId,
   type ModelTypeDef,
   type RelationDef,
   type ToolLibrary,
@@ -30,6 +31,36 @@ export function allowedRelations(
         allowsEnd(tool, r.id, 'to', toClass),
     )
     .sort((a, b) => (a.key < b.key ? -1 : 1));
+}
+
+/**
+ * Whether an element of `cls` is worth highlighting while a relation is being connected: as the
+ * start (no `from` yet) when some usable relation may begin at its class, or as the end when a
+ * usable relation may go from the picked class to it. `relation` limits this to the chosen one.
+ */
+export function canConnectAt(
+  tool: ToolLibrary,
+  modelType: ModelTypeDef,
+  cls: ClassId,
+  options: {
+    relation?: RelationId | undefined;
+    from?: ClassId | undefined;
+    only?: ReadonlySet<string> | undefined;
+  } = {},
+): boolean {
+  const { relation, from, only } = options;
+  if (from)
+    return allowedRelations(tool, modelType, from, cls, only).some(
+      (r) => !relation || r.id === relation,
+    );
+  return Object.values(tool.relations).some(
+    (r) =>
+      !r.abstract &&
+      (!relation || r.id === relation) &&
+      (!only || only.has(r.id)) &&
+      modelTypeAllowsRelation(tool, modelType, r.id) &&
+      allowsEnd(tool, r.id, 'from', cls),
+  );
 }
 
 /** Why no relation fits, in plain English, for the message shown when a drop is refused. */

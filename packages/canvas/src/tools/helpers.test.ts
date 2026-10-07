@@ -14,7 +14,7 @@ import {
   planPaste,
   serializeClipboard,
 } from './clipboard';
-import { allowedRelations, refusalReason } from './relations';
+import { allowedRelations, canConnectAt, refusalReason } from './relations';
 import { snapMove, snapValue } from './snap';
 
 const rect = (x: number, y: number, w = 100, h = 50) => ({
@@ -33,6 +33,28 @@ describe('allowedRelations', () => {
     ).toEqual(['SequenceFlow']);
     expect(allowedRelations(tool, type, 'cls_lane', 'cls_task')).toEqual([]);
     expect(allowedRelations(tool, type, 'cls_task', 'cls_lane')).toEqual([]);
+  });
+
+  it('says which elements can start and end a connector', () => {
+    const tool = loadTool('bpmn-lite');
+    const type = Object.values(tool.modelTypes)[0]!;
+    expect(canConnectAt(tool, type, 'cls_task')).toBe(true);
+    expect(canConnectAt(tool, type, 'cls_lane')).toBe(false);
+    expect(canConnectAt(tool, type, 'cls_gateway', { from: 'cls_task' })).toBe(
+      true,
+    );
+    expect(canConnectAt(tool, type, 'cls_lane', { from: 'cls_task' })).toBe(
+      false,
+    );
+    const flow = Object.values(tool.relations).find(
+      (r) => r.key === 'SequenceFlow',
+    )!;
+    expect(canConnectAt(tool, type, 'cls_task', { relation: flow.id })).toBe(
+      true,
+    );
+    expect(canConnectAt(tool, type, 'cls_lane', { relation: flow.id })).toBe(
+      false,
+    );
   });
 
   it('keeps ER relations apart', () => {

@@ -5,6 +5,7 @@ import type {
   OutlineKind,
 } from '@metakit-app/shapes';
 import type { Point } from './geometry';
+import { TEXT_COLOR } from './shapes';
 
 /** Loads images once by source; the draw falls back to nothing until one has arrived. */
 export class ImageCache {
@@ -432,6 +433,25 @@ export function drawMarker(
   ctx.restore();
 }
 
+/** The colours a themed surface wants for connector labels left at the shape's defaults. */
+export interface LabelTheme {
+  text?: string;
+  background?: string;
+}
+
+const WHITE = ['#fff', '#ffffff', 'white'];
+
+/** `colour`, unless it is one of the defaults a theme replaces (exports never pass a theme). */
+function followTheme(
+  colour: string,
+  defaults: readonly string[],
+  replacement: string | undefined,
+): string {
+  return replacement && defaults.includes(colour.toLowerCase())
+    ? replacement
+    : colour;
+}
+
 /** Draws the labels of a relation shape along a route. */
 export function drawLabels(
   ctx: CanvasRenderingContext2D,
@@ -439,6 +459,7 @@ export function drawLabels(
   look: CompiledRelation,
   scale: number,
   minTextPx: number,
+  theme?: LabelTheme,
 ): void {
   for (const label of look.labels) {
     if (label.font.size * scale < minTextPx) continue;
@@ -451,7 +472,7 @@ export function drawLabels(
     ctx.textBaseline = 'middle';
     if (label.background) {
       const w = ctx.measureText(label.text).width + 6;
-      ctx.fillStyle = label.background;
+      ctx.fillStyle = followTheme(label.background, WHITE, theme?.background);
       ctx.fillRect(
         x - w / 2,
         y - label.font.size * 0.7,
@@ -459,7 +480,8 @@ export function drawLabels(
         label.font.size * 1.4,
       );
     }
-    ctx.fillStyle = label.font.color;
+    // A label left at the default dark text colour follows the theme on screen; exports leave it.
+    ctx.fillStyle = followTheme(label.font.color, [TEXT_COLOR], theme?.text);
     ctx.fillText(label.text, x, y);
   }
 }
@@ -498,6 +520,8 @@ export interface ConnectorPaintOptions {
   minTextPx: number;
   /** Markers and labels of lines whose marker is under this size on screen are skipped; 0 draws all. */
   minArrowPx: number;
+  /** Replaces default label colours; the screen sets it for dark themes, exports never do. */
+  labelTheme?: LabelTheme;
 }
 
 /**
@@ -538,7 +562,7 @@ export function paintConnectors(
           drawMarker(ctx, marker.type, marker.fill, marker.size, e, e.angle);
       }
       if (look.labels.length > 0)
-        drawLabels(ctx, route, look, o.scale, o.minTextPx);
+        drawLabels(ctx, route, look, o.scale, o.minTextPx, o.labelTheme);
     }
   }
 }

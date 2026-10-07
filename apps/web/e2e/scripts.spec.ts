@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { newModel, prepare } from './app';
 import { bundleWorker, loadHarness } from './bundle';
+import { chooseFromMenu } from './menus';
 import type { ScriptsHarness } from './scripts-harness';
 
 declare global {
@@ -177,7 +178,7 @@ test.describe('scripts in the app', () => {
       'There are 0 objects.',
     );
 
-    await page.getByTestId('console-toggle').click();
+    await chooseFromMenu(page, 'Check', 'console-toggle');
     await expect(page.getByTestId('console-lines')).toContainText(
       'scripts loaded',
     );

@@ -227,6 +227,8 @@ const api = {
   guides: () => need().view.active.guides,
   /** The element highlighted as the drop target during a drag, or null. */
   dropTarget: () => need().view.active.target,
+  /** The element outlined because the chosen relation can be used on it, or null. */
+  connectHover: () => need().view.active.hover,
   /** Creates an element of a class centred at a world point, as a click from the palette does. */
   placeAt(cls: string, at: Point) {
     const id = need().editor.placeAt(cls as ClassId, at);
