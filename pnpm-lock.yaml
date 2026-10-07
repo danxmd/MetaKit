@@ -157,6 +157,9 @@ importers:
       '@metakit-app/storage':
         specifier: workspace:*
         version: link:../storage
+      '@metakit-app/sync':
+        specifier: workspace:*
+        version: link:../sync
     devDependencies:
       fast-check:
         specifier: ^4.0.0

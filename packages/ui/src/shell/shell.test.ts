@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   createEmptyModel,
   createModelStore,
@@ -181,7 +181,11 @@ async function workspaceWithTool() {
 describe('AppController', () => {
   it('opens a workspace and lists tools and models', async () => {
     const { adapter, toolSlug } = await workspaceWithTool();
-    const app = new AppController({ saveDelayMs: 5 });
+    const app = new AppController({
+      flushMs: 5,
+      presence: false,
+      health: false,
+    });
     expect(app.state.phase).toBe('start');
     expect(await app.openWorkspace(adapter)).toBe('opened');
     expect(app.state).toMatchObject({
@@ -193,7 +197,7 @@ describe('AppController', () => {
   });
 
   it('says plainly when a folder is not a workspace', async () => {
-    const app = new AppController();
+    const app = new AppController({ presence: false, health: false });
     expect(await app.openWorkspace(new MemoryAdapter())).toBe(
       'not-a-workspace',
     );
@@ -202,7 +206,7 @@ describe('AppController', () => {
   });
 
   it('creates a workspace in an empty folder when asked to', async () => {
-    const app = new AppController();
+    const app = new AppController({ presence: false, health: false });
     expect(
       await app.openWorkspace(new MemoryAdapter(), { create: { name: 'New' } }),
     ).toBe('opened');
@@ -211,7 +215,11 @@ describe('AppController', () => {
 
   it('creates a model, opens it, saves edits after the delay and on close', async () => {
     const { adapter, toolSlug } = await workspaceWithTool();
-    const app = new AppController({ saveDelayMs: 10 });
+    const app = new AppController({
+      flushMs: 10,
+      presence: false,
+      health: false,
+    });
     await app.openWorkspace(adapter);
     const slug = await app.createModel({
       toolSlug,
@@ -265,7 +273,11 @@ describe('AppController', () => {
 
   it('renames and moves the open model and models that are not open', async () => {
     const { adapter, toolSlug } = await workspaceWithTool();
-    const app = new AppController({ saveDelayMs: 5 });
+    const app = new AppController({
+      flushMs: 5,
+      presence: false,
+      health: false,
+    });
     await app.openWorkspace(adapter);
     const a = (await app.createModel({
       toolSlug,
@@ -301,7 +313,11 @@ describe('AppController', () => {
 
   it('trashes and restores a model without deleting its files', async () => {
     const { adapter, toolSlug } = await workspaceWithTool();
-    const app = new AppController({ saveDelayMs: 5 });
+    const app = new AppController({
+      flushMs: 5,
+      presence: false,
+      health: false,
+    });
     await app.openWorkspace(adapter);
     const slug = (await app.createModel({
       toolSlug,
@@ -325,7 +341,7 @@ describe('AppController', () => {
     await ws.createModel(
       createEmptyModel(bpmn, process().id, { name: 'Orphan' }),
     );
-    const app = new AppController();
+    const app = new AppController({ presence: false, health: false });
     await app.openWorkspace(adapter);
     const slug = app.state.models[0]!.slug;
     expect(await app.openModel(slug)).toBe(false);
@@ -334,10 +350,14 @@ describe('AppController', () => {
 
   it('shows a failed save and keeps the model open', async () => {
     const { adapter, toolSlug } = await workspaceWithTool();
-    const app = new AppController({ saveDelayMs: 5 });
+    const app = new AppController({
+      flushMs: 5,
+      presence: false,
+      health: false,
+    });
     await app.openWorkspace(adapter);
     await app.createModel({ toolSlug, modelType: process().id, name: 'M' });
-    adapter.overwrite = () => Promise.reject(new Error('disk full'));
+    adapter.writeNew = () => Promise.reject(new Error('disk full'));
     app.state.open!.store.execute({
       type: 'createElement',
       class: 'cls_task',
@@ -346,13 +366,13 @@ describe('AppController', () => {
     });
     await new Promise((r) => setTimeout(r, 40));
     expect(app.state.save).toBe('error');
-    expect(app.state.error).toMatch(/Saving failed: disk full/);
+    expect(app.state.sync.error).toMatch(/disk full/);
     expect(app.state.open).not.toBeNull();
   });
 
   it('notifies listeners and lets them stop listening', async () => {
     const { adapter } = await workspaceWithTool();
-    const app = new AppController();
+    const app = new AppController({ presence: false, health: false });
     const seen: string[] = [];
     const stop = app.subscribe((s) => seen.push(s.phase));
     await app.openWorkspace(adapter);
@@ -369,7 +389,7 @@ describe('AppController.addToolLibrary', () => {
   async function opened() {
     const adapter = new MemoryAdapter('aaaa0001');
     await Workspace.create(adapter, { name: 'Team' });
-    const app = new AppController();
+    const app = new AppController({ presence: false, health: false });
     await app.openWorkspace(adapter);
     return app;
   }
@@ -396,5 +416,146 @@ describe('AppController.addToolLibrary', () => {
       /not a valid tool library[\s\S]*cls_missing00/,
     );
     expect(app.state.tools).toEqual([]);
+  });
+});
+
+describe('working together', () => {
+  async function two() {
+    const a = new MemoryAdapter('aaaa0001');
+    const b = a.asInstance('bbbb0002');
+    const ws = await Workspace.create(a, { name: 'Team' });
+    const toolSlug = await ws.createTool(bpmn);
+    const opts = (name: string) => ({
+      flushMs: 5,
+      health: false,
+      profile: { name, colour: name === 'Anna' ? '#e8590c' : '#1971c2' },
+    });
+    const anna = new AppController(opts('Anna'));
+    const ben = new AppController(opts('Ben'));
+    await anna.openWorkspace(a);
+    await ben.openWorkspace(b);
+    const slug = (await anna.createModel({
+      toolSlug,
+      modelType: process().id,
+      name: 'Shared',
+    }))!;
+    await ben.refresh();
+    await ben.openModel(slug);
+    return { anna, ben, slug, a, b };
+  }
+
+  it('shows each other, with their selection, after presence is refreshed', async () => {
+    const { anna, ben } = await two();
+    anna.setSelection(['el_1']);
+    await anna.refreshPeople();
+    await ben.refreshPeople();
+    expect(ben.state.people.map((p) => p.name)).toContain('Anna');
+    expect(ben.state.people.find((p) => p.name === 'Anna')).toMatchObject({
+      document: { kind: 'model', slug: anna.state.open!.slug },
+      colour: '#e8590c',
+    });
+    expect(anna.state.me).toMatchObject({ instance: 'aaaa0001', name: 'Anna' });
+  });
+
+  it('brings changes across and reports who made the last one', async () => {
+    const { anna, ben } = await two();
+    const id = (
+      anna.state.open!.store.execute({
+        type: 'createElement',
+        class: 'cls_task',
+        x: 1,
+        y: 2,
+        attrs: { att_name: 'Hi' },
+      }) as unknown as { value: string }
+    ).value;
+    await anna.flush();
+    await ben.state.open!.session.rescan();
+    expect(
+      (ben.state.open!.store.state as Model).elements[id as never],
+    ).toMatchObject({ x: 1, y: 2 });
+    expect(ben.state.sync.lastRemote).toMatchObject({ by: 'aaaa0001' });
+    expect(ben.state.save).toBe('saved');
+  });
+
+  it('tells the person whose edit lost, in plain words, and lets them dismiss it', async () => {
+    const { anna, ben } = await two();
+    const id = (
+      anna.state.open!.store.execute({
+        type: 'createElement',
+        class: 'cls_task',
+        x: 0,
+        y: 0,
+        attrs: { att_name: 'T' },
+      }) as unknown as { value: string }
+    ).value;
+    await anna.flush();
+    await ben.state.open!.session.rescan();
+    await anna.refreshPeople();
+    await ben.refreshPeople();
+    // Both set the same attribute before reading the other's change; Ben's is the later one.
+    anna.state.open!.store.execute({
+      type: 'setAttribute',
+      target: id as never,
+      attr: 'att_priority',
+      value: 'Low',
+    });
+    await new Promise((r) => setTimeout(r, 3));
+    ben.state.open!.store.execute({
+      type: 'setAttribute',
+      target: id as never,
+      attr: 'att_priority',
+      value: 'High',
+    });
+    await Promise.all([anna.flush(), ben.flush()]);
+    await Promise.all([
+      anna.state.open!.session.rescan(),
+      ben.state.open!.session.rescan(),
+    ]);
+    expect(anna.state.notices).toHaveLength(1);
+    expect(anna.state.notices[0]!.text).toBe(
+      'Ben changed Priority of "T" at the same time as you. Ben\'s value was kept.',
+    );
+    expect(ben.state.notices).toEqual([]);
+    anna.dismissNotice(anna.state.notices[0]!.id);
+    expect(anna.state.notices).toEqual([]);
+  });
+
+  it('warns about an item someone else has open, and stops warning when they close it', async () => {
+    const { anna, ben } = await two();
+    anna.setEditing('el_text_1');
+    await anna.refreshPeople();
+    await ben.refreshPeople();
+    expect(ben.editorsOf('el_text_1').map((p) => p.name)).toEqual(['Anna']);
+    expect(anna.editorsOf('el_text_1')).toEqual([]);
+    anna.setEditing(null);
+    await anna.refreshPeople();
+    await ben.refreshPeople();
+    expect(ben.editorsOf('el_text_1')).toEqual([]);
+  });
+
+  it('keeps deleted models and tool libraries for 30 days and offers to restore them', async () => {
+    const { anna, slug } = await two();
+    await anna.closeModel();
+    await anna.trashModel(slug);
+    expect(anna.state.models).toEqual([]);
+    expect(anna.state.trashed.map((m) => m.slug)).toEqual([slug]);
+    await anna.trashTool(anna.state.tools[0]!.slug);
+    expect(anna.state.tools).toEqual([]);
+    expect(anna.state.trashedTools).toHaveLength(1);
+    await anna.restoreTool(anna.state.trashedTools[0]!.slug);
+    await anna.restoreModel(slug);
+    expect(anna.state.tools).toHaveLength(1);
+    expect(anna.state.models).toHaveLength(1);
+  });
+
+  it('reports a folder that looks wrong when the workspace is opened', async () => {
+    const a = new MemoryAdapter('aaaa0001');
+    await Workspace.create(a, { name: 'Team' });
+    a.plant('models/x/model (conflicted copy 1).json', '{}\n');
+    const app = new AppController({ presence: false });
+    await app.openWorkspace(a);
+    await vi.waitFor(() =>
+      expect(app.state.health.map((h) => h.kind)).toContain('conflicted-copy'),
+    );
   });
 });

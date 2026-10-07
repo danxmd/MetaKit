@@ -10,7 +10,8 @@
   "dependencies": {
     "@metakit-app/canvas": "workspace:*",
     "@metakit-app/core": "workspace:*",
-    "@metakit-app/storage": "workspace:*"
+    "@metakit-app/storage": "workspace:*",
+    "@metakit-app/sync": "workspace:*"
   },
   "devDependencies": {
     "fast-check": "^4.0.0"

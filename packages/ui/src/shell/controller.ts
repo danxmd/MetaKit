@@ -1,8 +1,9 @@
 import {
   createEmptyModel,
+  createModelStore,
   formatIssues,
   parseToolLibrary,
-  createModelStore,
+  type ElementId,
   type Model,
   type ModelStore,
   type ModelTypeDef,
@@ -12,11 +13,24 @@ import {
 import {
   NotFoundError,
   Workspace,
-  type Loaded,
+  type HealthFinding,
   type ModelEntry,
   type StorageAdapter,
   type ToolEntry,
 } from '@metakit-app/storage';
+import {
+  detectDivergence,
+  PresenceService,
+  whoIsEditing,
+  type Clash,
+  type Divergence,
+  type PresenceFile,
+  type PresenceProfile,
+  type SyncSession,
+  type SyncStatus,
+  type Timers,
+} from '@metakit-app/sync';
+import { describeClash, type ClashNotice } from './clash';
 import { normalizeFolder } from './explorer';
 
 export interface OpenModel {
@@ -24,7 +38,9 @@ export interface OpenModel {
   toolSlug: string;
   tool: ToolLibrary;
   store: ModelStore;
-  /** Things to tell the user about this model, such as snapshots from other instances. */
+  /** Keeps the store and the folder in step: writes edits, reads other people's. */
+  session: SyncSession;
+  /** Things to tell the user about this model, such as a file that could not be read. */
   warnings: string[];
   /** Problems found in the model document itself. */
   documentIssues: number;
@@ -38,19 +54,48 @@ export interface AppState {
   workspaceName: string;
   tools: ToolEntry[];
   models: ModelEntry[];
+  /** Deleted less than 30 days ago, so that they can be restored. */
   trashed: ModelEntry[];
+  trashedTools: ToolEntry[];
   open: OpenModel | null;
   save: SaveStatus;
+  /** What the open document knows about syncing: unwritten edits, the last change from someone else, errors. */
+  sync: SyncStatus;
+  /** Other people seen in the workspace in the last 30 seconds. */
+  people: PresenceFile[];
+  /** This instance: its id, and the name and colour it shows. */
+  me: { instance: string; name: string; colour: string };
+  /** Clashes that were resolved in favour of someone else, until dismissed. */
+  notices: ClashNotice[];
+  divergence: Divergence[];
+  /** What the check of the folder found. */
+  health: HealthFinding[];
   /** The last problem, in plain English; cleared by the next successful action. */
   error: string | null;
   warnings: string[];
 }
 
 export interface ControllerOptions {
-  /** How long after the last change the model is saved. */
-  saveDelayMs?: number;
-  now?: () => Date;
+  /** Longest delay between an edit and its change file. */
+  flushMs?: number;
+  snapshotMs?: number;
+  presenceMs?: number;
+  /** Name and colour shown to others; can be changed later with `setProfile`. */
+  profile?: PresenceProfile;
+  /** Leave presence out (for tests that do not need it). */
+  presence?: boolean;
+  /** Look at the folder for sync problems after opening a workspace. */
+  health?: boolean;
+  timers?: Timers;
+  now?: () => number;
 }
+
+const NO_SYNC: SyncStatus = {
+  pending: 0,
+  lastFlushAt: null,
+  lastRemote: null,
+  error: null,
+};
 
 const initial = (): AppState => ({
   phase: 'start',
@@ -58,8 +103,15 @@ const initial = (): AppState => ({
   tools: [],
   models: [],
   trashed: [],
+  trashedTools: [],
   open: null,
   save: 'saved',
+  sync: NO_SYNC,
+  people: [],
+  me: { instance: '', name: '', colour: '#364fc7' },
+  notices: [],
+  divergence: [],
+  health: [],
   error: null,
   warnings: [],
 });
@@ -67,22 +119,27 @@ const initial = (): AppState => ({
 const message = (error: unknown) =>
   error instanceof Error ? error.message : String(error);
 
+const saveOf = (s: SyncStatus): SaveStatus =>
+  s.error ? 'error' : s.pending > 0 ? 'saving' : 'saved';
+
 /**
- * What Model mode keeps between screens: the open workspace, its tools and models, the open
- * model's store and saving. It has no UI code, so it is tested without a browser. Until change
- * files arrive (phase 3) a model is saved as one snapshot shortly after each change.
+ * What Model mode keeps between screens: the open workspace, its tool libraries and models, the
+ * open model with its sync session, and who else is around. It has no UI code, so it is tested
+ * without a browser.
  */
 export class AppController {
   private current: AppState = initial();
   private workspace: Workspace | null = null;
+  private presence: PresenceService | null = null;
   private readonly listeners = new Set<(state: AppState) => void>();
-  private saveTimer: ReturnType<typeof setTimeout> | undefined;
-  private saving: Promise<void> = Promise.resolve();
-  private stopStore: (() => void) | null = null;
-  private readonly saveDelayMs: number;
+  private nextNotice = 1;
+  private profile: PresenceProfile;
 
-  constructor(options: ControllerOptions = {}) {
-    this.saveDelayMs = options.saveDelayMs ?? 500;
+  constructor(private readonly options: ControllerOptions = {}) {
+    this.profile = {
+      ...(options.profile ?? { name: 'Someone', colour: '#364fc7' }),
+    };
+    this.current = { ...this.current, me: { instance: '', ...this.profile } };
   }
 
   get state(): AppState {
@@ -133,8 +190,27 @@ export class AppController {
         workspaceName: workspace.info.name,
         open: null,
         error: null,
+        me: { instance: adapter.instanceId, ...this.profile },
       });
+      if (this.options.presence !== false) {
+        this.presence = new PresenceService({
+          adapter,
+          profile: this.profile,
+          ...(this.options.now ? { now: this.options.now } : {}),
+          ...(this.options.timers ? { timers: this.options.timers } : {}),
+          ...(this.options.presenceMs
+            ? { intervalMs: this.options.presenceMs }
+            : {}),
+          onPeople: (people) => this.peopleChanged(people),
+        });
+        this.presence.start();
+      }
       await this.refresh();
+      if (this.options.health !== false)
+        void workspace
+          .checkHealth()
+          .then((health) => this.set({ health }))
+          .catch(() => undefined);
       return 'opened';
     } catch (error) {
       if (error instanceof NotFoundError && !options.create) {
@@ -145,6 +221,227 @@ export class AppController {
       return 'failed';
     }
   }
+
+  async closeWorkspace(): Promise<void> {
+    await this.closeModel();
+    await this.presence?.stop();
+    this.presence = null;
+    this.workspace = null;
+    this.current = { ...initial(), me: { instance: '', ...this.profile } };
+    for (const l of this.listeners) l(this.current);
+  }
+
+  /** Reads the lists of tool libraries and models again. */
+  async refresh(): Promise<void> {
+    const ws = this.need();
+    await this.attempt(async () => {
+      const [allTools, allModels] = await Promise.all([
+        ws.listTools({ includeTrashed: true }),
+        ws.listModels({ includeTrashed: true }),
+      ]);
+      this.set({
+        tools: allTools.filter((t) => !t.trashed),
+        trashedTools: allTools.filter((t) => t.trashed && !t.expired),
+        models: allModels.filter((m) => !m.trashed),
+        trashed: allModels.filter((m) => m.trashed && !m.expired),
+        warnings: [
+          ...new Set([
+            ...this.current.warnings.filter((w) => w.startsWith('sync:')),
+            ...ws.warnings,
+          ]),
+        ],
+      });
+    });
+  }
+
+  private need(): Workspace {
+    if (!this.workspace) throw new Error('No workspace is open.');
+    return this.workspace;
+  }
+
+  /** The name and colour shown to others; kept by the app in the browser. */
+  setProfile(profile: PresenceProfile): void {
+    this.profile = { ...profile };
+    this.presence?.setProfile(this.profile);
+    this.set({ me: { ...this.current.me, ...profile } });
+  }
+
+  // People ------------------------------------------------------------------------------------
+
+  private peopleChanged(people: PresenceFile[]): void {
+    const open = this.current.open;
+    const mine: PresenceFile[] = open
+      ? [
+          {
+            formatVersion: 1,
+            instance: this.current.me.instance,
+            name: this.profile.name,
+            colour: this.profile.colour,
+            at: new Date().toISOString(),
+            document: { kind: 'model', slug: open.slug },
+            selection: [],
+            editing: null,
+            hash: open.session.hash,
+            seen: open.session.seen(),
+          },
+        ]
+      : [];
+    this.set({ people, divergence: detectDivergence([...people, ...mine]) });
+  }
+
+  /** Writes this instance's presence now and reads everyone else's. */
+  async refreshPeople(): Promise<void> {
+    await this.presence?.refresh();
+  }
+
+  /** Tells others which elements are selected here. */
+  setSelection(ids: Iterable<string>): void {
+    this.presence?.setSelection(ids);
+  }
+
+  /** Tells others that an item is open in an editor here, or null when it is closed. */
+  setEditing(item: string | null): void {
+    this.presence?.setEditing(item);
+  }
+
+  /** Other people who have this item open in an editor in the open model. */
+  editorsOf(item: string): PresenceFile[] {
+    const open = this.current.open;
+    if (!open) return [];
+    return whoIsEditing(
+      this.current.people,
+      { kind: 'model', slug: open.slug },
+      item,
+      this.current.me.instance,
+    );
+  }
+
+  dismissNotice(id: number): void {
+    this.set({ notices: this.current.notices.filter((n) => n.id !== id) });
+  }
+
+  private nameOf(instance: string): string {
+    return (
+      this.current.people.find((p) => p.instance === instance)?.name ??
+      'Someone else'
+    );
+  }
+
+  // Models ------------------------------------------------------------------------------------
+
+  /** Creates an empty model of a model type, opens it, and returns its folder name. */
+  async createModel(input: {
+    toolSlug: string;
+    modelType: ModelTypeId;
+    name: string;
+    folder?: string | null;
+  }): Promise<string | undefined> {
+    return this.attempt(async () => {
+      const ws = this.need();
+      const { document: tool } = await ws.loadTool(input.toolSlug);
+      const folder = normalizeFolder(input.folder);
+      const model = createEmptyModel(tool, input.modelType, {
+        name: input.name,
+        ...(folder ? { folder } : {}),
+      });
+      const slug = await ws.createModel(model);
+      await this.refresh();
+      await this.openModel(slug);
+      return slug;
+    });
+  }
+
+  async openModel(slug: string): Promise<boolean> {
+    return (
+      (await this.attempt(async () => {
+        const ws = this.need();
+        await this.closeModel();
+        const header = await ws.loadModel(slug);
+        const toolSlug = await ws.findToolSlug(header.document.manifest.tool);
+        if (!toolSlug)
+          throw new Error(
+            `This model was made with a tool library that is not in this workspace (${header.document.manifest.tool}).`,
+          );
+        const tool = (await ws.loadTool(toolSlug)).document;
+        const opened = await ws.openModel(slug, tool, {
+          ...(this.options.flushMs ? { flushMs: this.options.flushMs } : {}),
+          ...(this.options.snapshotMs
+            ? { snapshotMs: this.options.snapshotMs }
+            : {}),
+          ...(this.options.timers ? { timers: this.options.timers } : {}),
+          onStatus: (sync) => this.set({ sync, save: saveOf(sync) }),
+          onClash: (clash) => this.clashed(clash),
+          onWarning: (w) =>
+            this.set({
+              warnings: [...new Set([...this.current.warnings, `sync: ${w}`])],
+            }),
+        });
+        opened.session.start();
+        this.set({
+          phase: 'model',
+          save: 'saved',
+          sync: NO_SYNC,
+          notices: [],
+          open: {
+            slug,
+            toolSlug,
+            tool,
+            store: opened.store,
+            session: opened.session,
+            warnings: opened.warnings,
+            documentIssues: opened.issues.length,
+          },
+        });
+        this.presence?.setDocument({ kind: 'model', slug }, () => ({
+          hash: opened.session.hash,
+          seen: opened.session.seen(),
+        }));
+        return true;
+      })) ?? false
+    );
+  }
+
+  private clashed(clash: Clash): void {
+    const open = this.current.open;
+    if (!open) return;
+    const text = describeClash(
+      open.tool,
+      open.store.state as Model,
+      clash,
+      this.nameOf(clash.by),
+    );
+    this.set({
+      notices: [...this.current.notices, { id: this.nextNotice++, text }].slice(
+        -5,
+      ),
+    });
+  }
+
+  /** Writes what is pending, folds it into the snapshot, and goes back to the explorer. */
+  async closeModel(): Promise<void> {
+    const open = this.current.open;
+    if (!open) return;
+    this.presence?.setDocument(null);
+    try {
+      await open.session.close();
+    } finally {
+      this.set({
+        open: null,
+        phase: this.workspace ? 'workspace' : 'start',
+        sync: NO_SYNC,
+        save: 'saved',
+        notices: [],
+      });
+    }
+    await this.refresh();
+  }
+
+  /** Writes the open model's pending changes now; resolves when they are in the folder. */
+  async flush(): Promise<void> {
+    await this.current.open?.session.flush();
+  }
+
+  // Reading across models ---------------------------------------------------------------------
 
   /**
    * Adds a tool library from the text of its file. The file is checked first and a library that
@@ -184,129 +481,6 @@ export class AppController {
       a.key.localeCompare(b.key),
     );
   }
-
-  async closeWorkspace(): Promise<void> {
-    await this.closeModel();
-    this.workspace = null;
-    this.current = initial();
-    for (const l of this.listeners) l(this.current);
-  }
-
-  /** Reads the lists of tool libraries and models again. */
-  async refresh(): Promise<void> {
-    const ws = this.need();
-    await this.attempt(async () => {
-      const [tools, all] = await Promise.all([
-        ws.listTools(),
-        ws.listModels({ includeTrashed: true }),
-      ]);
-      this.set({
-        tools,
-        models: all.filter((m) => !m.trashed),
-        trashed: all.filter((m) => m.trashed),
-        warnings: [...ws.warnings],
-      });
-    });
-  }
-
-  private need(): Workspace {
-    if (!this.workspace) throw new Error('No workspace is open.');
-    return this.workspace;
-  }
-
-  // Models ------------------------------------------------------------------------------------
-
-  /** Creates an empty model of a model type, opens it, and returns its folder name. */
-  async createModel(input: {
-    toolSlug: string;
-    modelType: ModelTypeId;
-    name: string;
-    folder?: string | null;
-  }): Promise<string | undefined> {
-    return this.attempt(async () => {
-      const ws = this.need();
-      const { document: tool } = await ws.loadTool(input.toolSlug);
-      const folder = normalizeFolder(input.folder);
-      const model = createEmptyModel(tool, input.modelType, {
-        name: input.name,
-        ...(folder ? { folder } : {}),
-      });
-      const slug = await ws.createModel(model);
-      await this.refresh();
-      await this.openModel(slug);
-      return slug;
-    });
-  }
-
-  async openModel(slug: string): Promise<boolean> {
-    return (
-      (await this.attempt(async () => {
-        const ws = this.need();
-        await this.closeModel();
-        const loaded = await ws.loadModel(slug);
-        const toolSlug = await ws.findToolSlug(loaded.document.manifest.tool);
-        if (!toolSlug)
-          throw new Error(
-            `This model was made with a tool library that is not in this workspace (${loaded.document.manifest.tool}).`,
-          );
-        const tool = (await ws.loadTool(toolSlug)).document;
-        const store = createModelStore(loaded.document, { tool });
-        this.stopStore = store.subscribe(() => this.changed());
-        this.set({
-          phase: 'model',
-          save: 'saved',
-          open: {
-            slug,
-            toolSlug,
-            tool,
-            store,
-            warnings: loaded.warnings,
-            documentIssues: loaded.issues.length,
-          },
-        });
-        return true;
-      })) ?? false
-    );
-  }
-
-  /** Saves what is pending and goes back to the explorer. */
-  async closeModel(): Promise<void> {
-    if (!this.current.open) return;
-    await this.flush();
-    this.stopStore?.();
-    this.stopStore = null;
-    this.set({ open: null, phase: this.workspace ? 'workspace' : 'start' });
-    await this.refresh();
-  }
-
-  // Saving ------------------------------------------------------------------------------------
-
-  private changed(): void {
-    clearTimeout(this.saveTimer);
-    this.set({ save: 'saving' });
-    this.saveTimer = setTimeout(() => void this.flush(), this.saveDelayMs);
-  }
-
-  /** Saves the open model now; resolves when the write is done. */
-  flush(): Promise<void> {
-    clearTimeout(this.saveTimer);
-    const open = this.current.open;
-    if (!open || this.current.save === 'saved') return this.saving;
-    const document = open.store.state as Model;
-    this.saving = this.saving.then(async () => {
-      try {
-        await this.need().saveModel(open.slug, document);
-        // Another change may have come in while writing; it set `saving` again and has its own timer.
-        if (open.store.state === document)
-          this.set({ save: 'saved', error: null });
-      } catch (error) {
-        this.set({ save: 'error', error: `Saving failed: ${message(error)}` });
-      }
-    });
-    return this.saving;
-  }
-
-  // Reading across models ---------------------------------------------------------------------
 
   /**
    * Every model of the workspace with its tool library, for the reference picker and find across
@@ -359,10 +533,10 @@ export class AppController {
     if (open && open.slug === slug) {
       const result = open.store.execute({ type: 'updateManifest', ...command });
       if (!result.ok) throw new Error(result.reason);
-      await this.flush();
+      await open.session.flush();
     } else {
       const ws = this.need();
-      const loaded: Loaded<Model> = await ws.loadModel(slug);
+      const loaded = await ws.loadModel(slug);
       const store = createModelStore(loaded.document);
       store.execute({ type: 'updateManifest', ...command });
       await ws.saveModel(slug, store.state as Model);
@@ -381,7 +555,7 @@ export class AppController {
     );
   }
 
-  /** Marks the model as deleted; it stays in the workspace and can be restored. */
+  /** Marks the model as deleted; it stays in the workspace for 30 days and can be restored. */
   trashModel(slug: string): Promise<void | undefined> {
     return this.attempt(async () => {
       if (this.current.open?.slug === slug) await this.closeModel();
@@ -396,4 +570,20 @@ export class AppController {
       await this.refresh();
     });
   }
+
+  trashTool(slug: string): Promise<void | undefined> {
+    return this.attempt(async () => {
+      await this.need().trashTool(slug);
+      await this.refresh();
+    });
+  }
+
+  restoreTool(slug: string): Promise<void | undefined> {
+    return this.attempt(async () => {
+      await this.need().restoreTool(slug);
+      await this.refresh();
+    });
+  }
 }
+
+export type { ElementId };
