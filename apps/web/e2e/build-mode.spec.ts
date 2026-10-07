@@ -37,6 +37,7 @@ test.describe('Build mode', () => {
     page,
   }) => {
     await bareWorkspace(page);
+    await page.getByTestId('mode-build').click();
     await page.getByTestId('new-tool').click();
     await page.getByTestId('new-tool-name').fill('Mini ER');
     await page.getByTestId('new-tool-create').click();
@@ -71,6 +72,7 @@ test.describe('Build mode', () => {
 
     // Back to the explorer, then a model made with the new tool.
     await page.getByTestId('build-back').click();
+    await page.getByTestId('mode-model').click();
     await page.getByTestId('new-model').click();
     await page
       .getByTestId('new-model-tool')
@@ -86,6 +88,7 @@ test.describe('Build mode', () => {
 
   test('refuses a key that is taken and says why', async ({ page }) => {
     await bareWorkspace(page);
+    await page.getByTestId('mode-build').click();
     await page.getByTestId('new-tool').click();
     await page.getByTestId('new-tool-name').fill('Keys');
     await page.getByTestId('new-tool-create').click();
@@ -119,7 +122,7 @@ test.describe('Build mode', () => {
       colour: '#9c36b5',
     });
     await builder.getByTestId('open-folder').click();
-    await builder.locator('summary', { hasText: 'Tool libraries' }).click();
+    await builder.getByTestId('mode-build').click();
     await builder.getByRole('button', { name: /^Edit / }).click();
     await builder.getByTestId('build-item-Task').click();
     const label = builder.getByTestId('class-label-en');

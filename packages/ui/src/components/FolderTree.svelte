@@ -1,12 +1,14 @@
 <script lang="ts">
-  import type { ModelEntry } from '@metakit-app/storage';
+  import type { ModelEntry, ToolEntry } from '@metakit-app/storage';
   import type { FolderNode } from '../shell/explorer';
+  import { menuBehaviour } from '../shell/menu-action';
   import FolderTree from './FolderTree.svelte';
 
   let {
     node,
     depth = 0,
     folders,
+    tools = [],
     onOpen,
     onRename,
     onMove,
@@ -15,6 +17,8 @@
     node: FolderNode;
     depth?: number;
     folders: string[];
+    /** Used to show which tool library and version each model uses. */
+    tools?: ToolEntry[];
     onOpen: (slug: string) => void;
     onRename: (slug: string, name: string) => void;
     onMove: (slug: string, folder: string) => void;
@@ -42,27 +46,18 @@
     if (kind === 'rename') onRename(slug, text);
     else onMove(slug, text);
   }
+
+  const toolOf = (model: ModelEntry) => tools.find((t) => t.id === model.tool);
 </script>
 
-<ul class="tree" role={depth === 0 ? 'tree' : 'group'}>
-  {#each node.folders as folder (folder.path)}
-    <li role="treeitem" aria-expanded="true" aria-selected="false">
-      <details open>
-        <summary data-testid="folder-{folder.path}">{folder.name}</summary>
-        <FolderTree
-          node={folder}
-          depth={depth + 1}
-          {folders}
-          {onOpen}
-          {onRename}
-          {onMove}
-          {onTrash}
-        />
-      </details>
-    </li>
-  {/each}
+<ul class="tree" class:top={depth === 0} role={depth === 0 ? 'tree' : 'group'}>
   {#each node.models as model (model.slug)}
-    <li role="treeitem" aria-selected="false" data-testid="model-{model.slug}">
+    <li
+      class="row"
+      role="treeitem"
+      aria-selected="false"
+      data-testid="model-{model.slug}"
+    >
       {#if editing && editing.slug === model.slug}
         <form
           class="edit"
@@ -82,30 +77,66 @@
           <datalist id="move-folders">
             {#each folders as f (f)}<option value={f}></option>{/each}
           </datalist>
-          <button type="submit" class="primary">Save</button>
           <button type="button" onclick={() => (editing = null)}>Cancel</button>
+          <button type="submit" class="primary">Save</button>
         </form>
       {:else}
-        <div class="model">
-          <button class="name" onclick={() => onOpen(model.slug)}
-            >{model.name}</button
-          >
-          <span class="actions">
+        <button class="name" onclick={() => onOpen(model.slug)}
+          >{model.name}</button
+        >
+        <span class="meta muted">
+          {#if toolOf(model)}{toolOf(model)!.name}
+            <span class="badge">{toolOf(model)!.version}</span>{:else}Tool
+            library not found{/if}
+        </span>
+        <details
+          class="menu more"
+          use:menuBehaviour
+          data-testid="model-actions-{model.slug}"
+        >
+          <summary aria-label="Actions for {model.name}">…</summary>
+          <div class="menu-list right">
             <button
+              type="button"
               onclick={() => begin(model, 'rename')}
               aria-label="Rename {model.name}">Rename</button
             >
             <button
+              type="button"
               onclick={() => begin(model, 'move')}
-              aria-label="Move {model.name} to a folder">Move</button
+              aria-label="Move {model.name} to a folder">Move to folder…</button
             >
+            <div class="menu-sep"></div>
             <button
+              type="button"
               onclick={() => onTrash(model.slug)}
               aria-label="Delete {model.name}">Delete</button
             >
-          </span>
-        </div>
+          </div>
+        </details>
       {/if}
+    </li>
+  {/each}
+  {#each node.folders as folder (folder.path)}
+    <li
+      class="folder"
+      role="treeitem"
+      aria-expanded="true"
+      aria-selected="false"
+    >
+      <details open>
+        <summary data-testid="folder-{folder.path}">{folder.name}</summary>
+        <FolderTree
+          node={folder}
+          depth={depth + 1}
+          {folders}
+          {tools}
+          {onOpen}
+          {onRename}
+          {onMove}
+          {onTrash}
+        />
+      </details>
     </li>
   {/each}
 </ul>
@@ -114,50 +145,69 @@
   .tree {
     list-style: none;
     margin: 0;
-    padding-left: 1rem;
+    padding: 0;
   }
-  .tree:first-child {
-    padding-left: 0;
+  .tree.top {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-s);
   }
-  summary {
-    cursor: pointer;
-    font-weight: 600;
-    padding: 0.2rem 0;
-  }
-  .model {
+  .row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-    padding: 0.15rem 0;
+    gap: var(--gap-3);
+    padding: var(--gap-2) var(--gap-3);
+    border-top: 1px solid var(--line);
+  }
+  .tree > :first-child {
+    border-top: 0;
+  }
+  .row:hover {
+    background: var(--hover-bg);
   }
   .name {
-    border: none;
+    border: 0;
     background: none;
-    padding: 0.15rem 0.3rem;
+    padding: var(--gap-1) 0;
     text-align: left;
+    color: var(--text-strong);
+    font-size: var(--text-m);
+    font-weight: 600;
+    min-height: 0;
+  }
+  .name:hover:not(:disabled) {
+    background: none;
     color: var(--accent);
-    cursor: pointer;
-    font-size: 1rem;
   }
-  .name:hover {
-    text-decoration: underline;
-  }
-  .actions {
-    display: none;
-    gap: 0.25rem;
-  }
-  .model:hover .actions,
-  .model:focus-within .actions {
-    display: inline-flex;
-  }
-  .actions button {
-    font-size: 0.8rem;
-    padding: 0.1rem 0.4rem;
+  .meta {
+    flex: 1;
+    font-size: var(--text-s);
+    text-align: right;
   }
   .edit {
     display: flex;
-    gap: 0.4rem;
-    padding: 0.2rem 0;
+    flex: 1;
+    gap: var(--gap-2);
+  }
+  .edit input {
+    flex: 1;
+  }
+  details.more > summary::after {
+    content: none;
+  }
+  .folder {
+    border-top: 1px solid var(--line);
+  }
+  .folder > details > summary {
+    cursor: pointer;
+    padding: var(--gap-2) var(--gap-3);
+    font-size: var(--text-s);
+    font-weight: 650;
+    color: var(--text-muted);
+    background: var(--surface-2);
+  }
+  .folder > details > :global(.tree) {
+    padding-left: var(--gap-4);
   }
 </style>

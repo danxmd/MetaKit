@@ -28,7 +28,7 @@ const select = (page: Page, id: string) =>
 
 async function openBuild(page: Page) {
   await page.getByTestId('open-folder').click();
-  await page.locator('summary', { hasText: 'Tool libraries' }).click();
+  await page.getByTestId('mode-build').click();
   await page.getByRole('button', { name: /^Edit / }).click();
   await expect(page.getByTestId('build-view')).toBeVisible();
 }

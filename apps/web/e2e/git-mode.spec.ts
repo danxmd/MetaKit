@@ -24,6 +24,8 @@ async function openFromRepository(page: Page) {
   await loadHarness(page, './git-harness.ts');
   await page.getByTestId('open-folder').click();
   await page.getByRole('button', { name: 'Create workspace' }).click();
+  await page.getByTestId('mode-build').click();
+  await page.getByTestId('add-menu').locator('summary').click();
   await page.getByTestId('open-git').click();
 
   await page.getByTestId('git-token-label').fill('Test token');

@@ -22,6 +22,7 @@ async function newTool(page: Page, name: string) {
   await page.goto('/MetaKit/');
   await page.getByTestId('open-folder').click();
   await page.getByRole('button', { name: 'Create workspace' }).click();
+  await page.getByTestId('mode-build').click();
   await page.getByTestId('new-tool').click();
   await page.getByTestId('new-tool-name').fill(name);
   await page.getByTestId('new-tool-create').click();
