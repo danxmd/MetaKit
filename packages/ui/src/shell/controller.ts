@@ -11,6 +11,8 @@ import {
   type ToolLibrary,
 } from '@metakit-app/core';
 import {
+  migrate,
+  NewerFormatError,
   NotFoundError,
   Workspace,
   type HealthFinding,
@@ -469,7 +471,18 @@ export class AppController {
           'That file is not a tool library: it is not valid JSON.',
         );
       }
-      const parsed = parseToolLibrary(value);
+      let upgraded: unknown = value;
+      try {
+        // A file from an earlier release is brought up to the current format in memory.
+        upgraded = migrate('tool-document', value).value;
+      } catch (error) {
+        // A file from a newer release is refused; anything else is reported by the checks below.
+        if (error instanceof NewerFormatError)
+          throw new Error(`That file cannot be read: ${error.message}`, {
+            cause: error,
+          });
+      }
+      const parsed = parseToolLibrary(upgraded);
       if (!parsed.ok)
         throw new Error(
           `That file is not a valid tool library.\n${formatIssues(parsed.issues)}`,

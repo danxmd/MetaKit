@@ -1,9 +1,15 @@
 import RBush from 'rbush';
 import {
   effectiveAttributes,
+  effectiveRelationAttributes,
   inDrawingOrder,
+  type AttributeDef,
   type ChangeEvent,
   type ClassDef,
+  type NodeShape,
+  type RelationShape,
+  type ShapeDef,
+  type ShapeId,
   type ClassId,
   type ConnectorId,
   type ElementId,
@@ -13,7 +19,6 @@ import {
   type RelationId,
   type ToolLibrary,
 } from '@metakit-app/core';
-import { DrawListCache, type DrawList } from './drawlist';
 import {
   contains,
   distanceToPolyline,
@@ -22,12 +27,20 @@ import {
   type Rect,
 } from './geometry';
 import { routeBounds, routeConnector } from './route';
+import { fillFor } from './shapes';
 import {
-  builtinShape,
-  fillFor,
-  type ShapeChooser,
-  type ShapeName,
-} from './shapes';
+  PLACEHOLDER_SHAPE,
+  CompileCache,
+  compileRelation,
+  defaultRelationShape,
+  makeScope,
+  starterFor,
+  valuesByKey,
+  type CachedCompile,
+  type CompiledRelation,
+  type OutlineKind,
+} from '@metakit-app/shapes';
+import type { Value } from '@metakit-app/formula';
 
 export interface ElementItem {
   kind: 'element';
@@ -40,9 +53,10 @@ export interface ElementItem {
   parent: ElementId | undefined;
   pos: string;
   label: string;
+  /** Fill used when the element is small enough to be drawn as a plain batched shape. */
   fill: string;
-  shape: ShapeName;
-  draw: DrawList;
+  outline: OutlineKind;
+  compiled: CachedCompile;
   /** Position in drawing order among elements; larger is on top. */
   rank: number;
 }
@@ -56,6 +70,8 @@ export interface ConnectorItem {
   bends: Point[];
   pos: string;
   route: Point[];
+  /** How the line looks: stroke, markers and labels, from the relation class's shape. */
+  look: CompiledRelation;
   rank: number;
 }
 
@@ -68,10 +84,9 @@ export interface IndexBox extends Rect {
 }
 
 export interface SceneOptions {
-  shape?: ShapeChooser;
   /** Language for class labels used as fallback text. */
   language?: string;
-  cache?: DrawListCache;
+  cache?: CompileCache;
 }
 
 export interface SceneChange {
@@ -92,30 +107,54 @@ export class Scene {
   readonly elements = new Map<ElementId, ElementItem>();
   readonly connectors = new Map<ConnectorId, ConnectorItem>();
   readonly index = new RBush<IndexBox>();
-  readonly cache: DrawListCache;
+  readonly cache: CompileCache;
   private readonly boxes = new Map<string, IndexBox>();
   private readonly adjacency = new Map<ElementId, Set<ConnectorId>>();
   private readonly listeners = new Set<(change: SceneChange) => void>();
   private ranksDirty = true;
-  private readonly chooseShape: ShapeChooser;
   private readonly language: string;
   private readonly classCache = new Map<
     ClassId,
-    { def: ClassDef; textAttrs: string[] }
+    {
+      def: ClassDef;
+      textAttrs: string[];
+      defs: AttributeDef[];
+      shape: NodeShape;
+    }
   >();
+  private readonly relationCache = new Map<
+    RelationId,
+    { defs: AttributeDef[]; shape: RelationShape; dynamic: boolean }
+  >();
+  /** Relation looks that do not depend on the connector's values are compiled once per shape. */
+  private readonly staticLooks = new WeakMap<RelationShape, CompiledRelation>();
   private model: Model;
 
   constructor(
     model: Model,
-    readonly tool: ToolLibrary,
+    public tool: ToolLibrary,
     options: SceneOptions = {},
   ) {
     this.model = model;
-    this.chooseShape = options.shape ?? builtinShape;
     this.language = options.language ?? 'en';
-    this.cache = options.cache ?? new DrawListCache();
+    this.cache = options.cache ?? new CompileCache();
     this.rebuild(model);
   }
+
+  /** Takes a changed tool library (hot reload) and redraws everything that depends on it. */
+  setTool(tool: ToolLibrary): void {
+    this.tool = tool;
+    this.rebuild(this.model);
+  }
+
+  /** The shape a class draws with: its own when it has one, else a starter chosen by kind and key. */
+  private nodeShapeFor(def: ClassDef): NodeShape {
+    const own = def.shape ? this.tool.shapes?.[def.shape] : undefined;
+    return own?.kind === 'node' ? own : starterFor(def);
+  }
+
+  private shapeLookup = (id: ShapeId): ShapeDef | undefined =>
+    this.tool.shapes?.[id];
 
   /** Throws away everything and reads the whole model; used on open and after a tool change. */
   rebuild(model: Model): void {
@@ -127,6 +166,7 @@ export class Scene {
     this.adjacency.clear();
     this.index.clear();
     this.classCache.clear();
+    this.relationCache.clear();
     for (const e of Object.values(model.elements)) this.putElement(model, e.id);
     for (const c of Object.values(model.connectors))
       this.putConnector(model, c.id);
@@ -196,18 +236,99 @@ export class Scene {
     if (!info) {
       const def = this.tool.classes[id];
       if (!def) return undefined;
-      let textAttrs: string[] = [];
+      let defs: AttributeDef[] = [];
       try {
-        textAttrs = effectiveAttributes(this.tool, id)
-          .filter((a) => a.type === 'text')
-          .map((a) => a.id);
+        defs = effectiveAttributes(this.tool, id);
       } catch {
         // A broken class chain still draws, with the class name as the label.
       }
-      info = { def, textAttrs };
+      info = {
+        def,
+        defs,
+        textAttrs: defs.filter((a) => a.type === 'text').map((a) => a.id),
+        shape: this.nodeShapeFor(def),
+      };
       this.classCache.set(id, info);
     }
     return info;
+  }
+
+  private relationInfo(id: RelationId) {
+    let info = this.relationCache.get(id);
+    if (!info) {
+      const def = this.tool.relations[id];
+      let defs: AttributeDef[] = [];
+      try {
+        if (def) defs = effectiveRelationAttributes(this.tool, id);
+      } catch {
+        // A broken relation chain still draws with its own shape.
+      }
+      const own = def?.shape ? this.tool.shapes?.[def.shape] : undefined;
+      const shape =
+        own?.kind === 'relation'
+          ? own
+          : defaultRelationShape('shp_starter_default');
+      info = { defs, shape, dynamic: JSON.stringify(shape).includes('"=') };
+      this.relationCache.set(id, info);
+    }
+    return info;
+  }
+
+  private resolveRef = (id: string): Record<string, Value> | undefined => {
+    const e = this.model.elements[id as ElementId];
+    if (!e) return undefined;
+    return valuesByKey(this.classInfo(e.class)?.defs ?? [], e.attrs);
+  };
+
+  private scopeFor(
+    data: {
+      class: ClassId;
+      attrs: Record<string, never> | Record<string, unknown>;
+    },
+    w: number,
+    h: number,
+  ) {
+    const info = this.classInfo(data.class);
+    const attrs = data.attrs as Record<string, never>;
+    const label = info
+      ? this.labelFor(data.class, attrs)
+      : `Unknown class ${data.class}`;
+    const labelKey = info?.defs.find((a) => a.id === info.textAttrs[0])?.key;
+    return {
+      info,
+      label,
+      scope: makeScope(
+        info?.defs ?? [],
+        attrs,
+        {
+          label,
+          className: info
+            ? (info.def.labels[this.language] ?? info.def.key)
+            : 'Unknown class',
+          w,
+          h,
+          fill: info ? fillFor(info.def) : '#e9ecef',
+          resolve: this.resolveRef,
+          language: this.language,
+        },
+        labelKey,
+      ),
+    };
+  }
+
+  /** The compiled list for an element shown at another size, as in a resize preview. Not kept. */
+  compiledAt(item: ElementItem, w: number, h: number): CachedCompile {
+    const data = this.model.elements[item.id];
+    if (!data) return item.compiled;
+    const { info, scope } = this.scopeFor(data, w, h);
+    return this.cache.get(
+      undefined,
+      info?.shape ?? PLACEHOLDER_SHAPE,
+      w,
+      h,
+      scope,
+      this.shapeLookup,
+    );
   }
 
   /** The attribute whose value is the shape's label: the first text attribute of the class, if it has one. */
@@ -229,19 +350,21 @@ export class Scene {
   private putElement(model: Model, id: ElementId): void {
     const data = model.elements[id];
     if (!data) return;
-    const info = this.classInfo(data.class);
-    const shape = info ? this.chooseShape(info.def) : 'rounded';
-    const fill = info ? fillFor(info.def) : '#f1f3f5';
-    const label = this.labelFor(data.class, data.attrs);
     const existing = this.elements.get(id);
     if (!existing || existing.pos !== data.pos) this.ranksDirty = true;
-    const draw = this.cache.get(
-      existing?.draw,
-      shape,
+    const { info, label, scope } = this.scopeFor(data, data.w, data.h);
+    const compiled = this.cache.get(
+      existing?.compiled,
+      info?.shape ?? PLACEHOLDER_SHAPE,
       data.w,
       data.h,
-      label,
-      fill,
+      scope,
+      this.shapeLookup,
+    );
+    const first = compiled.compiled.ops.find(
+      (o) =>
+        (o.op === 'rect' || o.op === 'ellipse' || o.op === 'polygon') &&
+        typeof o.style.fill === 'string',
     );
     const item: ElementItem = {
       kind: 'element',
@@ -254,9 +377,14 @@ export class Scene {
       parent: data.parent,
       pos: data.pos,
       label,
-      fill,
-      shape,
-      draw,
+      fill:
+        first && 'style' in first && typeof first.style.fill === 'string'
+          ? first.style.fill
+          : info
+            ? fillFor(info.def)
+            : '#e9ecef',
+      outline: compiled.compiled.outline,
+      compiled,
       rank: existing?.rank ?? 0,
     };
     this.elements.set(id, item);
@@ -281,9 +409,10 @@ export class Scene {
     }
     // A connector whose end is missing is kept with a short route so that it can still be selected
     // and deleted; validation reports the dangling end.
+    const look = this.lookFor(data);
     const route =
       from && to
-        ? routeConnector(from, to, data.bends)
+        ? routeConnector(from, to, data.bends, look.line.routing)
         : [...data.bends].length >= 2
           ? [...data.bends]
           : [
@@ -299,10 +428,39 @@ export class Scene {
       bends: data.bends.map((b) => ({ ...b })),
       pos: data.pos,
       route,
+      look,
       rank: existing?.rank ?? 0,
     };
     this.connectors.set(id, item);
     this.setBox(id, 'connector', routeBounds(route));
+  }
+
+  private lookFor(data: {
+    relation: RelationId;
+    attrs: Record<string, unknown>;
+  }): CompiledRelation {
+    const info = this.relationInfo(data.relation);
+    if (!info.dynamic) {
+      let look = this.staticLooks.get(info.shape);
+      if (!look) {
+        look = compileRelation(info.shape, { get: () => undefined });
+        this.staticLooks.set(info.shape, look);
+      }
+      return look;
+    }
+    const def = this.tool.relations[data.relation];
+    return compileRelation(
+      info.shape,
+      makeScope(info.defs, data.attrs as Record<string, never>, {
+        label: '',
+        className: def?.key ?? '',
+        w: 0,
+        h: 0,
+        fill: '',
+        resolve: this.resolveRef,
+        language: this.language,
+      }),
+    );
   }
 
   private setBox(
@@ -447,7 +605,12 @@ export class Scene {
     if (!a || !b) return connector.route;
     const box = (e: ElementItem, r: Rect | undefined) =>
       r ? { x: r.minX, y: r.minY, w: r.maxX - r.minX, h: r.maxY - r.minY } : e;
-    return routeConnector(box(a, from), box(b, to), bends);
+    return routeConnector(
+      box(a, from),
+      box(b, to),
+      bends,
+      connector.look.line.routing,
+    );
   }
 
   /**
@@ -471,6 +634,11 @@ export class Scene {
       if (to.minX - b.x === dx && to.minY - b.y === dy)
         bends = bends.map((p) => ({ x: p.x + dx, y: p.y + dy }));
     }
-    return routeConnector(box(a, from), box(b, to), bends);
+    return routeConnector(
+      box(a, from),
+      box(b, to),
+      bends,
+      connector.look.line.routing,
+    );
   }
 }

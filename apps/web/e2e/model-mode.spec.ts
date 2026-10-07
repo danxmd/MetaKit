@@ -106,10 +106,7 @@ test.describe('start and explorer', () => {
     await prepare(page);
     await newModel(page, 'Alpha', 'Sales/2026');
     await page.getByTestId('back-to-explorer').click();
-    // Leaving a model writes and folds its changes first; that takes longer on a busy machine.
-    await expect(page.getByTestId('folder-Sales')).toBeVisible({
-      timeout: 20_000,
-    });
+    await expect(page.getByTestId('folder-Sales')).toBeVisible();
     await expect(page.getByTestId('folder-Sales/2026')).toBeVisible();
 
     const row = page.locator('[data-testid^="model-"]').first();

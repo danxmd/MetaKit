@@ -1,5 +1,5 @@
 {
-  "formatVersion": 1,
+  "formatVersion": 2,
   "manifest": {
     "id": "tool_erlite",
     "name": "ER lite",
@@ -7,16 +7,26 @@
     "languages": ["en"]
   },
   "settings": {
-    "grid": { "size": 20, "snap": true, "visible": false },
+    "grid": {
+      "size": 20,
+      "snap": true,
+      "visible": false
+    },
     "layers": [],
-    "numbering": { "enabled": false, "prefix": "", "start": 1 }
+    "numbering": {
+      "enabled": false,
+      "prefix": "",
+      "start": 1
+    }
   },
   "classes": {
     "cls_entity": {
       "id": "cls_entity",
       "key": "Entity",
       "kind": "node",
-      "labels": { "en": "Entity" },
+      "labels": {
+        "en": "Entity"
+      },
       "attributes": [
         {
           "id": "att_ename",
@@ -32,13 +42,16 @@
           "type": "text",
           "multiline": true
         }
-      ]
+      ],
+      "shape": "shp_er_entity"
     },
     "cls_attribute": {
       "id": "cls_attribute",
       "key": "Attribute",
       "kind": "node",
-      "labels": { "en": "Attribute" },
+      "labels": {
+        "en": "Attribute"
+      },
       "attributes": [
         {
           "id": "att_aname",
@@ -60,13 +73,16 @@
           "type": "boolean",
           "default": false
         }
-      ]
+      ],
+      "shape": "shp_task"
     },
     "cls_relationship": {
       "id": "cls_relationship",
       "key": "Relationship",
       "kind": "node",
-      "labels": { "en": "Relationship" },
+      "labels": {
+        "en": "Relationship"
+      },
       "attributes": [
         {
           "id": "att_rname",
@@ -75,22 +91,28 @@
           "required": true,
           "maxLength": 60
         }
-      ]
+      ],
+      "shape": "shp_task"
     }
   },
   "relations": {
     "rel_has": {
       "id": "rel_has",
       "key": "Has",
-      "labels": { "en": "Has" },
+      "labels": {
+        "en": "Has"
+      },
       "from": ["cls_entity", "cls_relationship"],
       "to": ["cls_attribute"],
-      "attributes": []
+      "attributes": [],
+      "shape": "shp_flow"
     },
     "rel_participates": {
       "id": "rel_participates",
       "key": "Participates",
-      "labels": { "en": "Participates in" },
+      "labels": {
+        "en": "Participates in"
+      },
       "from": ["cls_entity"],
       "to": ["cls_relationship"],
       "attributes": [
@@ -101,19 +123,26 @@
           "options": ["1", "N"],
           "default": "N"
         }
-      ]
+      ],
+      "shape": "shp_flow"
     }
   },
   "modelTypes": {
     "mt_er": {
       "id": "mt_er",
       "key": "ERDiagram",
-      "labels": { "en": "ER diagram" },
+      "labels": {
+        "en": "ER diagram"
+      },
       "classes": ["cls_entity", "cls_attribute", "cls_relationship"],
       "relations": ["rel_has", "rel_participates"],
       "views": [],
       "cardinalities": [
-        { "kind": "count", "class": "cls_entity", "min": 1 },
+        {
+          "kind": "count",
+          "class": "cls_entity",
+          "min": 1
+        },
         {
           "kind": "degree",
           "class": "cls_attribute",
@@ -137,8 +166,137 @@
           "type": "text",
           "required": true
         },
-        { "id": "att_erauthor", "key": "Author", "type": "text" }
+        {
+          "id": "att_erauthor",
+          "key": "Author",
+          "type": "text"
+        }
       ]
     }
-  }
+  },
+  "shapes": {
+    "shp_er_entity": {
+      "id": "shp_er_entity",
+      "name": "ER entity",
+      "kind": "node",
+      "size": {
+        "width": 150,
+        "height": 100,
+        "resizable": true,
+        "minWidth": 80,
+        "minHeight": 50
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "fill": "#ffffff",
+          "stroke": "#364fc7",
+          "strokeWidth": 2
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": 26,
+          "fill": "#364fc7"
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 1,
+          "width": "100% - 16",
+          "height": 24,
+          "text": "= $label",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#ffffff",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 32,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= item",
+          "wrap": false,
+          "font": {
+            "size": 11
+          },
+          "fill": "#495057",
+          "repeat": {
+            "over": "$fields",
+            "as": "item",
+            "layout": {
+              "kind": "stack",
+              "gap": 0
+            },
+            "cellHeight": 16
+          }
+        }
+      ]
+    },
+    "shp_task": {
+      "id": "shp_task",
+      "name": "Task (rounded box)",
+      "kind": "node",
+      "size": {
+        "width": 140,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 60,
+        "minHeight": 36
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "= $fill",
+          "stroke": "#364fc7",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 4,
+          "width": "100% - 16",
+          "height": "100% - 8",
+          "text": "= $label",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle"
+        }
+      ]
+    },
+    "shp_flow": {
+      "id": "shp_flow",
+      "name": "Flow (arrow)",
+      "kind": "relation",
+      "line": {
+        "stroke": "#6b7a90",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      }
+    }
+  },
+  "panels": {}
 }

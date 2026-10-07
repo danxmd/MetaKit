@@ -30,6 +30,7 @@ export function routeConnector(
   a: Box,
   b: Box,
   bends: readonly Point[],
+  routing: 'straight' | 'orthogonal' | 'curved' = 'orthogonal',
 ): Point[] {
   if (bends.length > 0) {
     return [
@@ -40,6 +41,7 @@ export function routeConnector(
   }
   const ca = centre(a);
   const cb = centre(b);
+  if (routing === 'straight') return [edgePoint(a, cb), edgePoint(b, ca)];
   const dx = cb.x - ca.x;
   const dy = cb.y - ca.y;
   if (Math.abs(dx) * a.h >= Math.abs(dy) * a.w) {

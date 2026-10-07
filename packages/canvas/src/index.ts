@@ -2,7 +2,7 @@ export * from './geometry';
 export * from './view';
 export * from './route';
 export * from './shapes';
-export * from './drawlist';
+export * from './paint';
 export * from './scene';
 export * from './handles';
 export * from './renderer';

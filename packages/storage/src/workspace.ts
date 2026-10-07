@@ -296,7 +296,10 @@ export class Workspace {
       throw new NotFoundError(
         `The ${kind} "${slug}" has no saved content yet.${warnings.length ? ` ${warnings.join(' ')}` : ''}`,
       );
-    const document = materialize(state);
+    // Tool libraries from earlier formats are brought up to date in memory; saving writes the new one.
+    const stored = materialize(state);
+    const document =
+      kind === 'tool' ? migrate('tool-document', stored).value : stored;
     const issues =
       kind === 'tool'
         ? validateToolLibrary(document)

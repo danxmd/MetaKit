@@ -135,3 +135,39 @@ describe('snapshot format 2', () => {
     expect(parsed.instance).toBe('aaaa0001');
   });
 });
+
+describe('tool library format 2', () => {
+  it('adds empty shapes and panels to a version 1 library and keeps the rest', () => {
+    const v1 = {
+      formatVersion: 1,
+      manifest: {
+        id: 'tool_x',
+        name: 'X',
+        version: '1.0.0',
+        languages: ['en'],
+      },
+      settings: {},
+      classes: { cls_a: { id: 'cls_a', key: 'A' } },
+      relations: {},
+      modelTypes: {},
+    };
+    const { value, from, to } = migrate('tool-document', v1);
+    expect([from, to]).toEqual([1, 2]);
+    expect(value).toEqual({ ...v1, formatVersion: 2, shapes: {}, panels: {} });
+  });
+
+  it('leaves shapes of a version 2 library alone', () => {
+    const v2 = {
+      formatVersion: 2,
+      shapes: { shp_a: { id: 'shp_a' } },
+      panels: {},
+    };
+    expect(migrate('tool-document', v2).value).toEqual(v2);
+  });
+
+  it('refuses a library from a newer release', () => {
+    expect(() => migrate('tool-document', { formatVersion: 3 })).toThrow(
+      /newer version/,
+    );
+  });
+});

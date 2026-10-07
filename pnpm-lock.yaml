@@ -77,6 +77,12 @@ importers:
       '@metakit-app/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@metakit-app/formula':
+        specifier: workspace:*
+        version: link:../../packages/formula
+      '@metakit-app/shapes':
+        specifier: workspace:*
+        version: link:../../packages/shapes
       '@metakit-app/storage':
         specifier: workspace:*
         version: link:../../packages/storage
@@ -102,6 +108,12 @@ importers:
       '@metakit-app/core':
         specifier: workspace:*
         version: link:../core
+      '@metakit-app/formula':
+        specifier: workspace:*
+        version: link:../formula
+      '@metakit-app/shapes':
+        specifier: workspace:*
+        version: link:../shapes
       rbush:
         specifier: ^4.0.1
         version: 4.0.1
@@ -119,9 +131,20 @@ importers:
         specifier: ^4.0.0
         version: 4.10.2
 
-  packages/formula: {}
+  packages/formula:
+    devDependencies:
+      fast-check:
+        specifier: ^4.0.0
+        version: 4.10.2
 
-  packages/shapes: {}
+  packages/shapes:
+    dependencies:
+      '@metakit-app/core':
+        specifier: workspace:*
+        version: link:../core
+      '@metakit-app/formula':
+        specifier: workspace:*
+        version: link:../formula
 
   packages/storage:
     dependencies:

@@ -20,7 +20,7 @@ export const CURRENT_FORMAT: Readonly<Record<FileKind, number>> = {
   snapshot: 2,
   trash: 1,
   mkmodel: 1,
-  'tool-document': 1,
+  'tool-document': 2,
   'model-document': 1,
 };
 
@@ -64,7 +64,18 @@ export const MIGRATIONS: MigrationRegistry = {
   ],
   trash: [],
   mkmodel: [],
-  'tool-document': [],
+  'tool-document': [
+    {
+      // Format 2 adds shapes and panel layouts (ADR 0004); older libraries have none.
+      from: 1,
+      to: 2,
+      up: (file) => ({
+        ...file,
+        shapes: file.shapes ?? {},
+        panels: file.panels ?? {},
+      }),
+    },
+  ],
   'model-document': [],
 };
 

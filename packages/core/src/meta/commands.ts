@@ -1,4 +1,11 @@
-import { isId, type ClassId, type ModelTypeId, type RelationId } from '../ids';
+import {
+  isId,
+  type ClassId,
+  type ModelTypeId,
+  type RelationId,
+  type ShapeId,
+} from '../ids';
+import type { PanelLayout, ShapeDef } from './shape-types';
 import {
   DocumentStore,
   type BatchCommand,
@@ -32,7 +39,11 @@ export type ToolCommand =
   | { type: 'putModelType'; def: ModelTypeDef }
   | { type: 'removeClass'; id: ClassId }
   | { type: 'removeRelation'; id: RelationId }
-  | { type: 'removeModelType'; id: ModelTypeId };
+  | { type: 'removeModelType'; id: ModelTypeId }
+  | { type: 'putShape'; def: ShapeDef }
+  | { type: 'removeShape'; id: ShapeId }
+  | { type: 'putPanel'; layout: PanelLayout }
+  | { type: 'removePanel'; id: ClassId | RelationId };
 
 export type ToolCommandOrBatch = ToolCommand | BatchCommand<ToolCommand>;
 
@@ -78,10 +89,38 @@ function relationUsers(tool: ToolLibrary, id: RelationId): string[] {
   return users;
 }
 
+/** Who still uses a shape, so that removing it can be refused with a useful message. */
+function shapeUsers(tool: ToolLibrary, id: ShapeId): string[] {
+  const users: string[] = [];
+  for (const c of Object.values(tool.classes))
+    if (c.shape === id) users.push(`class ${nameOf(c)} draws with it`);
+  for (const r of Object.values(tool.relations))
+    if (r.shape === id) users.push(`relation class ${nameOf(r)} draws with it`);
+  for (const m of Object.values(tool.modelTypes))
+    if (m.background === id)
+      users.push(`model type ${nameOf(m)} uses it as background`);
+  const uses = (
+    parts: { type: string; shape?: string; parts?: unknown[] }[],
+  ): boolean =>
+    parts.some(
+      (p) =>
+        (p.type === 'use' && p.shape === id) ||
+        (p.type === 'group' && uses((p.parts ?? []) as never)),
+    );
+  for (const s of Object.values(tool.shapes ?? {}))
+    if (
+      s.kind === 'node' &&
+      (uses(s.parts as never) ||
+        (s.variants ?? []).some((v) => uses(v.parts as never)))
+    )
+      users.push(`shape ${s.name ?? s.id} embeds it`);
+  return users;
+}
+
 function put<D extends { id: string }>(
   tx: Tx<ToolLibrary>,
-  table: 'classes' | 'relations' | 'modelTypes',
-  prefix: 'class' | 'relation' | 'modelType',
+  table: 'classes' | 'relations' | 'modelTypes' | 'shapes',
+  prefix: 'class' | 'relation' | 'modelType' | 'shape',
   def: D,
   what: string,
 ) {
@@ -151,6 +190,39 @@ function applyToolCommand(tx: Tx<ToolLibrary>, command: ToolCommand): unknown {
       if (!tool.modelTypes[command.id])
         throw new CommandError(`The model type ${command.id} does not exist.`);
       tx.remove(['modelTypes', command.id]);
+      return undefined;
+    }
+    case 'putShape':
+      put(tx, 'shapes', 'shape', command.def, 'shape');
+      return command.def.id;
+    case 'removeShape': {
+      const def = tool.shapes?.[command.id];
+      if (!def)
+        throw new CommandError(`The shape ${command.id} does not exist.`);
+      const users = shapeUsers(tool, command.id);
+      if (users.length > 0)
+        throw new CommandError(
+          `The shape ${def.name ?? def.id} is still in use: ${users.join('; ')}.`,
+        );
+      tx.remove(['shapes', command.id]);
+      return undefined;
+    }
+    case 'putPanel': {
+      const id = command.layout?.class;
+      if (
+        typeof id !== 'string' ||
+        !(id in tool.classes || id in tool.relations)
+      )
+        throw new CommandError(
+          `The panel layout needs the id of an existing class or relation class (it is ${JSON.stringify(id)}).`,
+        );
+      tx.set(['panels', id], command.layout);
+      return id;
+    }
+    case 'removePanel': {
+      if (!tool.panels?.[command.id])
+        throw new CommandError(`There is no panel layout for ${command.id}.`);
+      tx.remove(['panels', command.id]);
       return undefined;
     }
     default: {

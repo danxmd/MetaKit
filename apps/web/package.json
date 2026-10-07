@@ -13,6 +13,8 @@
   "devDependencies": {
     "@metakit-app/canvas": "workspace:*",
     "@metakit-app/core": "workspace:*",
+    "@metakit-app/formula": "workspace:*",
+    "@metakit-app/shapes": "workspace:*",
     "@metakit-app/storage": "workspace:*",
     "@metakit-app/ui": "workspace:*"
   }

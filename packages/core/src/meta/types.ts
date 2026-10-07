@@ -8,6 +8,7 @@ import type {
   ViewId,
 } from '../ids';
 import type { Json } from '../json';
+import type { PanelLayout, ShapeDef } from './shape-types';
 
 /** Text per language code, for example `{ "en": "Task", "de": "Aufgabe" }`. */
 export type Labels = Record<string, string>;
@@ -212,6 +213,8 @@ export interface ModelTypeDef {
   /** Attributes of the model itself. */
   attributes: AttributeDef[];
   background?: ShapeId;
+  /** Which classes each container or swimlane class accepts; a class not listed accepts any. */
+  containers?: Record<ClassId, ClassId[]>;
   help?: Labels;
 }
 
@@ -235,10 +238,14 @@ export interface ToolLibrary {
   classes: Record<ClassId, ClassDef>;
   relations: Record<RelationId, RelationDef>;
   modelTypes: Record<ModelTypeId, ModelTypeDef>;
+  /** Shapes by id; a class or relation class names one in `shape`. */
+  shapes: Record<ShapeId, ShapeDef>;
+  /** Panel layouts, keyed by the id of the class or relation class they belong to. */
+  panels: Record<string, PanelLayout>;
 }
 
-/** The format version this release writes for tool libraries. */
-export const TOOL_FORMAT_VERSION = 1;
+/** The format version this release writes for tool libraries (2: shapes and panels, ADR 0004). */
+export const TOOL_FORMAT_VERSION = 2;
 
 export function optionValue(option: ChoiceOption): string {
   return typeof option === 'string' ? option : option.value;
