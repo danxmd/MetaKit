@@ -19,6 +19,11 @@ import type {
 } from '../meta/types';
 import { checkAttributeValue, isEmptyValue } from '../meta/values';
 import {
+  containerAccepts,
+  isContainerClass,
+  parentChainLoops,
+} from '../model/containers';
+import {
   inDrawingOrder,
   type ConnectorData,
   type ElementData,
@@ -224,6 +229,36 @@ export function validateModel(
         code: 'dangling-parent',
         message: `${describeElement(tool, el)} sits in the container ${el.parent}, which is not in the model.`,
       });
+    }
+    if (el.parent && parentChainLoops(model, el.id)) {
+      out.push({
+        id: el.id,
+        severity: 'error',
+        code: 'parent-loop',
+        message: `${describeElement(tool, el)} is inside itself: following its containers leads back to it.`,
+      });
+    }
+    const parentEl = el.parent ? model.elements[el.parent] : undefined;
+    if (parentEl && tool.classes[parentEl.class]) {
+      if (!isContainerClass(tool, parentEl.class)) {
+        out.push({
+          id: el.id,
+          severity: 'warning',
+          code: 'parent-not-container',
+          message: `${describeElement(tool, el)} sits in ${describeElement(tool, parentEl)}, which is not a container or swimlane.`,
+        });
+      } else if (
+        modelType &&
+        cls &&
+        !containerAccepts(tool, modelType.id, parentEl.class, el.class)
+      ) {
+        out.push({
+          id: el.id,
+          severity: 'warning',
+          code: 'parent-not-accepted',
+          message: `${describeElement(tool, el)} sits in ${describeElement(tool, parentEl)}, which does not accept ${labelOf(tool, cls.labels, cls.key)} elements.`,
+        });
+      }
     }
     if (!cls) {
       out.push({

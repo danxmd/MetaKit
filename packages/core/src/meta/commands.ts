@@ -90,6 +90,9 @@ function classUsers(tool: ToolLibrary, id: ClassId): string[] {
     for (const k of m.cardinalities)
       if (k.class === id)
         users.push(`model type ${nameOf(m)} has a cardinality for it`);
+    for (const [container, accepted] of Object.entries(m.containers ?? {}))
+      if (container === id || accepted.includes(id))
+        users.push(`model type ${nameOf(m)} has a container rule for it`);
   }
   return users;
 }

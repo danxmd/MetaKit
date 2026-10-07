@@ -210,6 +210,11 @@ export interface ModelTypeDef {
   relations: RelationId[];
   views: ViewDef[];
   cardinalities: Cardinality[];
+  /**
+   * Which classes each container or swimlane class accepts as children (a listed class also
+   * accepts its subclasses). A container class that is not listed accepts any class.
+   */
+  containers?: Record<ClassId, ClassId[]>;
   /** Attributes of the model itself. */
   attributes: AttributeDef[];
   background?: ShapeId;
