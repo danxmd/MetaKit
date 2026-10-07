@@ -1,6 +1,7 @@
 import {
   createModelStore,
   validateModel,
+  TOOL_FORMAT_VERSION,
   type ClassId,
   type Model,
   type ToolLibrary,
@@ -149,7 +150,7 @@ describe('the package', () => {
     });
     const read = readToolPackage(bytes);
     expect(read.issues).toEqual([]);
-    expect(read.tool.formatVersion).toBe(3);
+    expect(read.tool.formatVersion).toBe(TOOL_FORMAT_VERSION);
     expect(read.tool.rules).toEqual({});
   });
 
