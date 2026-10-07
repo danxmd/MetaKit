@@ -7,6 +7,7 @@ async function openNewTool(page: Page, name = 'UX tool') {
   await prepare(page, { name: 'Anna', colour: '#e8590c', seed: false });
   await page.getByTestId('open-folder').click();
   await page.getByRole('button', { name: 'Create workspace' }).click();
+  await page.getByTestId('mode-build').click();
   await page.getByTestId('new-tool').click();
   await page.getByTestId('new-tool-name').fill(name);
   await page.getByTestId('new-tool-create').click();
@@ -102,6 +103,8 @@ test.describe('Source control menu', () => {
     await loadHarness(page, './git-harness.ts');
     await page.getByTestId('open-folder').click();
     await page.getByRole('button', { name: 'Create workspace' }).click();
+    await page.getByTestId('mode-build').click();
+    await page.getByTestId('add-menu').locator('summary').click();
     await page.getByTestId('open-git').click();
     await page.getByTestId('git-token-label').fill('Test token');
     await page.getByTestId('git-token-value').fill('not-a-real-token');
