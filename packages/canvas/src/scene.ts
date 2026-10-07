@@ -210,6 +210,11 @@ export class Scene {
     return info;
   }
 
+  /** The attribute whose value is the shape's label: the first text attribute of the class, if it has one. */
+  labelAttribute(cls: ClassId): string | undefined {
+    return this.classInfo(cls)?.textAttrs[0];
+  }
+
   /** The text shown in the shape: the first filled-in text attribute, else the class name. */
   labelFor(cls: ClassId, attrs: Record<string, unknown>): string {
     const info = this.classInfo(cls);

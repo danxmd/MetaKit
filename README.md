@@ -2,7 +2,7 @@
 
 MetaKit is a browser-only metamodelling and modelling tool. Method engineers build modelling tools in Build mode; modellers use them in Model mode. Tool libraries and models are plain JSON files in a shared folder (OneDrive, SharePoint, Google Drive, Dropbox) or, for tool libraries, in GitHub or GitLab.
 
-The project is in phase 1 (core, model store, validation, local storage and CLI). The web app is still a placeholder.
+The project is in phase 2: Model mode works. Open a workspace folder, create a model from a tool library, place and connect objects, and edit their attributes. Build mode (making tool libraries in the app) comes later; until then add a tool library file (for example `tools/bpmn-lite/tool.json`) with "Add tool library". Phase 1 added the core, storage and CLI.
 
 Local folders need Chrome or Edge on desktop. Other browsers load the app and show a message.
 
@@ -26,6 +26,15 @@ pnpm dev          # serve the web app locally
 | `pnpm build`     | Build the web app and the CLI                                    |
 
 The first `pnpm test:e2e` needs Chromium: `pnpm --filter @metakit-app/web exec playwright install chromium`. If Chromium is already installed, set `PW_CHROMIUM_PATH` to its executable instead.
+
+## Using Model mode
+
+1. `pnpm dev`, then open the address it prints in Chrome or Edge.
+2. **Open workspace folder** and pick a folder. In a folder without `workspace.json` you can start a new workspace.
+3. **Add tool library** (once per workspace) and pick a tool library file, then **New model**: choose the tool library, a model type and a name.
+4. Click an object in the palette and click the canvas, or drag it there. Choose a relation and drag from one object to another, or select an object and drag from its edge. Double-click an object to edit its text; the panel on the right edits every attribute. Ctrl+Z and Ctrl+Shift+Z undo and redo; Ctrl+F finds.
+
+Changes are saved to the workspace about half a second after each edit. Deleted models stay in the workspace and can be restored from "Deleted models".
 
 ## Command line
 

@@ -162,7 +162,7 @@ export class Renderer {
     const ctx = this.bgCtx;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, this.background.width, this.background.height);
-    this.background.style.visibility = '';
+    this.background.style.opacity = '';
     this.background.style.transform = '';
     if (!this.grid.visible) return;
     const { s } = this.view;
@@ -354,8 +354,9 @@ export class Renderer {
   applyGestureTransform(keepActive: boolean): void {
     // Each moved bitmap costs compositing time, so the grid is hidden while the view moves and the
     // active layer moves only when it has something on it (a selection, for instance).
-    this.background.style.visibility = 'hidden';
-    this.active.style.visibility = keepActive ? '' : 'hidden';
+    // Not `visibility: hidden`: the active canvas must keep receiving pointer events.
+    this.background.style.opacity = '0';
+    this.active.style.opacity = keepActive ? '' : '0';
     const apply = (canvas: HTMLCanvasElement, from: View) => {
       const to = this.view;
       const k = to.s / from.s;
@@ -384,7 +385,7 @@ export class Renderer {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, this.active.width, this.active.height);
     this.activeView = { ...this.view };
-    this.active.style.visibility = '';
+    this.active.style.opacity = '';
     this.active.style.transform = '';
     const view = this.view;
     this.setTransform(ctx, view);

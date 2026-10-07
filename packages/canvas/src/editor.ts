@@ -1122,17 +1122,18 @@ export class Editor {
   }
 
   private keyDown(e: KeyboardEvent): void {
-    if (!this.keyboardIsOurs(e.target)) return;
+    // Undo and redo also work after clicking a button or a choice in the panel; only a field the
+    // user types in keeps its own text undo.
     const mod = e.ctrlKey || e.metaKey;
     const key = e.key.toLowerCase();
-    if (mod && key === 'z') {
+    if (mod && (key === 'z' || key === 'y') && !isTyping(e.target)) {
       e.preventDefault();
-      if (e.shiftKey) this.redo();
+      if (key === 'y' || e.shiftKey) this.redo();
       else this.undo();
-    } else if (mod && key === 'y') {
-      e.preventDefault();
-      this.redo();
-    } else if (mod && key === 'a') {
+      return;
+    }
+    if (!this.keyboardIsOurs(e.target)) return;
+    if (mod && key === 'a') {
       e.preventDefault();
       this.selectAll();
     } else if (key === 'delete' || key === 'backspace') {

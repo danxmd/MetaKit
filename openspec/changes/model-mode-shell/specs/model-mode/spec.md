@@ -27,6 +27,17 @@ The new-model dialog SHALL let the user choose a tool library and a model type a
 - **WHEN** the user opens a workspace
 - **THEN** an empty model can be reached in no more than five clicks
 
+### Requirement: Tool libraries
+The explorer SHALL let the user add a tool library to the workspace from a file, SHALL check the file first and say what is wrong with one that is not valid, and SHALL NOT add a tool library that is already there.
+
+#### Scenario: Broken file
+- **WHEN** the user picks a file that is not a valid tool library
+- **THEN** nothing is added and the message names the problem
+
+#### Scenario: Added once
+- **WHEN** the same tool library file is added twice
+- **THEN** the second attempt is refused with a message that it is already in the workspace
+
 ### Requirement: Palette and views
 The palette SHALL list the non-abstract classes and relations of the active view, and the view switcher SHALL change the active view.
 

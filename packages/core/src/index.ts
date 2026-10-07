@@ -8,6 +8,7 @@ export * from './meta/commands';
 export * from './model/types';
 export * from './model/guards';
 export * from './model/commands';
+export * from './model/create';
 export * from './store/tx';
 export * from './store/store';
 export * from './store/position';

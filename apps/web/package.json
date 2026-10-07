@@ -13,6 +13,7 @@
   "devDependencies": {
     "@metakit-app/canvas": "workspace:*",
     "@metakit-app/core": "workspace:*",
-    "@metakit-app/storage": "workspace:*"
+    "@metakit-app/storage": "workspace:*",
+    "@metakit-app/ui": "workspace:*"
   }
 }

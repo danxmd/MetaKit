@@ -6,6 +6,7 @@ export type FileKind =
   | 'tool'
   | 'model'
   | 'snapshot'
+  | 'trash'
   | 'mkmodel'
   | 'tool-document'
   | 'model-document';
@@ -16,6 +17,7 @@ export const CURRENT_FORMAT: Readonly<Record<FileKind, number>> = {
   tool: 1,
   model: 1,
   snapshot: 1,
+  trash: 1,
   mkmodel: 1,
   'tool-document': 1,
   'model-document': 1,
@@ -52,6 +54,7 @@ export const MIGRATIONS: MigrationRegistry = {
   tool: [],
   model: [],
   snapshot: [],
+  trash: [],
   mkmodel: [],
   'tool-document': [],
   'model-document': [],

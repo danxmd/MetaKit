@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 const appUrl = '/MetaKit/';
 
-test('shows the placeholder without a browser warning in Chromium', async ({
+test('shows the start page without a browser warning in Chromium', async ({
   page,
 }) => {
   const failed: string[] = [];
@@ -11,7 +11,7 @@ test('shows the placeholder without a browser warning in Chromium', async ({
   });
   await page.goto(appUrl);
   await expect(page.getByRole('heading', { name: 'MetaKit' })).toBeVisible();
-  await expect(page.getByText('under construction')).toBeVisible();
+  await expect(page.getByTestId('open-folder')).toBeVisible();
   await expect(page.getByTestId('unsupported-browser')).toHaveCount(0);
   expect(failed).toEqual([]);
 });
