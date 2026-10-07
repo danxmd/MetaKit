@@ -14,7 +14,7 @@ A formula attribute SHALL show its computed value read-only in the panel and SHA
 - **THEN** the panel shows Cost 255 and a shape that prints Cost shows it too
 
 ### Requirement: Default formulas
-An attribute MAY have a default formula that is evaluated when an object is created.
+An attribute MAY have a default formula, and it SHALL be evaluated when an object is created.
 
 #### Scenario: Created today
 - **WHEN** an object is created and Created has default formula `today()`
