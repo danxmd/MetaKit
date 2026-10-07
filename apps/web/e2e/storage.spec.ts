@@ -61,8 +61,11 @@ for (const useObserver of [true, false]) {
   });
 }
 
-test('the folder handle survives in IndexedDB', async ({ page }) => {
-  expect(await step('handleStorage')(page)).toMatchObject({ recalled: true });
+test('the browser state keeps values in IndexedDB', async ({ page }) => {
+  expect(await step('handleStorage')(page)).toMatchObject({
+    nothingRemembered: true,
+    roundTrip: { a: 1 },
+  });
 });
 
 test('access to a folder can be requested', async ({ page }) => {
