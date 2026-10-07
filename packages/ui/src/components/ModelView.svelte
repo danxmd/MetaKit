@@ -275,6 +275,22 @@
     emit('view.changed');
   }
 
+  // Commands that rules and scripts add; listed again whenever the set changes.
+  let commandTick = $state(0);
+  const commandsAt = (place: 'model' | 'toolbar' | 'context') => {
+    void commandTick;
+    return behaviour.commands.list(place);
+  };
+  const selectedId = () => targets[0]?.id ?? null;
+  let stopCommands: (() => void) | undefined;
+  let contextMenu = $state<{ x: number; y: number } | null>(null);
+
+  function openContextMenu(event: MouseEvent) {
+    if (behaviour.commands.list('context').length === 0) return;
+    const box = host.getBoundingClientRect();
+    contextMenu = { x: event.clientX - box.left, y: event.clientY - box.top };
+  }
+
   let problemsOpen = $state(false);
 
   function showIssue(target: string) {
@@ -347,6 +363,7 @@
   }
 
   onMount(() => {
+    stopCommands = behaviour.commands.onChange(() => (commandTick += 1));
     scene = new Scene(store.state as Model, tool, { calculator });
     stopStore = scene.attach(store);
     view = new CanvasView(host, scene, { grid: tool.settings.grid });
@@ -417,6 +434,7 @@
     clearTimeout(messageTimer);
     clearTimeout(validateTimer);
     stopStore();
+    stopCommands?.();
     scene?.destroy();
     editor?.destroy();
     minimap?.destroy();
@@ -567,6 +585,27 @@
   <header class="bar">
     <button onclick={onBack} data-testid="back-to-explorer">← Models</button>
     <strong class="name" data-testid="model-name">{model.manifest.name}</strong>
+    {#each commandsAt('toolbar') as command (command.id)}
+      <button
+        onclick={() => command.run(selectedId())}
+        data-testid="command-{command.id}">{command.label}</button
+      >
+    {/each}
+    {#if commandsAt('model').length > 0}
+      <details class="commands" data-testid="commands-menu">
+        <summary>Commands</summary>
+        <ul>
+          {#each commandsAt('model') as command (command.id)}
+            <li>
+              <button
+                onclick={() => command.run(selectedId())}
+                data-testid="command-{command.id}">{command.label}</button
+              >
+            </li>
+          {/each}
+        </ul>
+      </details>
+    {/if}
     <button onclick={autoLayout} data-testid="auto-layout">Auto-layout</button>
     <button
       onclick={() => (problemsOpen = !problemsOpen)}
@@ -769,6 +808,8 @@
     bind:this={host}
     ondragover={(e) => e.preventDefault()}
     ondrop={dropOnCanvas}
+    oncontextmenu={openContextMenu}
+    onclick={() => (contextMenu = null)}
     role="application"
     aria-label="Model canvas"
     data-testid="canvas-host"
@@ -784,6 +825,25 @@
         use:focusOnMount
         data-testid="label-editor"
         aria-label="Edit text"></textarea>
+    {/if}
+    {#if contextMenu}
+      <div
+        class="chooser"
+        style="left:{contextMenu.x}px;top:{contextMenu.y}px"
+        role="menu"
+        data-testid="context-menu"
+      >
+        {#each commandsAt('context') as command (command.id)}
+          <button
+            role="menuitem"
+            onclick={() => {
+              contextMenu = null;
+              command.run(selectedId());
+            }}
+            data-testid="command-{command.id}">{command.label}</button
+          >
+        {/each}
+      </div>
     {/if}
     {#if chooser}
       <div
@@ -1136,6 +1196,24 @@
     border-radius: 4px;
     padding: 0.3rem;
     font: inherit;
+  }
+  .commands {
+    position: relative;
+  }
+  .commands ul {
+    position: absolute;
+    z-index: 20;
+    margin: 0;
+    padding: 0.2rem;
+    list-style: none;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    box-shadow: 0 4px 14px rgb(0 0 0 / 15%);
+  }
+  .commands li button {
+    width: 100%;
+    text-align: left;
   }
   .chooser {
     position: absolute;
