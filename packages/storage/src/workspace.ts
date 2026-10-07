@@ -52,6 +52,8 @@ export interface ModelEntry {
   tool: ToolId;
   modelType: ModelTypeId;
   folder?: string;
+  /** Only present when trashed models were asked for. */
+  trashed?: boolean;
 }
 
 export interface WorkspaceOptions {
@@ -151,6 +153,9 @@ export class Workspace {
       options,
     );
   }
+
+  /** Things worth telling the user that were found while reading, such as a marker from a newer release. */
+  readonly warnings: string[] = [];
 
   /** Reports changes anywhere in the workspace, for example another instance saving a document. */
   watch(callback: (changed: string[]) => void): Unwatch {
@@ -382,10 +387,14 @@ export class Workspace {
 
   // --- models ------------------------------------------------------------------------------
 
-  async listModels(): Promise<ModelEntry[]> {
+  async listModels(
+    options: { includeTrashed?: boolean } = {},
+  ): Promise<ModelEntry[]> {
     const entries: ModelEntry[] = [];
     for (const slug of await this.slugs('model')) {
       try {
+        const trashed = await this.isTrashed(slug);
+        if (trashed && !options.includeTrashed) continue;
         const { loaded } = await this.load<Model>('model', slug);
         const m = loaded.document.manifest;
         entries.push({
@@ -395,12 +404,82 @@ export class Workspace {
           tool: m.tool,
           modelType: m.modelType,
           ...(m.folder === undefined ? {} : { folder: m.folder }),
+          ...(options.includeTrashed ? { trashed } : {}),
         });
       } catch {
         // See listTools.
       }
     }
     return entries;
+  }
+
+  private trashPath(folder: string): string {
+    return joinPath(folder, '_state', this.adapter.instanceId, 'trash.json');
+  }
+
+  private async writeTrashMarker(
+    slug: string,
+    trashed: boolean,
+  ): Promise<void> {
+    const folder = this.folder('model', slug);
+    if (!(await this.adapter.exists(joinPath(folder, IDENTITY_FILE.model))))
+      throw new NotFoundError(`There is no model "${slug}" in this workspace.`);
+    await this.adapter.overwrite(
+      this.trashPath(folder),
+      jsonBytes({
+        formatVersion: CURRENT_FORMAT.trash,
+        trashed,
+        at: this.now.toISOString(),
+      }),
+    );
+  }
+
+  /**
+   * Moves a model to the trash. Nothing is removed: an instance may not delete files that other
+   * instances wrote, so this writes a marker in its own state folder, and the newest marker of all
+   * instances decides.
+   */
+  trashModel(slug: string): Promise<void> {
+    return this.writeTrashMarker(slug, true);
+  }
+
+  restoreModel(slug: string): Promise<void> {
+    return this.writeTrashMarker(slug, false);
+  }
+
+  private async isTrashed(slug: string): Promise<boolean> {
+    const state = joinPath(this.folder('model', slug), '_state');
+    let newest: { at: string; instance: string; trashed: boolean } | null =
+      null;
+    for (const entry of await this.adapter.list(state)) {
+      if (entry.kind !== 'directory') continue;
+      const path = joinPath(state, entry.name, 'trash.json');
+      if (!(await this.adapter.exists(path))) continue;
+      try {
+        const marker = migrate(
+          'trash',
+          await readJsonFile(this.adapter, path, this.options.read),
+        ).value;
+        const at = String(marker.at ?? '');
+        if (
+          !newest ||
+          at > newest.at ||
+          (at === newest.at && entry.name > newest.instance)
+        )
+          newest = {
+            at,
+            instance: entry.name,
+            trashed: marker.trashed === true,
+          };
+      } catch (error) {
+        const note =
+          error instanceof Error && error.name === 'NewerFormatError'
+            ? `The trash marker of instance ${entry.name} for model "${slug}" is from a newer version of MetaKit and was ignored.`
+            : `The trash marker of instance ${entry.name} for model "${slug}" could not be read and was ignored: ${(error as Error).message}`;
+        if (!this.warnings.includes(note)) this.warnings.push(note);
+      }
+    }
+    return newest?.trashed ?? false;
   }
 
   /** Adds a model and returns its folder name, such as `order-to-cash-9xk2`. */

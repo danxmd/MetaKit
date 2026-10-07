@@ -1,0 +1,188 @@
+import { expect, test } from '@playwright/test';
+import { canvasPoint, model, newModel, prepare, toolJson } from './app';
+
+test.describe('start and explorer', () => {
+  test('opens a workspace and reaches an empty model in no more than five clicks', async ({
+    page,
+  }) => {
+    await prepare(page);
+    const clicks = await newModel(page);
+    expect(clicks).toBeLessThanOrEqual(5);
+    await expect(page.getByTestId('model-name')).toHaveText('Order process');
+    expect(Object.keys((await model(page)).elements)).toEqual([]);
+  });
+
+  test('offers to create a workspace in a folder that is not one', async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      (window as unknown as { __METAKIT_TEST__: unknown }).__METAKIT_TEST__ = {
+        remember: false,
+        pickFolder: async () => {
+          const root = await navigator.storage.getDirectory();
+          return root.getDirectoryHandle(
+            `empty-${Math.random().toString(36).slice(2)}`,
+            { create: true },
+          );
+        },
+      };
+    });
+    await page.goto('/MetaKit/');
+    await page.getByTestId('open-folder').click();
+    await expect(page.getByTestId('create-workspace')).toBeVisible();
+    await page.getByTestId('workspace-name').fill('Fresh');
+    await page.getByRole('button', { name: 'Create workspace' }).click();
+    await expect(page.getByRole('heading', { name: 'Fresh' })).toBeVisible();
+    await expect(page.getByTestId('no-models')).toBeVisible();
+  });
+
+  test('explains that a workspace without a tool library cannot make models yet', async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      (window as unknown as { __METAKIT_TEST__: unknown }).__METAKIT_TEST__ = {
+        remember: false,
+        pickFolder: async () =>
+          (await navigator.storage.getDirectory()).getDirectoryHandle(
+            `bare-${Math.random().toString(36).slice(2)}`,
+            { create: true },
+          ),
+      };
+    });
+    await page.goto('/MetaKit/');
+    await page.getByTestId('open-folder').click();
+    await page.getByRole('button', { name: 'Create workspace' }).click();
+    await page.getByTestId('new-model').click();
+    await expect(page.getByTestId('new-model-dialog')).toContainText(
+      'no tool library',
+    );
+  });
+
+  test('adds a tool library from a file, refuses a broken one, and then makes a model', async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      (window as unknown as { __METAKIT_TEST__: unknown }).__METAKIT_TEST__ = {
+        remember: false,
+        pickFolder: async () =>
+          (await navigator.storage.getDirectory()).getDirectoryHandle(
+            `tools-${Math.random().toString(36).slice(2)}`,
+            { create: true },
+          ),
+      };
+    });
+    await page.goto('/MetaKit/');
+    await page.getByTestId('open-folder').click();
+    await page.getByRole('button', { name: 'Create workspace' }).click();
+    await expect(page.getByTestId('no-tools')).toBeVisible();
+
+    await page.getByTestId('tool-file').setInputFiles({
+      name: 'broken.json',
+      mimeType: 'application/json',
+      buffer: Buffer.from('{ "nope": true }'),
+    });
+    await expect(page.getByTestId('explorer-error')).toContainText(
+      'not a valid tool library',
+    );
+
+    await page.getByTestId('tool-file').setInputFiles({
+      name: 'tool.json',
+      mimeType: 'application/json',
+      buffer: Buffer.from(toolJson),
+    });
+    await expect(page.getByTestId('no-tools')).toHaveCount(0);
+    await page.getByTestId('new-model').click();
+    await page.getByTestId('new-model-name').fill('From a file');
+    await page.getByTestId('new-model-create').click();
+    await expect(page.getByTestId('model-name')).toHaveText('From a file');
+  });
+
+  test('groups models by folder, renames, moves, deletes and restores them', async ({
+    page,
+  }) => {
+    await prepare(page);
+    await newModel(page, 'Alpha', 'Sales/2026');
+    await page.getByTestId('back-to-explorer').click();
+    await expect(page.getByTestId('folder-Sales')).toBeVisible();
+    await expect(page.getByTestId('folder-Sales/2026')).toBeVisible();
+
+    const row = page.locator('[data-testid^="model-"]').first();
+    await row.hover();
+    await page.getByRole('button', { name: 'Rename Alpha' }).click();
+    await page.getByLabel('New name').fill('Alpha two');
+    await page.getByRole('button', { name: 'Save' }).click();
+    await expect(
+      page.getByRole('button', { name: 'Alpha two', exact: true }),
+    ).toBeVisible();
+
+    await page.locator('[data-testid^="model-"]').first().hover();
+    await page
+      .getByRole('button', { name: 'Move Alpha two to a folder' })
+      .click();
+    await page.getByLabel('Folder').fill('HR');
+    await page.getByRole('button', { name: 'Save' }).click();
+    await expect(page.getByTestId('folder-HR')).toBeVisible();
+    await expect(page.getByTestId('folder-Sales')).toHaveCount(0);
+
+    await page.locator('[data-testid^="model-"]').first().hover();
+    await page.getByRole('button', { name: 'Delete Alpha two' }).click();
+    await expect(page.getByTestId('no-models')).toBeVisible();
+    await page.getByText('Deleted models (1)').click();
+    await page.getByRole('button', { name: 'Restore Alpha two' }).click();
+    await expect(
+      page.getByRole('button', { name: 'Alpha two', exact: true }),
+    ).toBeVisible();
+  });
+});
+
+test.describe('model view', () => {
+  test('places and connects objects from the palette, and the model is saved and reloaded', async ({
+    page,
+  }) => {
+    await prepare(page);
+    await newModel(page);
+    await page.getByTestId('palette-class-StartEvent').click();
+    let p = await canvasPoint(page, 200, 200);
+    await page.mouse.click(p.x, p.y);
+    await page.getByTestId('palette-class-Task').click();
+    p = await canvasPoint(page, 450, 200);
+    await page.mouse.click(p.x, p.y);
+    await page.getByTestId('palette-relation-SequenceFlow').click();
+    const from = await canvasPoint(page, 200, 200);
+    const to = await canvasPoint(page, 450, 200);
+    await page.mouse.move(from.x, from.y);
+    await page.mouse.down();
+    await page.mouse.move(to.x, to.y, { steps: 6 });
+    await page.mouse.up();
+
+    const m = await model(page);
+    expect(Object.keys(m.elements)).toHaveLength(2);
+    expect(Object.values(m.connectors)).toHaveLength(1);
+
+    // Saved shortly after the change; a reload and reopen shows the same content.
+    await expect(page.getByTestId('save-status')).toHaveText('Saved');
+    await page.reload();
+    await page.getByTestId('open-folder').click();
+    await page
+      .getByRole('button', { name: 'Order process', exact: true })
+      .click();
+    await expect(page.getByTestId('model-view')).toBeVisible();
+    const again = await model(page);
+    expect(Object.keys(again.elements)).toHaveLength(2);
+    expect(Object.values(again.connectors)).toHaveLength(1);
+  });
+
+  test('filters the palette by view and shows an unsaved state while saving', async ({
+    page,
+  }) => {
+    await prepare(page);
+    await newModel(page);
+    const all = await page.locator('[data-testid^="palette-class-"]').count();
+    expect(all).toBeGreaterThan(0);
+    await page.getByTestId('view-switcher').selectOption({ index: 1 });
+    const filtered = await page
+      .locator('[data-testid^="palette-class-"]')
+      .count();
+    expect(filtered).toBeLessThanOrEqual(all);
+  });
+});

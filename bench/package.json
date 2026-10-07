@@ -1,0 +1,13 @@
+{
+  "name": "@metakit-app/bench",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "bench": "playwright test"
+  },
+  "devDependencies": {
+    "@metakit-app/canvas": "workspace:*",
+    "@metakit-app/core": "workspace:*"
+  }
+}

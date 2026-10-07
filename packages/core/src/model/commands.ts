@@ -198,7 +198,7 @@ function applyModelCommand(
   command: ModelCommand,
   ctx: ModelContext,
 ): unknown {
-  const model = tx.state;
+  const model = tx.view;
   const tool = ctx.tool;
   switch (command.type) {
     case 'createElement': {

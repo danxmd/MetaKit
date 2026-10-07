@@ -483,3 +483,74 @@ describe('watching', () => {
     expect(seen).toContain('models/m/_state/bbbb0002/snapshot.json');
   });
 });
+
+describe('trashing models', () => {
+  async function withModel() {
+    const { adapter, ws } = await fresh();
+    const slug = await ws.createModel(aModel());
+    return { adapter, ws, slug };
+  }
+
+  it('hides a trashed model, lists it when asked, and brings it back on restore', async () => {
+    const { ws, slug } = await withModel();
+    expect(await ws.listModels()).toHaveLength(1);
+    await ws.trashModel(slug);
+    expect(await ws.listModels()).toHaveLength(0);
+    const all = await ws.listModels({ includeTrashed: true });
+    expect(all).toHaveLength(1);
+    expect(all[0]).toMatchObject({ slug, trashed: true });
+    await ws.restoreModel(slug);
+    expect(await ws.listModels()).toHaveLength(1);
+    expect((await ws.listModels({ includeTrashed: true }))[0]!.trashed).toBe(
+      false,
+    );
+  });
+
+  it('removes nothing and writes only in its own state folder', async () => {
+    const { adapter, ws, slug } = await withModel();
+    const before = adapter.paths();
+    await ws.trashModel(slug);
+    const added = adapter.paths().filter((p) => !before.includes(p));
+    expect(added).toEqual([`models/${slug}/_state/aaaa0001/trash.json`]);
+    for (const p of before) expect(adapter.paths()).toContain(p);
+    expect(await text(adapter, added[0]!)).toContain('"trashed": true');
+  });
+
+  it('lets the newest marker of any instance decide, without touching the other instance files', async () => {
+    const { adapter, ws, slug } = await withModel();
+    let clock = new Date('2026-10-07T10:00:00.000Z');
+    const b = await Workspace.open(adapter.asInstance('bbbb0002'), {
+      now: () => clock,
+    });
+    await ws.trashModel(slug); // 09:00 by the fixed clock of the first instance
+    expect(await b.listModels()).toHaveLength(0);
+    const marker = await text(
+      adapter,
+      `models/${slug}/_state/aaaa0001/trash.json`,
+    );
+    await b.restoreModel(slug); // 10:00
+    expect(await ws.listModels()).toHaveLength(1);
+    expect(
+      await text(adapter, `models/${slug}/_state/aaaa0001/trash.json`),
+    ).toBe(marker);
+    clock = new Date('2026-10-07T11:00:00.000Z');
+    await b.trashModel(slug);
+    expect(await ws.listModels()).toHaveLength(0);
+  });
+
+  it('ignores a marker from a newer release with a warning, and keeps the model listed', async () => {
+    const { adapter, ws, slug } = await withModel();
+    const other = adapter.asInstance('bbbb0002');
+    other.plant(
+      `models/${slug}/_state/bbbb0002/trash.json`,
+      '{\n  "at": "2026-10-08T00:00:00.000Z",\n  "formatVersion": 99,\n  "trashed": true\n}\n',
+    );
+    expect(await ws.listModels()).toHaveLength(1);
+    expect(ws.warnings.join(' ')).toMatch(/newer version/);
+  });
+
+  it('refuses to trash a model that is not there', async () => {
+    const { ws } = await fresh();
+    await expect(ws.trashModel('nope')).rejects.toThrow(NotFoundError);
+  });
+});

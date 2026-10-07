@@ -12,7 +12,7 @@ export default tseslint.config(
   prettier,
   ...svelte.configs.prettier,
   {
-    files: ['apps/web/**/*.{ts,svelte}'],
+    files: ['apps/web/**/*.{ts,svelte}', 'packages/ui/**/*.svelte'],
     languageOptions: { globals: globals.browser },
   },
   {

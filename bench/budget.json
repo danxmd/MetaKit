@@ -1,0 +1,13 @@
+{
+  "_comment": "Limits for the canvas benchmark (bench/canvas.bench.ts). Draw work is the time the page spends issuing draw commands in a frame; the share of slow frames counts frames over 20 ms. The interval p95 is reported but not gated: on a 60 Hz display it can only read 16.7 or 33.3 ms (see docs/spikes/phase-0-report.md). The share of slow frames has a wide margin because the headless software compositor on shared CI machines drops frames on its own (6 to 7 % in the unexplained 'drag 50 at 100 %' scenario, see the phase-0 report); draw work is the tight limit.",
+  "drag": {
+    "workP95Ms": 8,
+    "slowFramesPct": 20
+  },
+  "panZoom": {
+    "workP95Ms": 8,
+    "slowFramesPct": 20
+  },
+  "openMs": 1000,
+  "attributeEditMs": 50
+}

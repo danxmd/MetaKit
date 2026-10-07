@@ -1,1 +1,2 @@
-export const packageName = '@metakit-app/ui';
+export * from './panel/index';
+export * from './shell/index';

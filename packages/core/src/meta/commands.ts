@@ -93,7 +93,7 @@ function put<D extends { id: string }>(
 }
 
 function applyToolCommand(tx: Tx<ToolLibrary>, command: ToolCommand): unknown {
-  const tool = tx.state;
+  const tool = tx.view;
   switch (command.type) {
     case 'updateManifest': {
       const patch: Partial<ToolManifest> = {};

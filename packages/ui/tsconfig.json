@@ -6,7 +6,19 @@
     "declaration": true,
     "outDir": "dist",
     "rootDir": "src",
-    "types": []
+    "types": ["node"],
+    "lib": ["ES2022", "DOM", "DOM.Iterable", "DOM.AsyncIterable"]
   },
-  "include": ["src"]
+  "include": ["src", "../storage/src/fs-types.d.ts"],
+  "references": [
+    {
+      "path": "../core"
+    },
+    {
+      "path": "../storage"
+    },
+    {
+      "path": "../canvas"
+    }
+  ]
 }

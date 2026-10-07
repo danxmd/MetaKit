@@ -87,3 +87,50 @@ describe('transactions', () => {
     expect(tx.patches).toHaveLength(0);
   });
 });
+
+describe('many writes in one run', () => {
+  const big = () => {
+    const items: Record<string, { v: number }> = {};
+    for (let i = 0; i < 2000; i++) items[`k${i}`] = Object.freeze({ v: i });
+    return Object.freeze({
+      items: Object.freeze(items),
+      other: Object.freeze({ n: 1 }),
+    });
+  };
+
+  it('leaves the starting state untouched and freezes the result', () => {
+    const start = big();
+    const tx = new Tx(start);
+    for (let i = 0; i < 50; i++) tx.set(['items', `k${i}`, 'v'], -i - 1);
+    expect(getAt(tx.view, ['items', 'k3', 'v'])).toBe(-4);
+    expect(start.items.k3!.v).toBe(3);
+    expect(Object.isFrozen(start.items)).toBe(true);
+    const result = tx.state;
+    expect(Object.isFrozen(result)).toBe(true);
+    expect(Object.isFrozen(result.items)).toBe(true);
+    expect(result.other).toBe(start.other);
+    expect(getAt(result, ['items', 'k49', 'v'])).toBe(-50);
+  });
+
+  it('keeps patches exact when a later write goes into a container written earlier', () => {
+    const start = big();
+    const tx = new Tx(start);
+    tx.set(['items', 'k1', 'v'], 100);
+    const mid = tx.state;
+    tx.set(['items', 'k2', 'v'], 200);
+    // The state handed out earlier does not change under later writes.
+    expect(getAt(mid, ['items', 'k2', 'v'])).toBe(2);
+    expect(applyPatches(start, tx.patches)).toEqual(tx.state);
+    expect(revertPatches(tx.state, tx.patches)).toEqual(start);
+  });
+
+  it('records a frozen copy when the value replaced is a container made in this run', () => {
+    const tx = new Tx<{ items: Record<string, { v: number }> }>(big());
+    tx.set(['items', 'k1', 'v'], 5);
+    tx.set(['items'], { k1: { v: 9 } });
+    tx.set(['items', 'k1', 'v'], 10);
+    const [, replace] = tx.patches;
+    expect(Object.isFrozen(replace!.before)).toBe(true);
+    expect((replace!.before as Record<string, { v: number }>).k1!.v).toBe(5);
+  });
+});
