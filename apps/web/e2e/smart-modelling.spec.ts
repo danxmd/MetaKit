@@ -144,6 +144,24 @@ test.describe('hints and smart modelling', () => {
     expect(await counts(page)).toEqual(before);
   });
 
+  test('the card stays while the pointer is on it', async ({ page }) => {
+    await openPipeline(page);
+    await chooseFromMenu(page, 'View', 'assist-smart');
+    const at = await centreOf(page, 'Implement');
+    await page.mouse.move(at.x - 20, at.y - 10);
+    await page.mouse.move(at.x, at.y);
+    const card = page.getByTestId('suggestion-card');
+    await expect(card).toBeVisible();
+    const row = card.getByTestId('suggestion-existing-Feeds-in-Artifact');
+    await row.hover();
+    await page.waitForTimeout(800);
+    await expect(card).toBeVisible();
+    // Leaving both closes it.
+    const box = (await page.getByTestId('canvas-host').boundingBox())!;
+    await page.mouse.move(box.x + 40, box.y + 40);
+    await expect(card).toBeHidden();
+  });
+
   test('Existing starts connecting with that relation', async ({ page }) => {
     await openPipeline(page);
     await chooseFromMenu(page, 'View', 'assist-smart');

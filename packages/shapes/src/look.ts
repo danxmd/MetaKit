@@ -577,7 +577,7 @@ export function nodeShapeFromLook(
             width: dim(w),
             height: SUBTITLE_HEIGHT,
           },
-          colourPropOr(look.subtitle?.colour, DARK_TEXT_MUTED),
+          colourPropOr(look.subtitle?.colour, mutedOn(layout.titleOn)),
           { size: look.subtitle?.size ?? 11, align: r.align },
         ),
       );
@@ -628,6 +628,10 @@ export function nodeShapeFromLook(
     look,
   };
 }
+
+/** A softer text colour for the second line, still readable on this fill. */
+const mutedOn = (fill: LookColour): string =>
+  readableOn(fill) === DARK_TEXT ? '#3a4252' : '#e9ecef';
 
 const DARK_TEXT_MUTED = '#5a6373';
 

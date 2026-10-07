@@ -432,12 +432,19 @@
     const left = fitsRight
       ? right.x + 12
       : Math.max(8, leftEdge.x - 12 - CARD_WIDTH);
-    const top = Math.max(8, Math.min(right.y, box.height - 200));
+    // The card is at most 24rem or 70% of the canvas high; keep all of it on the canvas.
+    const cardHeight = Math.min(384, box.height * 0.7);
+    const top = Math.max(8, Math.min(right.y, box.height - cardHeight - 56));
     suggest = { id, left, top, groups };
   }
 
   function onCanvasMove(event: PointerEvent) {
     if (!ready) return;
+    // Moving over the suggestion card is not leaving the concept.
+    if ((event.target as Element | null)?.closest('.suggestions')) {
+      cancelClose();
+      return;
+    }
     const world = view.toWorld(event);
     // Hints about a connector under the pointer.
     if (assist.hints && activeTool.type === 'select' && event.buttons === 0) {
