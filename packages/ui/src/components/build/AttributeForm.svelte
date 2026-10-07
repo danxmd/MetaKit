@@ -467,7 +467,7 @@
     display: grid;
     gap: 0.6rem;
     padding: 0.6rem 0.8rem;
-    background: #f8f9fa;
+    background: var(--surface-2);
     border-radius: 6px;
   }
   label {
@@ -499,7 +499,7 @@
     font-size: 0.85rem;
   }
   .problem {
-    color: #c92a2a;
+    color: var(--danger);
     margin: 0;
   }
   input[type='number'] {

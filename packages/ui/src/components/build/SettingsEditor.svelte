@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { ToolLibrary } from '@metakit-app/core';
   import type { CommandResult } from '../../shell/controller';
+  import Section from './Section.svelte';
 
   let {
     tool,
@@ -45,18 +46,18 @@
 
 <div class="editor" data-testid="settings-editor">
   <h2>Settings</h2>
-  <fieldset>
-    <legend>Languages</legend>
-    <p class="muted">
-      Labels can be given in each language. The first one is used for options
-      and previews.
-    </p>
+  {#if error}<p class="notice error" role="alert">{error}</p>{/if}
+  <Section
+    title="Languages"
+    help="Labels can be given in each language. The first one is used for options and previews."
+  >
     <ul>
       {#each tool.manifest.languages as code (code)}
         <li>
-          {code}
+          <span class="code">{code}</span>
           <button
             type="button"
+            class="ghost danger"
             onclick={() => removeLanguage(code)}
             aria-label="Remove language {code}">Remove</button
           >
@@ -72,13 +73,16 @@
       />
       <button
         type="button"
+        class="primary"
         onclick={addLanguage}
         data-testid="settings-add-language">Add language</button
       >
     </div>
-  </fieldset>
-  <fieldset>
-    <legend>Grid</legend>
+  </Section>
+  <Section
+    title="Grid"
+    help="The grid modellers see and snap to on the canvas."
+  >
     <div class="row">
       <label
         >Size <input
@@ -116,54 +120,46 @@
         /> Show grid</label
       >
     </div>
-  </fieldset>
-  {#if error}<p class="problem" role="alert">{error}</p>{/if}
+  </Section>
 </div>
 
 <style>
   .editor {
     display: grid;
-    gap: 0.9rem;
-  }
-  h2 {
-    margin: 0;
-    font-size: 1.15rem;
-  }
-  fieldset {
-    border: 1px solid var(--line);
-    border-radius: 6px;
-    display: grid;
-    gap: 0.5rem;
+    gap: var(--gap-4);
+    max-width: 40rem;
   }
   ul {
     list-style: none;
     padding: 0;
     margin: 0;
     display: grid;
-    gap: 0.2rem;
+    gap: var(--gap-1);
+  }
+  li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--gap-1) var(--gap-2);
+    background: var(--surface-2);
+    border-radius: var(--radius-s);
+  }
+  .code {
+    font-family: var(--font-mono);
   }
   .row {
     display: flex;
-    gap: 0.8rem;
+    gap: var(--gap-3);
     align-items: center;
     flex-wrap: wrap;
   }
   label {
     display: grid;
-    gap: 0.2rem;
-    font-size: 0.9rem;
+    gap: var(--gap-1);
   }
   label.inline {
     display: inline-flex;
-    gap: 0.4rem;
+    gap: var(--gap-2);
     align-items: center;
-  }
-  .muted {
-    color: var(--muted);
-    font-size: 0.85rem;
-    margin: 0;
-  }
-  .problem {
-    color: #c92a2a;
   }
 </style>

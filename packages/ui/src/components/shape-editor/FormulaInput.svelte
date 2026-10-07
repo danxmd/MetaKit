@@ -161,8 +161,8 @@
     margin: 2px 0 0;
     padding: 2px;
     list-style: none;
-    background: var(--bg, #fff);
-    border: 1px solid var(--line, #dee2e6);
+    background: var(--surface);
+    border: 1px solid var(--line, var(--line));
     border-radius: 6px;
     box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
     max-height: 12rem;
@@ -179,9 +179,9 @@
     background: transparent;
   }
   .options button.active {
-    background: var(--hover, #e9ecef);
+    background: var(--hover, var(--surface-3));
   }
   small {
-    color: var(--muted, #6b7280);
+    color: var(--muted, var(--text-muted));
   }
 </style>

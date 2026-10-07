@@ -55,13 +55,12 @@
 <style>
   .key {
     display: grid;
-    gap: 0.2rem;
-    font-size: 0.9rem;
+    gap: var(--gap-1);
   }
-  .muted {
-    color: var(--muted);
+  small {
+    font-size: var(--text-s);
   }
   .problem {
-    color: #c92a2a;
+    color: var(--danger);
   }
 </style>

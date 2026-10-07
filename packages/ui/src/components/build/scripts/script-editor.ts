@@ -17,6 +17,7 @@ import { javascript } from '@codemirror/lang-javascript';
 import {
   bracketMatching,
   defaultHighlightStyle,
+  HighlightStyle,
   indentOnInput,
   syntaxHighlighting,
 } from '@codemirror/language';
@@ -57,6 +58,22 @@ export interface ScriptEditorHandle {
   focus(): void;
   destroy(): void;
 }
+
+/**
+ * The default highlight style has light-mode colours only. The same colours are mixed with the
+ * theme's lift colour (--syn-keep / --syn-lift, set where the editor is mounted) so they stay
+ * readable in dark mode.
+ */
+const themedHighlight = HighlightStyle.define(
+  defaultHighlightStyle.specs.map((spec) =>
+    typeof spec.color === 'string'
+      ? {
+          ...spec,
+          color: `color-mix(in srgb, ${spec.color} var(--syn-keep, 100%), var(--syn-lift, #fff))`,
+        }
+      : spec,
+  ),
+);
 
 const lineOf = (text: string, info: string): HTMLElement => {
   const box = document.createElement('div');
@@ -123,7 +140,7 @@ export function createScriptEditor(
         bracketMatching(),
         closeBrackets(),
         indentOnInput(),
-        syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
+        syntaxHighlighting(themedHighlight),
         javascript({ typescript: true }),
         lintGutter(),
         linter(
@@ -169,8 +186,34 @@ export function createScriptEditor(
           spellcheck: 'false',
         }),
         EditorView.theme({
-          '&': { height: '100%', fontSize: '0.88rem' },
-          '.cm-scroller': { fontFamily: 'ui-monospace, Consolas, monospace' },
+          '&': {
+            height: '100%',
+            fontSize: '0.88rem',
+            backgroundColor: 'var(--surface)',
+            color: 'var(--text)',
+          },
+          '.cm-gutters': {
+            backgroundColor: 'var(--surface-2)',
+            color: 'var(--text-faint)',
+            border: 'none',
+            borderRight: '1px solid var(--line)',
+          },
+          '.cm-activeLine': { backgroundColor: 'var(--hover-bg)' },
+          '.cm-activeLineGutter': { backgroundColor: 'var(--surface-3)' },
+          '&.cm-focused .cm-selectionBackground, .cm-selectionBackground, ::selection':
+            { backgroundColor: 'var(--accent-soft)' },
+          '.cm-cursor': { borderLeftColor: 'var(--text)' },
+          '.cm-tooltip': {
+            backgroundColor: 'var(--surface)',
+            color: 'var(--text)',
+            border: '1px solid var(--line-strong)',
+            borderRadius: 'var(--radius-s)',
+          },
+          '.cm-tooltip-autocomplete ul li[aria-selected]': {
+            backgroundColor: 'var(--accent-soft)',
+            color: 'var(--text)',
+          },
+          '.cm-scroller': { fontFamily: 'var(--font-mono)' },
           '.cm-content': { minHeight: '12rem' },
           '.cm-ts-info': { maxWidth: '36rem', padding: '0.25rem 0.4rem' },
           '.cm-ts-info-code': {

@@ -16,7 +16,8 @@
   } from '@metakit-app/core';
   import { labelOf, paletteFor } from '../../shell/palette';
 
-  let { tool }: { tool: ToolLibrary } = $props();
+  let { tool, onCollapse }: { tool: ToolLibrary; onCollapse?: () => void } =
+    $props();
 
   let host: HTMLDivElement;
   let store: ModelStore | null = null;
@@ -97,20 +98,44 @@
   };
 </script>
 
-<aside class="preview" data-testid="tool-preview">
+<section class="preview" data-testid="tool-preview">
   <header>
-    <strong>Try it</strong>
+    <h2>Try it</h2>
     {#if modelTypes.length > 1}
-      <select bind:value={chosen} aria-label="Model type to try">
+      <select
+        value={modelType?.id}
+        onchange={(e) => (chosen = e.currentTarget.value)}
+        aria-label="Model type to try"
+      >
         {#each modelTypes as m (m.id)}<option value={m.id}>{m.key}</option
           >{/each}
       </select>
     {/if}
+    <span class="spacer"></span>
+    {#if onCollapse}
+      <button
+        type="button"
+        class="ghost icon"
+        onclick={onCollapse}
+        title="Hide the preview"
+        aria-label="Hide the preview"
+        data-testid="preview-collapse">»</button
+      >
+    {/if}
   </header>
+  <p class="muted hint">A live model of your tool. Nothing here is saved.</p>
   {#if !modelType}
-    <p class="muted">Add a model type to try the tool here.</p>
+    <div class="empty" data-testid="preview-empty">
+      <strong>Nothing to try yet</strong>
+      <p class="muted">
+        Add a model type under Metamodel, allow some classes in it, and you can
+        place and connect objects here as you build.
+      </p>
+    </div>
   {:else if palette && palette.classes.length === 0}
-    <p class="muted">Allow a class in the model type to place it here.</p>
+    <p class="notice warning">
+      Allow a class in the model type to place it here.
+    </p>
   {/if}
   {#if palette}
     <div class="tools">
@@ -140,42 +165,57 @@
   {/if}
   <div class="canvas" bind:this={host} data-testid="preview-canvas"></div>
   {#if note}<p class="muted">{note}</p>{/if}
-  <p class="muted">
-    Nothing here is saved. It shows the tool as you change it.
-  </p>
-</aside>
+</section>
 
 <style>
   .preview {
-    display: grid;
-    grid-template-rows: auto auto 1fr auto auto;
-    gap: 0.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-2);
     min-height: 0;
-    height: 100%;
+    flex: 1;
   }
   header {
     display: flex;
-    gap: 0.5rem;
+    gap: var(--gap-2);
     align-items: center;
+  }
+  .spacer {
+    flex: 1;
+  }
+  .hint {
+    font-size: var(--text-s);
+  }
+  .empty {
+    display: grid;
+    gap: var(--gap-1);
+    padding: var(--gap-4);
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--radius);
+    background: var(--surface-2);
+    font-size: var(--text-s);
   }
   .tools {
     display: flex;
-    gap: 0.3rem;
+    gap: var(--gap-1);
     flex-wrap: wrap;
   }
   .tools .on {
-    background: #e7f5ff;
-    border-color: #1971c2;
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent);
   }
   .canvas {
+    flex: 1;
     border: 1px solid var(--line);
-    border-radius: 6px;
+    border-radius: var(--radius);
+    background: var(--canvas-bg);
     min-height: 12rem;
     position: relative;
+    overflow: hidden;
   }
   .muted {
-    color: var(--muted);
-    font-size: 0.85rem;
+    font-size: var(--text-s);
     margin: 0;
   }
 </style>

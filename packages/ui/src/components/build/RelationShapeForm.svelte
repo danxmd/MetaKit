@@ -201,7 +201,7 @@
     font-size: 0.9rem;
   }
   .problem {
-    color: #c92a2a;
+    color: var(--danger);
     margin: 0;
   }
 </style>

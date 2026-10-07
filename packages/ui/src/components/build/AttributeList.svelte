@@ -65,9 +65,15 @@
   }
 </script>
 
-<section class="attributes" data-testid="attributes">
+<section class="attributes card" data-testid="attributes">
   <h3>Attributes</h3>
-  {#if attributes.length === 0}<p class="muted">No attributes yet.</p>{/if}
+  <p class="muted help">
+    Attributes hold the values of an object. Open one to change its type,
+    choices or default; reorder with the arrows.
+  </p>
+  {#if attributes.length === 0}<p class="empty muted">
+      No attributes yet. Pick a type below and add the first one.
+    </p>{/if}
   <ul>
     {#each attributes as a, i (a.id)}
       <li>
@@ -91,22 +97,27 @@
             type="button"
             disabled={i === 0}
             onclick={() => move(a.id, i - 1)}
+            class="icon ghost"
+            title="Move up"
             aria-label="Move {a.key} up">↑</button
           >
           <button
             type="button"
             disabled={i === attributes.length - 1}
             onclick={() => move(a.id, i + 1)}
+            class="icon ghost"
+            title="Move down"
             aria-label="Move {a.key} down">↓</button
           >
           <button
             type="button"
+            class="ghost danger"
             onclick={() => (confirming = a.id)}
             aria-label="Delete {a.key}">Delete</button
           >
         </div>
         {#if confirming === a.id}
-          <div class="confirm" role="alert">
+          <div class="notice warning confirm" role="alert">
             Delete "{a.key}"? Values stored in models are kept and shown as
             unknown attributes.
             {#if usages(a.id).length > 0}
@@ -149,58 +160,75 @@
           >{ATTRIBUTE_TYPE_LABELS[t]}</option
         >{/each}
     </select>
-    <button type="button" onclick={add} data-testid="attr-add"
+    <button type="button" class="primary" onclick={add} data-testid="attr-add"
       >Add attribute</button
     >
   </div>
-  {#if error}<p class="problem" role="alert" data-testid="attr-list-problem">
+  {#if error}<p
+      class="notice error"
+      role="alert"
+      data-testid="attr-list-problem"
+    >
       {error}
     </p>{/if}
 </section>
 
 <style>
-  h3 {
-    margin: 0 0 0.4rem;
-    font-size: 1rem;
+  .attributes {
+    padding: var(--gap-4);
+    display: grid;
+    gap: var(--gap-3);
+  }
+  .help,
+  .empty {
+    margin: 0;
+    font-size: var(--text-s);
   }
   ul {
     list-style: none;
     padding: 0;
-    margin: 0 0 0.6rem;
+    margin: 0;
     display: grid;
-    gap: 0.3rem;
+    gap: var(--gap-2);
+  }
+  li {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface-2);
+    padding: var(--gap-1);
+    display: grid;
+    gap: var(--gap-2);
   }
   .line {
     display: flex;
-    gap: 0.3rem;
+    gap: var(--gap-1);
     align-items: stretch;
   }
   .name {
     flex: 1;
     display: flex;
-    gap: 0.6rem;
+    gap: var(--gap-3);
     align-items: baseline;
     text-align: left;
+    border-color: transparent;
+    background: transparent;
   }
   .type,
-  .muted {
-    color: var(--muted);
-    font-size: 0.85rem;
+  .name .muted {
+    color: var(--text-muted);
+    font-size: var(--text-s);
+  }
+  .type {
+    margin-left: auto;
   }
   .add {
     display: flex;
-    gap: 0.4rem;
+    gap: var(--gap-2);
+  }
+  .ghost.danger {
+    border-color: transparent;
   }
   .confirm {
-    padding: 0.4rem 0.6rem;
-    background: #fff4e6;
-    border-radius: 6px;
-    margin: 0.2rem 0;
-  }
-  .danger {
-    color: #c92a2a;
-  }
-  .problem {
-    color: #c92a2a;
+    margin: 0 var(--gap-1);
   }
 </style>

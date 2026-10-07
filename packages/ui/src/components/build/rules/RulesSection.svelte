@@ -65,7 +65,7 @@
     </p>{/if}
   <ul>
     {#each rules as r (r.id)}
-      <li class:selected={selected === r.id}>
+      <li class="card" class:selected={selected === r.id}>
         <div class="line">
           <label class="switch">
             <input
@@ -92,6 +92,7 @@
           </button>
           <button
             type="button"
+            class="ghost danger"
             onclick={() => (confirming = r.id)}
             aria-label="Delete {r.label}"
             data-testid="rule-delete-{r.id}">Delete</button
@@ -115,7 +116,9 @@
     {/each}
   </ul>
   <div class="add">
-    <button type="button" onclick={add} data-testid="rule-add">Add rule</button>
+    <button type="button" class="primary" onclick={add} data-testid="rule-add"
+      >Add rule</button
+    >
     <DraftWithAssistant
       kind="rule"
       {tool}
@@ -165,15 +168,16 @@
     gap: 0.3rem;
     width: 100%;
   }
-  li.selected .line {
-    border-color: var(--accent, currentColor);
+  li {
+    padding: var(--gap-1) var(--gap-2);
+  }
+  li.selected {
+    border-color: var(--accent);
   }
   .line {
     display: flex;
-    gap: 0.4rem;
-    align-items: stretch;
-    border: 1px solid transparent;
-    border-radius: 6px;
+    gap: var(--gap-2);
+    align-items: center;
   }
   .name {
     flex: 1;
@@ -181,6 +185,8 @@
     gap: 0.6rem;
     align-items: baseline;
     text-align: left;
+    border-color: transparent;
+    background: transparent;
   }
   .switch {
     display: flex;
@@ -190,15 +196,18 @@
     color: var(--muted);
     font-size: 0.85rem;
   }
+  .ghost.danger {
+    border-color: transparent;
+  }
   .confirm {
     padding: 0.4rem 0.6rem;
-    background: #fff4e6;
+    background: var(--warning-soft);
     border-radius: 6px;
     margin: 0.2rem 0;
   }
   .danger,
   .problem {
-    color: #c92a2a;
+    color: var(--danger);
   }
   .editor {
     width: 100%;

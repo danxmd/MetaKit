@@ -78,7 +78,9 @@
     </label>
 
     {#if error}
-      <p role="alert" class="error" data-testid="commit-error">{error}</p>
+      <p role="alert" class="notice error" data-testid="commit-error">
+        {error}
+      </p>
     {/if}
 
     <div class="actions">
@@ -105,30 +107,24 @@
 
 <style>
   dialog {
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 1.25rem 1.5rem;
     min-width: 24rem;
     max-width: 36rem;
   }
   .body {
     display: grid;
-    gap: 0.7rem;
+    gap: var(--gap-3);
   }
   h2,
   h3,
   p {
     margin: 0;
   }
-  h2 {
-    font-size: 1.15rem;
-  }
   h3 {
     font-size: 0.9rem;
     margin-top: 0.4rem;
   }
   .count {
-    color: #555;
+    color: var(--text-muted);
     font-size: 0.9rem;
   }
   .changes {
@@ -145,16 +141,7 @@
     font-size: 0.9rem;
   }
   textarea {
-    font: inherit;
-    padding: 0.4rem 0.5rem;
-    border: 1px solid var(--line);
-    border-radius: 6px;
     resize: vertical;
-  }
-  .error {
-    padding: 0.5rem 0.7rem;
-    border-radius: 6px;
-    background: #fff4e6;
   }
   .actions {
     display: flex;
