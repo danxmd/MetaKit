@@ -6,6 +6,9 @@
     Minimap,
     Scene,
     type EditorTool,
+    exportPdf,
+    exportPng,
+    exportSvg,
     type Selection,
   } from '@metakit-app/canvas';
   import {
@@ -30,10 +33,17 @@
     type UnknownAttribute,
   } from '../panel';
   import type { AppState, ControllerPort } from '../shell/controller';
+  import {
+    EXPORT_MIME,
+    exportFileName,
+    saveBlob,
+    type ExportRequest,
+  } from '../shell/download';
   import { findInModel, type FindHit } from '../shell/find';
   import { labelOf, paletteFor } from '../shell/palette';
   import type { ReferenceServices } from '../shell/references';
   import { runActionAttribute } from '@metakit-app/behaviour';
+  import ExportDialog from './ExportDialog.svelte';
   import AttributePanel from './AttributePanel.svelte';
 
   let {
@@ -262,6 +272,49 @@
     }
     viewId = next;
     emit('view.changed');
+  }
+
+  let exportOpen = $state(false);
+  let exporting = $state(false);
+  let exportProblem = $state<string | null>(null);
+
+  async function runExport(r: ExportRequest) {
+    exporting = true;
+    exportProblem = null;
+    try {
+      const chosen =
+        r.scope === 'selection'
+          ? {
+              elements: new Set(selection.elements),
+              connectors: new Set(selection.connectors),
+            }
+          : undefined;
+      const title = model.manifest.name;
+      const blob =
+        r.format === 'svg'
+          ? new Blob([exportSvg(scene, { selection: chosen, title })], {
+              type: EXPORT_MIME.svg,
+            })
+          : r.format === 'png'
+            ? await exportPng(scene, {
+                scale: r.scale ?? 2,
+                transparent: !!r.transparent,
+                selection: chosen,
+              })
+            : await exportPdf(scene, {
+                pageSize: r.pageSize ?? 'a4',
+                orientation: r.orientation ?? 'auto',
+                fitToPage: r.fitToPage ?? true,
+                selection: chosen,
+                title,
+              });
+      if (await saveBlob(blob, exportFileName(title, r.format)))
+        exportOpen = false;
+    } catch (e) {
+      exportProblem = e instanceof Error ? e.message : String(e);
+    } finally {
+      exporting = false;
+    }
   }
 
   function say(text: string) {
@@ -498,6 +551,9 @@
   <header class="bar">
     <button onclick={onBack} data-testid="back-to-explorer">← Models</button>
     <strong class="name" data-testid="model-name">{model.manifest.name}</strong>
+    <button onclick={() => (exportOpen = true)} data-testid="export-open"
+      >Export</button
+    >
     <span
       class="save"
       class:bad={app.save === 'error'}
@@ -777,6 +833,16 @@
       </ul>
     {/if}
   </div>
+
+  {#if exportOpen}
+    <ExportDialog
+      hasSelection={selection.elements.size + selection.connectors.size > 0}
+      busy={exporting}
+      problem={exportProblem}
+      onClose={() => (exportOpen = false)}
+      onExport={runExport}
+    />
+  {/if}
 
   <div class="side">
     <AttributePanel
