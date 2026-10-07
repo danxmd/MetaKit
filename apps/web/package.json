@@ -9,5 +9,8 @@
     "preview": "vite preview",
     "typecheck": "svelte-check --tsconfig ./tsconfig.json",
     "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@metakit-app/storage": "workspace:*"
   }
 }

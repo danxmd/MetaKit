@@ -26,6 +26,11 @@ jobs:
       - run: pnpm lint
       - run: pnpm test
       - run: pnpm build
+      - name: Validate the sample tool libraries and models
+        run: |
+          for path in tools/bpmn-lite tools/er-lite tools/bpmn-lite/order-process.mkmodel.json tools/er-lite/library.mkmodel.json; do
+            node apps/cli/dist/bin.js validate "$path" --strict
+          done
       - name: Install Chromium
         run: pnpm --filter @metakit-app/web exec playwright install --with-deps chromium
       - run: pnpm test:e2e

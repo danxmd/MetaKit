@@ -1,1 +1,1 @@
-export const packageName = '@metakit-app/sync';
+export * from './clock';

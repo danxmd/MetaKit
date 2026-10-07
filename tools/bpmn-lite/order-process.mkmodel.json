@@ -1,0 +1,108 @@
+{
+  "formatVersion": 1,
+  "kind": "mkmodel",
+  "name": "Order process",
+  "tool": { "id": "tool_bpmnlite", "version": "1.0.0" },
+  "modelType": "Process",
+  "folder": "Samples",
+  "attributes": {
+    "Title": "Handle a customer order",
+    "Version": 2,
+    "ProcessOwner": "Anna"
+  },
+  "elements": [
+    {
+      "id": "sales",
+      "class": "Lane",
+      "x": 0,
+      "y": 0,
+      "w": 900,
+      "h": 200,
+      "attributes": { "LaneName": "Sales" }
+    },
+    {
+      "id": "start",
+      "class": "StartEvent",
+      "x": 30,
+      "y": 70,
+      "w": 60,
+      "h": 60,
+      "parent": "sales",
+      "attributes": { "Name": "Order received" }
+    },
+    {
+      "id": "review",
+      "class": "Task",
+      "x": 130,
+      "y": 70,
+      "parent": "sales",
+      "attributes": {
+        "Name": "Review order",
+        "Priority": "High",
+        "Effort": 1.5,
+        "Due": "2026-11-01",
+        "Duration": "PT90M",
+        "Tags": ["Customer"],
+        "Checklist": [
+          { "item": "Check stock", "done": true },
+          { "item": "Check credit", "done": false }
+        ],
+        "Spec": "https://example.com/specs/review"
+      }
+    },
+    {
+      "id": "approved",
+      "class": "Gateway",
+      "x": 290,
+      "y": 70,
+      "w": 60,
+      "h": 60,
+      "parent": "sales",
+      "attributes": { "Name": "Approved?", "GatewayKind": "XOR" }
+    },
+    {
+      "id": "ship",
+      "class": "Task",
+      "x": 400,
+      "y": 20,
+      "parent": "sales",
+      "attributes": { "Name": "Ship order", "Effort": 2 }
+    },
+    {
+      "id": "reject",
+      "class": "Task",
+      "x": 400,
+      "y": 120,
+      "parent": "sales",
+      "attributes": { "Name": "Reject order", "Effort": 0.5 }
+    },
+    {
+      "id": "done",
+      "class": "EndEvent",
+      "x": 560,
+      "y": 70,
+      "w": 60,
+      "h": 60,
+      "parent": "sales",
+      "attributes": { "Name": "Order closed" }
+    }
+  ],
+  "connectors": [
+    { "relation": "SequenceFlow", "from": "start", "to": "review" },
+    { "relation": "SequenceFlow", "from": "review", "to": "approved" },
+    {
+      "relation": "SequenceFlow",
+      "from": "approved",
+      "to": "ship",
+      "attributes": { "Condition": "yes" }
+    },
+    {
+      "relation": "SequenceFlow",
+      "from": "approved",
+      "to": "reject",
+      "attributes": { "Condition": "no" }
+    },
+    { "relation": "SequenceFlow", "from": "ship", "to": "done" },
+    { "relation": "SequenceFlow", "from": "reject", "to": "done" }
+  ]
+}
