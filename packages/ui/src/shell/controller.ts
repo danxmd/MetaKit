@@ -38,6 +38,11 @@ import {
   type SyncStatus,
   type Timers,
 } from '@metakit-app/sync';
+import {
+  createBehaviour,
+  type Behaviour,
+  type BehaviourHost,
+} from '@metakit-app/behaviour';
 import { describeClash, type ClashNotice } from './clash';
 import { normalizeFolder } from './explorer';
 
@@ -50,6 +55,8 @@ export interface OpenModel {
   toolStore: ToolStore;
   toolSession: SyncSession;
   store: ModelStore;
+  /** Formulas, events, rules and scripts of this model (phase 5 and 7). */
+  behaviour: Behaviour;
   /** Keeps the store and the folder in step: writes edits, reads other people's. */
   session: SyncSession;
   /** Things to tell the user about this model, such as a file that could not be read. */
@@ -76,6 +83,13 @@ export interface OpenTool {
 export type CommandResult =
   { ok: true; value: unknown } | { ok: false; error: string };
 
+/** A message from a rule or script, shown until dismissed or for a few seconds. */
+export interface BehaviourMessage {
+  id: number;
+  kind: 'info' | 'warning' | 'error';
+  text: string;
+}
+
 export type SaveStatus = 'saved' | 'saving' | 'error';
 
 export interface AppState {
@@ -88,6 +102,8 @@ export interface AppState {
   trashed: ModelEntry[];
   trashedTools: ToolEntry[];
   open: OpenModel | null;
+  /** Messages from rules and scripts of the open model. */
+  messages: BehaviourMessage[];
   /** The tool library being edited in Build mode. */
   build: OpenTool | null;
   save: SaveStatus;
@@ -114,6 +130,11 @@ export interface ControllerOptions {
   presenceMs?: number;
   /** Name and colour shown to others; can be changed later with `setProfile`. */
   profile?: PresenceProfile;
+  /** Native dialogs for rules and scripts; the app uses the browser's, tests pass their own. */
+  dialogs?: {
+    confirm(text: string): boolean;
+    choose(text: string, options: readonly string[]): string | null;
+  };
   /** Leave presence out (for tests that do not need it). */
   presence?: boolean;
   /** Look at the folder for sync problems after opening a workspace. */
@@ -129,6 +150,8 @@ export interface ControllerOptions {
 export interface ControllerPort {
   setSelection(ids: Iterable<string>): void;
   setEditing(item: string | null): void;
+  dismissMessage(id: number): void;
+  pushMessage?(kind: 'info' | 'warning' | 'error', text: string): void;
   editorsOf(item: string): PresenceFile[];
   dismissNotice(id: number): void;
 }
@@ -156,6 +179,7 @@ const initial = (): AppState => ({
   trashed: [],
   trashedTools: [],
   open: null,
+  messages: [],
   build: null,
   save: 'saved',
   sync: NO_SYNC,
@@ -185,6 +209,7 @@ export class AppController {
   private presence: PresenceService | null = null;
   private readonly listeners = new Set<(state: AppState) => void>();
   private nextNotice = 1;
+  private nextMessage = 1;
   private profile: PresenceProfile;
 
   constructor(private readonly options: ControllerOptions = {}) {
@@ -439,6 +464,11 @@ export class AppController {
             await toolOpened.session.close();
             throw error;
           });
+        const behaviour = createBehaviour({
+          store: opened.store,
+          tool: () => this.current.open?.tool ?? tool,
+          host: this.behaviourHost(() => this.current.open?.behaviour),
+        });
         opened.session.start();
         toolOpened.session.start();
         toolOpened.store.subscribe(() => this.toolChanged());
@@ -454,6 +484,7 @@ export class AppController {
             toolStore: toolOpened.store,
             toolSession: toolOpened.session,
             store: opened.store,
+            behaviour,
             session: opened.session,
             warnings: opened.warnings,
             documentIssues: opened.issues.length,
@@ -487,7 +518,61 @@ export class AppController {
     if (tool === open.tool) return;
     // Commands on the model are checked against the new tool library from now on.
     open.store.updateContext({ tool });
+    open.behaviour.setTool(tool);
     this.set({ open: { ...open, tool } });
+  }
+
+  /** What rules and scripts may ask of the app: messages, questions, other models, commands. */
+  private behaviourHost(behaviour: () => Behaviour | undefined): BehaviourHost {
+    const native = this.options.dialogs ?? {
+      confirm: (text: string) =>
+        typeof globalThis.confirm === 'function'
+          ? globalThis.confirm(text)
+          : false,
+      choose: (text: string, options: readonly string[]) => {
+        if (typeof globalThis.prompt !== 'function') return null;
+        const answer = globalThis.prompt(
+          `${text}\n${options.map((o, i) => `${i + 1}. ${o}`).join('\n')}`,
+        );
+        const n = Number(answer);
+        return Number.isInteger(n) && n >= 1 && n <= options.length
+          ? options[n - 1]!
+          : (options.find((o) => o === answer) ?? null);
+      },
+    };
+    return {
+      message: (kind, text) => this.pushMessage(kind, text),
+      confirm: (text) => native.confirm(text),
+      choose: (text, options) => native.choose(text, options),
+      openModel: (name) => void this.openModelByName(name),
+      runCommand: (command, target) =>
+        behaviour()?.commands.get(command)?.run(target),
+      runScript: () =>
+        this.pushMessage(
+          'info',
+          'Scripts are not available in this version yet.',
+        ),
+    };
+  }
+
+  pushMessage(kind: BehaviourMessage['kind'], text: string): void {
+    const message = { id: this.nextMessage++, kind, text };
+    this.set({ messages: [...this.current.messages, message].slice(-5) });
+  }
+
+  dismissMessage(id: number): void {
+    this.set({ messages: this.current.messages.filter((m) => m.id !== id) });
+  }
+
+  /** Opens a model by its name or folder name, for rules and scripts. */
+  async openModelByName(name: string): Promise<boolean> {
+    const entry = this.current.models.find(
+      (m) => m.slug === name || m.name === name,
+    );
+    return entry
+      ? this.openModel(entry.slug)
+      : (this.pushMessage('warning', `There is no model called "${name}".`),
+        false);
   }
 
   private clashed(clash: Clash): void {
@@ -512,11 +597,13 @@ export class AppController {
     if (!open) return;
     this.presence?.setDocument(null);
     try {
+      open.behaviour.dispose();
       await open.session.close();
       await open.toolSession.close();
     } finally {
       this.set({
         open: null,
+        messages: [],
         phase: this.workspace ? 'workspace' : 'start',
         sync: NO_SYNC,
         save: 'saved',

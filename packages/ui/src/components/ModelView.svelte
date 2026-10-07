@@ -51,7 +51,7 @@
 
   // The app mounts one ModelView per open model (keyed by its folder), so these never change.
   // svelte-ignore state_referenced_locally
-  const { store, slug } = app.open!;
+  const { store, slug, behaviour } = app.open!;
   // svelte-ignore state_referenced_locally
   const firstTool = app.open!.tool;
   // The tool library follows changes made in Build mode, here or by anyone in the folder.
@@ -223,6 +223,28 @@
     return 'Saved';
   });
 
+  /** Switching the palette view is an event: rules may cancel it, and hear when it happened. */
+  function changeView(select: HTMLSelectElement) {
+    const next = select.value;
+    const emit = (event: 'view.changing' | 'view.changed') =>
+      behaviour.bus.emit({
+        event,
+        target: slug,
+        view: next || null,
+        old: viewId || null,
+        new: next || null,
+        user: app.me.instance,
+      });
+    const result = emit('view.changing');
+    if (result.cancelled) {
+      select.value = viewId;
+      controller.pushMessage?.('warning', result.reason);
+      return;
+    }
+    viewId = next;
+    emit('view.changed');
+  }
+
   function say(text: string) {
     message = text;
     clearTimeout(messageTimer);
@@ -248,6 +270,12 @@
       host: {
         onSelectionChange: (s) => {
           selection = s;
+          behaviour.bus.emit({
+            event: 'selection.changed',
+            target: slug,
+            selection: [...s.elements, ...s.connectors],
+            user: app.me.instance,
+          });
           controller.setSelection([...s.elements, ...s.connectors]);
         },
         onToolChange: (t) => (activeTool = t),
@@ -490,7 +518,11 @@
     {#if palette.views.length > 0}
       <label class="inline">
         View
-        <select bind:value={viewId} data-testid="view-switcher">
+        <select
+          value={viewId}
+          onchange={(e) => changeView(e.currentTarget)}
+          data-testid="view-switcher"
+        >
           <option value="">All</option>
           {#each palette.views as v (v.id)}<option value={v.id}
               >{labelOf(v)}</option
@@ -693,6 +725,24 @@
     {/if}
     {#if message}
       <p class="toast" role="status" data-testid="message">{message}</p>
+    {/if}
+    {#if app.messages.length > 0}
+      <ul
+        class="behaviour-messages"
+        aria-label="Messages from rules and scripts"
+      >
+        {#each app.messages as m (m.id)}
+          <li class={m.kind} data-testid="behaviour-message">
+            <span>{m.text}</span>
+            <button
+              type="button"
+              onclick={() => controller.dismissMessage(m.id)}
+              aria-label="Dismiss"
+              data-testid="behaviour-message-dismiss">×</button
+            >
+          </li>
+        {/each}
+      </ul>
     {/if}
   </div>
 
@@ -978,6 +1028,36 @@
   }
   .chooser button:hover {
     background: var(--hover);
+  }
+  .behaviour-messages {
+    position: absolute;
+    z-index: 12;
+    right: 1rem;
+    bottom: 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.4rem;
+    max-width: 24rem;
+  }
+  .behaviour-messages li {
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-start;
+    padding: 0.5rem 0.7rem;
+    border-radius: 6px;
+    background: #e7f5ff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+  .behaviour-messages li.warning {
+    background: #fff4e6;
+  }
+  .behaviour-messages li.error {
+    background: #fff5f5;
+  }
+  .behaviour-messages li span {
+    flex: 1;
   }
   .toast {
     position: absolute;
