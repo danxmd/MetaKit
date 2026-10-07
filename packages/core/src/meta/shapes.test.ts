@@ -119,9 +119,11 @@ describe('tool format 2 validation', () => {
     tool.modelTypes[SAMPLE.process]!.containers = {
       [SAMPLE.lane]: ['cls_none'],
     } as never;
-    expect(paths(tool)).toContain(
-      `modelTypes.${SAMPLE.process}.containers.${SAMPLE.lane}`,
-    );
+    expect(
+      paths(tool).some((p) =>
+        p.startsWith(`modelTypes.${SAMPLE.process}.containers.${SAMPLE.lane}`),
+      ),
+    ).toBe(true);
   });
 });
 

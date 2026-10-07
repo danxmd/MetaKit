@@ -138,3 +138,13 @@ export function withPatch<T extends object>(
     if (v === undefined) delete next[k];
   return next as T;
 }
+
+/** The list with a value added (when `on`) or removed, keeping order and leaving no duplicates. */
+export function toggled<T>(
+  list: readonly T[] | undefined,
+  value: T,
+  on: boolean,
+): T[] {
+  const rest = (list ?? []).filter((x) => x !== value);
+  return on ? [...rest, value] : rest;
+}

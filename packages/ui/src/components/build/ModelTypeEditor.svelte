@@ -9,7 +9,7 @@
     type ToolLibrary,
     type ViewDef,
   } from '@metakit-app/core';
-  import { uniqueKey, withLabel, withPatch } from '../../build/attributes';
+  import { toggled, uniqueKey, withPatch } from '../../build/attributes';
   import type { CommandResult } from '../../shell/controller';
   import AttributeList from './AttributeList.svelte';
   import KeyField from './KeyField.svelte';
@@ -62,18 +62,10 @@
   );
 
   function toggleClass(cls: ClassId, on: boolean) {
-    if (!def) return;
-    const set = new Set(def.classes);
-    if (on) set.add(cls);
-    else set.delete(cls);
-    patch({ classes: [...set] });
+    if (def) patch({ classes: toggled(def.classes, cls, on) });
   }
   function toggleRelation(rel: RelationId, on: boolean) {
-    if (!def) return;
-    const set = new Set(def.relations);
-    if (on) set.add(rel);
-    else set.delete(rel);
-    patch({ relations: [...set] });
+    if (def) patch({ relations: toggled(def.relations, rel, on) });
   }
 
   // Views ---------------------------------------------------------------------------------------
@@ -108,10 +100,9 @@
     on: boolean,
   ) {
     const view = def!.views[index]!;
-    const set = new Set<string>(view[field]);
-    if (on) set.add(value);
-    else set.delete(value);
-    patchView(index, { [field]: [...set] } as Partial<ViewDef>);
+    patchView(index, {
+      [field]: toggled<string>(view[field], value, on),
+    } as Partial<ViewDef>);
   }
 
   // Cardinalities -------------------------------------------------------------------------------

@@ -9,8 +9,8 @@
   import {
     ATTRIBUTE_TYPE_LABELS,
     optionsToText,
+    toggled,
     textToOptions,
-    withLabel,
   } from '../../build/attributes';
   import KeyField from './KeyField.svelte';
   import LabelsField from './LabelsField.svelte';
@@ -49,16 +49,7 @@
     Object.values(tool.modelTypes).sort((a, b) => a.key.localeCompare(b.key)),
   );
 
-  function toggle<T extends string>(
-    list: T[] | undefined,
-    id: T,
-    on: boolean,
-  ): T[] {
-    const set = new Set(list ?? []);
-    if (on) set.add(id);
-    else set.delete(id);
-    return [...set];
-  }
+  const toggle = toggled;
 
   function setColumn(i: number, patch: Partial<TableColumn>) {
     if (def.type !== 'table') return;

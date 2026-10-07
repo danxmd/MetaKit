@@ -919,7 +919,6 @@ export function validateToolLibrary(value: unknown): Issue[] {
         'containers',
         'attributes',
         'background',
-        'containers',
         'help',
       ],
       'A model type',
@@ -1108,34 +1107,6 @@ export function validateToolLibrary(value: unknown): Issue[] {
     checkAttributes(c, d.attributes, `${path}.attributes`, languages);
     if (d.background !== undefined)
       c.id('shape', d.background, `${path}.background`, 'The background shape');
-    if (d.containers !== undefined) {
-      const co = c.object(
-        d.containers,
-        `${path}.containers`,
-        Object.keys((d.containers as Rec | null) ?? {}),
-        'The container rules',
-      );
-      for (const [container, accepted] of Object.entries(co ?? {})) {
-        c.id(
-          'class',
-          container,
-          `${path}.containers.${container}`,
-          'The container class',
-        );
-        c.array(
-          accepted,
-          `${path}.containers.${container}`,
-          'The accepted classes',
-        )?.forEach((a, i) =>
-          c.id(
-            'class',
-            a,
-            `${path}.containers.${container}[${i}]`,
-            'An accepted class',
-          ),
-        );
-      }
-    }
     if (d.help !== undefined)
       c.labels(d.help, `${path}.help`, 'The help text', languages, {
         required: false,

@@ -7,7 +7,7 @@
     type ToolLibrary,
   } from '@metakit-app/core';
   import { copyStarter, STARTER_IDS } from '@metakit-app/shapes';
-  import { withPatch } from '../../build/attributes';
+  import { toggled, withPatch } from '../../build/attributes';
   import type { CommandResult } from '../../shell/controller';
   import AttributeList from './AttributeList.svelte';
   import KeyField from './KeyField.svelte';
@@ -52,11 +52,7 @@
     Object.values(tool.shapes).filter((s) => s.kind === 'relation'),
   );
   function toggle(end: 'from' | 'to', cls: ClassId, on: boolean) {
-    if (!def) return;
-    const set = new Set(def[end]);
-    if (on) set.add(cls);
-    else set.delete(cls);
-    patch({ [end]: [...set] });
+    if (def) patch({ [end]: toggled(def[end], cls, on) });
   }
   function newShape() {
     const base = copyStarter(STARTER_IDS.flow, newId('shape'));

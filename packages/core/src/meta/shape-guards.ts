@@ -461,19 +461,6 @@ export function checkShapeReferences(c: Checker, tool: ToolLibrary): void {
         `modelTypes.${mt.id}.background`,
         `The shape ${mt.background} does not exist in this tool library.`,
       );
-    for (const [container, accepted] of Object.entries(mt.containers ?? {})) {
-      if (!tool.classes[container as never])
-        c.add(
-          `modelTypes.${mt.id}.containers.${container}`,
-          `The class ${container} does not exist.`,
-        );
-      for (const a of accepted)
-        if (!tool.classes[a])
-          c.add(
-            `modelTypes.${mt.id}.containers.${container}`,
-            `The class ${a} does not exist.`,
-          );
-    }
   }
   for (const shape of Object.values(shapes)) {
     if (shape.kind !== 'node') continue;

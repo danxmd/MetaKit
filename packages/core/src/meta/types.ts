@@ -218,8 +218,6 @@ export interface ModelTypeDef {
   /** Attributes of the model itself. */
   attributes: AttributeDef[];
   background?: ShapeId;
-  /** Which classes each container or swimlane class accepts; a class not listed accepts any. */
-  containers?: Record<ClassId, ClassId[]>;
   help?: Labels;
 }
 
