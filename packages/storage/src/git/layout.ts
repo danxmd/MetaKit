@@ -149,7 +149,9 @@ export function toLayout(
   const parts: Record<string, string[]> = {};
   for (const part of LAYOUT_PARTS) {
     const table = (tool[part.table] ?? {}) as unknown as Table;
-    const ids = Object.keys(table);
+    // Sorted: the key order of a table is not kept when a tool library goes through sync, so an
+    // order taken from it would show up as a change nobody made.
+    const ids = Object.keys(table).sort();
     parts[part.table] = ids;
     const names = fileNames(
       ids.map((id) => ({

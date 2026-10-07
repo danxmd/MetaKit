@@ -18,6 +18,27 @@ import {
   type ToolPermissions,
 } from '@metakit-app/core';
 import {
+  GitHubRemote,
+  GitLabRemote,
+  TokenStore,
+  commitPending,
+  createGitLinkStore,
+  finishPull,
+  fromLayout,
+  linkFromSnapshot,
+  listReleases,
+  openRelease,
+  pendingChanges,
+  pull,
+  pullBatch,
+  type GitFile,
+  type GitLink,
+  type GitLinkStore,
+  type GitRemote,
+  type GitTag,
+  type PartChange,
+  type PullMerged,
+  type Resolutions,
   applyToolUpdate,
   createToolPermissionBacking,
   exportBundle,
@@ -61,6 +82,7 @@ import {
   type ScriptsHandle,
 } from '@metakit-app/behaviour';
 import { downloadFile, importFiles } from './files';
+import type { GitTarget } from '../git/settings-model';
 import { browserHttp, workspaceFiles } from './script-services';
 import { describeClash, type ClashNotice } from './clash';
 import { normalizeFolder } from './explorer';
@@ -111,6 +133,33 @@ export interface BehaviourMessage {
 
 export type SaveStatus = 'saved' | 'saving' | 'error';
 
+/** Git mode for the tool library open in Build mode (ADR 0007). */
+export interface GitState {
+  /** The repository the open tool library is linked to, or null. */
+  link: GitLink | null;
+  pending: PartChange[];
+  busy: boolean;
+  error: string | null;
+  /** A pull that found clashes and waits for the person's choices. */
+  conflicts: PullMerged | null;
+  releases: GitTag[] | null;
+  /** The settings page (tokens, repository) is open. */
+  settings: boolean;
+  /** What the last commit or pull did. */
+  note: string | null;
+}
+
+const NO_GIT: GitState = {
+  link: null,
+  pending: [],
+  busy: false,
+  error: null,
+  conflicts: null,
+  releases: null,
+  settings: false,
+  note: null,
+};
+
 export interface AppState {
   /** `start` before a workspace is open, `workspace` with the explorer, `model` with a model open. */
   phase: 'start' | 'workspace' | 'model' | 'build';
@@ -146,6 +195,7 @@ export interface AppState {
   toolImport: ToolUpdatePlan | null;
   /** A tool asking to use the network or files; answered with `answerPermission`. */
   permissionAsk: { toolName: string; wanted: ToolPermissions } | null;
+  git: GitState;
 }
 
 export interface ControllerOptions {
@@ -160,6 +210,14 @@ export interface ControllerOptions {
     confirm(text: string): boolean;
     choose(text: string, options: readonly string[]): string | null;
   };
+  /** Builds the remote for Git mode; tests replace the real services with their own. */
+  makeGitRemote?: (
+    service: 'github' | 'gitlab',
+    host: string,
+    repo: string,
+    folder: string,
+    token: string,
+  ) => GitRemote | undefined;
   /** Leave presence out (for tests that do not need it). */
   presence?: boolean;
   /** Look at the folder for sync problems after opening a workspace. */
@@ -192,6 +250,14 @@ export interface BuildPort {
   undoBuild(): boolean;
   redoBuild(): boolean;
   closeBuild(): Promise<void>;
+  gitRefreshPending(): void;
+  gitCommit(message: string): Promise<boolean | undefined>;
+  gitPull(): Promise<void | undefined>;
+  gitResolve(choices: Resolutions): Promise<void | undefined>;
+  gitCancelPull(): void;
+  gitLoadReleases(): Promise<void | undefined>;
+  gitCloseReleases(): void;
+  gitUseRelease(tag: GitTag): Promise<void | undefined>;
 }
 
 const NO_SYNC: SyncStatus = {
@@ -223,6 +289,7 @@ const initial = (): AppState => ({
   notes: [],
   toolImport: null,
   permissionAsk: null,
+  git: NO_GIT,
 });
 
 const message = (error: unknown) =>
@@ -1008,6 +1075,267 @@ export class AppController {
     });
   }
 
+  // Git mode ---------------------------------------------------------------------------------
+
+  readonly gitTokens = new TokenStore();
+  private gitLinks: GitLinkStore | null = null;
+
+  private links(): GitLinkStore {
+    this.gitLinks ??= createGitLinkStore();
+    return this.gitLinks;
+  }
+
+  private setGit(patch: Partial<GitState>): void {
+    this.set({ git: { ...this.current.git, ...patch } });
+  }
+
+  /** Builds the remote for a stored token; the token itself is never kept in state. */
+  makeGitRemote(
+    service: 'github' | 'gitlab',
+    host: string,
+    repo: string,
+    folder: string,
+    token: string,
+  ): GitRemote {
+    const replaced = this.options.makeGitRemote?.(
+      service,
+      host,
+      repo,
+      folder,
+      token,
+    );
+    if (replaced) return replaced;
+    return service === 'github'
+      ? new GitHubRemote({ host, repo, folder, token })
+      : new GitLabRemote({ host, repo, folder, token });
+  }
+
+  private async remoteFor(link: GitLink): Promise<GitRemote> {
+    const tokens = await this.gitTokens.list();
+    const match = tokens.find(
+      (t) => t.service === link.service && t.host === link.host,
+    );
+    const token = match ? await this.gitTokens.reveal(match.id) : undefined;
+    if (!token)
+      throw new Error(
+        `There is no ${link.service === 'github' ? 'GitHub' : 'GitLab'} token for ${link.host} in this browser. Add one in the Git settings.`,
+      );
+    return this.makeGitRemote(
+      link.service,
+      link.host,
+      link.repo,
+      link.folder,
+      token,
+    );
+  }
+
+  openGitSettings(open: boolean): void {
+    this.setGit({ settings: open });
+  }
+
+  /** Brings a tool library from a repository into the workspace and opens it in Build mode. */
+  openFromGit(target: GitTarget): Promise<boolean | undefined> {
+    return this.gitRun(async () => {
+      const ws = this.need();
+      const token = await this.gitTokens.reveal(target.tokenId);
+      if (!token)
+        throw new Error('That token is no longer stored in this browser.');
+      const remote = this.makeGitRemote(
+        target.service,
+        target.host,
+        target.repo,
+        target.folder,
+        token,
+      );
+      const snapshot = await remote.read(target.branch);
+      const { tool, issues, assets } = fromLayout(snapshot.files);
+      if (!tool)
+        throw new Error(
+          `This folder does not hold a tool library: ${issues.map((i) => i.message).join('; ') || 'tool.json is missing'}.`,
+        );
+      const slug = await ws.createTool(tool);
+      // Asset names get a hash in the workspace, so shapes that name them by their old file name show a gap until fixed.
+      for (const asset of assets) {
+        if (asset.encoding !== 'base64') continue;
+        const bytes = Uint8Array.from(atob(asset.content), (c) =>
+          c.charCodeAt(0),
+        );
+        await ws.addToolAsset(slug, asset.path.replace(/^assets\//, ''), bytes);
+      }
+      await this.links().put(
+        linkFromSnapshot(
+          {
+            toolSlug: slug,
+            service: target.service,
+            host: target.host,
+            repo: target.repo,
+            folder: target.folder,
+            branch: target.branch,
+          },
+          snapshot,
+        ),
+      );
+      await this.refresh();
+      this.setGit({ settings: false });
+      return this.openBuild(slug);
+    });
+  }
+
+  /** Reads the link of the tool library that was just opened in Build mode. */
+  private async loadGitLink(slug: string): Promise<void> {
+    const link = (await this.links().get(slug)) ?? null;
+    this.setGit({ ...NO_GIT, link });
+    if (link) this.gitRefreshPending();
+  }
+
+  /** Assets stay as they are in the repository: Build mode does not edit them in Git mode. */
+  private repositoryAssets(link: GitLink): GitFile[] {
+    return link.baseFiles.filter((f) => f.path.startsWith('assets/'));
+  }
+
+  gitRefreshPending(): void {
+    const { link } = this.current.git;
+    const build = this.current.build;
+    if (!link || !build) return;
+    this.setGit({
+      pending: pendingChanges(
+        link,
+        build.store.state,
+        this.repositoryAssets(link),
+      ),
+    });
+  }
+
+  private async gitRun<T>(action: () => Promise<T>): Promise<T | undefined> {
+    this.setGit({ busy: true, error: null, note: null });
+    try {
+      return await action();
+    } catch (error) {
+      this.setGit({ error: message(error) });
+      return undefined;
+    } finally {
+      this.setGit({ busy: false });
+    }
+  }
+
+  /** Commit and push: every changed part in one commit. */
+  gitCommit(commitMessage: string): Promise<boolean | undefined> {
+    return this.gitRun(async () => {
+      const { link } = this.current.git;
+      const build = this.current.build;
+      if (!link || !build)
+        throw new Error('This tool library is not linked to a repository.');
+      const remote = await this.remoteFor(link);
+      const done = await commitPending({
+        remote,
+        link,
+        tool: build.store.state,
+        assets: this.repositoryAssets(link),
+        message: commitMessage,
+      });
+      await this.links().put(done.link);
+      this.setGit({
+        link: done.link,
+        note: `Committed ${done.files} file${done.files === 1 ? '' : 's'}.`,
+      });
+      this.gitRefreshPending();
+      return true;
+    });
+  }
+
+  /** Applies a merged tool library to the open one as a single undo step. */
+  private async applyGitTool(
+    tool: PullMerged['tool'],
+    link: GitLink,
+  ): Promise<void> {
+    const build = this.current.build;
+    if (!build) return;
+    const batch = pullBatch(build.store.state, tool);
+    if (batch) {
+      const result = this.runBuild(batch);
+      if (!result.ok) throw new Error(result.error);
+    }
+    await this.links().put(link);
+    this.setGit({ link, conflicts: null });
+    this.gitRefreshPending();
+  }
+
+  /** Pull: merges the branch into the tool library; clashes wait for `gitResolve`. */
+  gitPull(): Promise<void | undefined> {
+    return this.gitRun(async () => {
+      const { link } = this.current.git;
+      const build = this.current.build;
+      if (!link || !build)
+        throw new Error('This tool library is not linked to a repository.');
+      const remote = await this.remoteFor(link);
+      const outcome = await pull({
+        remote,
+        link,
+        tool: build.store.state,
+        assets: this.repositoryAssets(link),
+      });
+      if (outcome.status === 'up-to-date') {
+        this.setGit({ note: 'Already up to date.' });
+        return;
+      }
+      if (outcome.conflicts.length > 0) {
+        this.setGit({ conflicts: outcome });
+        return;
+      }
+      await this.applyGitTool(outcome.tool, outcome.link);
+      this.setGit({ note: 'Pulled the changes from the repository.' });
+    });
+  }
+
+  gitResolve(choices: Resolutions): Promise<void | undefined> {
+    return this.gitRun(async () => {
+      const merged = this.current.git.conflicts;
+      if (!merged) return;
+      const done = finishPull(merged, choices);
+      await this.applyGitTool(done.tool, done.link);
+      this.setGit({ note: 'Pulled the changes and kept your choices.' });
+    });
+  }
+
+  gitCancelPull(): void {
+    this.setGit({ conflicts: null });
+  }
+
+  gitLoadReleases(): Promise<void | undefined> {
+    return this.gitRun(async () => {
+      const { link } = this.current.git;
+      if (!link)
+        throw new Error('This tool library is not linked to a repository.');
+      this.setGit({ releases: await listReleases(await this.remoteFor(link)) });
+    });
+  }
+
+  gitCloseReleases(): void {
+    this.setGit({ releases: null });
+  }
+
+  /** Switches the tool library to a tagged release; an ordinary edit that can be undone. */
+  gitUseRelease(tag: GitTag): Promise<void | undefined> {
+    return this.gitRun(async () => {
+      const { link } = this.current.git;
+      if (!link)
+        throw new Error('This tool library is not linked to a repository.');
+      const opened = await openRelease(await this.remoteFor(link), tag.name);
+      const build = this.current.build;
+      if (!build) return;
+      const batch = pullBatch(build.store.state, opened.tool);
+      if (batch) {
+        const result = this.runBuild(batch);
+        if (!result.ok) throw new Error(result.error);
+      }
+      this.setGit({
+        releases: null,
+        note: `Now showing release ${tag.name}. Commit to keep it on the branch, or undo.`,
+      });
+      this.gitRefreshPending();
+    });
+  }
+
   // Organising --------------------------------------------------------------------------------
 
   /** Runs a manifest change on a model: the open one through its store, others by loading and saving. */
@@ -1126,6 +1454,7 @@ export class AppController {
             issues: opened.issues,
           },
         });
+        await this.loadGitLink(slug);
         return true;
       })) ?? false
     );
@@ -1154,6 +1483,7 @@ export class AppController {
     } finally {
       this.set({
         build: null,
+        git: { ...NO_GIT, settings: this.current.git.settings },
         phase: this.workspace ? 'workspace' : 'start',
         sync: NO_SYNC,
         save: 'saved',

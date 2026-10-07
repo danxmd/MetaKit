@@ -22,6 +22,7 @@
     warnings,
     error,
     onNew,
+    onGit,
     onAddTool,
     onNewTool,
     onEditTool,
@@ -55,6 +56,8 @@
     warnings: string[];
     error: string | null;
     onNew: () => void;
+    /** Opens the Git settings, where a tool library is brought in from a repository. */
+    onGit: () => void;
     /** Called with the text of a tool library file the user chose. */
     onAddTool: (text: string) => void;
     /** Makes an empty tool library with this name and opens it in Build mode. */
@@ -139,6 +142,7 @@
       <button onclick={() => (naming = !naming)} data-testid="new-tool"
         >New tool library</button
       >
+      <button onclick={onGit} data-testid="open-git">Open from Git</button>
       <button onclick={() => fileInput?.click()} data-testid="add-tool"
         >Add tool library file</button
       >

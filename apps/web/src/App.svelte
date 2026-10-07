@@ -7,6 +7,7 @@
   } from '@metakit-app/ui';
   import type { ElementId } from '@metakit-app/core';
   import BuildView from '@metakit-app/ui/components/BuildView.svelte';
+  import GitSettings from '@metakit-app/ui/components/git/GitSettings.svelte';
   import Explorer from '@metakit-app/ui/components/Explorer.svelte';
   import ModelView from '@metakit-app/ui/components/ModelView.svelte';
   import NewModelDialog from '@metakit-app/ui/components/NewModelDialog.svelte';
@@ -22,12 +23,16 @@
     pickFolder,
     saveProfile,
     rememberedFolder,
+    testGitRemote,
     type RememberedFolder,
   } from './access';
   import { supportsLocalFolders } from './browser-support';
 
   const supported = supportsLocalFolders(window);
-  const controller = new AppController();
+  const controller = new AppController({
+    // Read when used: the e2e harness sets the replacement after the app has started.
+    makeGitRemote: (...args) => testGitRemote()?.(...args),
+  });
   // undefined while it is being read; null on the first visit, when the app asks.
   let profile = $state<Profile | null | undefined>(undefined);
   let app = $state(controller.state);
@@ -173,6 +178,7 @@
     warnings={app.warnings}
     error={app.error}
     onNew={() => (showNew = true)}
+    onGit={() => controller.openGitSettings(true)}
     onAddTool={(text) => controller.addToolLibrary(text)}
     onNewTool={(name) => controller.createToolLibrary(name)}
     onEditTool={(slug) => controller.openBuild(slug)}
@@ -228,6 +234,23 @@
       onBack={() => controller.closeModel()}
     />
   {/key}
+{/if}
+
+{#if app.git.settings}
+  <GitSettings
+    store={controller.gitTokens}
+    makeRemote={(service, host, repo, folder, token) =>
+      controller.makeGitRemote(service, host, repo, folder, token)}
+    onChoose={(target) => controller.openFromGit(target)}
+    onClose={() => controller.openGitSettings(false)}
+  />
+  {#if app.git.error}<p
+      role="alert"
+      class="git-error"
+      data-testid="git-open-error"
+    >
+      {app.git.error}
+    </p>{/if}
 {/if}
 
 {#if app.permissionAsk}

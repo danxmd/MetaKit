@@ -108,11 +108,15 @@ describe('round trip', () => {
     });
   }
 
-  it('keeps the order of the parts', () => {
+  it('orders the parts by id, so the key order after sync is not a change', () => {
     const tool = sampleTool('bpmn-lite');
+    const shuffled: ToolLibrary = {
+      ...tool,
+      classes: Object.fromEntries(Object.entries(tool.classes).reverse()),
+    };
+    expect(toLayout(shuffled)).toEqual(toLayout(tool));
     const back = fromLayout(toLayout(tool)).tool!;
-    expect(Object.keys(back.classes)).toEqual(Object.keys(tool.classes));
-    expect(Object.keys(back.shapes)).toEqual(Object.keys(tool.shapes));
+    expect(Object.keys(back.classes)).toEqual(Object.keys(tool.classes).sort());
   });
 });
 

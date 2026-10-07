@@ -13,6 +13,9 @@
   } from '@metakit-app/core';
   import { uniqueKey } from '../build/attributes';
   import type { AppState, BuildPort } from '../shell/controller';
+  import CommitDialog from './git/CommitDialog.svelte';
+  import ConflictDialog from './git/ConflictDialog.svelte';
+  import ReleasePicker from './git/ReleasePicker.svelte';
   import ClassEditor from './build/ClassEditor.svelte';
   import ModelTypeEditor from './build/ModelTypeEditor.svelte';
   import RelationEditor from './build/RelationEditor.svelte';
@@ -65,6 +68,16 @@
     { kind: 'panel'; id: string } | { kind: 'shape'; id: string } | null
   >(null);
   let showPreview = $state(true);
+  let committing = $state(false);
+  const git = $derived(app.git);
+
+  function openCommit() {
+    controller.gitRefreshPending();
+    committing = true;
+  }
+  async function commit(text: string) {
+    if (await controller.gitCommit(text)) committing = false;
+  }
 
   const run = (command: never) => {
     const result = controller.runBuild(command);
@@ -227,11 +240,71 @@
       onclick={() => controller.redoBuild()}
       data-testid="build-redo">Redo</button
     >
+    {#if git.link}
+      <span class="git" data-testid="git-repo" title="Linked repository"
+        >{git.link.repo} · {git.link.branch}</span
+      >
+      <button type="button" onclick={openCommit} data-testid="git-commit"
+        >Commit and push{git.pending.length > 0
+          ? ` (${git.pending.length})`
+          : ''}</button
+      >
+      <button
+        type="button"
+        disabled={git.busy}
+        onclick={() => controller.gitPull()}
+        data-testid="git-pull">Pull</button
+      >
+      <button
+        type="button"
+        disabled={git.busy}
+        onclick={() => controller.gitLoadReleases()}
+        data-testid="git-releases">Releases</button
+      >
+    {/if}
     <span class="status" data-testid="build-status">{status}</span>
     <button type="button" onclick={() => (showPreview = !showPreview)}
       >{showPreview ? 'Hide preview' : 'Show preview'}</button
     >
   </header>
+  {#if git.note}<p class="message" data-testid="git-note">{git.note}</p>{/if}
+  {#if git.error && !committing}<p
+      class="message"
+      role="alert"
+      data-testid="git-error"
+    >
+      {git.error}
+    </p>{/if}
+  {#if committing}
+    <CommitDialog
+      changes={git.pending}
+      busy={git.busy}
+      error={git.error}
+      onCommit={commit}
+      onCancel={() => (committing = false)}
+    />
+  {/if}
+  {#if git.conflicts}
+    <ConflictDialog
+      conflicts={git.conflicts.conflicts}
+      busy={git.busy}
+      error={git.error}
+      onApply={(choices) => controller.gitResolve(choices)}
+      onCancel={() => controller.gitCancelPull()}
+    />
+  {/if}
+  {#if git.releases}
+    <ReleasePicker
+      releases={git.releases}
+      busy={git.busy}
+      error={git.error}
+      onPick={(name) => {
+        const tag = git.releases?.find((t) => t.name === name);
+        if (tag) controller.gitUseRelease(tag);
+      }}
+      onCancel={() => controller.gitCloseReleases()}
+    />
+  {/if}
   {#if message}<p class="message" role="alert" data-testid="build-message">
       {message}
     </p>{/if}

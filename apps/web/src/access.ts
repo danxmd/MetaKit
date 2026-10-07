@@ -6,6 +6,7 @@ import {
   rememberWorkspaceFolder,
   requestAccess,
   setProfile,
+  type GitRemote,
   type Profile,
   type StorageAdapter,
 } from '@metakit-app/storage';
@@ -20,6 +21,14 @@ export interface TestHooks {
   remember?: boolean;
   /** Skips the first-visit question about name and colour. */
   profile?: Profile;
+  /** Replaces GitHub and GitLab with a remote the test provides. */
+  gitRemote?: (
+    service: 'github' | 'gitlab',
+    host: string,
+    repo: string,
+    folder: string,
+    token: string,
+  ) => GitRemote;
 }
 
 function hooks(): TestHooks | undefined {
@@ -97,3 +106,6 @@ export async function saveProfile(profile: Profile): Promise<void> {
     console.warn('The name and colour could not be stored.', error);
   }
 }
+
+/** The remote that e2e tests put in place of the real services, if any. */
+export const testGitRemote = (): TestHooks['gitRemote'] => hooks()?.gitRemote;
