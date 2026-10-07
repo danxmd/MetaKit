@@ -2,6 +2,13 @@ import { readFileSync } from 'node:fs';
 import { MkModelError } from '@metakit-app/storage/node-entry';
 import { parseArgs, UsageError } from './args';
 import { exportCommand, validateCommand, type Io } from './commands';
+import {
+  exportBundleCommand,
+  exportCsvCommand,
+  exportToolCommand,
+  importBundleCommand,
+  importToolCommand,
+} from './exchange';
 import { CliError } from './load';
 
 // Read at run time so the same code works from src/ (tests) and from the bundled dist/.
@@ -26,6 +33,26 @@ Commands:
       --out <file>           Write to a file instead of the standard output.
       --tool <path>          The tool library for a model file.
       --workspace <folder>   Treat <model> as the folder name of a model in this workspace.
+  export-bundle [<model>...] Pack models and their tool library into a .mkbundle (all models when none are named).
+      --workspace <folder>   The workspace; <model> is the folder name of a model in it.
+      --out <file>           The bundle to write.
+      --name <name>          The name of the bundle.
+      --no-tool              Leave the tool library out.
+  import-bundle <file>       Add the models (and the tool library, when new) of a .mkbundle to a workspace.
+      --workspace <folder>   The workspace to add to.
+      --create               Make the folder a workspace first when it is not one yet.
+  export-tool <tool>         Write a tool library as a .mktool package.
+      --workspace <folder>   Treat <tool> as the folder name of a tool library in this workspace (otherwise a path).
+      --out <file>           The package to write.
+  import-tool <file>         Add or update a tool library from a .mktool package; shows what changes first.
+      --workspace <folder>   The workspace to add to.
+      --yes                  Apply an update to a tool library that is already there.
+      --create               Make the folder a workspace first when it is not one yet.
+  export-csv <model>         Write a model as CSV files, one per class and per relation class.
+      --workspace <folder>   Treat <model> as the folder name of a model in this workspace.
+      --tool <path>          The tool library for a model file.
+      --out <folder|.zip>    Write the files into a folder, or into one zip when this ends in .zip.
+      --bom                  Start each file with a byte order mark so that Excel reads accents correctly.
 
   --version                  Print the version.
 
@@ -50,6 +77,13 @@ export async function run(args: string[], io: Io): Promise<number> {
     }
     if (command === 'validate') return await validateCommand(parsed, io);
     if (command === 'export') return await exportCommand(parsed, io);
+    if (command === 'export-bundle')
+      return await exportBundleCommand(parsed, io);
+    if (command === 'import-bundle')
+      return await importBundleCommand(parsed, io);
+    if (command === 'export-tool') return await exportToolCommand(parsed, io);
+    if (command === 'import-tool') return await importToolCommand(parsed, io);
+    if (command === 'export-csv') return await exportCsvCommand(parsed, io);
   } catch (error) {
     if (error instanceof UsageError) {
       io.err(`${error.message}\n\n${USAGE}`);
