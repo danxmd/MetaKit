@@ -11,6 +11,12 @@ export default defineConfig({
     launchOptions: {
       // Lets an environment with a preinstalled Chromium skip the download.
       executablePath: process.env.PW_CHROMIUM_PATH || undefined,
+      // Chromium maps file names through the locale; in a plain C locale it cannot store accented
+      // or non-Latin names, which the storage tests need.
+      env: { ...process.env, LANG: 'C.UTF-8', LC_ALL: 'C.UTF-8' } as Record<
+        string,
+        string
+      >,
     },
   },
   projects: [{ name: 'chromium', use: { browserName: 'chromium' } }],

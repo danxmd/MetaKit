@@ -88,7 +88,7 @@ Keep this section current whenever scripts change.
 ## Conventions
 
 - ESM only. Named exports in packages; no default exports.
-- Stable random IDs with a kind prefix (`tool_`, `cls_`, `rel_`, `att_`, `mt_`, `shp_`, `el_`, `cn_`). Keys are the human names used in formulas and scripts.
+- Stable random IDs with a kind prefix (`tool_`, `cls_`, `rel_`, `att_`, `mt_`, `mdl_`, `vw_`, `shp_`, `el_`, `cn_`). Keys are the human names used in formulas and scripts.
 - Stored JSON: 2-space indent, stable key order, trailing newline, so diffs stay small.
 - Unit tests sit next to the code as `*.test.ts`. End-to-end tests live in `apps/web/e2e/`.
 - No `any` without a comment explaining why.

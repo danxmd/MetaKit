@@ -1,0 +1,144 @@
+{
+  "formatVersion": 1,
+  "manifest": {
+    "id": "tool_erlite",
+    "name": "ER lite",
+    "version": "1.0.0",
+    "languages": ["en"]
+  },
+  "settings": {
+    "grid": { "size": 20, "snap": true, "visible": false },
+    "layers": [],
+    "numbering": { "enabled": false, "prefix": "", "start": 1 }
+  },
+  "classes": {
+    "cls_entity": {
+      "id": "cls_entity",
+      "key": "Entity",
+      "kind": "node",
+      "labels": { "en": "Entity" },
+      "attributes": [
+        {
+          "id": "att_ename",
+          "key": "Name",
+          "type": "text",
+          "required": true,
+          "maxLength": 60,
+          "pattern": "^[A-Z][A-Za-z0-9 ]*$"
+        },
+        {
+          "id": "att_edescription",
+          "key": "Description",
+          "type": "text",
+          "multiline": true
+        }
+      ]
+    },
+    "cls_attribute": {
+      "id": "cls_attribute",
+      "key": "Attribute",
+      "kind": "node",
+      "labels": { "en": "Attribute" },
+      "attributes": [
+        {
+          "id": "att_aname",
+          "key": "Name",
+          "type": "text",
+          "required": true,
+          "maxLength": 60
+        },
+        {
+          "id": "att_datatype",
+          "key": "DataType",
+          "type": "choice",
+          "options": ["text", "number", "date", "boolean"],
+          "default": "text"
+        },
+        {
+          "id": "att_iskey",
+          "key": "IsKey",
+          "type": "boolean",
+          "default": false
+        }
+      ]
+    },
+    "cls_relationship": {
+      "id": "cls_relationship",
+      "key": "Relationship",
+      "kind": "node",
+      "labels": { "en": "Relationship" },
+      "attributes": [
+        {
+          "id": "att_rname",
+          "key": "Name",
+          "type": "text",
+          "required": true,
+          "maxLength": 60
+        }
+      ]
+    }
+  },
+  "relations": {
+    "rel_has": {
+      "id": "rel_has",
+      "key": "Has",
+      "labels": { "en": "Has" },
+      "from": ["cls_entity", "cls_relationship"],
+      "to": ["cls_attribute"],
+      "attributes": []
+    },
+    "rel_participates": {
+      "id": "rel_participates",
+      "key": "Participates",
+      "labels": { "en": "Participates in" },
+      "from": ["cls_entity"],
+      "to": ["cls_relationship"],
+      "attributes": [
+        {
+          "id": "att_cardinality",
+          "key": "Cardinality",
+          "type": "choice",
+          "options": ["1", "N"],
+          "default": "N"
+        }
+      ]
+    }
+  },
+  "modelTypes": {
+    "mt_er": {
+      "id": "mt_er",
+      "key": "ERDiagram",
+      "labels": { "en": "ER diagram" },
+      "classes": ["cls_entity", "cls_attribute", "cls_relationship"],
+      "relations": ["rel_has", "rel_participates"],
+      "views": [],
+      "cardinalities": [
+        { "kind": "count", "class": "cls_entity", "min": 1 },
+        {
+          "kind": "degree",
+          "class": "cls_attribute",
+          "relation": "rel_has",
+          "end": "to",
+          "min": 1,
+          "max": 1
+        },
+        {
+          "kind": "degree",
+          "class": "cls_relationship",
+          "relation": "rel_participates",
+          "end": "to",
+          "min": 2
+        }
+      ],
+      "attributes": [
+        {
+          "id": "att_ertitle",
+          "key": "Title",
+          "type": "text",
+          "required": true
+        },
+        { "id": "att_erauthor", "key": "Author", "type": "text" }
+      ]
+    }
+  }
+}

@@ -4,6 +4,14 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./node": "./src/node.ts",
+    "./node-entry": "./src/node-entry.ts"
+  },
+  "dependencies": {
+    "@metakit-app/core": "workspace:*"
+  },
+  "devDependencies": {
+    "fast-check": "^4.0.0"
   }
 }

@@ -6,7 +6,9 @@
     "declaration": true,
     "outDir": "dist",
     "rootDir": "src",
-    "types": []
+    "lib": ["ES2022", "DOM", "DOM.Iterable", "DOM.AsyncIterable"],
+    "types": ["node"]
   },
-  "include": ["src"]
+  "include": ["src"],
+  "references": [{ "path": "../core" }]
 }

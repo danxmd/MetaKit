@@ -2,7 +2,7 @@
 
 MetaKit is a browser-only metamodelling and modelling tool. Method engineers build modelling tools in Build mode; modellers use them in Model mode. Tool libraries and models are plain JSON files in a shared folder (OneDrive, SharePoint, Google Drive, Dropbox) or, for tool libraries, in GitHub or GitLab.
 
-The project is in phase 0 (setup and spikes). The web app is a placeholder.
+The project is in phase 1 (core, model store, validation, local storage and CLI). The web app is still a placeholder.
 
 Local folders need Chrome or Edge on desktop. Other browsers load the app and show a message.
 
@@ -27,7 +27,20 @@ pnpm dev          # serve the web app locally
 
 The first `pnpm test:e2e` needs Chromium: `pnpm --filter @metakit-app/web exec playwright install chromium`. If Chromium is already installed, set `PW_CHROMIUM_PATH` to its executable instead.
 
-Run the CLI after a build: `node apps/cli/dist/bin.js --version`.
+## Command line
+
+After `pnpm build`:
+
+```sh
+node apps/cli/dist/bin.js validate tools/bpmn-lite            # a tool library
+node apps/cli/dist/bin.js validate tools/bpmn-lite/order-process.mkmodel.json --strict
+node apps/cli/dist/bin.js validate my-workspace --json        # a whole workspace folder
+node apps/cli/dist/bin.js export my-workspace/models/order --format json --out order.mkmodel.json
+```
+
+`validate` exits with 1 on errors (or on warnings with `--strict`). Files are in the formats described in `openspec/specs/` once the phase-1 changes are archived, and the sample tools are in `tools/`.
+
+Known limits in phase 1: when two instances have written snapshots of one tool library, the newest snapshot wins and a warning is shown (merging arrives in phase 3). Chromium on Linux needs a UTF-8 locale to store non-ASCII file names.
 
 ## Layout
 
