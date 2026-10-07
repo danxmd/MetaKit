@@ -8,6 +8,7 @@
     ShapeId,
   } from '@metakit-app/core';
   import type { EditablePartType } from '@metakit-app/shapes';
+  import { withoutLook } from '../../build/appearance-model';
   import { ShapeEditorModel } from '../../build/shape-editor-model';
   import Gallery from './Gallery.svelte';
   import LayerList from './LayerList.svelte';
@@ -44,7 +45,8 @@
   const model = untrack(
     () =>
       new ShapeEditorModel({
-        shape,
+        // Editing as a drawing makes the shape hand-drawn: the saved shape has no simple look.
+        shape: withoutLook(shape),
         attributes,
         className,
         shapes: (id) => shapes(id),
@@ -103,10 +105,13 @@
 <div
   class="editor"
   role="group"
-  aria-label={`Shape editor for ${className}`}
+  aria-label={`Advanced drawing editor for ${className}`}
   data-testid="shape-editor"
 >
   <header class="toolbar">
+    <h2 class="title" data-testid="shape-editor-title">
+      Advanced drawing editor
+    </h2>
     <div class="group" role="group" aria-label="Add a part">
       {#each ADD as a (a.type)}
         <button
@@ -200,6 +205,10 @@
     flex-wrap: wrap;
     gap: 0.75rem;
     align-items: center;
+  }
+  .title {
+    margin: 0;
+    font-size: var(--text-m);
   }
   .group {
     display: flex;

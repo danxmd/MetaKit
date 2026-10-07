@@ -8,7 +8,14 @@
     type ClassKind,
     type ToolLibrary,
   } from '@metakit-app/core';
-  import { copyStarter, STARTER_IDS } from '@metakit-app/shapes';
+  import {
+    copyStarter,
+    defaultNodeLook,
+    nodeShapeFromLook,
+    STARTER_IDS,
+  } from '@metakit-app/shapes';
+  import { appearanceOfClass, withBase } from '../../build/appearance-model';
+  import AppearanceCard from './appearance/AppearanceCard.svelte';
   import { withPatch } from '../../build/attributes';
   import type { CommandResult } from '../../shell/controller';
   import AttributeList from './AttributeList.svelte';
@@ -25,6 +32,7 @@
     id,
     run,
     onEditShape,
+    onEditAppearance,
     onEditPanel,
     usages,
     assistant,
@@ -33,6 +41,7 @@
     id: ClassId;
     run: (command: never) => CommandResult;
     onEditShape: (shapeId: string) => void;
+    onEditAppearance: (classId: string) => void;
     onEditPanel: (classId: string) => void;
     usages: (attributeId: string) => string[];
     /** The assistant; when absent there is no "Draft with assistant" button. */
@@ -51,6 +60,33 @@
   const patch = (changes: Record<string, unknown>) => {
     if (def) exec({ type: 'putClass', def: withPatch<ClassDef>(def, changes) });
   };
+
+  // A container or a swimlane starts with its own form; a look still on the default form follows.
+  function changeKind(kind: ClassKind) {
+    if (!def) return;
+    const next = withPatch<ClassDef>(def, { kind });
+    const current = appearanceOfClass(tool, id);
+    if (
+      current.kind === 'look' &&
+      current.shared.length === 0 &&
+      current.look.base === defaultNodeLook(def.kind).base
+    ) {
+      exec({
+        type: 'batch',
+        commands: [
+          { type: 'putClass', def: next },
+          {
+            type: 'putShape',
+            def: nodeShapeFromLook(
+              withBase(current.look, defaultNodeLook(kind).base),
+              current.shape.id,
+              current.shape.name,
+            ),
+          },
+        ],
+      });
+    } else exec({ type: 'putClass', def: next });
+  }
 
   const parents = $derived(
     Object.values(tool.classes)
@@ -121,8 +157,7 @@
           Kind
           <select
             value={def.kind}
-            onchange={(e) =>
-              patch({ kind: e.currentTarget.value as ClassKind })}
+            onchange={(e) => changeKind(e.currentTarget.value as ClassKind)}
             data-testid="class-kind"
           >
             {#each CLASS_KINDS as k (k)}
@@ -172,33 +207,43 @@
     </Section>
     <Section
       title="Appearance"
-      help="How objects of this class look on the canvas and in the properties panel."
+      help="How objects of this class look on the canvas. Pick a form, colours and text; no drawing needed."
     >
+      <AppearanceCard
+        {tool}
+        owner={{ kind: 'class', id }}
+        {run}
+        {onEditAppearance}
+        {onEditShape}
+      >
+        <div class="row">
+          <label>
+            Use an existing shape
+            <select
+              value={def.shape ?? ''}
+              onchange={(e) =>
+                patch({ shape: e.currentTarget.value || undefined })}
+              data-testid="class-shape"
+            >
+              <option value="">Automatic (starter shape)</option>
+              {#each nodeShapes as s (s.id)}<option value={s.id}
+                  >{s.name ?? s.id}</option
+                >{/each}
+            </select>
+          </label>
+          {#if def.shape && appearanceOfClass(tool, id).kind === 'look'}
+            <button
+              type="button"
+              onclick={() => onEditShape(def.shape!)}
+              data-testid="class-edit-shape">Edit as drawing</button
+            >
+          {/if}
+          <button type="button" onclick={newShape} data-testid="class-new-shape"
+            >New drawn shape</button
+          >
+        </div>
+      </AppearanceCard>
       <div class="row">
-        <label>
-          Shape
-          <select
-            value={def.shape ?? ''}
-            onchange={(e) =>
-              patch({ shape: e.currentTarget.value || undefined })}
-            data-testid="class-shape"
-          >
-            <option value="">Automatic (starter shape)</option>
-            {#each nodeShapes as s (s.id)}<option value={s.id}
-                >{s.name ?? s.id}</option
-              >{/each}
-          </select>
-        </label>
-        {#if def.shape}
-          <button
-            type="button"
-            onclick={() => onEditShape(def.shape!)}
-            data-testid="class-edit-shape">Edit shape</button
-          >
-        {/if}
-        <button type="button" onclick={newShape} data-testid="class-new-shape"
-          >New shape</button
-        >
         <button
           type="button"
           onclick={() => onEditPanel(id)}

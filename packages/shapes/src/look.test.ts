@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import type { NodeLook, ShapeId, ToolLibrary } from '@metakit-app/core';
+import type {
+  NodeLook,
+  NodeShape,
+  ShapeId,
+  ToolLibrary,
+} from '@metakit-app/core';
 import { createToolStore, validateToolLibrary } from '@metakit-app/core';
 import { SAMPLE, sampleTool } from '@metakit-app/core/testing';
 import type { Scope, Value } from '@metakit-app/formula';
