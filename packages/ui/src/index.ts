@@ -5,3 +5,4 @@ export * from './build/shape-editor-model';
 export * from './build/part-properties';
 export * from './build/rule-editor-model';
 export * from './build/scripts-model';
+export * from './git/settings-model';
