@@ -39,6 +39,7 @@ import {
   type Timers,
 } from '@metakit-app/sync';
 import {
+  attachRules,
   createBehaviour,
   type Behaviour,
   type BehaviourHost,
@@ -147,6 +148,8 @@ export interface ControllerOptions {
  * What the model view asks of the controller. A narrow interface rather than the class, so that
  * the view does not depend on how the controller is built (and compiles against a copy of it).
  */
+type RulesHandle = ReturnType<typeof attachRules>;
+
 export interface ControllerPort {
   setSelection(ids: Iterable<string>): void;
   setEditing(item: string | null): void;
@@ -154,6 +157,8 @@ export interface ControllerPort {
   pushMessage?(kind: 'info' | 'warning' | 'error', text: string): void;
   editorsOf(item: string): PresenceFile[];
   dismissNotice(id: number): void;
+  /** The rule engine of an open model's behaviour, for panel buttons. */
+  rulesOf(behaviour: Behaviour): RulesHandle | undefined;
 }
 
 /** What the Build mode view asks of the controller. */
@@ -384,6 +389,10 @@ export class AppController {
     this.presence?.setEditing(item);
   }
 
+  rulesOf(behaviour: Behaviour): RulesHandle | undefined {
+    return this.rulesByBehaviour.get(behaviour);
+  }
+
   /** Other people who have this item open in an editor in the open model. */
   editorsOf(item: string): PresenceFile[] {
     const open = this.current.open;
@@ -432,7 +441,7 @@ export class AppController {
         target: model.manifest.id,
         user: this.current.me.instance,
       });
-      temp.dispose();
+      this.disposeBehaviour(temp);
       if (verdict.cancelled) throw new Error(verdict.reason);
       const slug = await ws.createModel(model);
       await this.refresh();
@@ -535,10 +544,19 @@ export class AppController {
     // Commands on the model are checked against the new tool library from now on.
     open.store.updateContext({ tool });
     open.behaviour.setTool(tool);
+    this.rulesByBehaviour.get(open.behaviour)?.reload();
     this.set({ open: { ...open, tool } });
   }
 
   private startedEmitted = false;
+  /** Rule engines by behaviour: they need the store and the tool, which `Behaviour` does not hold. */
+  private rulesByBehaviour = new WeakMap<Behaviour, RulesHandle>();
+
+  private disposeBehaviour(behaviour: Behaviour) {
+    this.rulesByBehaviour.get(behaviour)?.dispose();
+    this.rulesByBehaviour.delete(behaviour);
+    behaviour.dispose();
+  }
 
   /** Builds the formulas, events, rules and scripts of a model store; the hook for later phases. */
   private makeBehaviour(store: ModelStore, tool: () => ToolLibrary): Behaviour {
@@ -547,6 +565,10 @@ export class AppController {
       tool,
       host: this.behaviourHost(() => this.current.open?.behaviour ?? behaviour),
     });
+    this.rulesByBehaviour.set(
+      behaviour,
+      attachRules(behaviour, { store, tool }),
+    );
     return behaviour;
   }
 
@@ -637,7 +659,7 @@ export class AppController {
     if (!open) return;
     this.presence?.setDocument(null);
     try {
-      open.behaviour.dispose();
+      this.disposeBehaviour(open.behaviour);
       await open.session.close();
       await open.toolSession.close();
     } finally {

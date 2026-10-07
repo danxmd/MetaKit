@@ -33,6 +33,7 @@
   import { findInModel, type FindHit } from '../shell/find';
   import { labelOf, paletteFor } from '../shell/palette';
   import type { ReferenceServices } from '../shell/references';
+  import { runActionAttribute } from '@metakit-app/behaviour';
   import AttributePanel from './AttributePanel.svelte';
 
   let {
@@ -412,6 +413,18 @@
   // Panel edits --------------------------------------------------------------------------------
 
   function edit(field: Field, value: Json) {
+    // A panel button runs its rule, command or script on the selected object instead of storing a value.
+    if (field.attr.type === 'action') {
+      const rules = controller.rulesOf(behaviour);
+      if (rules)
+        runActionAttribute(
+          behaviour,
+          rules.engine,
+          field.attr,
+          targets[0]?.id ?? null,
+        );
+      return;
+    }
     editor.run(editCommands(targets, field.attr, value));
   }
 

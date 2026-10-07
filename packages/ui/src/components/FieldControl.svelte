@@ -321,6 +321,14 @@
         onChange={onCommit}
       />
     {/if}
+  {:else if field.control === 'button'}
+    <button
+      type="button"
+      {id}
+      class="action"
+      data-testid="action-{attr.key}"
+      onclick={() => onCommit(null)}>{field.label}</button
+    >
   {:else if field.control === 'readonly'}
     <output
       {id}

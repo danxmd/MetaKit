@@ -16,6 +16,7 @@
   import ClassEditor from './build/ClassEditor.svelte';
   import ModelTypeEditor from './build/ModelTypeEditor.svelte';
   import RelationEditor from './build/RelationEditor.svelte';
+  import RulesSection from './build/rules/RulesSection.svelte';
   import SettingsEditor from './build/SettingsEditor.svelte';
   import ShapesSection from './build/ShapesSection.svelte';
   import ToolPreview from './build/ToolPreview.svelte';
@@ -29,12 +30,14 @@
     onBack,
   }: { app: AppState; controller: BuildPort; onBack: () => void } = $props();
 
-  type Section = 'classes' | 'relations' | 'modelTypes' | 'shapes' | 'settings';
+  type Section =
+    'classes' | 'relations' | 'modelTypes' | 'shapes' | 'rules' | 'settings';
   const SECTIONS: [Section, string][] = [
     ['classes', 'Classes'],
     ['relations', 'Relation classes'],
     ['modelTypes', 'Model types'],
     ['shapes', 'Shapes'],
+    ['rules', 'Rules'],
     ['settings', 'Settings'],
   ];
 
@@ -332,6 +335,8 @@
           {run}
           onEditShape={(id) => (overlay = { kind: 'shape', id })}
         />
+      {:else if section === 'rules'}
+        <RulesSection {tool} {run} />
       {:else if section === 'settings'}
         <SettingsEditor {tool} {run} />
       {:else}

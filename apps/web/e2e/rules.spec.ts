@@ -41,8 +41,7 @@ async function addAttribute(page: Page, type: string, key: string) {
   await expect(page.getByTestId(`attr-${key}`)).toBeVisible();
 }
 
-// enabled by the lead after wiring
-test.describe.skip('Rules', () => {
+test.describe('Rules', () => {
   test('"High-priority tasks need an owner" built in Build mode works in a model', async ({
     page,
   }) => {
@@ -114,8 +113,8 @@ test.describe.skip('Rules', () => {
     // Priority High with no owner: the rule sets the status and warns.
     await panel
       .getByTestId('field-Priority')
-      .locator('select')
-      .selectOption('High');
+      .getByRole('radio', { name: 'High' })
+      .click();
     await expect(
       panel.getByTestId('field-Status').locator('input'),
     ).toHaveValue('Needs owner');
