@@ -1,0 +1,9 @@
+# Design
+
+- **State.** A small app controller (plain TypeScript, no Svelte) holds the open `Workspace`, the list of tools and models, and the open model's `DocumentStore`. Components read it through a tiny store contract (`subscribe`). Changes to the model are saved by the controller: it listens to the store and writes `saveModel` after a short delay (500 ms) and on close. Phase 3 replaces this with change files.
+- **Start page.** "Open folder" calls the picker; "Reopen last folder" uses the remembered handle and asks for permission from the click. Unsupported browsers show the existing message and no buttons.
+- **Explorer.** Builds a tree from each model's `folder` string. New, rename, move to folder (changes `folder` through `updateManifest`) and delete. Delete is a marker: an instance may not remove other instances' files, so `Workspace.trashModel(slug)` writes `models/<slug>/_state/<instance>/trash.json` (`{ formatVersion: 1, trashed: true, at }`), and `restoreModel` overwrites it with `trashed: false`. A model counts as trashed when the newest marker across instances says so; `listModels` leaves trashed models out unless asked. Nothing is deleted, so a mistake is always recoverable. The marker is a new file type with its own format version and a test; existing formats do not change.
+- **New model.** Choose a tool library from `tools/`, then a model type, then a name; creates the model with `Workspace.createModel`.
+- **Palette.** `paletteFor(tool, modelType, view)` lists classes and relations of the active view (all of the model type when the view is "All"), non-abstract only.
+- **Find.** `findInModel(tool, model, query)` searches names (the first text attribute) and all text-like attribute values, case-insensitively, returns hits with element id; selecting a hit centres the view on it.
+- **Clicks to an empty model:** open folder (1), pick the folder in the browser dialog (2), New model (3), choose type (4), Create (5).
