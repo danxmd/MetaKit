@@ -28,6 +28,12 @@
   import PanelLayoutEditor from './PanelLayoutEditor.svelte';
   import ShapeEditor from './shape-editor/ShapeEditor.svelte';
   import { defaultLayout } from '../build/panel-layout-model';
+  import {
+    newNodeLookShape,
+    newRelationLookShape,
+  } from '../build/appearance-model';
+  import AppearanceEditor from './build/appearance/AppearanceEditor.svelte';
+  import RelationLookEditor from './build/appearance/RelationLookEditor.svelte';
 
   let {
     app,
@@ -112,8 +118,13 @@
   let newName = $state('');
   let message = $state<string | null>(null);
   let overlay = $state<
-    { kind: 'panel'; id: string } | { kind: 'shape'; id: string } | null
+    | { kind: 'panel'; id: string }
+    | { kind: 'shape'; id: string }
+    | { kind: 'appearance'; id: string }
+    | null
   >(null);
+  // A line shape whose form the Shapes list opens first (a relation class asked to edit it).
+  let openLine = $state<string | null>(null);
   let showPreview = $state(true);
   let committing = $state(false);
   const git = $derived(app.git);
@@ -182,16 +193,46 @@
     let result;
     if (section === 'classes') {
       const id = newId('class');
+      // A new class starts with a good look, so it never needs drawing.
+      const shape = newNodeLookShape(key, 'node');
       result = run({
-        type: 'putClass',
-        def: { id, key, kind: 'node', labels, attributes: [] },
+        type: 'batch',
+        commands: [
+          { type: 'putShape', def: shape },
+          {
+            type: 'putClass',
+            def: {
+              id,
+              key,
+              kind: 'node',
+              labels,
+              attributes: [],
+              shape: shape.id,
+            },
+          },
+        ],
       } as never);
       if (result.ok) selected = { ...selected, classes: id };
     } else if (section === 'relations') {
       const id = newId('relation');
+      const shape = newRelationLookShape(key);
       result = run({
-        type: 'putRelation',
-        def: { id, key, labels, from: [], to: [], attributes: [] },
+        type: 'batch',
+        commands: [
+          { type: 'putShape', def: shape },
+          {
+            type: 'putRelation',
+            def: {
+              id,
+              key,
+              labels,
+              from: [],
+              to: [],
+              attributes: [],
+              shape: shape.id,
+            },
+          },
+        ],
       } as never);
       if (result.ok) selected = { ...selected, relations: id };
     } else if (section === 'modelTypes') {
@@ -241,6 +282,26 @@
       if (!result.ok) return;
     }
     overlay = { kind: 'panel', id: classId };
+  }
+
+  /**
+   * Opens the advanced drawing editor. A shape made from a simple look becomes a hand-drawn one
+   * once it is edited as a drawing, so that is confirmed first.
+   */
+  function editShape(id: string) {
+    const shape = tool.shapes[id as keyof typeof tool.shapes];
+    if (!shape) return;
+    if (
+      shape.look &&
+      !confirm(
+        'Editing as a drawing turns this into a hand-drawn look. The simple controls will no longer work for it. Continue?',
+      )
+    )
+      return;
+    if (shape.kind === 'relation') {
+      openLine = id;
+      section = 'shapes';
+    } else overlay = { kind: 'shape', id };
   }
 
   function rename(text: string) {
@@ -508,7 +569,9 @@
             {tool}
             id={current as ClassId}
             {run}
-            onEditShape={(id) => (overlay = { kind: 'shape', id })}
+            onEditShape={editShape}
+            onEditAppearance={(cid) =>
+              (overlay = { kind: 'appearance', id: cid })}
             onEditPanel={editPanel}
             usages={usagesFor({ kind: 'class', id: current as ClassId })}
           />
@@ -519,7 +582,9 @@
             {tool}
             id={current as RelationId}
             {run}
-            onEditShape={(id) => (overlay = { kind: 'shape', id })}
+            onEditShape={editShape}
+            onEditAppearance={(rid) =>
+              (overlay = { kind: 'appearance', id: rid })}
             usages={usagesFor({ kind: 'relation', id: current as RelationId })}
           />
         {/key}
@@ -540,7 +605,10 @@
           {assistant}
           {tool}
           {run}
-          onEditShape={(id) => (overlay = { kind: 'shape', id })}
+          onEditShape={editShape}
+          onEditAppearance={(oid) =>
+            (overlay = { kind: 'appearance', id: oid })}
+          open={openLine}
         />
       {:else if section === 'rules'}
         <RulesSection {tool} {run} {assistant} />
@@ -570,7 +638,7 @@
       <div
         class="overlay"
         role="dialog"
-        aria-label="Shape editor"
+        aria-label="Advanced drawing editor"
         data-testid="shape-overlay"
       >
         {#key id}
@@ -580,6 +648,43 @@
             className={user?.key ?? ''}
             shapes={(sid) => tool.shapes[sid]}
             onChange={(next) => run({ type: 'putShape', def: next } as never)}
+            onClose={() => (overlay = null)}
+          />
+        {/key}
+      </div>
+    {/if}
+  {/if}
+
+  {#if overlay?.kind === 'appearance'}
+    {@const id = overlay.id}
+    {#if id.startsWith('rel_') && tool.relations[id as RelationId]}
+      <div
+        class="overlay"
+        role="dialog"
+        aria-label="Appearance of a relation"
+        data-testid="appearance-overlay"
+      >
+        {#key id}
+          <RelationLookEditor
+            {tool}
+            relationId={id as RelationId}
+            {run}
+            onClose={() => (overlay = null)}
+          />
+        {/key}
+      </div>
+    {:else if tool.classes[id as ClassId]}
+      <div
+        class="overlay"
+        role="dialog"
+        aria-label="Appearance of a concept"
+        data-testid="appearance-overlay"
+      >
+        {#key id}
+          <AppearanceEditor
+            {tool}
+            classId={id as ClassId}
+            {run}
             onClose={() => (overlay = null)}
           />
         {/key}

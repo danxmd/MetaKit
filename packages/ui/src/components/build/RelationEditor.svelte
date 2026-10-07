@@ -14,18 +14,22 @@
   import KeyField from './KeyField.svelte';
   import Section from './Section.svelte';
   import LabelsField from './LabelsField.svelte';
+  import AppearanceCard from './appearance/AppearanceCard.svelte';
+  import { appearanceOfRelation } from '../../build/appearance-model';
 
   let {
     tool,
     id,
     run,
     onEditShape,
+    onEditAppearance,
     usages,
   }: {
     tool: ToolLibrary;
     id: RelationId;
     run: (command: never) => CommandResult;
     onEditShape: (shapeId: string) => void;
+    onEditAppearance: (relationId: string) => void;
     usages: (attributeId: string) => string[];
   } = $props();
 
@@ -161,31 +165,40 @@
       title="Appearance"
       help="How the connection is drawn between two objects."
     >
-      <div class="row">
-        <label>
-          Line shape
-          <select
-            value={def.shape ?? ''}
-            onchange={(e) =>
-              patch({ shape: e.currentTarget.value || undefined })}
-            data-testid="relation-shape"
-          >
-            <option value="">Automatic (grey arrow)</option>
-            {#each relationShapes as s (s.id)}<option value={s.id}
-                >{s.name ?? s.id}</option
-              >{/each}
-          </select>
-        </label>
-        {#if def.shape}<button
+      <AppearanceCard
+        {tool}
+        owner={{ kind: 'relation', id }}
+        {run}
+        {onEditAppearance}
+        {onEditShape}
+      >
+        <div class="row">
+          <label>
+            Use an existing line shape
+            <select
+              value={def.shape ?? ''}
+              onchange={(e) =>
+                patch({ shape: e.currentTarget.value || undefined })}
+              data-testid="relation-shape"
+            >
+              <option value="">Automatic (grey arrow)</option>
+              {#each relationShapes as s (s.id)}<option value={s.id}
+                  >{s.name ?? s.id}</option
+                >{/each}
+            </select>
+          </label>
+          {#if def.shape && appearanceOfRelation(tool, id).kind === 'look'}
+            <button type="button" onclick={() => onEditShape(def.shape!)}
+              >Edit as drawing</button
+            >
+          {/if}
+          <button
             type="button"
-            onclick={() => onEditShape(def.shape!)}>Edit line</button
-          >{/if}
-        <button
-          type="button"
-          onclick={newShape}
-          data-testid="relation-new-shape">New line shape</button
-        >
-      </div>
+            onclick={newShape}
+            data-testid="relation-new-shape">New drawn line shape</button
+          >
+        </div>
+      </AppearanceCard>
     </Section>
     <AttributeList
       owner={{ kind: 'relation', id }}
