@@ -3,7 +3,7 @@
 MetaKit is a browser-only metamodelling and modelling tool, a modern rebuild of ADOxx without simulation, analysis, database or user management. Method engineers build modelling tools in **Build mode**; modellers use them in **Model mode**. Tool libraries and models are plain JSON files in a shared folder synced by OneDrive, SharePoint, Google Drive or Dropbox. Tool libraries can also live in GitHub or GitLab (Git mode).
 
 - Full plan: `docs/implementation-plan.md`. Read only the sections a task needs.
-- Current phase brief: `docs/phase-3.md`.
+- Current phase brief: `docs/phase-4.md`.
 - Project owner and reviewer: Danial. He approves every spec and every pull request.
 
 ## Architecture rules (do not break these)
@@ -26,6 +26,9 @@ If a task seems to require breaking a rule, stop and ask. Record agreed changes 
 - Each browser tab has its own instance id (sessionStorage, ADR 0003); name and colour belong to the browser profile (IndexedDB).
 - Sync lives in `packages/sync`; tests run it over `MemoryFolder` with several sessions. `docs/phase-3-test-protocol.md` is the real-service test Danial runs.
 - E2E tests use the `window.__METAKIT_TEST__` seam (`pickFolder`, `remember: false`, `profile`) because the headless browser crashes on handles stored in IndexedDB. Locally set `PW_CHROMIUM_PATH` to the installed Chromium.
+
+- Shapes and panel layouts live in the tool library (format 2, ADR 0004). `packages/formula` is the formula subset; phase 5.1 extends it. `packages/shapes` compiles shapes to draw lists; the canvas replays them.
+- Build mode edits the tool library through tool commands (`putClass`, `putAttribute`, `renameKey`, ...); the editors never write state directly.
 
 ## Performance budget
 

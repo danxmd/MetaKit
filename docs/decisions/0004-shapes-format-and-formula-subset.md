@@ -18,3 +18,11 @@ Phase 4 stores shapes and panel layouts in the tool library and draws them. The 
 - A class without a shape gets a starter shape chosen from its kind and key (the phase 2 rules), so models of tools from phase 1 look as before.
 - Layout (percentages, stack, grid) is done in the compiler, not in the renderer, so the same list works for canvas, minimap and later exports.
 - The formula subset duplicates nothing of 5.1; it is its first slice. Names that a later release adds as functions do not break stored shapes, because unknown functions evaluate to `null` with a message.
+
+## Addendum (end of phase 4)
+
+- `shapes` and `panels` are entity collections in the sync layer, like classes: each shape and each panel layout is created, deleted and merged as one unit with its own stamps, and a tool library written before format 2 simply has none.
+- Arrays stay single registers, so a rewrite of formulas inside a shape's `parts` writes the whole `parts` list. The key rename command groups all its writes in one undo step.
+- `ModelTypeDef.containers` is optional; a missing entry means "accepts any class".
+- A model keeps a live session on its tool library, so edits made in Build mode (here or in another window) reach open models through the normal change detection (a scan every two seconds at most), and the model store is checked against the new tool from then on. Build mode's own preview applies a change at once.
+- Element and connector shapes are compiled when an element is put into the scene. A tooltip that shows a value of a referenced element is not recompiled when only that other element changes.

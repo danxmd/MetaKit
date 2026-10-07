@@ -2,7 +2,7 @@
 
 Hand-written tool libraries used as fixtures for tests and CI. Each folder holds:
 
-- `tool.json`: the tool library, in the same form the app keeps in its snapshots;
+- `tool.json`: the tool library (format 2, with shapes and panel layouts), in the same form the app keeps in its snapshots;
 - `*.mkmodel.json`: a sample model in the editable format.
 
 | Folder      | Classes                                                                   | Sample model                 |
