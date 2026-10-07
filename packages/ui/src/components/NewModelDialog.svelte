@@ -79,9 +79,12 @@
 
 <dialog bind:this={dialog} onclose={onCancel} data-testid="new-model-dialog">
   <form onsubmit={submit}>
-    <h2>New model</h2>
+    <div class="head">
+      <h2>New model</h2>
+      <p class="muted">A model is made with a tool library.</p>
+    </div>
     {#if tools.length === 0}
-      <p class="notice">
+      <p class="notice warning">
         This workspace has no tool library yet. Add one in Build mode, or copy a
         tool library folder into <code>tools/</code>.
       </p>
@@ -141,36 +144,29 @@
 
 <style>
   dialog {
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 1.25rem 1.5rem;
-    min-width: 22rem;
+    width: min(26rem, calc(100vw - 2rem));
   }
   form {
     display: grid;
-    gap: 0.8rem;
+    gap: var(--gap-4);
   }
-  h2 {
-    margin: 0;
-    font-size: 1.15rem;
+  .head {
+    display: grid;
+    gap: var(--gap-1);
+  }
+  .head p {
+    font-size: var(--text-s);
   }
   label {
     display: grid;
-    gap: 0.25rem;
-    font-size: 0.9rem;
+    gap: var(--gap-1);
   }
   .actions {
     display: flex;
     justify-content: flex-end;
-    gap: 0.5rem;
+    gap: var(--gap-2);
   }
   .notice {
-    padding: 0.5rem 0.7rem;
-    border-radius: 6px;
-    background: #fff4e6;
     margin: 0;
-  }
-  .notice.error {
-    background: #fff5f5;
   }
 </style>

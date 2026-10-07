@@ -110,33 +110,18 @@
 
 <style>
   dialog {
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 1.25rem 1.5rem;
-    min-width: 24rem;
-    max-width: 36rem;
+    width: min(34rem, calc(100vw - 2rem));
   }
   .body {
     display: grid;
-    gap: 0.7rem;
-  }
-  h2,
-  h3,
-  p {
-    margin: 0;
-  }
-  h2 {
-    font-size: 1.15rem;
-  }
-  h3 {
-    font-size: 0.95rem;
+    gap: var(--gap-3);
   }
   .version {
-    color: #555;
-    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-size: var(--text-s);
   }
   ul {
-    margin: 0.2rem 0 0;
+    margin: var(--gap-1) 0 0;
     padding-left: 1.2rem;
   }
   .changes {
@@ -144,13 +129,15 @@
     overflow: auto;
   }
   .warnings {
-    padding: 0.5rem 0.7rem;
-    border-radius: 6px;
-    background: #fff4e6;
+    padding: var(--gap-3) var(--gap-4);
+    border-radius: var(--radius);
+    background: var(--warning-soft);
+    border: 1px solid var(--line);
+    font-size: var(--text-s);
   }
   .actions {
     display: flex;
     justify-content: flex-end;
-    gap: 0.5rem;
+    gap: var(--gap-2);
   }
 </style>

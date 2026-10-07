@@ -7,6 +7,7 @@ test.describe('the assistant', () => {
   }) => {
     await prepare(page, { name: 'Anna', colour: '#e8590c' });
     await page.getByTestId('open-folder').click();
+    await page.getByTestId('settings-menu').locator('summary').click();
     await page.getByTestId('open-assistant').click();
 
     await expect(page.getByTestId('assistant-enabled')).not.toBeChecked();
