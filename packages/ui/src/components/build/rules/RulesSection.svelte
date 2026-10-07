@@ -7,16 +7,22 @@
   } from '../../../build/rule-editor-model';
   import type { CommandResult } from '../../../shell/controller';
   import RuleForm from './RuleForm.svelte';
+  import { asOneStep } from '@metakit-app/assistant';
+  import type { AssistantPort } from '../../../assistant/assistant-service';
+  import DraftWithAssistant from '../../assistant/DraftWithAssistant.svelte';
 
   let {
     tool,
     run,
     behaviourTest,
+    assistant,
   }: {
     tool: ToolLibrary;
     run: (command: never) => CommandResult;
     /** A dry run of a rule on the selected object, or null when nothing is selected. */
     behaviourTest?: (rule: Rule) => RuleTryResult | null;
+    /** The assistant; when absent there is no "Draft with assistant" button. */
+    assistant?: AssistantPort | undefined;
   } = $props();
 
   const rules = $derived(
@@ -108,7 +114,19 @@
       </li>
     {/each}
   </ul>
-  <button type="button" onclick={add} data-testid="rule-add">Add rule</button>
+  <div class="add">
+    <button type="button" onclick={add} data-testid="rule-add">Add rule</button>
+    <DraftWithAssistant
+      kind="rule"
+      {tool}
+      {assistant}
+      onAccept={(commands) => {
+        const first = commands[0];
+        if (exec(asOneStep(commands) as never) && first?.type === 'putRule')
+          selected = first.rule.id;
+      }}
+    />
+  </div>
   {#if error}<p class="problem" role="alert" data-testid="rules-error">
       {error}
     </p>{/if}
@@ -127,6 +145,11 @@
     display: grid;
     gap: 0.6rem;
     justify-items: start;
+  }
+  .add {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
   }
   h2 {
     margin: 0;

@@ -8,15 +8,21 @@
   import { copyStarter, STARTER_SHAPES } from '@metakit-app/shapes';
   import type { CommandResult } from '../../shell/controller';
   import RelationShapeForm from './RelationShapeForm.svelte';
+  import { asOneStep } from '@metakit-app/assistant';
+  import type { AssistantPort } from '../../assistant/assistant-service';
+  import DraftWithAssistant from '../assistant/DraftWithAssistant.svelte';
 
   let {
     tool,
     run,
     onEditShape,
+    assistant,
   }: {
     tool: ToolLibrary;
     run: (command: never) => CommandResult;
     onEditShape: (id: string) => void;
+    /** The assistant; when absent there is no "Draft with assistant" button. */
+    assistant?: AssistantPort | undefined;
   } = $props();
 
   let error = $state<string | null>(null);
@@ -119,6 +125,12 @@
     <button type="button" onclick={add} data-testid="shapes-add"
       >Add from starter</button
     >
+    <DraftWithAssistant
+      kind="shape"
+      {tool}
+      {assistant}
+      onAccept={(commands) => exec(asOneStep(commands) as never)}
+    />
   </div>
   {#if error}<p class="problem" role="alert" data-testid="shapes-problem">
       {error}
