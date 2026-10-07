@@ -6,3 +6,4 @@ export * from './build/part-properties';
 export * from './build/rule-editor-model';
 export * from './build/scripts-model';
 export * from './git/settings-model';
+export * from './git/index';
