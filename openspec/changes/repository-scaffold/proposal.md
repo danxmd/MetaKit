@@ -10,9 +10,10 @@ MetaKit has plans and rules but no code, build or CI. Every later work package (
 - Add `apps/web` (Vite + Svelte 5): a MetaKit placeholder page. On browsers without the File System Access API (Firefox, Safari) it shows a message that local folders need Chrome or Edge.
 - Add `apps/cli`: a Node entry point that prints the version.
 - Add shared tooling: TypeScript strict with project references, linting and formatting, Vitest, Playwright (Chromium).
-- Add repository files: `.nvmrc` (Node 22 or newer LTS), `.editorconfig`, `.gitignore`, `LICENSE` (Apache-2.0), `README.md` with development setup.
+- Add repository files: `NOTICE`, `.nvmrc` (Node 22 or newer LTS), `.editorconfig`, `.gitignore`, `LICENSE` (Apache-2.0), `README.md` with development setup.
 - Add GitHub Actions: on every pull request install, typecheck, lint, unit tests, end-to-end tests, build and a bundle-size report; on push to `main` deploy `apps/web` to GitHub Pages.
-- Fill in the Commands section of `CLAUDE.md`.
+- Fill in the Commands section of `CLAUDE.md`, and allow `claude/*` session branches in its Workflow section.
+- Record plan question 26 as answered: keep the MetaKit name, packages under `@metakit-app/`.
 
 No production behaviour is added. Packages stay empty until phase 1.
 

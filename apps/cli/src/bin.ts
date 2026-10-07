@@ -1,0 +1,8 @@
+#!/usr/bin/env node
+import { run } from './index.js';
+
+process.exitCode = run(
+  process.argv.slice(2),
+  (line) => console.log(line),
+  (line) => console.error(line),
+);

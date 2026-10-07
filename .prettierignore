@@ -1,0 +1,8 @@
+# Written by humans and OpenSpec tooling in their own style.
+docs/
+openspec/
+.claude/
+CLAUDE.md
+LICENSE
+pnpm-lock.yaml
+dist/

@@ -1,0 +1,32 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "./packages/core"
+    },
+    {
+      "path": "./packages/sync"
+    },
+    {
+      "path": "./packages/storage"
+    },
+    {
+      "path": "./packages/formula"
+    },
+    {
+      "path": "./packages/shapes"
+    },
+    {
+      "path": "./packages/canvas"
+    },
+    {
+      "path": "./packages/behaviour"
+    },
+    {
+      "path": "./packages/assistant"
+    },
+    {
+      "path": "./packages/ui"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "name": "@metakit-app/cli",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "metakit": "./dist/bin.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json"
+  }
+}

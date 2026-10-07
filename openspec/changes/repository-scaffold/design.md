@@ -19,13 +19,13 @@ Empty repository: `CLAUDE.md`, `docs/`. Layout, stack and rules are fixed by `CL
 
 ## Decisions
 
-**D1. Package scope `@metakit-app/*`, all private, version `0.0.0`.** Follows the default in plan question 26 (`metakit` is taken on npm). Nothing is published. Alternative: unscoped names; rejected as likely to collide.
+**D1. Package scope `@metakit-app/*`, all private, version `0.0.0`.** Plan question 26 is answered: keep the MetaKit name and publish under this scope (`metakit` is taken on npm). Nothing is published. Alternative: unscoped names; rejected as likely to collide.
 
-**D2. Packages are source-only TypeScript, no per-package build.** Packages export `src/index.ts` directly; Vite and Vitest resolve them through workspace links and TS project references handle typechecking. This avoids a build step per package. Alternative: build each package with `tsc` to `dist`; rejected as slower and unneeded before anything is published. The `apps/cli` build bundles with `tsc` only; it runs via `node` on the compiled output.
+**D2. Packages are source-only TypeScript, no per-package build.** Packages export `src/index.ts` directly; Vite and Vitest resolve them through workspace links and TS project references handle typechecking. This avoids a build step per package. Alternative: build each package with `tsc` to `dist`; rejected as slower and unneeded before anything is published. `apps/cli` compiles with `tsc` to `dist` and runs via `node` on that output.
 
-**D3. ESLint (flat config, typescript-eslint, eslint-plugin-svelte) plus Prettier.** The most common setup, with full Svelte 5 support. Alternative: Biome (one fast tool), but its Svelte support is partial. `.editorconfig` and Prettier agree: 2 spaces, LF, trailing newline.
+**D3. ESLint (flat config, typescript-eslint, eslint-plugin-svelte) plus Prettier.** The most common setup, with full Svelte 5 support. Alternative: Biome (one fast tool), but its Svelte support is partial. `pnpm lint` runs ESLint and then `prettier --check`; Prettier skips `docs/`, `openspec/`, `.claude/` and `CLAUDE.md`. `.editorconfig` and Prettier agree: 2 spaces, LF, trailing newline.
 
-**D4. TypeScript.** A root `tsconfig.base.json` with `strict`, `noUncheckedIndexedAccess`, `verbatimModuleSyntax`, `moduleResolution: bundler`. Each package has its own `tsconfig.json` with `composite: true`; a root `tsconfig.json` references them all. `pnpm typecheck` runs `tsc -b` and `svelte-check` for `apps/web`. `packages/*` use no DOM lib, which enforces architecture rule 5; `apps/web` and `packages/ui` and `packages/canvas` add DOM when they need it (this change keeps `ui` and `canvas` DOM-free too, since they are empty).
+**D4. TypeScript.** A root `tsconfig.base.json` with `strict`, `noUncheckedIndexedAccess`, `verbatimModuleSyntax`, `moduleResolution: bundler`. Each package has its own `tsconfig.json` with `composite: true`; a root `tsconfig.json` references them all. `pnpm typecheck` runs `tsc -b` for the packages, `tsc --noEmit` for `apps/cli`, and `svelte-check` for `apps/web`. `packages/*` use no DOM lib, which enforces architecture rule 5; `apps/web` and `packages/ui` and `packages/canvas` add DOM when they need it (this change keeps `ui` and `canvas` DOM-free too, since they are empty).
 
 **D5. Tests.** Vitest with one root workspace config, tests next to code as `*.test.ts`. Playwright (Chromium only) in `apps/web/e2e/`, started against `vite preview` of the production build so the sub-path is tested. The e2e suite has two tests: the placeholder renders; with `showDirectoryPicker` deleted via `addInitScript` the unsupported message appears. Firefox and Safari are not run in CI (rule 10 only requires them to load and show the message; this is checked by the stubbed test).
 
@@ -37,7 +37,11 @@ Empty repository: `CLAUDE.md`, `docs/`. Layout, stack and rules are fixed by `CL
 
 **D9. CLI.** `apps/cli/src/index.ts` exports `getVersion()` (reads `package.json` through a JSON import); `bin.ts` prints it. Smoke test covers `getVersion()`. A bin entry `metakit` is declared.
 
-**D10. License.** Apache-2.0 text, copyright line "Copyright 2026 Danial Amlashi". Needs confirmation (see Open Questions in the summary to Danial).
+**D10. License.** Apache-2.0 text, copyright line "Copyright 2026 Danial Mohammadi Amlashi" (confirmed by Danial), in a `NOTICE` file next to the unmodified Apache text.
+
+**D11. Branch naming.** Cloud sessions are assigned a `claude/*` branch. `CLAUDE.md` is updated to allow that branch instead of `feat/<change-id>` in cloud sessions.
+
+**D12. Docs.** Question 26 in `docs/implementation-plan.md` is marked answered.
 
 ## Risks / Trade-offs
 
