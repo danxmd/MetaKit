@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MetaKit sync spike</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 1rem 2rem;
+      }
+      table {
+        border-collapse: collapse;
+        margin: 1rem 0;
+      }
+      td,
+      th {
+        padding: 0.25rem 0.5rem;
+        text-align: left;
+      }
+      input[type='number'] {
+        width: 5rem;
+      }
+      .dot {
+        display: inline-block;
+        width: 0.8rem;
+        height: 0.8rem;
+        border-radius: 50%;
+        margin-right: 0.3rem;
+      }
+      #status {
+        color: #555;
+      }
+      .row {
+        margin: 0.5rem 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Sync spike</h1>
+    <div class="row" id="setup">
+      <button id="pick">Pick folder</button>
+      <button id="reopen" hidden>Reopen last folder</button>
+      <button id="opfs">Use private test folder</button>
+    </div>
+    <div id="app" hidden>
+      <div class="row">
+        You: <span class="dot" id="me-dot"></span><strong id="me"></strong>
+        <small id="mode"></small>
+      </div>
+      <div class="row">Present: <span id="present">nobody else</span></div>
+      <div class="row" id="status">No changes yet</div>
+      <div class="row"><button id="add">Add box</button></div>
+      <table>
+        <thead>
+          <tr>
+            <th>Box</th>
+            <th>x</th>
+            <th>y</th>
+            <th>name</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="boxes"></tbody>
+      </table>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

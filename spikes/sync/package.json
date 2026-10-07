@@ -1,0 +1,14 @@
+{
+  "name": "@metakit-app/spike-sync",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 4175",
+    "build": "vite build",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "fast-check": "^4.0.0"
+  }
+}

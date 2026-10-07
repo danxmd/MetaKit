@@ -1,0 +1,12 @@
+{
+  "name": "@metakit-app/spike-git",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 4177",
+    "build": "vite build",
+    "test:e2e": "playwright test",
+    "live:gitlab-read": "node --experimental-strip-types live/gitlab-read.ts"
+  }
+}

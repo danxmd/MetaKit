@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MetaKit canvas spike</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden;
+        font-family: system-ui, sans-serif;
+      }
+      #stage {
+        position: absolute;
+        inset: 0;
+        background: #fff;
+      }
+      #bar {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        z-index: 5;
+        display: flex;
+        gap: 6px;
+        align-items: flex-start;
+      }
+      #overlay,
+      #output {
+        background: rgba(33, 37, 41, 0.85);
+        color: #fff;
+        font:
+          12px/1.4 ui-monospace,
+          monospace;
+        padding: 6px 8px;
+        border-radius: 4px;
+        white-space: pre;
+        margin: 0;
+      }
+      #output {
+        position: absolute;
+        top: 60px;
+        left: 8px;
+        z-index: 5;
+        max-width: 90vw;
+        overflow: auto;
+        max-height: 70vh;
+        display: none;
+      }
+      body.bench #output {
+        display: block;
+      }
+      #help {
+        position: absolute;
+        bottom: 8px;
+        left: 8px;
+        z-index: 5;
+        font-size: 12px;
+        color: #495057;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="stage"></div>
+    <div id="bar">
+      <button id="fit">Fit</button>
+      <button id="z100">100%</button>
+      <button id="run">Run benchmark</button>
+      <div id="overlay">…</div>
+    </div>
+    <pre id="output">Open this page with ?bench and press "Run benchmark".</pre>
+    <div id="help">
+      Click or drag a box to select and move it · drag empty space to select
+      several · wheel zooms · hold Space or use the middle button to pan
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

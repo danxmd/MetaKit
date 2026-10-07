@@ -67,12 +67,12 @@ Keep this section current whenever scripts change.
 
 - `pnpm install`
 - `pnpm dev`: run the web app locally
-- `pnpm typecheck`: `tsc -b` for packages, `tsc` for the CLI, `svelte-check` for the web app
+- `pnpm typecheck`: `tsc -b` for packages, `tsc` for the CLI and spikes, `svelte-check` for the web app
 - `pnpm lint`: ESLint, then a Prettier check
 - `pnpm format`: apply Prettier
 - `pnpm test`: unit and property tests (Vitest)
-- `pnpm test:e2e`: end-to-end tests (Playwright, Chromium); builds the web app first
-- `pnpm bench`: benchmarks (a placeholder until phase 2)
+- `pnpm test:e2e`: end-to-end tests (Playwright, Chromium) for the web app and the spikes; each builds what it serves first
+- `pnpm bench`: canvas benchmark from `spikes/canvas` (headless, indicative only; about 1 minute)
 - `pnpm build`: build the web app and the CLI
 
 ## Workflow
