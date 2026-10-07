@@ -379,9 +379,15 @@ label {
 }
 .segmented-control > button[aria-current='page'],
 .segmented-control > button[aria-pressed='true'] {
-  background: var(--surface);
-  color: var(--text-strong);
+  background: var(--accent);
+  color: var(--on-accent);
   box-shadow: var(--shadow-s);
+}
+.segmented-control
+  > button:not([aria-current='page']):not([aria-pressed='true']):hover:not(
+    :disabled
+  ) {
+  background: var(--hover-bg);
 }
 
 /* A menu opened by a <details class="menu"><summary>…</summary><div class="menu-list">…</div></details>. */
