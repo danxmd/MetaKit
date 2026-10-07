@@ -1,14 +1,20 @@
 import {
+  CommandError,
   createEmptyModel,
+  createEmptyTool,
   createModelStore,
   formatIssues,
   parseToolLibrary,
+  validateToolLibrary,
   type ElementId,
+  type Issue,
   type Model,
   type ModelStore,
   type ModelTypeDef,
   type ModelTypeId,
+  type ToolCommandOrBatch,
   type ToolLibrary,
+  type ToolStore,
 } from '@metakit-app/core';
 import {
   migrate,
@@ -38,7 +44,11 @@ import { normalizeFolder } from './explorer';
 export interface OpenModel {
   slug: string;
   toolSlug: string;
+  /** The tool library as it is now: it follows edits made in Build mode by anyone in the folder. */
   tool: ToolLibrary;
+  /** The tool library's own store and session, so that the model follows changes to its tool. */
+  toolStore: ToolStore;
+  toolSession: SyncSession;
   store: ModelStore;
   /** Keeps the store and the folder in step: writes edits, reads other people's. */
   session: SyncSession;
@@ -48,11 +58,29 @@ export interface OpenModel {
   documentIssues: number;
 }
 
+/** A tool library open in Build mode. */
+export interface OpenTool {
+  slug: string;
+  store: ToolStore;
+  session: SyncSession;
+  warnings: string[];
+  /** Counts changes, so that views that read `store.state` know to read it again. */
+  revision: number;
+  canUndo: boolean;
+  canRedo: boolean;
+  /** Problems the tool library has now, for example a class that extends itself. */
+  issues: Issue[];
+}
+
+/** What running a Build mode command gave: its value, or the reason it was refused. */
+export type CommandResult =
+  { ok: true; value: unknown } | { ok: false; error: string };
+
 export type SaveStatus = 'saved' | 'saving' | 'error';
 
 export interface AppState {
   /** `start` before a workspace is open, `workspace` with the explorer, `model` with a model open. */
-  phase: 'start' | 'workspace' | 'model';
+  phase: 'start' | 'workspace' | 'model' | 'build';
   workspaceName: string;
   tools: ToolEntry[];
   models: ModelEntry[];
@@ -60,6 +88,8 @@ export interface AppState {
   trashed: ModelEntry[];
   trashedTools: ToolEntry[];
   open: OpenModel | null;
+  /** The tool library being edited in Build mode. */
+  build: OpenTool | null;
   save: SaveStatus;
   /** What the open document knows about syncing: unwritten edits, the last change from someone else, errors. */
   sync: SyncStatus;
@@ -103,6 +133,14 @@ export interface ControllerPort {
   dismissNotice(id: number): void;
 }
 
+/** What the Build mode view asks of the controller. */
+export interface BuildPort {
+  runBuild(command: ToolCommandOrBatch): CommandResult;
+  undoBuild(): boolean;
+  redoBuild(): boolean;
+  closeBuild(): Promise<void>;
+}
+
 const NO_SYNC: SyncStatus = {
   pending: 0,
   lastFlushAt: null,
@@ -118,6 +156,7 @@ const initial = (): AppState => ({
   trashed: [],
   trashedTools: [],
   open: null,
+  build: null,
   save: 'saved',
   sync: NO_SYNC,
   people: [],
@@ -194,6 +233,7 @@ export class AppController {
   ): Promise<'opened' | 'not-a-workspace' | 'failed'> {
     try {
       await this.closeModel();
+      await this.closeBuild();
       const workspace = options.create
         ? await Workspace.create(adapter, options.create)
         : await Workspace.open(adapter);
@@ -237,6 +277,7 @@ export class AppController {
 
   async closeWorkspace(): Promise<void> {
     await this.closeModel();
+    await this.closeBuild();
     await this.presence?.stop();
     this.presence = null;
     this.workspace = null;
@@ -369,27 +410,38 @@ export class AppController {
       (await this.attempt(async () => {
         const ws = this.need();
         await this.closeModel();
+        await this.closeBuild();
         const header = await ws.loadModel(slug);
         const toolSlug = await ws.findToolSlug(header.document.manifest.tool);
         if (!toolSlug)
           throw new Error(
             `This model was made with a tool library that is not in this workspace (${header.document.manifest.tool}).`,
           );
-        const tool = (await ws.loadTool(toolSlug)).document;
-        const opened = await ws.openModel(slug, tool, {
-          ...(this.options.flushMs ? { flushMs: this.options.flushMs } : {}),
-          ...(this.options.snapshotMs
-            ? { snapshotMs: this.options.snapshotMs }
-            : {}),
-          ...(this.options.timers ? { timers: this.options.timers } : {}),
-          onStatus: (sync) => this.set({ sync, save: saveOf(sync) }),
-          onClash: (clash) => this.clashed(clash),
-          onWarning: (w) =>
-            this.set({
-              warnings: [...new Set([...this.current.warnings, `sync: ${w}`])],
-            }),
-        });
+        const toolOpened = await ws.openTool(toolSlug, this.sessionOptions());
+        const tool = toolOpened.store.state;
+        const opened = await ws
+          .openModel(slug, tool, {
+            ...(this.options.flushMs ? { flushMs: this.options.flushMs } : {}),
+            ...(this.options.snapshotMs
+              ? { snapshotMs: this.options.snapshotMs }
+              : {}),
+            ...(this.options.timers ? { timers: this.options.timers } : {}),
+            onStatus: (sync) => this.set({ sync, save: saveOf(sync) }),
+            onClash: (clash) => this.clashed(clash),
+            onWarning: (w) =>
+              this.set({
+                warnings: [
+                  ...new Set([...this.current.warnings, `sync: ${w}`]),
+                ],
+              }),
+          })
+          .catch(async (error: unknown) => {
+            await toolOpened.session.close();
+            throw error;
+          });
         opened.session.start();
+        toolOpened.session.start();
+        toolOpened.store.subscribe(() => this.toolChanged());
         this.set({
           phase: 'model',
           save: 'saved',
@@ -399,6 +451,8 @@ export class AppController {
             slug,
             toolSlug,
             tool,
+            toolStore: toolOpened.store,
+            toolSession: toolOpened.session,
             store: opened.store,
             session: opened.session,
             warnings: opened.warnings,
@@ -412,6 +466,25 @@ export class AppController {
         return true;
       })) ?? false
     );
+  }
+
+  /** Session settings shared by every document the controller opens. */
+  private sessionOptions() {
+    return {
+      ...(this.options.flushMs ? { flushMs: this.options.flushMs } : {}),
+      ...(this.options.snapshotMs
+        ? { snapshotMs: this.options.snapshotMs }
+        : {}),
+      ...(this.options.timers ? { timers: this.options.timers } : {}),
+    };
+  }
+
+  /** The open model's tool library changed (here or in another window): redraw with the new one. */
+  private toolChanged(): void {
+    const open = this.current.open;
+    if (!open) return;
+    const tool = open.toolStore.state;
+    if (tool !== open.tool) this.set({ open: { ...open, tool } });
   }
 
   private clashed(clash: Clash): void {
@@ -437,6 +510,7 @@ export class AppController {
     this.presence?.setDocument(null);
     try {
       await open.session.close();
+      await open.toolSession.close();
     } finally {
       this.set({
         open: null,
@@ -607,6 +681,127 @@ export class AppController {
       await this.need().restoreTool(slug);
       await this.refresh();
     });
+  }
+
+  // Build mode --------------------------------------------------------------------------------
+
+  /** Makes an empty tool library in the workspace and returns its folder name. */
+  createToolLibrary(
+    name: string,
+    languages?: string[],
+  ): Promise<string | undefined> {
+    return this.attempt(async () => {
+      const trimmed = name.trim();
+      if (trimmed === '') throw new Error('Give the tool library a name.');
+      const slug = await this.need().createTool(
+        createEmptyTool({ name: trimmed, ...(languages ? { languages } : {}) }),
+      );
+      await this.refresh();
+      return slug;
+    });
+  }
+
+  /** Opens a tool library for editing; its changes are written as they are made. */
+  async openBuild(slug: string): Promise<boolean> {
+    return (
+      (await this.attempt(async () => {
+        const ws = this.need();
+        await this.closeModel();
+        await this.closeBuild();
+        const opened = await ws.openTool(slug, {
+          ...this.sessionOptions(),
+          onStatus: (sync) => this.set({ sync, save: saveOf(sync) }),
+          onWarning: (w) =>
+            this.set({
+              warnings: [...new Set([...this.current.warnings, `sync: ${w}`])],
+            }),
+        });
+        opened.session.start();
+        opened.store.subscribe(() => this.buildChanged());
+        this.set({
+          phase: 'build',
+          save: 'saved',
+          sync: NO_SYNC,
+          build: {
+            slug,
+            store: opened.store,
+            session: opened.session,
+            warnings: opened.warnings,
+            revision: 0,
+            canUndo: false,
+            canRedo: false,
+            issues: opened.issues,
+          },
+        });
+        return true;
+      })) ?? false
+    );
+  }
+
+  private buildChanged(): void {
+    const build = this.current.build;
+    if (!build) return;
+    this.set({
+      build: {
+        ...build,
+        revision: build.revision + 1,
+        canUndo: build.store.canUndo(),
+        canRedo: build.store.canRedo(),
+        issues: validateToolLibrary(build.store.state),
+      },
+    });
+  }
+
+  /** Writes pending changes, folds them into the snapshot and goes back to the explorer. */
+  async closeBuild(): Promise<void> {
+    const build = this.current.build;
+    if (!build) return;
+    try {
+      await build.session.close();
+    } finally {
+      this.set({
+        build: null,
+        phase: this.workspace ? 'workspace' : 'start',
+        sync: NO_SYNC,
+        save: 'saved',
+      });
+    }
+    await this.refresh();
+  }
+
+  /**
+   * Runs a command on the tool library being edited. A refused command (a key that is taken, a
+   * class that is still in use) comes back as a message, and nothing has changed.
+   */
+  runBuild(command: ToolCommandOrBatch): CommandResult {
+    const build = this.current.build;
+    if (!build) return { ok: false, error: 'No tool library is open.' };
+    try {
+      const result = build.store.execute(command);
+      if (!result.ok)
+        return {
+          ok: false,
+          error: result.reason ?? 'The change was cancelled.',
+        };
+      return { ok: true, value: result.value };
+    } catch (error) {
+      if (error instanceof CommandError)
+        return { ok: false, error: error.message };
+      throw error;
+    }
+  }
+
+  undoBuild(): boolean {
+    return this.current.build?.store.undo() ?? false;
+  }
+
+  redoBuild(): boolean {
+    return this.current.build?.store.redo() ?? false;
+  }
+
+  /** Writes the open tool library's pending changes now. */
+  async flushBuild(): Promise<void> {
+    await this.current.build?.session.flush();
   }
 }
 

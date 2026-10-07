@@ -3,8 +3,19 @@ import {
   type ClassId,
   type ModelTypeId,
   type RelationId,
+  type AttributeId,
   type ShapeId,
 } from '../ids';
+import { formatIssues, validateAttribute } from './guards';
+import {
+  keyProblem,
+  ownerDef,
+  planKeyRename,
+  relatedKeys,
+  scopeOwners,
+  type KeyOwner,
+  type KeyScope,
+} from './keys';
 import type { PanelLayout, ShapeDef } from './shape-types';
 import {
   DocumentStore,
@@ -13,6 +24,7 @@ import {
 } from '../store/store';
 import { CommandError, type Tx } from '../store/tx';
 import type {
+  AttributeDef,
   ClassDef,
   ModelTypeDef,
   RelationDef,
@@ -40,6 +52,16 @@ export type ToolCommand =
   | { type: 'removeClass'; id: ClassId }
   | { type: 'removeRelation'; id: RelationId }
   | { type: 'removeModelType'; id: ModelTypeId }
+  | { type: 'renameKey'; scope: KeyScope; newKey: string }
+  | {
+      type: 'putAttribute';
+      owner: KeyOwner;
+      def: AttributeDef;
+      /** Where to insert a new attribute; at the end when absent. */
+      index?: number;
+    }
+  | { type: 'removeAttribute'; owner: KeyOwner; id: AttributeId }
+  | { type: 'moveAttribute'; owner: KeyOwner; id: AttributeId; to: number }
   | { type: 'putShape'; def: ShapeDef }
   | { type: 'removeShape'; id: ShapeId }
   | { type: 'putPanel'; layout: PanelLayout }
@@ -117,6 +139,29 @@ function shapeUsers(tool: ToolLibrary, id: ShapeId): string[] {
   return users;
 }
 
+function attributeTable(
+  owner: KeyOwner,
+): 'classes' | 'relations' | 'modelTypes' {
+  return owner.kind === 'class'
+    ? 'classes'
+    : owner.kind === 'relation'
+      ? 'relations'
+      : 'modelTypes';
+}
+
+interface PanelNode {
+  attribute?: string;
+  items?: PanelNode[];
+  [key: string]: unknown;
+}
+
+/** Removes the items that list an attribute key, inside tabs and groups. */
+function pruneItems(nodes: PanelNode[], key: string): PanelNode[] {
+  return nodes
+    .filter((n) => n.attribute !== key)
+    .map((n) => (n.items ? { ...n, items: pruneItems(n.items, key) } : n));
+}
+
 function put<D extends { id: string }>(
   tx: Tx<ToolLibrary>,
   table: 'classes' | 'relations' | 'modelTypes' | 'shapes',
@@ -190,6 +235,87 @@ function applyToolCommand(tx: Tx<ToolLibrary>, command: ToolCommand): unknown {
       if (!tool.modelTypes[command.id])
         throw new CommandError(`The model type ${command.id} does not exist.`);
       tx.remove(['modelTypes', command.id]);
+      return undefined;
+    }
+    case 'renameKey': {
+      const plan = planKeyRename(tool, command.scope, command.newKey);
+      if ('error' in plan) throw new CommandError(plan.error);
+      for (const change of plan.changes) tx.set(change.path, change.value);
+      return plan.usages;
+    }
+    case 'putAttribute': {
+      const def = ownerDef(tool, command.owner);
+      if (!def)
+        throw new CommandError(
+          'That class, relation class or model type does not exist.',
+        );
+      const attr = command.def;
+      const issues = validateAttribute(attr, tool.manifest.languages);
+      if (issues.length > 0)
+        throw new CommandError(
+          `The attribute is not valid.\n${formatIssues(issues)}`,
+        );
+      const at = def.attributes.findIndex((a) => a.id === attr.id);
+      if (at >= 0 && def.attributes[at]!.key !== attr.key)
+        throw new CommandError(
+          'To change the key of an attribute, rename it, so that the formulas that use it are rewritten.',
+        );
+      if (at < 0) {
+        const clash = relatedKeys(tool, command.owner, attr.id).get(attr.key);
+        if (clash)
+          throw new CommandError(
+            `The key "${attr.key}" is already used by an attribute of ${clash}.`,
+          );
+        const problem = keyProblem(attr.key);
+        if (problem) throw new CommandError(problem);
+      }
+      const next = [...def.attributes];
+      if (at >= 0) next[at] = attr;
+      else
+        next.splice(
+          Math.min(Math.max(command.index ?? next.length, 0), next.length),
+          0,
+          attr,
+        );
+      tx.set(
+        [attributeTable(command.owner), command.owner.id, 'attributes'],
+        next,
+      );
+      return attr.id;
+    }
+    case 'removeAttribute': {
+      const def = ownerDef(tool, command.owner);
+      const attr = def?.attributes.find((a) => a.id === command.id);
+      if (!def || !attr)
+        throw new CommandError('That attribute does not exist.');
+      tx.set(
+        [attributeTable(command.owner), command.owner.id, 'attributes'],
+        def.attributes.filter((a) => a.id !== command.id),
+      );
+      // A panel layout cannot list an attribute that is gone.
+      for (const o of scopeOwners(tool, command.owner)) {
+        const layout = o.kind === 'modelType' ? undefined : tool.panels?.[o.id];
+        if (!layout) continue;
+        const pruned = pruneItems(
+          layout.tabs as unknown as PanelNode[],
+          attr.key,
+        );
+        tx.set(['panels', o.id, 'tabs'], pruned);
+      }
+      return undefined;
+    }
+    case 'moveAttribute': {
+      const def = ownerDef(tool, command.owner);
+      const from = def?.attributes.findIndex((a) => a.id === command.id) ?? -1;
+      if (!def || from < 0)
+        throw new CommandError('That attribute does not exist.');
+      const next = [...def.attributes];
+      const [moved] = next.splice(from, 1);
+      next.splice(Math.min(Math.max(command.to, 0), next.length), 0, moved!);
+      tx.set(
+        [attributeTable(command.owner), command.owner.id, 'attributes'],
+        next,
+      );
       return undefined;
     }
     case 'putShape':

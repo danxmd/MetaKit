@@ -44,7 +44,11 @@
 
   // The app mounts one ModelView per open model (keyed by its folder), so these never change.
   // svelte-ignore state_referenced_locally
-  const { store, tool, slug } = app.open!;
+  const { store, slug } = app.open!;
+  // svelte-ignore state_referenced_locally
+  const firstTool = app.open!.tool;
+  // The tool library follows changes made in Build mode, here or by anyone in the folder.
+  const tool = $derived(app.open?.tool ?? firstTool);
   const modelType = $derived(
     tool.modelTypes[(store.state as Model).manifest.modelType]!,
   );
@@ -150,6 +154,18 @@
         ) as ElementId[],
       }));
     if (ready) view.setActive({ remote });
+  });
+
+  // The tool library the canvas was built with; it is rebuilt only when this one is replaced.
+  let appliedTool = firstTool;
+  $effect(() => {
+    const next = tool;
+    if (!ready || next === appliedTool) return;
+    appliedTool = next;
+    scene.setTool(next);
+    editor.useToolLibrary(next);
+    view.setGrid(next.settings.grid);
+    scheduleValidation();
   });
 
   /** "Last change from Anna, 12 s ago", or what is wrong. */

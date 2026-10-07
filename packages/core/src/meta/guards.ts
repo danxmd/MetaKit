@@ -520,6 +520,19 @@ function nameOf(def: Rec, fallback: string): string {
  * Checks a tool library and returns every problem found, each with the path of the offending
  * part and a message a tool builder can act on. An empty list means the library is sound.
  */
+/** Checks one attribute definition on its own, for editors that add or change attributes one at a time. */
+export function validateAttribute(
+  def: unknown,
+  languages: readonly string[] = [],
+): Issue[] {
+  const c = new Checker();
+  checkAttributes(c, [def], 'attribute', languages);
+  return c.issues.map((i) => ({
+    ...i,
+    path: i.path.replace(/^attribute\[0\]\.?/, '') || 'attribute',
+  }));
+}
+
 export function validateToolLibrary(value: unknown): Issue[] {
   const c = new Checker();
   const root = c.object(

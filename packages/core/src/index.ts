@@ -3,6 +3,8 @@ export * from './ids';
 export * from './meta/types';
 export * from './meta/shape-types';
 export * from './meta/shape-guards';
+export * from './meta/keys';
+export * from './meta/create';
 export * from './meta/values';
 export * from './meta/guards';
 export * from './meta/inherit';

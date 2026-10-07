@@ -1,0 +1,377 @@
+import { renameName } from '@metakit-app/formula';
+import type {
+  AttributeId,
+  ClassId,
+  ModelTypeId,
+  RelationId,
+  ShapeId,
+} from '../ids';
+import { deepEqual, type Json } from '../json';
+import {
+  effectiveAttributes,
+  effectiveRelationAttributes,
+  subclasses,
+} from './inherit';
+import { isFormula } from './shape-types';
+import type { AttributeDef, ToolLibrary } from './types';
+
+export type KeyOwner =
+  | { kind: 'class'; id: ClassId }
+  | { kind: 'relation'; id: RelationId }
+  | { kind: 'modelType'; id: ModelTypeId };
+
+/** What a key belongs to: a class, a relation class, a model type, or an attribute of one of them. */
+export type KeyScope =
+  KeyOwner | { kind: 'attribute'; owner: KeyOwner; id: AttributeId };
+
+export interface KeyChange {
+  /** Never contains array indexes: arrays are written as a whole. */
+  path: string[];
+  value: Json;
+}
+
+export interface RenamePlan {
+  changes: KeyChange[];
+  /** Where the old key is read, in plain English (shown before a rename or delete). */
+  usages: string[];
+}
+
+const KEY = /^[A-Za-z_][A-Za-z0-9_]*$/;
+const RESERVED = new Set(['true', 'false', 'null']);
+
+/** Why a key cannot be used, or null when it can. */
+export function keyProblem(key: string): string | null {
+  if (!KEY.test(key))
+    return 'A key starts with a letter or underscore and has only letters, digits and underscores.';
+  if (RESERVED.has(key))
+    return `"${key}" is a reserved word and cannot be a key.`;
+  return null;
+}
+
+export function ownerDef(tool: ToolLibrary, owner: KeyOwner) {
+  const table =
+    owner.kind === 'class'
+      ? tool.classes
+      : owner.kind === 'relation'
+        ? tool.relations
+        : tool.modelTypes;
+  return (table as Record<string, { key: string; attributes: AttributeDef[] }>)[
+    owner.id
+  ];
+}
+
+/** The owners that see this owner's attributes: itself and everything that extends it. */
+export function scopeOwners(tool: ToolLibrary, owner: KeyOwner): KeyOwner[] {
+  if (owner.kind === 'class')
+    return [
+      owner,
+      ...subclasses(tool, owner.id).map((c) => ({
+        kind: 'class' as const,
+        id: c.id,
+      })),
+    ];
+  if (owner.kind === 'relation') {
+    const subs = Object.values(tool.relations)
+      .filter(
+        (r) => r.id !== owner.id && isRelationDescendant(tool, r.id, owner.id),
+      )
+      .map((r) => ({ kind: 'relation' as const, id: r.id }));
+    return [owner, ...subs];
+  }
+  return [owner];
+}
+
+function isRelationDescendant(
+  tool: ToolLibrary,
+  id: RelationId,
+  ancestor: RelationId,
+): boolean {
+  const seen = new Set<string>();
+  let cur: RelationId | undefined = tool.relations[id]?.extends;
+  while (cur && !seen.has(cur)) {
+    if (cur === ancestor) return true;
+    seen.add(cur);
+    cur = tool.relations[cur]?.extends;
+  }
+  return false;
+}
+
+/** Keys that an attribute of this owner could clash with: everything it inherits or passes on. */
+export function relatedKeys(
+  tool: ToolLibrary,
+  owner: KeyOwner,
+  except: AttributeId,
+): Map<string, string> {
+  const keys = new Map<string, string>();
+  const add = (attrs: AttributeDef[], by: string) => {
+    for (const a of attrs)
+      if (a.id !== except && !keys.has(a.key)) keys.set(a.key, by);
+  };
+  if (owner.kind === 'modelType') {
+    add(
+      tool.modelTypes[owner.id]?.attributes ?? [],
+      `model type "${tool.modelTypes[owner.id]?.key}"`,
+    );
+    return keys;
+  }
+  const own = ownerDef(tool, owner);
+  try {
+    add(
+      owner.kind === 'class'
+        ? effectiveAttributes(tool, owner.id)
+        : effectiveRelationAttributes(tool, owner.id),
+      `"${own?.key}" or a parent`,
+    );
+  } catch {
+    add(own?.attributes ?? [], `"${own?.key}"`);
+  }
+  for (const o of scopeOwners(tool, owner)) {
+    const def = ownerDef(tool, o);
+    if (def) add(def.attributes, `"${def.key}", which extends "${own?.key}"`);
+  }
+  return keys;
+}
+
+// Rewriting -----------------------------------------------------------------------------------
+
+interface Walk {
+  from: string;
+  to: string;
+  hits: number;
+}
+
+function rewriteFormulaText(text: string, w: Walk): string {
+  // The leading `=` (and the space around it) is not part of the formula language.
+  const m = /^(\s*=?\s*)([\s\S]*)$/.exec(text)!;
+  const next = renameName(m[2]!, w.from, w.to);
+  if (next !== m[2]) w.hits++;
+  return m[1]! + next;
+}
+
+/** Copies a JSON value, rewriting every formula inside it; unchanged parts keep their identity. */
+function rewriteJson(value: Json, key: string | null, w: Walk): Json {
+  if (typeof value === 'string') {
+    // `over` (repeat) and `when` (variant) hold formula text with or without a leading `=`.
+    if (key === 'over' || key === 'when' || isFormula(value))
+      return rewriteFormulaText(value, w);
+    return value;
+  }
+  if (Array.isArray(value)) {
+    let changed = false;
+    const out = value.map((v) => {
+      const n = rewriteJson(v, key, w);
+      if (n !== v) changed = true;
+      return n;
+    });
+    return changed ? out : value;
+  }
+  if (value !== null && typeof value === 'object') {
+    let changed = false;
+    const out: Record<string, Json> = {};
+    for (const [k, v] of Object.entries(value)) {
+      const n = rewriteJson(v as Json, k, w);
+      if (n !== v) changed = true;
+      out[k] = n;
+    }
+    return changed ? out : value;
+  }
+  return value;
+}
+
+/** Shapes that classes or relations in scope draw with, including the ones they embed with `use`. */
+function shapesInScope(
+  tool: ToolLibrary,
+  start: (ShapeId | undefined)[],
+): Set<ShapeId> {
+  const found = new Set<ShapeId>();
+  const queue = start.filter((s): s is ShapeId => s !== undefined);
+  while (queue.length > 0) {
+    const id = queue.pop()!;
+    if (found.has(id)) continue;
+    const shape = tool.shapes?.[id];
+    if (!shape) continue;
+    found.add(id);
+    const visit = (
+      parts: { type: string; shape?: ShapeId; parts?: unknown[] }[],
+    ) => {
+      for (const p of parts) {
+        if (p.type === 'use' && p.shape) queue.push(p.shape);
+        if (p.type === 'group') visit((p.parts ?? []) as never);
+      }
+    };
+    if (shape.kind === 'node') {
+      visit(shape.parts as never);
+      for (const v of shape.variants ?? []) visit(v.parts as never);
+    }
+  }
+  return found;
+}
+
+function attributesWithFormulas(
+  attrs: AttributeDef[],
+  w: Walk,
+): AttributeDef[] {
+  let changed = false;
+  const out = attrs.map((a) => {
+    if (a.type !== 'formula') return a;
+    const next = rewriteFormulaText(a.formula, w);
+    if (next === a.formula) return a;
+    changed = true;
+    return { ...a, formula: next };
+  });
+  return changed ? out : attrs;
+}
+
+/**
+ * Plans the rename of a key: the new key itself and every formula, shape property and panel
+ * condition that reads the old one. Returns an error text instead when the rename is not allowed.
+ * The plan is a list of writes, so that running it is one command and one undo step.
+ */
+export function planKeyRename(
+  tool: ToolLibrary,
+  scope: KeyScope,
+  newKey: string,
+): RenamePlan | { error: string } {
+  const problem = keyProblem(newKey);
+  if (problem) return { error: problem };
+  const plan: RenamePlan = { changes: [], usages: [] };
+
+  if (scope.kind !== 'attribute') {
+    const table =
+      scope.kind === 'class'
+        ? tool.classes
+        : scope.kind === 'relation'
+          ? tool.relations
+          : tool.modelTypes;
+    const def = (table as Record<string, { key: string }>)[scope.id];
+    if (!def)
+      return {
+        error: `There is no such ${scope.kind === 'modelType' ? 'model type' : scope.kind === 'relation' ? 'relation class' : 'class'}.`,
+      };
+    if (def.key === newKey) return plan;
+    const clash = Object.values(
+      table as Record<string, { id: string; key: string }>,
+    ).find((o) => o.id !== scope.id && o.key === newKey);
+    if (clash)
+      return {
+        error: `The key "${newKey}" is already used by another ${scope.kind === 'modelType' ? 'model type' : scope.kind === 'relation' ? 'relation class' : 'class'}.`,
+      };
+    const tableName =
+      scope.kind === 'class'
+        ? 'classes'
+        : scope.kind === 'relation'
+          ? 'relations'
+          : 'modelTypes';
+    plan.changes.push({ path: [tableName, scope.id, 'key'], value: newKey });
+    return plan;
+  }
+
+  const owner = ownerDef(tool, scope.owner);
+  const attr = owner?.attributes.find((a) => a.id === scope.id);
+  if (!owner || !attr) return { error: 'That attribute does not exist.' };
+  if (attr.key === newKey) return plan;
+  const clash = relatedKeys(tool, scope.owner, attr.id).get(newKey);
+  if (clash)
+    return {
+      error: `The key "${newKey}" is already used by an attribute of ${clash}.`,
+    };
+
+  const w: Walk = { from: attr.key, to: newKey, hits: 0 };
+  const tableOf = (o: KeyOwner) =>
+    o.kind === 'class'
+      ? 'classes'
+      : o.kind === 'relation'
+        ? 'relations'
+        : 'modelTypes';
+  const owners = scopeOwners(tool, scope.owner);
+
+  // Attribute lists: the renamed attribute, and formula attributes that read it.
+  for (const o of owners) {
+    const def = ownerDef(tool, o)!;
+    const probe: Walk = { ...w, hits: 0 };
+    let attrs = attributesWithFormulas(def.attributes, probe);
+    if (probe.hits > 0) plan.usages.push(`a formula attribute of "${def.key}"`);
+    if (o.kind === scope.owner.kind && o.id === scope.owner.id)
+      attrs = attrs.map((a) =>
+        a.id === attr.id ? ({ ...a, key: newKey } as AttributeDef) : a,
+      );
+    if (attrs !== def.attributes)
+      plan.changes.push({
+        path: [tableOf(o), o.id, 'attributes'],
+        value: attrs as unknown as Json,
+      });
+  }
+
+  // Shapes and panel layouts that the owners use.
+  const starts: (ShapeId | undefined)[] = [];
+  for (const o of owners) {
+    if (o.kind === 'class') starts.push(tool.classes[o.id]?.shape);
+    else if (o.kind === 'relation') starts.push(tool.relations[o.id]?.shape);
+    else starts.push(tool.modelTypes[o.id]?.background);
+  }
+  for (const id of shapesInScope(tool, starts)) {
+    const shape = tool.shapes[id]!;
+    const probe: Walk = { ...w, hits: 0 };
+    const rewritten = rewriteJson(
+      shape as unknown as Json,
+      null,
+      probe,
+    ) as unknown as Record<string, Json>;
+    if (probe.hits === 0) continue;
+    for (const [k, v] of Object.entries(rewritten))
+      if (!deepEqual(v, (shape as unknown as Record<string, Json>)[k] as Json))
+        plan.changes.push({ path: ['shapes', id, k], value: v });
+    plan.usages.push(`the shape "${shape.name ?? id}"`);
+  }
+  for (const o of owners) {
+    const layout = o.kind === 'modelType' ? undefined : tool.panels?.[o.id];
+    if (!layout) continue;
+    const probe: Walk = { ...w, hits: 0 };
+    const tabs = rewriteJson(layout.tabs as unknown as Json, null, probe);
+    // Items name attributes by key; those are renamed too, but they are not formulas.
+    const renamed = renameItemKeys(tabs, attr.key, newKey);
+    if (renamed.changed || probe.hits > 0) {
+      plan.changes.push({
+        path: ['panels', o.id, 'tabs'],
+        value: renamed.value,
+      });
+      plan.usages.push(`the panel layout of "${ownerDef(tool, o)?.key}"`);
+    }
+  }
+  return plan;
+}
+
+function renameItemKeys(
+  value: Json,
+  from: string,
+  to: string,
+): { value: Json; changed: boolean } {
+  let changed = false;
+  const walk = (v: Json): Json => {
+    if (Array.isArray(v)) return v.map(walk);
+    if (v !== null && typeof v === 'object') {
+      const out: Record<string, Json> = {};
+      for (const [k, x] of Object.entries(v)) {
+        if (k === 'attribute' && x === from) {
+          out[k] = to;
+          changed = true;
+        } else out[k] = walk(x as Json);
+      }
+      return out;
+    }
+    return v;
+  };
+  const out = walk(value);
+  return { value: changed ? out : value, changed };
+}
+
+/** Where a key is read, for showing before it is renamed or its attribute is deleted. */
+export function findKeyUsages(tool: ToolLibrary, scope: KeyScope): string[] {
+  if (scope.kind !== 'attribute') return [];
+  const owner = ownerDef(tool, scope.owner);
+  const attr = owner?.attributes.find((a) => a.id === scope.id);
+  if (!attr) return [];
+  // A name that cannot clash gives the full list of places that read the old one.
+  const plan = planKeyRename(tool, scope, `${attr.key}__probe`);
+  return 'error' in plan ? [] : [...new Set(plan.usages)];
+}

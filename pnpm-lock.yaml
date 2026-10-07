@@ -126,6 +126,10 @@ importers:
         version: 4.10.2
 
   packages/core:
+    dependencies:
+      '@metakit-app/formula':
+        specifier: workspace:*
+        version: link:../formula
     devDependencies:
       fast-check:
         specifier: ^4.0.0

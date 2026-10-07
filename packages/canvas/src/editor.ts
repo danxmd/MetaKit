@@ -133,7 +133,7 @@ export class Editor {
   private currentTool: EditorTool = { type: 'select' };
   private readonly cleanups: (() => void)[] = [];
   private readonly store: ModelStore;
-  private readonly tool: ToolLibrary;
+  private tool: ToolLibrary;
   private readonly view: CanvasView;
   private readonly host: EditorHost;
 
@@ -163,6 +163,11 @@ export class Editor {
   }
 
   // Tool and selection --------------------------------------------------------------------
+
+  /** Takes a changed tool library (hot reload); the next action follows its rules. */
+  useToolLibrary(tool: ToolLibrary): void {
+    this.tool = tool;
+  }
 
   setTool(tool: EditorTool): void {
     this.currentTool = tool;
