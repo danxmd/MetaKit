@@ -21,7 +21,7 @@
 
 ## 4. CI and deploy
 
-- [ ] 4.1 Add `.github/workflows/ci.yml` with all pull request steps and the size summary; verify it is green on the pull request and the summary shows the compressed size.
+- [x] 4.1 Add `.github/workflows/ci.yml` with all pull request steps and the size summary; verify it is green on the pull request and the summary shows the compressed size.
 - [x] 4.2 Add `.github/workflows/deploy.yml` for pushes to `main`; verify the workflow lints with `actionlint` (or equivalent) and a dry run on the branch builds the artifact. Real deploy is verified by Danial after merge.
 
 ## 5. Documentation
