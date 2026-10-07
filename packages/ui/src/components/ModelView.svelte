@@ -53,6 +53,15 @@
   import ValidationList from './ValidationList.svelte';
   import ExportDialog from './ExportDialog.svelte';
   import AttributePanel from './AttributePanel.svelte';
+  import { pageAssist, type ModelingAssist } from '../shell/assist';
+  import { hintFor, type HintState } from '../shell/interaction-hints';
+  import {
+    spotBeside,
+    suggestConnections,
+    type RelationSuggestion,
+  } from '../shell/suggestions';
+  import HintLine from './HintLine.svelte';
+  import SuggestionCard from './SuggestionCard.svelte';
   import ModelToolbar from './ModelToolbar.svelte';
   import PaletteList from './Palette.svelte';
 
@@ -316,6 +325,197 @@
       return true;
     }
   }
+  // Help while modelling (per browser): hints and smart modelling.
+  const assistStore = pageAssist();
+  let assist = $state<ModelingAssist>(assistStore.value);
+  const stopAssist = assistStore.subscribe((v) => (assist = v));
+
+  let paletteHover = $state<
+    { class: ClassId } | { relation: RelationId } | null
+  >(null);
+  let connectorHover = $state<ConnectorId | null>(null);
+  const hintText = $derived.by(() => {
+    if (!assist.hints) return '';
+    const t = activeTool;
+    let state: HintState;
+    if (t.type === 'place') {
+      const cls = tool.classes[t.class];
+      state = cls
+        ? { kind: 'place', class: cls }
+        : { kind: 'idle', selected: 0 };
+    } else if (t.type === 'connect') {
+      const relation = t.relation ? tool.relations[t.relation] : undefined;
+      if (!relation)
+        return 'Choose a relation in the palette, then click the concept it should start at.';
+      state = { kind: 'connect', relation, picked: false };
+    } else if (paletteHover && 'relation' in paletteHover) {
+      const relation = tool.relations[paletteHover.relation];
+      state = relation
+        ? { kind: 'palette-relation', relation }
+        : { kind: 'idle', selected: 0 };
+    } else if (paletteHover) {
+      const cls = tool.classes[paletteHover.class];
+      state = cls
+        ? { kind: 'palette-class', class: cls }
+        : { kind: 'idle', selected: 0 };
+    } else if (connectorHover && model.connectors[connectorHover]) {
+      const c = model.connectors[connectorHover]!;
+      const relation = tool.relations[c.relation];
+      const name = (id: ElementId) =>
+        tool.classes[model.elements[id]?.class as ClassId]?.key ?? '?';
+      state = relation
+        ? { kind: 'connector', relation, from: name(c.from), to: name(c.to) }
+        : { kind: 'idle', selected: 0 };
+    } else {
+      state = {
+        kind: 'idle',
+        selected: selection.elements.size + selection.connectors.size,
+      };
+    }
+    return hintFor(tool, state);
+  });
+
+  /** The name a concept shows: its label attribute when it has one, else the class name. */
+  function labelOfElement(id: ElementId): string {
+    const element = model.elements[id];
+    if (!element) return '';
+    const attr = scene?.labelAttribute(element.class);
+    const value = attr ? element.attrs[attr as never] : undefined;
+    return typeof value === 'string' && value !== ''
+      ? value
+      : (tool.classes[element.class]?.key ?? 'concept');
+  }
+
+  // Smart modelling: hovering a concept lists what it can be connected to.
+  let suggest = $state<{
+    id: ElementId;
+    left: number;
+    top: number;
+    groups: RelationSuggestion[];
+  } | null>(null);
+  let dwellTimer: ReturnType<typeof setTimeout> | undefined;
+  let closeTimer: ReturnType<typeof setTimeout> | undefined;
+  const CARD_WIDTH = 288;
+
+  function cancelClose() {
+    clearTimeout(closeTimer);
+  }
+  function closeSuggest(delay = 0) {
+    clearTimeout(dwellTimer);
+    clearTimeout(closeTimer);
+    const close = () => {
+      suggest = null;
+      view?.setActive({ suggest: new Set() });
+    };
+    if (delay === 0) close();
+    else closeTimer = setTimeout(close, delay);
+  }
+  function openSuggest(id: ElementId) {
+    const element = (store.state as Model).elements[id];
+    if (!element || !modelType) return;
+    const groups = suggestConnections(
+      tool,
+      modelType,
+      store.state as Model,
+      id,
+      palette.relationIds,
+      new Set(palette.classes.map((c) => c.id)),
+    );
+    const box = host.getBoundingClientRect();
+    const right = view.toScreenFromWorld({
+      x: element.x + element.w,
+      y: element.y,
+    });
+    const leftEdge = view.toScreenFromWorld({ x: element.x, y: element.y });
+    // Beside the concept, on whichever side has room, and kept inside the canvas.
+    const fitsRight = right.x + 12 + CARD_WIDTH < box.width;
+    const left = fitsRight
+      ? right.x + 12
+      : Math.max(8, leftEdge.x - 12 - CARD_WIDTH);
+    const top = Math.max(8, Math.min(right.y, box.height - 200));
+    suggest = { id, left, top, groups };
+  }
+
+  function onCanvasMove(event: PointerEvent) {
+    if (!ready) return;
+    const world = view.toWorld(event);
+    // Hints about a connector under the pointer.
+    if (assist.hints && activeTool.type === 'select' && event.buttons === 0) {
+      const connector = scene.connectorAt(world, 6 / view.view.s);
+      connectorHover = connector ? connector.id : null;
+    } else connectorHover = null;
+
+    if (!assist.smart) return;
+    if (activeTool.type !== 'select' || event.buttons !== 0 || labelEdit) {
+      closeSuggest();
+      return;
+    }
+    const hit = scene.elementAt(world);
+    if (!hit) {
+      clearTimeout(dwellTimer);
+      if (suggest) closeSuggest(250);
+      return;
+    }
+    cancelClose();
+    if (suggest?.id === hit.id) return;
+    clearTimeout(dwellTimer);
+    dwellTimer = setTimeout(() => openSuggest(hit.id as ElementId), 350);
+  }
+
+  function suggestAdd(
+    relation: RelationDef,
+    direction: 'out' | 'in',
+    cls: { id: string; shape?: string | undefined; key: string },
+  ) {
+    const from = suggest?.id;
+    if (!from) return;
+    const model0 = store.state as Model;
+    const shape = cls.shape ? tool.shapes[cls.shape as never] : undefined;
+    const size =
+      shape?.kind === 'node'
+        ? { w: shape.size.width, h: shape.size.height }
+        : { w: 140, h: 70 };
+    const spot = spotBeside(model0, from, size);
+    let created: ElementId | null = null;
+    // One undo step for the new concept and its connector.
+    store.transact({ type: 'batch', commands: [] }, () => {
+      created = editor.placeAt(cls.id as ClassId, {
+        x: spot.x + size.w / 2,
+        y: spot.y + size.h / 2,
+      });
+      if (!created) return;
+      store.execute({
+        type: 'createConnector',
+        relation: relation.id as RelationId,
+        from: direction === 'out' ? from : created,
+        to: direction === 'out' ? created : from,
+      } as never);
+    });
+    closeSuggest();
+    if (created) {
+      editor.select([created]);
+      say(`Added a ${cls.key} and connected it with ${relation.key}.`);
+    }
+  }
+
+  function suggestPick(
+    relation: RelationDef,
+    direction: 'out' | 'in',
+    cls: { key: string },
+    existing: ElementId[],
+  ) {
+    const from = suggest?.id;
+    closeSuggest();
+    if (from) editor.select([from]);
+    editor.setTool({ type: 'connect', relation: relation.id as RelationId });
+    view.setActive({ suggest: new Set(existing) });
+    say(
+      direction === 'out'
+        ? `Click ${relation.key}'s start, then the ${cls.key} it should end at.`
+        : `Click the ${cls.key} the ${relation.key} should start at, then the concept it ends at.`,
+    );
+  }
+
   let minimapOn = $state(readMinimapChoice());
   function toggleMinimap() {
     minimapOn = !minimapOn;
@@ -496,6 +696,9 @@
     clearTimeout(validateTimer);
     stopStore();
     stopTheme();
+    stopAssist();
+    clearTimeout(dwellTimer);
+    clearTimeout(closeTimer);
     stopCommands?.();
     stopLog?.();
     scene?.destroy();
@@ -696,6 +899,8 @@
       onViewChange={changeView}
       {minimapOn}
       onToggleMinimap={toggleMinimap}
+      {assist}
+      onAssist={(patch) => assistStore.set(patch)}
       {problemsOpen}
       issueCount={issues.length}
       onToggleProblems={() => (problemsOpen = !problemsOpen)}
@@ -752,6 +957,7 @@
       onPlace={choosePlace}
       onConnect={chooseConnect}
       onDragClass={dragStart}
+      onHover={(target) => (paletteHover = target)}
     />
   </div>
 
@@ -761,11 +967,35 @@
       bind:this={host}
       ondragover={(e) => e.preventDefault()}
       ondrop={dropOnCanvas}
+      onpointermove={onCanvasMove}
+      onpointerleave={() => {
+        connectorHover = null;
+        if (suggest) closeSuggest(300);
+      }}
       role="application"
       aria-label="Model canvas"
       data-testid="canvas-host"
     >
       <div class="minimap" bind:this={mapHost} hidden={!minimapOn}></div>
+      <HintLine text={hintText} />
+      {#if suggest}
+        {@const el = model.elements[suggest.id]}
+        {#if el}
+          <SuggestionCard
+            name={labelOfElement(suggest.id)}
+            className={tool.classes[el.class]?.key ?? ''}
+            groups={suggest.groups}
+            left={suggest.left}
+            top={suggest.top}
+            onAdd={suggestAdd}
+            onPick={suggestPick}
+            onHighlight={(ids) =>
+              view.setActive({ suggest: new Set(ids ?? []) })}
+            onEnter={cancelClose}
+            onLeave={() => closeSuggest(250)}
+          />
+        {/if}
+      {/if}
       {#if labelEdit}
         <textarea
           class="label-edit"

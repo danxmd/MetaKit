@@ -64,6 +64,8 @@ export interface ActiveState {
   target: ElementId | null;
   /** An element the chosen relation can be used on, outlined in the selection colour. */
   hover: ElementId | null;
+  /** Elements a suggestion could connect to, outlined softly (smart modelling). */
+  suggest: ReadonlySet<ElementId>;
   /** Show resize handles on a single selected element. */
   handles: boolean;
   /** Elements other people have selected, outlined in their colour with their initials. */
@@ -89,7 +91,8 @@ export function isActiveEmpty(state: ActiveState): boolean {
     state.remote.length === 0 &&
     state.guides.x.length === 0 &&
     state.guides.y.length === 0 &&
-    state.hover === null
+    state.hover === null &&
+    state.suggest.size === 0
   );
 }
 
@@ -104,6 +107,7 @@ export function emptyActiveState(): ActiveState {
     link: null,
     target: null,
     hover: null,
+    suggest: new Set(),
     handles: true,
     remote: [],
   };
@@ -499,6 +503,30 @@ export class Renderer {
         ctx.lineWidth = Math.max(3, 3 / s);
         ctx.strokeRect(rect.minX, rect.minY, w, h);
       }
+    }
+
+    for (const id of state.suggest) {
+      const rect = this.boxOf(id, state);
+      if (!rect) continue;
+      ctx.globalAlpha = 0.1;
+      ctx.fillStyle = selectColor;
+      ctx.fillRect(
+        rect.minX,
+        rect.minY,
+        rect.maxX - rect.minX,
+        rect.maxY - rect.minY,
+      );
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = selectColor;
+      ctx.lineWidth = Math.max(2, 2 / s);
+      ctx.setLineDash([6 / s, 4 / s]);
+      ctx.strokeRect(
+        rect.minX,
+        rect.minY,
+        rect.maxX - rect.minX,
+        rect.maxY - rect.minY,
+      );
+      ctx.setLineDash([]);
     }
 
     if (state.target) {

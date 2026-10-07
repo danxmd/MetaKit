@@ -19,6 +19,7 @@
     onPlace,
     onConnect,
     onDragClass,
+    onHover,
     language = 'en',
   }: {
     tool: ToolLibrary;
@@ -28,6 +29,8 @@
     onPlace: (cls: ClassId) => void;
     onConnect: (relation: RelationId) => void;
     onDragClass: (event: DragEvent, cls: ClassId) => void;
+    /** Tells the hint line which entry is hovered or focused, and null when none is. */
+    onHover?: (target: PreviewTarget | null) => void;
     language?: string;
   } = $props();
 
@@ -59,6 +62,7 @@
         Math.min(box.top - 8, window.innerHeight - CARD_HEIGHT - 8),
       );
       shown = { target, info: info(), left: box.right + 10, top, owner };
+      onHover?.(target);
     };
     if (delay === 0) show();
     else timer = setTimeout(show, delay);
@@ -67,6 +71,7 @@
   function close() {
     clearTimeout(timer);
     shown = null;
+    onHover?.(null);
   }
 
   const forClass = (

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { ModelingAssist } from '../shell/assist';
   import type { Snippet } from 'svelte';
 
   interface Person {
@@ -42,6 +43,8 @@
     onViewChange,
     minimapOn,
     onToggleMinimap,
+    assist,
+    onAssist,
     problemsOpen,
     issueCount,
     onToggleProblems,
@@ -81,6 +84,9 @@
     onViewChange: (select: HTMLSelectElement) => void;
     minimapOn: boolean;
     onToggleMinimap: () => void;
+    /** Help while modelling; a preference of the person, not part of the model. */
+    assist: ModelingAssist;
+    onAssist: (patch: Partial<ModelingAssist>) => void;
     problemsOpen: boolean;
     issueCount: number;
     onToggleProblems: () => void;
@@ -208,6 +214,24 @@
           aria-checked={minimapOn}
           onclick={onToggleMinimap}
           data-testid="minimap-toggle">{minimapOn ? '✓ ' : ''}Minimap</button
+        >
+        <div class="menu-sep"></div>
+        <div class="menu-heading">Assistance</div>
+        <button
+          role="menuitemcheckbox"
+          aria-checked={assist.hints}
+          onclick={() => onAssist({ hints: !assist.hints })}
+          title="Short hints about what you are doing and what a relation connects"
+          data-testid="assist-hints"
+          >{assist.hints ? '✓ ' : ''}Interaction hints</button
+        >
+        <button
+          role="menuitemcheckbox"
+          aria-checked={assist.smart}
+          onclick={() => onAssist({ smart: !assist.smart })}
+          title="Hover a concept to see what it can be connected to"
+          data-testid="assist-smart"
+          >{assist.smart ? '✓ ' : ''}Smart modelling</button
         >
         {#if views.length > 0}
           <div class="menu-sep"></div>
