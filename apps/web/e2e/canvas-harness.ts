@@ -17,7 +17,14 @@ import {
   Editor,
   Minimap,
   Scene,
+  exportPdf,
+  exportPng,
+  exportSvg,
   type EditorTool,
+  type ExportSelection,
+  type PdfExportOptions,
+  type PngExportOptions,
+  type SvgExportOptions,
 } from '@metakit-app/canvas';
 
 interface Mounted {
@@ -89,6 +96,56 @@ function need(): Mounted {
 function flush(): void {
   need().view.paint();
   need().minimap.render();
+}
+
+/** Selection as ids from the test, turned into the sets the exporters take. */
+interface IdSelection {
+  elements: string[];
+  connectors: string[];
+}
+const toSelection = (
+  s: IdSelection | undefined,
+): ExportSelection | undefined =>
+  s
+    ? {
+        elements: new Set(s.elements as ElementId[]),
+        connectors: new Set(s.connectors as ConnectorId[]),
+      }
+    : undefined;
+
+/** RGBA at a point of a canvas that holds a decoded image. */
+function readPixels(
+  source: CanvasImageSource,
+  width: number,
+  height: number,
+  points: Point[],
+): number[][] {
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
+  ctx.drawImage(source, 0, 0);
+  return points.map((p) => [
+    ...ctx.getImageData(Math.round(p.x), Math.round(p.y), 1, 1).data,
+  ]);
+}
+
+/** RGBA of the scene canvas at a world point. */
+function screenPixel(p: Point): number[] {
+  const m = need();
+  const canvas = m.view.renderer.sceneCanvas;
+  const dpr = window.devicePixelRatio || 1;
+  const x = (p.x * m.view.view.s + m.view.view.ox) * dpr;
+  const y = (p.y * m.view.view.s + m.view.view.oy) * dpr;
+  return [
+    ...canvas.getContext('2d')!.getImageData(Math.round(x), Math.round(y), 1, 1)
+      .data,
+  ];
+}
+
+function viewBoxOf(svg: string) {
+  const m = /viewBox="(-?[\d.]+) (-?[\d.]+) ([\d.]+) ([\d.]+)"/.exec(svg)!;
+  return { x: Number(m[1]), y: Number(m[2]), w: Number(m[3]), h: Number(m[4]) };
 }
 
 const api = {
@@ -168,19 +225,88 @@ const api = {
   drawListBuilds: () => need().scene.cache.builds,
   elementIds: () => [...need().scene.elements.keys()] as ElementId[],
   /** RGBA of the scene canvas at a world point. */
-  pixel(p: Point): number[] {
-    const m = need();
-    const canvas = m.view.renderer.sceneCanvas;
-    const dpr = window.devicePixelRatio || 1;
-    const x = (p.x * m.view.view.s + m.view.view.ox) * dpr;
-    const y = (p.y * m.view.view.s + m.view.view.oy) * dpr;
-    return [
-      ...canvas
-        .getContext('2d')!
-        .getImageData(Math.round(x), Math.round(y), 1, 1).data,
-    ];
-  },
+  pixel: screenPixel,
   sceneTransform: () => need().view.renderer.sceneCanvas.style.transform,
+  /** The SVG export of the mounted model. */
+  exportSvg(
+    options: Omit<SvgExportOptions, 'selection'> & {
+      selection?: IdSelection;
+    } = {},
+  ) {
+    const { selection, ...rest } = options;
+    const sel = toSelection(selection);
+    return exportSvg(need().scene, sel ? { ...rest, selection: sel } : rest);
+  },
+  /**
+   * Renders an SVG export into an image and reads it at world points, next to what the screen's
+   * scene canvas shows there. The export has no padding, so its origin is the content's corner.
+   */
+  async compareSvg(points: Point[]) {
+    const svg = exportSvg(need().scene, { padding: 0 });
+    const box = viewBoxOf(svg);
+    const origin = { x: box.x, y: box.y };
+    const w = Math.ceil(box.w);
+    const h = Math.ceil(box.h);
+    const img = new Image();
+    img.src = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
+    await img.decode();
+    const shifted = points.map((p) => ({
+      x: p.x - origin.x,
+      y: p.y - origin.y,
+    }));
+    return {
+      svg: readPixels(img, w, h, shifted),
+      screen: points.map((p) => screenPixel(p)),
+    };
+  },
+  /** Exports a PNG and reports its size and a few pixels. */
+  async exportPng(
+    options: Omit<PngExportOptions, 'selection'> & { selection?: IdSelection },
+    worldPoints: Point[] = [],
+  ) {
+    const { selection, ...rest } = options;
+    const sel = toSelection(selection);
+    const blob = await exportPng(
+      need().scene,
+      sel ? { ...rest, selection: sel } : rest,
+    );
+    const bitmap = await createImageBitmap(blob);
+    // The PNG has the default padding, so its origin is the SVG's.
+    const origin = viewBoxOf(
+      exportSvg(need().scene, sel ? { selection: sel } : {}),
+    );
+    return {
+      type: blob.type,
+      width: bitmap.width,
+      height: bitmap.height,
+      // The first pixel is the corner; the others are the given world points.
+      pixels: readPixels(bitmap, bitmap.width, bitmap.height, [
+        { x: 0, y: 0 },
+        ...worldPoints.map((p) => ({
+          x: (p.x - origin.x) * options.scale,
+          y: (p.y - origin.y) * options.scale,
+        })),
+      ]),
+    };
+  },
+  /** Exports a PDF and reports its start and page count. */
+  async exportPdf(
+    options: Omit<PdfExportOptions, 'selection'> & { selection?: IdSelection },
+  ) {
+    const { selection, ...rest } = options;
+    const sel = toSelection(selection);
+    const blob = await exportPdf(
+      need().scene,
+      sel ? { ...rest, selection: sel } : rest,
+    );
+    const text = new TextDecoder('latin1').decode(await blob.arrayBuffer());
+    return {
+      size: blob.size,
+      type: blob.type,
+      head: text.slice(0, 5),
+      pages: (text.match(/\/Type\s*\/Page(?![a-z])/g) ?? []).length,
+    };
+  },
   copy: () => need().editor.copy(),
   paste: (text?: string) => need().editor.paste(text),
 };
