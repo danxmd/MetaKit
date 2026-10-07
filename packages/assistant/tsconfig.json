@@ -6,7 +6,19 @@
     "declaration": true,
     "outDir": "dist",
     "rootDir": "src",
-    "types": []
+    "types": [],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"]
   },
-  "include": ["src"]
+  "include": ["src"],
+  "references": [
+    {
+      "path": "../core"
+    },
+    {
+      "path": "../formula"
+    },
+    {
+      "path": "../behaviour"
+    }
+  ]
 }

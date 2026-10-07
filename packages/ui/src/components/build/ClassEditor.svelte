@@ -15,6 +15,9 @@
   import ConstraintsEditor from './ConstraintsEditor.svelte';
   import KeyField from './KeyField.svelte';
   import LabelsField from './LabelsField.svelte';
+  import { asOneStep } from '@metakit-app/assistant';
+  import type { AssistantPort } from '../../assistant/assistant-service';
+  import DraftWithAssistant from '../assistant/DraftWithAssistant.svelte';
 
   let {
     tool,
@@ -23,6 +26,7 @@
     onEditShape,
     onEditPanel,
     usages,
+    assistant,
   }: {
     tool: ToolLibrary;
     id: ClassId;
@@ -30,6 +34,8 @@
     onEditShape: (shapeId: string) => void;
     onEditPanel: (classId: string) => void;
     usages: (attributeId: string) => string[];
+    /** The assistant; when absent there is no "Draft with assistant" button. */
+    assistant?: AssistantPort | undefined;
   } = $props();
 
   const def = $derived(tool.classes[id]);
@@ -74,7 +80,15 @@
 
 {#if def}
   <div class="editor" data-testid="class-editor">
-    <h2>Class {def.key}</h2>
+    <div class="head">
+      <h2>Class {def.key}</h2>
+      <DraftWithAssistant
+        kind="class"
+        {tool}
+        {assistant}
+        onAccept={(commands) => exec(asOneStep(commands) as never)}
+      />
+    </div>
     <KeyField
       value={def.key}
       testid="class-key"
@@ -196,6 +210,11 @@
   .editor {
     display: grid;
     gap: 0.8rem;
+  }
+  .head {
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
   }
   h2 {
     margin: 0;

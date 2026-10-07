@@ -20,6 +20,9 @@
   } from '../../../build/scripts-model';
   import ScriptConsole from './ScriptConsole.svelte';
   import ScriptEditor from './ScriptEditor.svelte';
+  import { asOneStep } from '@metakit-app/assistant';
+  import type { AssistantPort } from '../../../assistant/assistant-service';
+  import DraftWithAssistant from '../../assistant/DraftWithAssistant.svelte';
   import type { LanguageClient } from './script-language-client';
 
   let {
@@ -28,6 +31,7 @@
     api = null,
     target = () => null,
     createClient,
+    assistant,
   }: {
     tool: ToolLibrary;
     run: (command: never) => CommandResult;
@@ -36,6 +40,8 @@
     /** The selected object of the open model, which "Run" hands to the command. */
     target?: () => string | null;
     createClient?: () => LanguageClient | Promise<LanguageClient>;
+    /** The assistant; when absent there is no "Draft with assistant" button. */
+    assistant?: AssistantPort | undefined;
   } = $props();
 
   let error = $state<string | null>(null);
@@ -188,6 +194,19 @@
         <button type="button" onclick={add} data-testid="script-add"
           >Add a script</button
         >
+        <DraftWithAssistant
+          kind="script"
+          {tool}
+          {assistant}
+          onAccept={(commands) => {
+            const first = commands[0];
+            if (
+              exec(asOneStep(commands) as never) &&
+              first?.type === 'putScript'
+            )
+              selectedId = first.script.id;
+          }}
+        />
       </li>
     </ul>
 

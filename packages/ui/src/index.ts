@@ -7,3 +7,7 @@ export * from './build/rule-editor-model';
 export * from './build/scripts-model';
 export * from './git/settings-model';
 export * from './git/index';
+export * from './assistant/assistant-service';
+export * from './assistant/draft-dialog-model';
+export * from './assistant/notice';
+export * from './assistant/type-check';

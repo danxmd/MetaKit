@@ -13,6 +13,7 @@
   } from '@metakit-app/core';
   import { uniqueKey } from '../build/attributes';
   import type { AppState, BuildPort } from '../shell/controller';
+  import type { AssistantPort } from '../assistant/assistant-service';
   import CommitDialog from './git/CommitDialog.svelte';
   import ConflictDialog from './git/ConflictDialog.svelte';
   import ReleasePicker from './git/ReleasePicker.svelte';
@@ -32,7 +33,14 @@
     app,
     controller,
     onBack,
-  }: { app: AppState; controller: BuildPort; onBack: () => void } = $props();
+    assistant,
+  }: {
+    app: AppState;
+    controller: BuildPort;
+    onBack: () => void;
+    /** The optional assistant; the "Draft with assistant" buttons appear only when it is on. */
+    assistant?: AssistantPort;
+  } = $props();
 
   type Section =
     | 'classes'
@@ -380,6 +388,7 @@
       {#if section === 'classes' && current && tool.classes[current as ClassId]}
         {#key current}
           <ClassEditor
+            {assistant}
             {tool}
             id={current as ClassId}
             {run}
@@ -412,14 +421,15 @@
         {/key}
       {:else if section === 'shapes'}
         <ShapesSection
+          {assistant}
           {tool}
           {run}
           onEditShape={(id) => (overlay = { kind: 'shape', id })}
         />
       {:else if section === 'rules'}
-        <RulesSection {tool} {run} />
+        <RulesSection {tool} {run} {assistant} />
       {:else if section === 'scripts'}
-        <ScriptsSection {tool} {run} />
+        <ScriptsSection {tool} {run} {assistant} />
       {:else if section === 'settings'}
         <SettingsEditor {tool} {run} />
       {:else}
