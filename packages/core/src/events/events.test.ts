@@ -10,6 +10,8 @@ import { SAMPLE, emptySampleModel, sampleTool } from '../testing/sample-tool';
 import { attachEvents } from './bridge';
 import { EventBus, type EventPayload } from './bus';
 
+type Setup = ReturnType<typeof setup>;
+
 function setup() {
   const base = sampleTool();
   const tool: ToolLibrary = {
@@ -233,10 +235,10 @@ describe('the 24 events', () => {
 
 describe('cancelling', () => {
   it.each([
-    ['object.creating', (x: ReturnType<typeof setup>) => void x.task()],
+    ['object.creating', (x: Setup): void => void x.task()],
     [
       'attribute.changing',
-      (x: ReturnType<typeof setup>) =>
+      (x: Setup): void =>
         void x.exec({
           type: 'setAttribute',
           target: x.task(),
@@ -246,8 +248,7 @@ describe('cancelling', () => {
     ],
     [
       'object.deleting',
-      (x: ReturnType<typeof setup>) =>
-        void x.exec({ type: 'delete', id: x.task() }),
+      (x: Setup): void => void x.exec({ type: 'delete', id: x.task() }),
     ],
   ] as const)(
     'a handler of %s stops the action and the reason comes back',
