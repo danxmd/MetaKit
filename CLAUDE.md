@@ -3,7 +3,7 @@
 MetaKit is a browser-only metamodelling and modelling tool, a modern rebuild of ADOxx without simulation, analysis, database or user management. Method engineers build modelling tools in **Build mode**; modellers use them in **Model mode**. Tool libraries and models are plain JSON files in a shared folder synced by OneDrive, SharePoint, Google Drive or Dropbox. Tool libraries can also live in GitHub or GitLab (Git mode).
 
 - Full plan: `docs/implementation-plan.md`. Read only the sections a task needs.
-- Current phase brief: `docs/phase-4.md`.
+- Current phase brief: `docs/phase-7.md` (phases 5 and 6 are in `docs/phase-5.md` and `docs/phase-6.md`).
 - Project owner and reviewer: Danial. He approves every spec and every pull request.
 
 ## Architecture rules (do not break these)
@@ -28,6 +28,8 @@ If a task seems to require breaking a rule, stop and ask. Record agreed changes 
 - E2E tests use the `window.__METAKIT_TEST__` seam (`pickFolder`, `remember: false`, `profile`) because the headless browser crashes on handles stored in IndexedDB. Locally set `PW_CHROMIUM_PATH` to the installed Chromium.
 
 - Shapes and panel layouts live in the tool library (format 2, ADR 0004). `packages/formula` is the formula subset; phase 5.1 extends it. `packages/shapes` compiles shapes to draw lists; the canvas replays them.
+- Computed values are derived and never stored (ADR 0005). `ModelCalculator` (core) tracks dependencies; `packages/behaviour` holds the event bridge, the rule engine and the command registry. Events never fire for merged changes. Rules change the model only through `store.execute`.
+- Exports (SVG, PNG, PDF) replay the same draw lists as the screen; jsPDF and svg2pdf load lazily. Model files, bundles, CSV and tool packages live in `packages/storage`; auto-layout runs ELK in a worker through the `applyLayout` command.
 - Build mode edits the tool library through tool commands (`putClass`, `putAttribute`, `renameKey`, ...); the editors never write state directly.
 
 ## Performance budget
