@@ -180,7 +180,9 @@ test.describe('attribute panel', () => {
     expect((await attrsOf(page, id))['att_name']).toBe('half typed');
   });
 
-  test('shows formulas and buttons read-only', async ({ page }) => {
+  test('shows formulas read-only and buttons ready to press', async ({
+    page,
+  }) => {
     const id = await create(page, 'cls_task', { att_name: 'T' });
     await select(page, id);
     await expect(
@@ -188,7 +190,7 @@ test.describe('attribute panel', () => {
     ).toBeVisible();
     await expect(
       page.getByTestId('field-OpenSpec').getByRole('button'),
-    ).toBeDisabled();
+    ).toBeEnabled();
   });
 
   test('edits a table in an inline grid and accepts rows pasted from a spreadsheet', async ({

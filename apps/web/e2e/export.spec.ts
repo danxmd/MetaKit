@@ -276,8 +276,9 @@ test.describe('image export', () => {
     ].map((m) => m[1]!);
     expect(files.length).toBeGreaterThan(0);
     for (const file of files)
+      // `putTotalPages` only occurs inside the library; the app's own code names `jsPDF` in a destructuring.
       expect(readFileSync(`${dist}${file}`, 'utf8'), file).not.toContain(
-        'jsPDF',
+        'putTotalPages',
       );
   });
 });
