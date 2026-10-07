@@ -22,6 +22,12 @@
     },
     {
       "path": "../sync"
+    },
+    {
+      "path": "../formula"
+    },
+    {
+      "path": "../shapes"
     }
   ]
 }
