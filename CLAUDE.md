@@ -28,6 +28,7 @@ If a task seems to require breaking a rule, stop and ask. Record agreed changes 
 - E2E tests use the `window.__METAKIT_TEST__` seam (`pickFolder`, `remember: false`, `profile`) because the headless browser crashes on handles stored in IndexedDB. Locally set `PW_CHROMIUM_PATH` to the installed Chromium.
 
 - Shapes and panel layouts live in the tool library (format 2, ADR 0004). `packages/formula` is the formula subset; phase 5.1 extends it. `packages/shapes` compiles shapes to draw lists; the canvas replays them.
+- Scripts (tool format 4, ADR 0006) are TypeScript run in QuickJS inside `packages/behaviour` (`ScriptEngine`, started by `attachScripts` only when a tool has scripts). They change the model only through commands (`store.transact` groups them into one undo step) and need the `files` and `network` permissions, which each browser grants in IndexedDB. The editor's TypeScript language service runs in a worker that loads only when an editor opens. Set `PW_PORT` to run Playwright on another port when several checkouts share a machine.
 - Build mode edits the tool library through tool commands (`putClass`, `putAttribute`, `renameKey`, ...); the editors never write state directly.
 
 ## Performance budget
