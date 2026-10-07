@@ -261,8 +261,8 @@ export interface ToolLibrary {
   scripts: Record<ScriptId, Script>;
 }
 
-/** The format version this release writes for tool libraries (2: shapes and panels, ADR 0004; 3: rules, constraints and default formulas, ADR 0005; 4: scripts and permissions, ADR 0006). */
-export const TOOL_FORMAT_VERSION = 4;
+/** The format version this release writes for tool libraries (2: shapes and panels, ADR 0004; 3: rules, constraints and default formulas, ADR 0005; 4: scripts and permissions, ADR 0006; 5: simple looks of shapes, ADR 0009). */
+export const TOOL_FORMAT_VERSION = 5;
 
 export function optionValue(option: ChoiceOption): string {
   return typeof option === 'string' ? option : option.value;

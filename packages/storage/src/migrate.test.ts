@@ -152,10 +152,10 @@ describe('tool library formats 2, 3 and 4', () => {
       modelTypes: {},
     };
     const { value, from, to } = migrate('tool-document', v1);
-    expect([from, to]).toEqual([1, 4]);
+    expect([from, to]).toEqual([1, 5]);
     expect(value).toEqual({
       ...v1,
-      formatVersion: 4,
+      formatVersion: 5,
       shapes: {},
       panels: {},
       rules: {},
@@ -170,10 +170,10 @@ describe('tool library formats 2, 3 and 4', () => {
       panels: {},
     };
     const { value, from, to } = migrate('tool-document', v2);
-    expect([from, to]).toEqual([2, 4]);
+    expect([from, to]).toEqual([2, 5]);
     expect(value).toEqual({
       ...v2,
-      formatVersion: 4,
+      formatVersion: 5,
       rules: {},
       scripts: {},
     });
@@ -187,18 +187,37 @@ describe('tool library formats 2, 3 and 4', () => {
       rules: { rule_a: { id: 'rule_a' } },
     };
     const { value, from, to } = migrate('tool-document', v3);
-    expect([from, to]).toEqual([3, 4]);
-    expect(value).toEqual({ ...v3, formatVersion: 4, scripts: {} });
+    expect([from, to]).toEqual([3, 5]);
+    expect(value).toEqual({ ...v3, formatVersion: 5, scripts: {} });
   });
 
-  it('leaves a version 4 library alone, and refuses one from a newer release', () => {
+  it('only raises the version of a version 4 library (format 5 adds the optional look)', () => {
     const v4 = {
       formatVersion: 4,
+      shapes: { shp_a: { id: 'shp_a', kind: 'node' } },
       rules: {},
       scripts: { scr_a: { id: 'scr_a', name: 'A', source: '' } },
     };
-    expect(migrate('tool-document', v4).value).toEqual(v4);
-    expect(() => migrate('tool-document', { formatVersion: 5 })).toThrow(
+    const { value, from, to } = migrate('tool-document', v4);
+    expect([from, to]).toEqual([4, 5]);
+    expect(value).toEqual({ ...v4, formatVersion: 5 });
+  });
+
+  it('leaves a version 5 library alone, and refuses one from a newer release', () => {
+    const v5 = {
+      formatVersion: 5,
+      shapes: {
+        shp_a: {
+          id: 'shp_a',
+          kind: 'relation',
+          look: { colour: '#000', width: 1 },
+        },
+      },
+      rules: {},
+      scripts: {},
+    };
+    expect(migrate('tool-document', v5).value).toEqual(v5);
+    expect(() => migrate('tool-document', { formatVersion: 6 })).toThrow(
       /newer version/,
     );
   });
