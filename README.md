@@ -21,8 +21,8 @@ pnpm dev          # serve the web app locally
 | `pnpm lint`      | ESLint, then a Prettier check                                    |
 | `pnpm format`    | Apply Prettier                                                   |
 | `pnpm test`      | Unit tests (Vitest)                                              |
-| `pnpm test:e2e`  | End-to-end tests (Playwright, Chromium); builds the web app      |
-| `pnpm bench`     | Placeholder until phase 2                                        |
+| `pnpm test:e2e`  | End-to-end tests (Playwright, Chromium), web app and spikes      |
+| `pnpm bench`     | Canvas benchmark (headless, indicative; about 1 minute)          |
 | `pnpm build`     | Build the web app and the CLI                                    |
 
 The first `pnpm test:e2e` needs Chromium: `pnpm --filter @metakit-app/web exec playwright install chromium`. If Chromium is already installed, set `PW_CHROMIUM_PATH` to its executable instead.
@@ -35,7 +35,7 @@ Run the CLI after a build: `node apps/cli/dist/bin.js --version`.
 apps/web        the static web app (Vite + Svelte 5)
 apps/cli        headless export and validation (Node.js)
 packages/       core, sync, storage, formula, shapes, canvas, behaviour, assistant, ui
-spikes/         phase-0 experiments; never imported by packages/ or apps/
+spikes/         phase-0 experiments (canvas, sync); never imported by packages/ or apps/
 tools/          sample tool libraries used as test fixtures
 bench/          canvas and merge benchmarks
 docs/           plan, phase briefs, decisions
@@ -52,3 +52,10 @@ Read `CLAUDE.md` for the architecture rules and `docs/implementation-plan.md` fo
 ## Licence
 
 Apache-2.0. See `LICENSE` and `NOTICE`.
+
+## Spikes
+
+Phase-0 experiments, each with a report in `docs/spikes/`:
+
+- `spikes/canvas`: `pnpm --filter @metakit-app/spike-canvas dev`, then open `http://localhost:4174/?bench` in Chrome or Edge and press **Run benchmark**.
+- `spikes/sync`: `pnpm --filter @metakit-app/spike-sync dev` (port 4175). The test protocol for real sync services is in `docs/spikes/sync.md`.

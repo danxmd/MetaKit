@@ -21,8 +21,12 @@ export default tseslint.config(
   },
   {
     files: ['**/*.{js,ts}'],
-    ignores: ['apps/web/**'],
+    ignores: ['apps/web/**', 'spikes/**'],
     languageOptions: { globals: globals.node },
+  },
+  {
+    files: ['spikes/**/*.ts'],
+    languageOptions: { globals: { ...globals.browser, ...globals.node } },
   },
   {
     // Packages must stay free of DOM and UI code (architecture rule 5).

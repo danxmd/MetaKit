@@ -9,12 +9,12 @@
   },
   "scripts": {
     "dev": "pnpm --filter @metakit-app/web dev",
-    "typecheck": "tsc -b && tsc -p apps/cli --noEmit && pnpm --filter @metakit-app/web typecheck",
+    "typecheck": "tsc -b && tsc -p apps/cli --noEmit && tsc -p spikes/canvas --noEmit && tsc -p spikes/sync --noEmit && pnpm --filter @metakit-app/web typecheck",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
     "test": "vitest run",
-    "test:e2e": "pnpm --filter @metakit-app/web test:e2e",
-    "bench": "echo 'No benchmarks yet; they arrive with phase 2.'",
+    "test:e2e": "pnpm -r --if-present test:e2e",
+    "bench": "pnpm --filter @metakit-app/spike-canvas bench",
     "build": "pnpm --filter @metakit-app/web build && pnpm --filter @metakit-app/cli build"
   },
   "devDependencies": {

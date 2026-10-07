@@ -35,3 +35,8 @@ Plan section "Collaboration through a shared folder" fixes the mechanism (see `d
 - [A partially synced file may be read mid-write] → readers ignore files that fail to parse and retry on the next scan; the spike records how often it happens.
 - [Online-only files in OneDrive and Google Drive cannot be read in time] → detect read timeouts, show a warning, record in the results.
 - [Clock skew between machines] → hybrid clock bounds the effect; the protocol notes each machine's clock offset.
+
+## Outcome notes
+
+- D4: the spike writes a new file per sequence number with `createWritable`. A new file is visible before its content, so readers accept a change file only if it ends in a newline and otherwise retry (see `docs/spikes/sync.md`, finding 1).
+- Playwright cannot drive the native folder dialog, so the automated two-window checks use the origin private file system, which has the same handle API. Picking a real folder is step 1 of the protocol for Danial.

@@ -1,0 +1,18 @@
+{
+  "name": "@metakit-app/spike-canvas",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 4174",
+    "build": "vite build",
+    "test:e2e": "playwright test",
+    "bench": "playwright test -c playwright.bench.config.ts"
+  },
+  "dependencies": {
+    "rbush": "^4.0.1"
+  },
+  "devDependencies": {
+    "@types/rbush": "^4.0.0"
+  }
+}
