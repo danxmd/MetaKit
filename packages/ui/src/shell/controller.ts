@@ -301,6 +301,7 @@ export class AppController {
   }
 
   async closeWorkspace(): Promise<void> {
+    this.emitOpen('app.closing', null);
     await this.closeModel();
     await this.closeBuild();
     await this.presence?.stop();
@@ -423,9 +424,20 @@ export class AppController {
         name: input.name,
         ...(folder ? { folder } : {}),
       });
+      // The model does not exist yet, so a rule of the tool hears it on a model held in memory.
+      const probe = createModelStore(model, { tool });
+      const temp = this.makeBehaviour(probe, () => tool);
+      const verdict = temp.bus.emit({
+        event: 'model.creating',
+        target: model.manifest.id,
+        user: this.current.me.instance,
+      });
+      temp.dispose();
+      if (verdict.cancelled) throw new Error(verdict.reason);
       const slug = await ws.createModel(model);
       await this.refresh();
       await this.openModel(slug);
+      this.emitOpen('model.created', slug);
       return slug;
     });
   }
@@ -464,11 +476,10 @@ export class AppController {
             await toolOpened.session.close();
             throw error;
           });
-        const behaviour = createBehaviour({
-          store: opened.store,
-          tool: () => this.current.open?.tool ?? tool,
-          host: this.behaviourHost(() => this.current.open?.behaviour),
-        });
+        const behaviour = this.makeBehaviour(
+          opened.store,
+          () => this.current.open?.tool ?? tool,
+        );
         opened.session.start();
         toolOpened.session.start();
         toolOpened.store.subscribe(() => this.toolChanged());
@@ -494,6 +505,11 @@ export class AppController {
           hash: opened.session.hash,
           seen: opened.session.seen(),
         }));
+        if (!this.startedEmitted) {
+          this.startedEmitted = true;
+          this.emitOpen('app.started', null);
+        }
+        this.emitOpen('model.opened', slug);
         return true;
       })) ?? false
     );
@@ -520,6 +536,30 @@ export class AppController {
     open.store.updateContext({ tool });
     open.behaviour.setTool(tool);
     this.set({ open: { ...open, tool } });
+  }
+
+  private startedEmitted = false;
+
+  /** Builds the formulas, events, rules and scripts of a model store; the hook for later phases. */
+  private makeBehaviour(store: ModelStore, tool: () => ToolLibrary): Behaviour {
+    const behaviour = createBehaviour({
+      store,
+      tool,
+      host: this.behaviourHost(() => this.current.open?.behaviour ?? behaviour),
+    });
+    return behaviour;
+  }
+
+  /** Announces an event of the open model, or of the app when none is open. */
+  private emitOpen(
+    event: Parameters<Behaviour['bus']['emit']>[0]['event'],
+    target: string | null,
+  ) {
+    return this.current.open?.behaviour.bus.emit({
+      event,
+      target,
+      user: this.current.me.instance,
+    });
   }
 
   /** What rules and scripts may ask of the app: messages, questions, other models, commands. */
@@ -746,7 +786,12 @@ export class AppController {
   /** Marks the model as deleted; it stays in the workspace for 30 days and can be restored. */
   trashModel(slug: string): Promise<void | undefined> {
     return this.attempt(async () => {
-      if (this.current.open?.slug === slug) await this.closeModel();
+      if (this.current.open?.slug === slug) {
+        const verdict = this.emitOpen('model.deleting', slug);
+        if (verdict?.cancelled) throw new Error(verdict.reason);
+        this.emitOpen('model.deleted', slug);
+        await this.closeModel();
+      }
       await this.need().trashModel(slug);
       await this.refresh();
     });
