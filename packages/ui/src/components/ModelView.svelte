@@ -600,6 +600,13 @@
   const align = (mode: Parameters<Editor['align']>[0]) => editor.align(mode);
 </script>
 
+<svelte:window
+  oncontextmenu={(event) => {
+    if (host?.contains(event.target as Node)) openContextMenu(event);
+  }}
+  onclick={() => (contextMenu = null)}
+/>
+
 <div class="workbench" data-testid="model-view">
   <header class="bar">
     <button onclick={onBack} data-testid="back-to-explorer">← Models</button>
@@ -834,8 +841,6 @@
     bind:this={host}
     ondragover={(e) => e.preventDefault()}
     ondrop={dropOnCanvas}
-    oncontextmenu={openContextMenu}
-    onclick={() => (contextMenu = null)}
     role="application"
     aria-label="Model canvas"
     data-testid="canvas-host"

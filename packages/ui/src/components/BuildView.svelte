@@ -32,7 +32,13 @@
   }: { app: AppState; controller: BuildPort; onBack: () => void } = $props();
 
   type Section =
-    'classes' | 'relations' | 'modelTypes' | 'shapes' | 'rules' | 'settings';
+    | 'classes'
+    | 'relations'
+    | 'modelTypes'
+    | 'shapes'
+    | 'rules'
+    | 'scripts'
+    | 'settings';
   const SECTIONS: [Section, string][] = [
     ['classes', 'Classes'],
     ['relations', 'Relation classes'],
