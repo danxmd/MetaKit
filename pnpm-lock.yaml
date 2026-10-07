@@ -134,6 +134,10 @@ importers:
         version: 4.10.2
 
   packages/sync:
+    dependencies:
+      '@metakit-app/core':
+        specifier: workspace:*
+        version: link:../core
     devDependencies:
       fast-check:
         specifier: ^4.0.0
