@@ -26,7 +26,7 @@ The plan shows change lines addressed by element and field (`"el":"el_a1","f":"a
 
 **Files.** `_state/<instanceId>/<sequence>.jsonl` with a six-digit sequence, written once with `writeNew`, flushed at most every two seconds; a drag or resize is written on release. A file counts only when it ends with a newline; otherwise the reader tries again later.
 
-**Snapshot.** `_state/<instanceId>/snapshot.json`, format version 2: `{formatVersion, kind, instance, savedAt, seen, entities, registers}` where `seen` maps every instance to the highest change-file sequence folded in (including its own). Version 1 held a plain document (phase 1); it is read by turning the document into registers stamped with its `savedAt` and the writer's instance (migration `snapshot` 1 to 2, with a test).
+**Snapshot.** `_state/<instanceId>/snapshot.json`, format version 2: `{formatVersion, kind, instance, savedAt, seen, entities, registers}` where `seen` maps every instance to the highest change-file sequence folded in (including its own); `hash` is the hash of the merged state, used to detect divergence. The file holds one entity per line with the header first, so a loader can read the header alone and skip a snapshot that another one covers, and stamps are kept once in a table and referenced by number to keep it small. Version 1 held a plain document (phase 1); it is read by turning the document into registers stamped with its `savedAt` and the writer's instance (migration `snapshot` 1 to 2, with a test).
 
 **Loading.** Read every instance's snapshot and every change file whose sequence is above the highest `seen` for that instance in a readable snapshot, merge them all by the same rule. Merging is commutative, associative and idempotent, so any mix of files gives the same state.
 
@@ -37,7 +37,7 @@ The plan shows change lines addressed by element and field (`"el":"el_a1","f":"a
 ## Consequences
 
 - One engine for models and tool libraries; the sync layer needs no knowledge of classes or shapes.
-- A snapshot costs about 100 bytes per register; a model of 5,000 elements has roughly 60,000 registers. The year-of-edits test measures opening it.
+- The stamp table and one-entity-per-line layout keep a snapshot of a 5,000-element model small; the year-of-edits test (five people) measures opening it within the budget.
 - Two people adding an attribute to the same class at the same time replace each other's array (arrays are one register). This is the same limit as tables and is recorded as a risk for Build mode.
 - Divergence can be detected by comparing a hash of the state for equal sets of read files.
 
