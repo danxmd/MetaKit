@@ -300,7 +300,6 @@ describe('preview tiles', () => {
       'Low',
       'Medium',
       'High',
-      'Anything else',
     ]);
   });
 

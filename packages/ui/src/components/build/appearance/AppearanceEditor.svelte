@@ -267,44 +267,47 @@
         <section class="group" aria-labelledby="g-size">
           <h3 id="g-size">Size</h3>
           <div class="field">
-            <label class="name" for="look-width">Width</label>
-            <input
-              id="look-width"
-              type="number"
-              class="num"
-              min="20"
-              value={look.size.width}
-              data-testid="look-width"
-              onchange={(e) =>
-                setNumber(
-                  e.currentTarget.value,
-                  (w) => ({
-                    ...look,
-                    size: { ...look.size, width: clampSize(w) },
-                  }),
-                  20,
-                  1200,
-                )}
-            />
-            <label class="name" for="look-height">Height</label>
-            <input
-              id="look-height"
-              type="number"
-              class="num"
-              min="20"
-              value={look.size.height}
-              data-testid="look-height"
-              onchange={(e) =>
-                setNumber(
-                  e.currentTarget.value,
-                  (h) => ({
-                    ...look,
-                    size: { ...look.size, height: clampSize(h) },
-                  }),
-                  20,
-                  1200,
-                )}
-            />
+            <span class="pair"
+              ><label class="name" for="look-width">Width</label>
+              <input
+                id="look-width"
+                type="number"
+                class="num"
+                min="20"
+                value={look.size.width}
+                data-testid="look-width"
+                onchange={(e) =>
+                  setNumber(
+                    e.currentTarget.value,
+                    (w) => ({
+                      ...look,
+                      size: { ...look.size, width: clampSize(w) },
+                    }),
+                    20,
+                    1200,
+                  )}
+              />
+            </span><span class="pair"
+              ><label class="name" for="look-height">Height</label>
+              <input
+                id="look-height"
+                type="number"
+                class="num"
+                min="20"
+                value={look.size.height}
+                data-testid="look-height"
+                onchange={(e) =>
+                  setNumber(
+                    e.currentTarget.value,
+                    (h) => ({
+                      ...look,
+                      size: { ...look.size, height: clampSize(h) },
+                    }),
+                    20,
+                    1200,
+                  )}
+              />
+            </span>
           </div>
           <label class="check">
             <input
@@ -387,6 +390,11 @@
   .name {
     min-width: 5.5rem;
     font-weight: 600;
+  }
+  .pair {
+    display: inline-flex;
+    gap: var(--gap-2);
+    align-items: center;
   }
   .num {
     width: 5rem;

@@ -519,7 +519,8 @@ export function previewGroups(
         values: { [d.attribute]: asValue(attr, v) },
       })),
     ];
-    if (options.length === 0 || attr?.type !== 'boolean')
+    // A list of options covers every value; free values can always be something else.
+    if (options.length === 0)
       tiles.push({
         attribute: d.attribute,
         label: 'Anything else',

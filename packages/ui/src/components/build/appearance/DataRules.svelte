@@ -100,7 +100,7 @@
       onChange({ ...look, title: { ...look.title, colour } })}
   />
 
-  <div class="badge" data-testid="rule-badge">
+  <div class="mark" data-testid="rule-badge">
     <label class="check">
       <input
         type="checkbox"
@@ -180,7 +180,7 @@
     display: grid;
     gap: var(--gap-4);
   }
-  .badge {
+  .mark {
     display: grid;
     gap: var(--gap-2);
     border-top: 1px solid var(--line);
