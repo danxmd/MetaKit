@@ -6,6 +6,7 @@
     type ReferenceServices,
   } from '@metakit-app/ui';
   import type { ElementId } from '@metakit-app/core';
+  import BuildView from '@metakit-app/ui/components/BuildView.svelte';
   import Explorer from '@metakit-app/ui/components/Explorer.svelte';
   import ModelView from '@metakit-app/ui/components/ModelView.svelte';
   import NewModelDialog from '@metakit-app/ui/components/NewModelDialog.svelte';
@@ -155,6 +156,10 @@
     {onCreate}
     onCancelCreate={() => (pendingCreate = null)}
   />
+{:else if app.phase === 'build' && app.build}
+  {#key app.build.slug}
+    <BuildView {app} {controller} onBack={() => undefined} />
+  {/key}
 {:else if app.phase === 'workspace' || !app.open}
   <Explorer
     workspaceName={app.workspaceName}
@@ -167,6 +172,8 @@
     error={app.error}
     onNew={() => (showNew = true)}
     onAddTool={(text) => controller.addToolLibrary(text)}
+    onNewTool={(name) => controller.createToolLibrary(name)}
+    onEditTool={(slug) => controller.openBuild(slug)}
     onOpen={(slug) => controller.openModel(slug)}
     onRename={(slug, name) => controller.renameModel(slug, name)}
     onMove={(slug, folder) => controller.moveModel(slug, folder)}

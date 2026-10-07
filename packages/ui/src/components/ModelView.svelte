@@ -20,7 +20,14 @@
     type ValidationIssue,
     type ViewId,
   } from '@metakit-app/core';
-  import { buildPanel, editCommands, type Field } from '../panel';
+  import {
+    buildLayoutPanelFor,
+    buildPanel,
+    editCommands,
+    unknownAttributes,
+    type Field,
+    type UnknownAttribute,
+  } from '../panel';
   import type { AppState, ControllerPort } from '../shell/controller';
   import { findInModel, type FindHit } from '../shell/find';
   import { labelOf, paletteFor } from '../shell/palette';
@@ -116,6 +123,36 @@
       .map((id) => ({ id }));
   });
   const sections = $derived(buildPanel(tool, model, targets, issues));
+  // The tool's panel layout for the selection, when it has one; conditions follow the values.
+  const layoutPanel = $derived(
+    buildLayoutPanelFor(
+      tool,
+      model,
+      targets,
+      issues,
+      tool.manifest.languages[0] ?? 'en',
+    ),
+  );
+  /** Stored values that the class no longer defines, for a single selected object. */
+  const unknown = $derived.by((): UnknownAttribute[] => {
+    if (targets.length !== 1) return [];
+    const id = targets[0]!.id;
+    const element = model.elements[id as ElementId];
+    if (element) return unknownAttributes(tool, element.class, element.attrs);
+    const connector = model.connectors[id as ConnectorId];
+    return connector
+      ? unknownAttributes(tool, connector.relation, connector.attrs)
+      : [];
+  });
+  function removeUnknown(entry: UnknownAttribute) {
+    const target = targets[0]?.id as ElementId | ConnectorId | undefined;
+    if (target)
+      store.execute({
+        type: 'removeAttributeValue',
+        target,
+        attr: entry.id,
+      });
+  }
   const heading = $derived.by(() => {
     if (targets.length !== 1) return `${targets.length} objects`;
     const id = targets[0]!.id;
@@ -666,6 +703,9 @@
       {heading}
       {references}
       onEdit={edit}
+      {layoutPanel}
+      {unknown}
+      onRemoveUnknown={removeUnknown}
     />
   </div>
 </div>

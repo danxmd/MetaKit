@@ -18,6 +18,8 @@
     error,
     onNew,
     onAddTool,
+    onNewTool,
+    onEditTool,
     onOpen,
     onRename,
     onMove,
@@ -39,6 +41,9 @@
     onNew: () => void;
     /** Called with the text of a tool library file the user chose. */
     onAddTool: (text: string) => void;
+    /** Makes an empty tool library with this name and opens it in Build mode. */
+    onNewTool: (name: string) => Promise<string | undefined>;
+    onEditTool: (slug: string) => void;
     onOpen: (slug: string) => void;
     onRename: (slug: string, name: string) => void;
     onMove: (slug: string, folder: string) => void;
@@ -50,6 +55,18 @@
   } = $props();
 
   let fileInput: HTMLInputElement | undefined = $state();
+  let toolName = $state('');
+  let naming = $state(false);
+
+  async function createTool(event: Event) {
+    event.preventDefault();
+    const slug = await onNewTool(toolName);
+    if (slug) {
+      toolName = '';
+      naming = false;
+      onEditTool(slug);
+    }
+  }
 
   async function chosen(event: Event) {
     const input = event.currentTarget as HTMLInputElement;
@@ -75,8 +92,11 @@
       <button class="primary" onclick={onNew} data-testid="new-model"
         >New model</button
       >
+      <button onclick={() => (naming = !naming)} data-testid="new-tool"
+        >New tool library</button
+      >
       <button onclick={() => fileInput?.click()} data-testid="add-tool"
-        >Add tool library</button
+        >Add tool library file</button
       >
       <input
         bind:this={fileInput}
@@ -90,14 +110,28 @@
     </div>
   </header>
 
+  {#if naming}
+    <form class="naming" onsubmit={createTool}>
+      <input
+        bind:value={toolName}
+        placeholder="Name of the tool library"
+        aria-label="Name of the new tool library"
+        data-testid="new-tool-name"
+      />
+      <button class="primary" type="submit" data-testid="new-tool-create"
+        >Create and edit</button
+      >
+    </form>
+  {/if}
   {#if error}<p role="alert" class="notice error" data-testid="explorer-error">
       {error}
     </p>{/if}
   {#if error === null && tools.length === 0}
     <p class="notice" data-testid="no-tools">
-      This workspace has no tool library yet. Choose "Add tool library" and pick
-      a tool library file, for example <code>tools/bpmn-lite/tool.json</code> from
-      the MetaKit repository.
+      This workspace has no tool library yet. Choose "New tool library" to build
+      one, or "Add tool library file" and pick a file, for example <code
+        >tools/bpmn-lite/tool.json</code
+      > from the MetaKit repository.
     </p>
   {/if}
   {#each warnings as warning (warning)}<p class="notice">{warning}</p>{/each}
@@ -132,6 +166,11 @@
         {#each tools as tool (tool.slug)}
           <li>
             {tool.name} <span class="muted">{tool.version}</span>
+            <button
+              onclick={() => onEditTool(tool.slug)}
+              aria-label="Edit {tool.name}"
+              data-testid="edit-tool-{tool.slug}">Edit</button
+            >
             <button
               onclick={() => onTrashTool(tool.slug)}
               aria-label="Delete {tool.name}">Delete</button
@@ -228,6 +267,14 @@
   .tools {
     margin-top: 1.5rem;
     color: var(--muted);
+  }
+  .naming {
+    display: flex;
+    gap: 0.5rem;
+    margin: 0.6rem 0;
+  }
+  .naming input {
+    flex: 1;
   }
   .tools ul {
     list-style: none;
