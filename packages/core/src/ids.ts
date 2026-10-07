@@ -10,6 +10,7 @@ export const ID_PREFIXES = {
   connector: 'cn',
   model: 'mdl',
   view: 'vw',
+  rule: 'rule',
 } as const;
 
 export type IdKind = keyof typeof ID_PREFIXES;

@@ -9,10 +9,27 @@ export interface Token {
   end: number;
 }
 
+export type FormulaErrorCode =
+  'syntax' | 'limit' | 'name' | 'type' | 'forbidden' | 'zero';
+
+/** Limits that turn hostile input into an error instead of a hang or a stack overflow. */
+export const LIMITS = {
+  sourceLength: 10_000,
+  /** Nesting of brackets, calls and chains of unary operators. */
+  depth: 100,
+  /** Operators chained in a row, such as `1 + 1 + 1 + ...`. */
+  chain: 1_000,
+  nodes: 2_000,
+  steps: 50_000,
+  stringLength: 100_000,
+  arrayLength: 10_000,
+} as const;
+
 export class FormulaSyntaxError extends Error {
   constructor(
     message: string,
     readonly at: number,
+    readonly code: FormulaErrorCode = 'syntax',
   ) {
     super(message);
     this.name = 'FormulaSyntaxError';
@@ -20,6 +37,10 @@ export class FormulaSyntaxError extends Error {
 }
 
 const OPERATORS = [
+  '===',
+  '!==',
+  '**',
+  '??',
   '==',
   '!=',
   '<=',
@@ -51,6 +72,12 @@ const isNamePart = (c: string) => isNameStart(c) || isDigit(c);
 
 /** Splits formula text into tokens; the positions let callers rewrite names in place. */
 export function tokenize(source: string): Token[] {
+  if (source.length > LIMITS.sourceLength)
+    throw new FormulaSyntaxError(
+      `This formula is longer than ${LIMITS.sourceLength} characters.`,
+      0,
+      'limit',
+    );
   const tokens: Token[] = [];
   let i = 0;
   while (i < source.length) {

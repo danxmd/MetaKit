@@ -20,7 +20,7 @@ export const CURRENT_FORMAT: Readonly<Record<FileKind, number>> = {
   snapshot: 2,
   trash: 1,
   mkmodel: 1,
-  'tool-document': 2,
+  'tool-document': 3,
   'model-document': 1,
 };
 
@@ -74,6 +74,12 @@ export const MIGRATIONS: MigrationRegistry = {
         shapes: file.shapes ?? {},
         panels: file.panels ?? {},
       }),
+    },
+    {
+      // Format 3 adds rules (ADR 0005); constraints and default formulas are optional fields.
+      from: 2,
+      to: 3,
+      up: (file) => ({ ...file, rules: file.rules ?? {} }),
     },
   ],
   'model-document': [],

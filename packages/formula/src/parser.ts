@@ -1,4 +1,10 @@
-import { FormulaSyntaxError, tokenize, type Token } from './lexer';
+import {
+  FormulaSyntaxError,
+  LIMITS,
+  tokenize,
+  type FormulaErrorCode,
+  type Token,
+} from './lexer';
 
 export type Expr =
   | { k: 'num'; v: number }
@@ -8,25 +14,37 @@ export type Expr =
   | { k: 'list'; items: Expr[] }
   | { k: 'name'; name: string }
   | { k: 'member'; obj: Expr; key: string }
+  | { k: 'index'; obj: Expr; index: Expr }
   | { k: 'call'; fn: string; args: Expr[] }
-  | { k: 'unary'; op: '!' | '-'; arg: Expr }
+  | { k: 'unary'; op: '!' | '-' | '+'; arg: Expr }
   | { k: 'binary'; op: string; l: Expr; r: Expr }
   | { k: 'cond'; test: Expr; a: Expr; b: Expr };
 
 export type ParseResult =
-  { ok: true; expr: Expr } | { ok: false; error: string; at: number };
+  | { ok: true; expr: Expr }
+  | { ok: false; error: string; at: number; code: FormulaErrorCode };
 
+/** Lowest precedence first. `**` is handled apart because it binds to the right. */
 const BINARY_LEVELS: string[][] = [
+  ['??'],
   ['||'],
   ['&&'],
-  ['==', '!='],
+  ['==', '!=', '===', '!=='],
   ['<', '<=', '>', '>='],
   ['+', '-'],
   ['*', '/', '%'],
 ];
 
+export const FORBIDDEN_KEYS: ReadonlySet<string> = new Set([
+  '__proto__',
+  'constructor',
+  'prototype',
+]);
+
 class Parser {
   private pos = 0;
+  private depth = 0;
+  private nodes = 0;
   constructor(private readonly tokens: Token[]) {}
 
   private get tok(): Token {
@@ -37,9 +55,17 @@ class Parser {
     return this.tok.kind === 'op' && this.tok.text === text;
   }
 
+  private fail(
+    message: string,
+    at: number,
+    code: FormulaErrorCode = 'syntax',
+  ): never {
+    throw new FormulaSyntaxError(message, at, code);
+  }
+
   private expect(text: string): void {
     if (!this.isOp(text))
-      throw new FormulaSyntaxError(
+      this.fail(
         `Expected "${text}" but found ${this.describe()}.`,
         this.tok.start,
       );
@@ -50,90 +76,175 @@ class Parser {
     return this.tok.kind === 'end' ? 'the end' : `"${this.tok.text}"`;
   }
 
+  private node<T extends Expr>(e: T): T {
+    if (++this.nodes > LIMITS.nodes)
+      this.fail(
+        `This formula has more than ${LIMITS.nodes} parts.`,
+        this.tok.start,
+        'limit',
+      );
+    return e;
+  }
+
+  private nested<T>(run: () => T): T {
+    if (++this.depth > LIMITS.depth)
+      this.fail(
+        `This formula is nested more than ${LIMITS.depth} levels deep.`,
+        this.tok.start,
+        'limit',
+      );
+    try {
+      return run();
+    } finally {
+      this.depth--;
+    }
+  }
+
   parse(): Expr {
     const expr = this.conditional();
     if (this.tok.kind !== 'end')
-      throw new FormulaSyntaxError(
-        `Unexpected ${this.describe()}.`,
-        this.tok.start,
-      );
+      this.fail(`Unexpected ${this.describe()}.`, this.tok.start);
     return expr;
   }
 
   private conditional(): Expr {
-    const test = this.binary(0);
-    if (!this.isOp('?')) return test;
-    this.pos++;
-    const a = this.conditional();
-    this.expect(':');
-    const b = this.conditional();
-    return { k: 'cond', test, a, b };
+    return this.nested(() => {
+      const test = this.binary(0);
+      if (!this.isOp('?')) return test;
+      this.pos++;
+      const a = this.conditional();
+      this.expect(':');
+      const b = this.conditional();
+      return this.node({ k: 'cond', test, a, b });
+    });
   }
 
   private binary(level: number): Expr {
-    if (level >= BINARY_LEVELS.length) return this.unary();
+    if (level >= BINARY_LEVELS.length) return this.power();
     let left = this.binary(level + 1);
+    let chain = 0;
     while (
       this.tok.kind === 'op' &&
       BINARY_LEVELS[level]!.includes(this.tok.text)
     ) {
+      if (++chain > LIMITS.chain)
+        this.fail(
+          `More than ${LIMITS.chain} operators in a row.`,
+          this.tok.start,
+          'limit',
+        );
       const op = this.tok.text;
       this.pos++;
-      left = { k: 'binary', op, l: left, r: this.binary(level + 1) };
+      left = this.node({ k: 'binary', op, l: left, r: this.binary(level + 1) });
     }
     return left;
   }
 
+  /** `a ** b ** c` is `a ** (b ** c)`; a minus in front of the base binds first, as in Excel. */
+  private power(): Expr {
+    const base = this.unary();
+    if (!this.isOp('**')) return base;
+    this.pos++;
+    return this.node({
+      k: 'binary',
+      op: '**',
+      l: base,
+      r: this.nested(() => this.power()),
+    });
+  }
+
   private unary(): Expr {
-    if (this.isOp('!') || this.isOp('-')) {
-      const op = this.tok.text as '!' | '-';
+    if (this.isOp('!') || this.isOp('-') || this.isOp('+')) {
+      const op = this.tok.text as '!' | '-' | '+';
       this.pos++;
-      return { k: 'unary', op, arg: this.unary() };
+      return this.nested(() =>
+        this.node({ k: 'unary', op, arg: this.unary() }),
+      );
     }
     return this.postfix();
   }
 
   private postfix(): Expr {
     let expr = this.primary();
-    while (this.isOp('.')) {
-      this.pos++;
-      if (this.tok.kind !== 'name')
-        throw new FormulaSyntaxError(
-          `Expected a name after "." but found ${this.describe()}.`,
-          this.tok.start,
-        );
-      expr = { k: 'member', obj: expr, key: this.tok.text };
-      this.pos++;
+    for (;;) {
+      if (this.isOp('.')) {
+        this.pos++;
+        if (this.tok.kind !== 'name')
+          this.fail(
+            `Expected a name after "." but found ${this.describe()}.`,
+            this.tok.start,
+          );
+        const key = this.tok.text;
+        if (FORBIDDEN_KEYS.has(key))
+          this.fail(
+            `"${key}" cannot be used in a formula.`,
+            this.tok.start,
+            'forbidden',
+          );
+        const at = this.tok.start;
+        this.pos++;
+        if (this.isOp('('))
+          this.fail(
+            `Methods cannot be called here; use a function such as upper(text) instead of text.${key}().`,
+            at,
+            'forbidden',
+          );
+        expr = this.node({ k: 'member', obj: expr, key });
+      } else if (this.isOp('[')) {
+        this.pos++;
+        const index = this.conditional();
+        this.expect(']');
+        expr = this.node({ k: 'index', obj: expr, index });
+      } else return expr;
     }
-    return expr;
+  }
+
+  private args(close: string): Expr[] {
+    const out: Expr[] = [];
+    if (!this.isOp(close)) {
+      do {
+        if (out.length >= LIMITS.arrayLength)
+          this.fail(
+            `More than ${LIMITS.arrayLength} items in a list.`,
+            this.tok.start,
+            'limit',
+          );
+        out.push(this.conditional());
+      } while (this.isOp(',') && ++this.pos);
+    }
+    this.expect(close);
+    return out;
   }
 
   private primary(): Expr {
     const t = this.tok;
     if (t.kind === 'num') {
       this.pos++;
-      return { k: 'num', v: t.value as number };
+      return this.node({ k: 'num', v: t.value as number });
     }
     if (t.kind === 'str') {
       this.pos++;
-      return { k: 'str', v: t.value as string };
+      if ((t.value as string).length > LIMITS.stringLength)
+        this.fail('This text is too long.', t.start, 'limit');
+      return this.node({ k: 'str', v: t.value as string });
     }
     if (t.kind === 'name') {
       this.pos++;
-      if (t.text === 'true') return { k: 'bool', v: true };
-      if (t.text === 'false') return { k: 'bool', v: false };
-      if (t.text === 'null') return { k: 'null' };
+      if (t.text === 'true') return this.node({ k: 'bool', v: true });
+      if (t.text === 'false') return this.node({ k: 'bool', v: false });
+      if (t.text === 'null') return this.node({ k: 'null' });
+      if (FORBIDDEN_KEYS.has(t.text))
+        this.fail(
+          `"${t.text}" cannot be used in a formula.`,
+          t.start,
+          'forbidden',
+        );
       if (this.isOp('(')) {
         this.pos++;
-        const args: Expr[] = [];
-        if (!this.isOp(')')) {
-          do args.push(this.conditional());
-          while (this.isOp(',') && ++this.pos);
-        }
-        this.expect(')');
-        return { k: 'call', fn: t.text, args };
+        const args = this.args(')');
+        return this.node({ k: 'call', fn: t.text, args });
       }
-      return { k: 'name', name: t.text };
+      return this.node({ k: 'name', name: t.text });
     }
     if (this.isOp('(')) {
       this.pos++;
@@ -143,15 +254,10 @@ class Parser {
     }
     if (this.isOp('[')) {
       this.pos++;
-      const items: Expr[] = [];
-      if (!this.isOp(']')) {
-        do items.push(this.conditional());
-        while (this.isOp(',') && ++this.pos);
-      }
-      this.expect(']');
-      return { k: 'list', items };
+      const items = this.args(']');
+      return this.node({ k: 'list', items });
     }
-    throw new FormulaSyntaxError(`Unexpected ${this.describe()}.`, t.start);
+    this.fail(`Unexpected ${this.describe()}.`, t.start);
   }
 }
 
@@ -161,40 +267,84 @@ export function parse(source: string): ParseResult {
     return { ok: true, expr: new Parser(tokenize(source)).parse() };
   } catch (error) {
     if (error instanceof FormulaSyntaxError)
-      return { ok: false, error: error.message, at: error.at };
+      return {
+        ok: false,
+        error: error.message,
+        at: error.at,
+        code: error.code,
+      };
     throw error;
   }
 }
 
 /** The names a parsed formula reads at its top level (not `.` members or function names). */
 export function namesIn(expr: Expr, out = new Set<string>()): Set<string> {
-  switch (expr.k) {
-    case 'name':
-      out.add(expr.name);
-      break;
-    case 'member':
-      namesIn(expr.obj, out);
-      break;
-    case 'call':
-      for (const a of expr.args) namesIn(a, out);
-      break;
-    case 'list':
-      for (const a of expr.items) namesIn(a, out);
-      break;
-    case 'unary':
-      namesIn(expr.arg, out);
-      break;
-    case 'binary':
-      namesIn(expr.l, out);
-      namesIn(expr.r, out);
-      break;
-    case 'cond':
-      namesIn(expr.test, out);
-      namesIn(expr.a, out);
-      namesIn(expr.b, out);
-      break;
-    default:
-      break;
+  const stack: Expr[] = [expr];
+  while (stack.length > 0) {
+    const e = stack.pop()!;
+    switch (e.k) {
+      case 'name':
+        out.add(e.name);
+        break;
+      case 'member':
+        stack.push(e.obj);
+        break;
+      case 'index':
+        stack.push(e.obj, e.index);
+        break;
+      case 'call':
+        stack.push(...e.args);
+        break;
+      case 'list':
+        stack.push(...e.items);
+        break;
+      case 'unary':
+        stack.push(e.arg);
+        break;
+      case 'binary':
+        stack.push(e.l, e.r);
+        break;
+      case 'cond':
+        stack.push(e.test, e.a, e.b);
+        break;
+      default:
+        break;
+    }
+  }
+  return out;
+}
+
+/** The functions a parsed formula calls, lower-cased. */
+export function callsIn(expr: Expr, out = new Set<string>()): Set<string> {
+  const stack: Expr[] = [expr];
+  while (stack.length > 0) {
+    const e = stack.pop()!;
+    switch (e.k) {
+      case 'call':
+        out.add(e.fn.toLowerCase());
+        stack.push(...e.args);
+        break;
+      case 'member':
+        stack.push(e.obj);
+        break;
+      case 'index':
+        stack.push(e.obj, e.index);
+        break;
+      case 'list':
+        stack.push(...e.items);
+        break;
+      case 'unary':
+        stack.push(e.arg);
+        break;
+      case 'binary':
+        stack.push(e.l, e.r);
+        break;
+      case 'cond':
+        stack.push(e.test, e.a, e.b);
+        break;
+      default:
+        break;
+    }
   }
   return out;
 }

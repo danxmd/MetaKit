@@ -1,6 +1,11 @@
 import { isId, type IdKind } from '../ids';
 import { checkShapeReferences, checkShapeTables } from './shape-guards';
 import {
+  checkConstraints,
+  checkRuleReferences,
+  checkRules,
+} from './rule-guards';
+import {
   ATTRIBUTE_TYPES,
   CLASS_KINDS,
   type AttributeDef,
@@ -179,6 +184,7 @@ function kindPrefix(kind: IdKind): string {
     connector: 'cn',
     model: 'mdl',
     view: 'vw',
+    rule: 'rule',
   }[kind];
 }
 
@@ -190,6 +196,7 @@ const BASE_ATTRIBUTE_KEYS = [
   'help',
   'required',
   'group',
+  'defaultFormula',
 ];
 const TYPE_KEYS: Record<string, string[]> = {
   text: ['multiline', 'maxLength', 'pattern', 'default'],
@@ -269,6 +276,8 @@ function checkAttribute(
     c.boolean(a.required, `${path}.required`, 'required');
   if (a.group !== undefined)
     c.string(a.group, `${path}.group`, 'The group name');
+  if (a.defaultFormula !== undefined)
+    c.string(a.defaultFormula, `${path}.defaultFormula`, 'The default formula');
   if (
     typeof typeName !== 'string' ||
     !(ATTRIBUTE_TYPES as readonly string[]).includes(typeName)
@@ -547,6 +556,7 @@ export function validateToolLibrary(value: unknown): Issue[] {
       'modelTypes',
       'shapes',
       'panels',
+      'rules',
     ],
     'The tool library',
   );
@@ -728,6 +738,7 @@ export function validateToolLibrary(value: unknown): Issue[] {
         'extends',
         'abstract',
         'attributes',
+        'constraints',
         'shape',
         'panel',
         'help',
@@ -789,6 +800,7 @@ export function validateToolLibrary(value: unknown): Issue[] {
         required: false,
       });
     checkAttributes(c, d.attributes, `${path}.attributes`, languages);
+    checkConstraints(c, d.constraints, `${path}.constraints`);
   }
 
   // relations
@@ -807,6 +819,7 @@ export function validateToolLibrary(value: unknown): Issue[] {
         'from',
         'to',
         'attributes',
+        'constraints',
         'shape',
         'help',
       ],
@@ -899,6 +912,7 @@ export function validateToolLibrary(value: unknown): Issue[] {
         required: false,
       });
     checkAttributes(c, d.attributes, `${path}.attributes`, languages);
+    checkConstraints(c, d.constraints, `${path}.constraints`);
   }
 
   // model types
@@ -918,6 +932,7 @@ export function validateToolLibrary(value: unknown): Issue[] {
         'cardinalities',
         'containers',
         'attributes',
+        'constraints',
         'background',
         'help',
       ],
@@ -1105,6 +1120,7 @@ export function validateToolLibrary(value: unknown): Issue[] {
       }
     }
     checkAttributes(c, d.attributes, `${path}.attributes`, languages);
+    checkConstraints(c, d.constraints, `${path}.constraints`);
     if (d.background !== undefined)
       c.id('shape', d.background, `${path}.background`, 'The background shape');
     if (d.help !== undefined)
@@ -1181,14 +1197,18 @@ export function validateToolLibrary(value: unknown): Issue[] {
     }
   }
 
-  for (const key of ['shapes', 'panels'])
+  for (const key of ['shapes', 'panels', 'rules'])
     if (root[key] === undefined)
       c.add(
         key,
         `The ${key} are missing. Use an empty object if there are none (format 2).`,
       );
   checkShapeTables(c, root);
-  if (c.issues.length === 0) checkShapeReferences(c, value as ToolLibrary);
+  checkRules(c, root.rules);
+  if (c.issues.length === 0) {
+    checkShapeReferences(c, value as ToolLibrary);
+    checkRuleReferences(c, value as ToolLibrary);
+  }
 
   return c.issues;
 }

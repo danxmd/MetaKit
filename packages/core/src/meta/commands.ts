@@ -6,7 +6,7 @@ import {
   type AttributeId,
   type ShapeId,
 } from '../ids';
-import { formatIssues, validateAttribute } from './guards';
+import { formatIssues, validateAttribute, validateToolLibrary } from './guards';
 import {
   keyProblem,
   ownerDef,
@@ -16,6 +16,7 @@ import {
   type KeyOwner,
   type KeyScope,
 } from './keys';
+import type { Constraint, Rule, RuleId } from './rule-types';
 import type { PanelLayout, ShapeDef } from './shape-types';
 import {
   DocumentStore,
@@ -62,6 +63,15 @@ export type ToolCommand =
     }
   | { type: 'removeAttribute'; owner: KeyOwner; id: AttributeId }
   | { type: 'moveAttribute'; owner: KeyOwner; id: AttributeId; to: number }
+  | { type: 'putRule'; rule: Rule }
+  | { type: 'removeRule'; id: RuleId }
+  | {
+      type: 'putConstraint';
+      owner: KeyOwner;
+      constraint: Constraint;
+      index?: number;
+    }
+  | { type: 'removeConstraint'; owner: KeyOwner; id: string }
   | { type: 'putShape'; def: ShapeDef }
   | { type: 'removeShape'; id: ShapeId }
   | { type: 'putPanel'; layout: PanelLayout }
@@ -319,6 +329,64 @@ function applyToolCommand(tx: Tx<ToolLibrary>, command: ToolCommand): unknown {
         [attributeTable(command.owner), command.owner.id, 'attributes'],
         next,
       );
+      return undefined;
+    }
+    case 'putRule': {
+      const rule = command.rule;
+      if (rule === null || typeof rule !== 'object' || !isId('rule', rule.id))
+        throw new CommandError(
+          `The rule needs an id of the form rule_something (it is ${JSON.stringify((rule as { id?: unknown } | null)?.id)}).`,
+        );
+      // Checked here so that a rule the engine could not run never reaches the tool library.
+      const probe = { ...tool, rules: { ...tool.rules, [rule.id]: rule } };
+      const issues = validateToolLibrary(probe).filter((i) =>
+        i.path.startsWith(`rules.${rule.id}`),
+      );
+      if (issues.length > 0)
+        throw new CommandError(
+          `The rule is not valid.\n${formatIssues(issues)}`,
+        );
+      tx.set(['rules', rule.id], rule);
+      return rule.id;
+    }
+    case 'removeRule': {
+      if (!tool.rules?.[command.id])
+        throw new CommandError(`The rule ${command.id} does not exist.`);
+      tx.remove(['rules', command.id]);
+      return undefined;
+    }
+    case 'putConstraint': {
+      const def = ownerDef(tool, command.owner) as
+        { constraints?: Constraint[] } | undefined;
+      if (!def)
+        throw new CommandError(
+          'That class, relation class or model type does not exist.',
+        );
+      const list = [...(def.constraints ?? [])];
+      const at = list.findIndex((k) => k.id === command.constraint.id);
+      if (at >= 0) list[at] = command.constraint;
+      else
+        list.splice(
+          Math.min(Math.max(command.index ?? list.length, 0), list.length),
+          0,
+          command.constraint,
+        );
+      tx.set(
+        [attributeTable(command.owner), command.owner.id, 'constraints'],
+        list,
+      );
+      return command.constraint.id;
+    }
+    case 'removeConstraint': {
+      const def = ownerDef(tool, command.owner) as
+        { constraints?: Constraint[] } | undefined;
+      if (!def?.constraints?.some((k) => k.id === command.id))
+        throw new CommandError('That constraint does not exist.');
+      const rest = def.constraints.filter((k) => k.id !== command.id);
+      const table = attributeTable(command.owner);
+      if (rest.length > 0)
+        tx.set([table, command.owner.id, 'constraints'], rest);
+      else tx.remove([table, command.owner.id, 'constraints']);
       return undefined;
     }
     case 'putShape':

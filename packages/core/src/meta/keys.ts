@@ -152,7 +152,13 @@ function rewriteFormulaText(text: string, w: Walk): string {
 function rewriteJson(value: Json, key: string | null, w: Walk): Json {
   if (typeof value === 'string') {
     // `over` (repeat) and `when` (variant) hold formula text with or without a leading `=`.
-    if (key === 'over' || key === 'when' || isFormula(value))
+    if (
+      key === 'over' ||
+      key === 'when' ||
+      key === 'formula' ||
+      key === 'if' ||
+      isFormula(value)
+    )
       return rewriteFormulaText(value, w);
     return value;
   }
@@ -213,11 +219,17 @@ function attributesWithFormulas(
 ): AttributeDef[] {
   let changed = false;
   const out = attrs.map((a) => {
-    if (a.type !== 'formula') return a;
-    const next = rewriteFormulaText(a.formula, w);
-    if (next === a.formula) return a;
-    changed = true;
-    return { ...a, formula: next };
+    let next: AttributeDef = a;
+    if (a.type === 'formula') {
+      const text = rewriteFormulaText(a.formula, w);
+      if (text !== a.formula) next = { ...a, formula: text };
+    }
+    if (a.defaultFormula !== undefined) {
+      const text = rewriteFormulaText(a.defaultFormula, w);
+      if (text !== a.defaultFormula) next = { ...next, defaultFormula: text };
+    }
+    if (next !== a) changed = true;
+    return next;
   });
   return changed ? out : attrs;
 }
@@ -302,6 +314,41 @@ export function planKeyRename(
       });
   }
 
+  // Constraints of the owners, and rules about their classes.
+  for (const o of owners) {
+    const def = ownerDef(tool, o)!;
+    const constraints = (def as { constraints?: unknown }).constraints;
+    if (!constraints) continue;
+    const probe: Walk = { ...w, hits: 0 };
+    const next = rewriteJson(constraints as Json, null, probe);
+    if (probe.hits > 0) {
+      plan.changes.push({
+        path: [tableOf(o), o.id, 'constraints'],
+        value: next,
+      });
+      plan.usages.push(`a constraint of "${def.key}"`);
+    }
+  }
+  const classOwners = new Set(
+    owners.filter((o) => o.kind === 'class').map((o) => o.id as string),
+  );
+  for (const rule of Object.values(tool.rules ?? {})) {
+    if (!rule.when.class || !classOwners.has(rule.when.class)) continue;
+    const probe: Walk = { ...w, hits: 0 };
+    let next = rewriteJson(
+      rule as unknown as Json,
+      null,
+      probe,
+    ) as unknown as Record<string, Json>;
+    const renamed = renameRuleKeys(next as unknown as Json, attr.key, newKey);
+    if (probe.hits === 0 && !renamed.changed) continue;
+    next = renamed.value as unknown as Record<string, Json>;
+    for (const [k, v] of Object.entries(next))
+      if (!deepEqual(v, (rule as unknown as Record<string, Json>)[k] as Json))
+        plan.changes.push({ path: ['rules', rule.id, k], value: v });
+    plan.usages.push(`the rule "${rule.label}"`);
+  }
+
   // Shapes and panel layouts that the owners use.
   const starts: (ShapeId | undefined)[] = [];
   for (const o of owners) {
@@ -374,4 +421,42 @@ export function findKeyUsages(tool: ToolLibrary, scope: KeyScope): string[] {
   // A name that cannot clash gives the full list of places that read the old one.
   const plan = planKeyRename(tool, scope, `${attr.key}__probe`);
   return 'error' in plan ? [] : [...new Set(plan.usages)];
+}
+
+/** Rules name attributes by key outside formulas too: the trigger and the actions that set one. */
+function renameRuleKeys(
+  value: Json,
+  from: string,
+  to: string,
+): { value: Json; changed: boolean } {
+  let changed = false;
+  const walk = (v: Json, key: string | null): Json => {
+    if (Array.isArray(v)) return v.map((x) => walk(x, key));
+    if (v !== null && typeof v === 'object') {
+      const out: Record<string, Json> = {};
+      for (const [k, x] of Object.entries(v)) {
+        if (k === 'attribute' && x === from) {
+          out[k] = to;
+          changed = true;
+        } else if (
+          k === 'attributes' &&
+          x !== null &&
+          typeof x === 'object' &&
+          !Array.isArray(x)
+        ) {
+          // createObject: attribute values by key.
+          const inner: Record<string, Json> = {};
+          for (const [ik, iv] of Object.entries(x)) {
+            if (ik === from) changed = true;
+            inner[ik === from ? to : ik] = iv as Json;
+          }
+          out[k] = inner;
+        } else out[k] = walk(x as Json, k);
+      }
+      return out;
+    }
+    return v;
+  };
+  const out = walk(value, null);
+  return { value: changed ? out : value, changed };
 }

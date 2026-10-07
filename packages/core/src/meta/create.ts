@@ -24,5 +24,6 @@ export function createEmptyTool(
     modelTypes: {},
     shapes: {},
     panels: {},
+    rules: {},
   };
 }

@@ -136,8 +136,8 @@ describe('snapshot format 2', () => {
   });
 });
 
-describe('tool library format 2', () => {
-  it('adds empty shapes and panels to a version 1 library and keeps the rest', () => {
+describe('tool library formats 2 and 3', () => {
+  it('adds empty shapes, panels and rules to a version 1 library and keeps the rest', () => {
     const v1 = {
       formatVersion: 1,
       manifest: {
@@ -152,21 +152,36 @@ describe('tool library format 2', () => {
       modelTypes: {},
     };
     const { value, from, to } = migrate('tool-document', v1);
-    expect([from, to]).toEqual([1, 2]);
-    expect(value).toEqual({ ...v1, formatVersion: 2, shapes: {}, panels: {} });
+    expect([from, to]).toEqual([1, 3]);
+    expect(value).toEqual({
+      ...v1,
+      formatVersion: 3,
+      shapes: {},
+      panels: {},
+      rules: {},
+    });
   });
 
-  it('leaves shapes of a version 2 library alone', () => {
+  it('adds only the rules to a version 2 library and leaves its shapes alone', () => {
     const v2 = {
       formatVersion: 2,
       shapes: { shp_a: { id: 'shp_a' } },
       panels: {},
     };
-    expect(migrate('tool-document', v2).value).toEqual(v2);
+    const { value, from, to } = migrate('tool-document', v2);
+    expect([from, to]).toEqual([2, 3]);
+    expect(value).toEqual({ ...v2, formatVersion: 3, rules: {} });
   });
 
-  it('refuses a library from a newer release', () => {
-    expect(() => migrate('tool-document', { formatVersion: 3 })).toThrow(
+  it('leaves a version 3 library alone, and refuses one from a newer release', () => {
+    const v3 = {
+      formatVersion: 3,
+      shapes: {},
+      panels: {},
+      rules: { rule_a: { id: 'rule_a' } },
+    };
+    expect(migrate('tool-document', v3).value).toEqual(v3);
+    expect(() => migrate('tool-document', { formatVersion: 4 })).toThrow(
       /newer version/,
     );
   });
