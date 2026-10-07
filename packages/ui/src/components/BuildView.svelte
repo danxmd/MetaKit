@@ -16,6 +16,7 @@
   import ClassEditor from './build/ClassEditor.svelte';
   import ModelTypeEditor from './build/ModelTypeEditor.svelte';
   import RelationEditor from './build/RelationEditor.svelte';
+  import ScriptsSection from './build/scripts/ScriptsSection.svelte';
   import RulesSection from './build/rules/RulesSection.svelte';
   import SettingsEditor from './build/SettingsEditor.svelte';
   import ShapesSection from './build/ShapesSection.svelte';
@@ -38,6 +39,7 @@
     ['modelTypes', 'Model types'],
     ['shapes', 'Shapes'],
     ['rules', 'Rules'],
+    ['scripts', 'Scripts'],
     ['settings', 'Settings'],
   ];
 
@@ -337,6 +339,8 @@
         />
       {:else if section === 'rules'}
         <RulesSection {tool} {run} />
+      {:else if section === 'scripts'}
+        <ScriptsSection {tool} {run} />
       {:else if section === 'settings'}
         <SettingsEditor {tool} {run} />
       {:else}

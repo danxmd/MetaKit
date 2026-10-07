@@ -15,9 +15,11 @@ import {
   type ToolCommandOrBatch,
   type ToolLibrary,
   type ToolStore,
+  type ToolPermissions,
 } from '@metakit-app/core';
 import {
   applyToolUpdate,
+  createToolPermissionBacking,
   exportBundle,
   exportCsvZip,
   exportModelFile,
@@ -50,11 +52,16 @@ import {
 } from '@metakit-app/sync';
 import {
   attachRules,
+  attachScripts,
+  createPermissionStore,
   createBehaviour,
   type Behaviour,
   type BehaviourHost,
+  type PermissionStore,
+  type ScriptsHandle,
 } from '@metakit-app/behaviour';
 import { downloadFile, importFiles } from './files';
+import { browserHttp, workspaceFiles } from './script-services';
 import { describeClash, type ClashNotice } from './clash';
 import { normalizeFolder } from './explorer';
 
@@ -137,6 +144,8 @@ export interface AppState {
   notes: string[];
   /** A tool library file waiting for the user to confirm it (see `importToolPackage`). */
   toolImport: ToolUpdatePlan | null;
+  /** A tool asking to use the network or files; answered with `answerPermission`. */
+  permissionAsk: { toolName: string; wanted: ToolPermissions } | null;
 }
 
 export interface ControllerOptions {
@@ -174,6 +183,7 @@ export interface ControllerPort {
   dismissNotice(id: number): void;
   /** The rule engine of an open model's behaviour, for panel buttons. */
   rulesOf(behaviour: Behaviour): RulesHandle | undefined;
+  scriptsOf(behaviour: Behaviour): Promise<ScriptsHandle> | undefined;
 }
 
 /** What the Build mode view asks of the controller. */
@@ -212,6 +222,7 @@ const initial = (): AppState => ({
   warnings: [],
   notes: [],
   toolImport: null,
+  permissionAsk: null,
 });
 
 const message = (error: unknown) =>
@@ -398,7 +409,8 @@ export class AppController {
 
   /** Tells others which elements are selected here. */
   setSelection(ids: Iterable<string>): void {
-    this.presence?.setSelection(ids);
+    this.selected = [...ids];
+    this.presence?.setSelection(this.selected);
   }
 
   /** Tells others that an item is open in an editor here, or null when it is closed. */
@@ -407,7 +419,11 @@ export class AppController {
   }
 
   rulesOf(behaviour: Behaviour): RulesHandle | undefined {
-    return this.rulesByBehaviour.get(behaviour);
+    // The view holds a reactive proxy of the behaviour, which is not the key the map was filled with.
+    return (
+      this.rulesByBehaviour.get(behaviour) ??
+      this.rulesByBehaviour.get(this.current.open?.behaviour as Behaviour)
+    );
   }
 
   /** Other people who have this item open in an editor in the open model. */
@@ -502,10 +518,10 @@ export class AppController {
             await toolOpened.session.close();
             throw error;
           });
-        const behaviour = this.makeBehaviour(
-          opened.store,
-          () => this.current.open?.tool ?? tool,
-        );
+        const currentTool = () => this.current.open?.tool ?? tool;
+        const behaviour = this.makeBehaviour(opened.store, currentTool);
+        // Scripts run only in a model that is open, not in the probe made for `model.creating`.
+        this.startScripts(behaviour, opened.store, currentTool);
         opened.session.start();
         toolOpened.session.start();
         toolOpened.store.subscribe(() => this.toolChanged());
@@ -562,16 +578,95 @@ export class AppController {
     open.store.updateContext({ tool });
     open.behaviour.setTool(tool);
     this.rulesByBehaviour.get(open.behaviour)?.reload();
+    void this.scriptsByBehaviour
+      .get(open.behaviour)
+      ?.then((h) => h.setTool(tool))
+      .catch((error) => this.pushMessage('error', message(error)));
     this.set({ open: { ...open, tool } });
   }
 
   private startedEmitted = false;
+  private selected: string[] = [];
+  private scriptsByBehaviour = new WeakMap<Behaviour, Promise<ScriptsHandle>>();
+  private permissionStore: Promise<PermissionStore> | null = null;
+  private permissionAnswer: ((allowed: boolean) => void) | null = null;
+
+  /** The scripts of an open model; resolves once the tool's scripts are loaded. */
+  scriptsOf(behaviour: Behaviour): Promise<ScriptsHandle> | undefined {
+    return (
+      this.scriptsByBehaviour.get(behaviour) ??
+      this.scriptsByBehaviour.get(this.current.open?.behaviour as Behaviour)
+    );
+  }
+
+  answerPermission(allowed: boolean): void {
+    const answer = this.permissionAnswer;
+    this.permissionAnswer = null;
+    this.set({ permissionAsk: null });
+    answer?.(allowed);
+  }
+
+  private permissions(): Promise<PermissionStore> {
+    this.permissionStore ??= createPermissionStore(
+      // The storage package keeps ids as plain strings; they are tool ids when they come back.
+      createToolPermissionBacking() as unknown as Parameters<
+        typeof createPermissionStore
+      >[0],
+      (toolId, wanted) =>
+        new Promise<boolean>((resolve) => {
+          const tool = this.current.open?.tool;
+          this.permissionAnswer = resolve;
+          this.set({
+            permissionAsk: {
+              toolName: tool?.manifest.name ?? String(toolId),
+              wanted,
+            },
+          });
+        }),
+    );
+    return this.permissionStore;
+  }
+
+  /** Starts the scripts of a model; the engine itself loads only when the tool has a script. */
+  private startScripts(
+    behaviour: Behaviour,
+    store: ModelStore,
+    tool: () => ToolLibrary,
+  ): void {
+    const handle = (async () => {
+      const wanted = tool().manifest.permissions;
+      const permissions =
+        wanted && (wanted.network || wanted.files)
+          ? await this.permissions()
+          : undefined;
+      if (permissions && wanted)
+        await permissions.request(tool().manifest.id, wanted);
+      return attachScripts(behaviour, {
+        store,
+        tool,
+        http: browserHttp(),
+        selection: () => this.selected,
+        ...(this.workspace
+          ? { files: workspaceFiles(this.workspace.adapter) }
+          : {}),
+        ...(permissions ? { permissions } : {}),
+      });
+    })();
+    // A failed start (for example a blocked WebAssembly download) is reported, not thrown at the model.
+    handle.catch((error) => this.pushMessage('error', message(error)));
+    this.scriptsByBehaviour.set(behaviour, handle);
+  }
   /** Rule engines by behaviour: they need the store and the tool, which `Behaviour` does not hold. */
   private rulesByBehaviour = new WeakMap<Behaviour, RulesHandle>();
 
   private disposeBehaviour(behaviour: Behaviour) {
     this.rulesByBehaviour.get(behaviour)?.dispose();
     this.rulesByBehaviour.delete(behaviour);
+    void this.scriptsByBehaviour.get(behaviour)?.then(
+      (h) => h.dispose(),
+      () => undefined,
+    );
+    this.scriptsByBehaviour.delete(behaviour);
     behaviour.dispose();
   }
 
@@ -626,11 +721,21 @@ export class AppController {
       openModel: (name) => void this.openModelByName(name),
       runCommand: (command, target) =>
         behaviour()?.commands.get(command)?.run(target),
-      runScript: () =>
-        this.pushMessage(
-          'info',
-          'Scripts are not available in this version yet.',
-        ),
+      runScript: (id, target) => {
+        const current = behaviour();
+        const handle = current && this.scriptsByBehaviour.get(current);
+        if (!handle) {
+          this.pushMessage('info', 'No scripts are running in this model.');
+          return;
+        }
+        void handle
+          .then((h) => h.runScript(id, target))
+          .catch((error) => this.pushMessage('error', message(error)));
+      },
+      prompt: (text, initial) =>
+        typeof globalThis.prompt === 'function'
+          ? globalThis.prompt(text, initial)
+          : null,
     };
   }
 

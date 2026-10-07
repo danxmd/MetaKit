@@ -10,6 +10,7 @@
   import Explorer from '@metakit-app/ui/components/Explorer.svelte';
   import ModelView from '@metakit-app/ui/components/ModelView.svelte';
   import NewModelDialog from '@metakit-app/ui/components/NewModelDialog.svelte';
+  import PermissionDialog from '@metakit-app/ui/components/build/scripts/PermissionDialog.svelte';
   import ProfileDialog from '@metakit-app/ui/components/ProfileDialog.svelte';
   import StartPage from '@metakit-app/ui/components/StartPage.svelte';
   import { findAcrossModels } from '@metakit-app/ui';
@@ -227,6 +228,15 @@
       onBack={() => controller.closeModel()}
     />
   {/key}
+{/if}
+
+{#if app.permissionAsk}
+  <PermissionDialog
+    toolName={app.permissionAsk.toolName}
+    wanted={app.permissionAsk.wanted}
+    onAllow={() => controller.answerPermission(true)}
+    onDeny={() => controller.answerPermission(false)}
+  />
 {/if}
 
 {#if profile === null && supported}

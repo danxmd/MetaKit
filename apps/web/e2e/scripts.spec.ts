@@ -1,4 +1,7 @@
 import { expect, test } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { newModel, prepare } from './app';
 import { bundleWorker, loadHarness } from './bundle';
 import type { ScriptsHarness } from './scripts-harness';
 
@@ -117,24 +120,66 @@ test.describe('the script editor', () => {
   });
 });
 
-// The section in the app (list, editor, console, permissions) needs the wiring of the lead.
-// enabled by the lead after wiring
-test.describe.skip('the scripts section in Build mode', () => {
-  test('adds a script, edits it, runs its command and shows the console', async ({
+/** The bpmn-lite tool with one script that adds a command, and a request to use the network. */
+function scriptedTool(): string {
+  const tool = JSON.parse(
+    readFileSync(
+      fileURLToPath(
+        new URL('../../../tools/bpmn-lite/tool.json', import.meta.url),
+      ),
+      'utf8',
+    ),
+  ) as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any -- test-only edit of a JSON document
+  tool.manifest.permissions = { network: true };
+  tool.scripts = {
+    scr_hello: {
+      id: 'scr_hello',
+      name: 'Hello',
+      source: `import { ui, model, commands } from "metakit";
+console.log("scripts loaded");
+commands.register({
+  id: "hello",
+  label: "Say hello from a script",
+  menu: "Model",
+  run: () => ui.message(\`There are \${model.objects().length} objects.\`),
+});
+`,
+    },
+  };
+  return JSON.stringify(tool);
+}
+
+test.describe('scripts in the app', () => {
+  test('ask for permission once, then add a command that runs in the sandbox', async ({
     page,
   }) => {
-    await page.goto('/MetaKit/');
-    await page.getByTestId('script-add').click();
-    await expect(page.getByTestId('script-editor')).toBeVisible();
-    await expect(page.getByTestId('script-run')).toBeVisible();
-    await page.getByTestId('script-run').click();
-    await expect(page.getByTestId('console-lines')).toContainText('objects');
-  });
+    await prepare(page, { name: 'Anna', colour: '#e8590c', seed: false });
+    await loadHarness(page, './seed-harness.ts');
+    await page.evaluate(
+      (json) =>
+        (window as unknown as { __seed(t: string): Promise<void> }).__seed(
+          json,
+        ),
+      scriptedTool(),
+    );
+    await page.reload();
+    await newModel(page, 'Scripted');
 
-  test('asks for permission once per tool', async ({ page }) => {
-    await page.goto('/MetaKit/');
     await expect(page.getByTestId('permission-dialog')).toBeVisible();
     await page.getByTestId('permission-allow').click();
     await expect(page.getByTestId('permission-dialog')).toBeHidden();
+
+    await page.getByTestId('commands-menu').locator('summary').click();
+    await page
+      .getByRole('button', { name: 'Say hello from a script' })
+      .click({ timeout: 30_000 });
+    await expect(page.getByTestId('behaviour-message')).toContainText(
+      'There are 0 objects.',
+    );
+
+    await page.getByTestId('console-toggle').click();
+    await expect(page.getByTestId('console-lines')).toContainText(
+      'scripts loaded',
+    );
   });
 });

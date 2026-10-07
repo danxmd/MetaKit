@@ -42,7 +42,12 @@
   import { findInModel, type FindHit } from '../shell/find';
   import { labelOf, paletteFor } from '../shell/palette';
   import type { ReferenceServices } from '../shell/references';
-  import { runActionAttribute } from '@metakit-app/behaviour';
+  import {
+    runActionAttribute,
+    type ConsoleLine,
+    type ScriptsHandle,
+  } from '@metakit-app/behaviour';
+  import ScriptConsole from './build/scripts/ScriptConsole.svelte';
   import ValidationList from './ValidationList.svelte';
   import ExportDialog from './ExportDialog.svelte';
   import AttributePanel from './AttributePanel.svelte';
@@ -291,6 +296,11 @@
     contextMenu = { x: event.clientX - box.left, y: event.clientY - box.top };
   }
 
+  let consoleOpen = $state(false);
+  let scriptLog = $state<ConsoleLine[]>([]);
+  let scripts: ScriptsHandle | null = null;
+  let stopLog: (() => void) | undefined;
+
   let problemsOpen = $state(false);
 
   function showIssue(target: string) {
@@ -363,6 +373,14 @@
   }
 
   onMount(() => {
+    void controller.scriptsOf(behaviour)?.then(
+      (handle) => {
+        scripts = handle;
+        scriptLog = [...handle.log];
+        stopLog = handle.onLog(() => (scriptLog = [...handle.log]));
+      },
+      () => undefined,
+    );
     stopCommands = behaviour.commands.onChange(() => (commandTick += 1));
     scene = new Scene(store.state as Model, tool, { calculator });
     stopStore = scene.attach(store);
@@ -435,6 +453,7 @@
     clearTimeout(validateTimer);
     stopStore();
     stopCommands?.();
+    stopLog?.();
     scene?.destroy();
     editor?.destroy();
     minimap?.destroy();
@@ -605,6 +624,13 @@
           {/each}
         </ul>
       </details>
+    {/if}
+    {#if scriptLog.length > 0 || consoleOpen}
+      <button
+        onclick={() => (consoleOpen = !consoleOpen)}
+        aria-expanded={consoleOpen}
+        data-testid="console-toggle">Script console</button
+      >
     {/if}
     <button onclick={autoLayout} data-testid="auto-layout">Auto-layout</button>
     <button
@@ -916,6 +942,18 @@
       </ul>
     {/if}
   </div>
+
+  {#if consoleOpen}
+    <aside class="problems" data-testid="script-console-panel">
+      <ScriptConsole
+        lines={scriptLog}
+        onClear={() => {
+          scripts?.clearLog();
+          scriptLog = [];
+        }}
+      />
+    </aside>
+  {/if}
 
   {#if problemsOpen}
     <aside class="problems" data-testid="problems-panel">
