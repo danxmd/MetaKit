@@ -82,10 +82,10 @@ describe('Scene', () => {
     const { store, scene, create } = setup();
     const a = create(0, 0, 'A');
     const builds = scene.cache.builds;
-    const list = scene.elements.get(a)!.draw;
+    const list = scene.elements.get(a)!.compiled;
     store.execute({ type: 'move', id: a, x: 40, y: 40 });
     expect(scene.cache.builds).toBe(builds);
-    expect(scene.elements.get(a)!.draw).toBe(list);
+    expect(scene.elements.get(a)!.compiled).toBe(list);
     store.execute({
       type: 'setAttribute',
       target: a,
@@ -146,7 +146,7 @@ describe('Scene', () => {
     const fresh = new Scene(store.state as Model, tool);
     const view = (s: Scene) => ({
       elements: [...s.elements.values()]
-        .map((e) => ({ ...e, draw: e.draw.key }))
+        .map((e) => ({ ...e, compiled: e.compiled.compiled.ops }))
         .sort((a, b) => (a.id < b.id ? -1 : 1)),
       connectors: [...s.connectors.values()].sort((a, b) =>
         a.id < b.id ? -1 : 1,

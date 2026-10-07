@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import type { ToolEntry } from '@metakit-app/storage';
   import type { ModelTypeDef, ModelTypeId } from '@metakit-app/core';
 
@@ -32,10 +33,15 @@
   let problem = $state('');
   let dialog: HTMLDialogElement | undefined = $state();
 
-  $effect(() => {
+  // Set once. An effect that read `initialFolder` and `tools` would run again whenever the
+  // explorer refreshed its lists, and wipe what the user had already typed.
+  onMount(() => {
     folder = initialFolder;
-    if (tools.length === 1 && toolSlug === '') toolSlug = tools[0]!.slug;
     dialog?.showModal();
+  });
+
+  $effect(() => {
+    if (tools.length === 1 && toolSlug === '') toolSlug = tools[0]!.slug;
   });
 
   $effect(() => {

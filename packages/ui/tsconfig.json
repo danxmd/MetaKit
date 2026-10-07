@@ -19,6 +19,21 @@
     },
     {
       "path": "../canvas"
+    },
+    {
+      "path": "../sync"
+    },
+    {
+      "path": "../formula"
+    },
+    {
+      "path": "../shapes"
+    },
+    {
+      "path": "../behaviour"
+    },
+    {
+      "path": "../assistant"
     }
   ]
 }

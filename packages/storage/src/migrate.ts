@@ -1,3 +1,4 @@
+import { snapshotV1ToV2 } from '@metakit-app/sync';
 import { FormatError, NewerFormatError } from './errors';
 
 /** The kinds of versioned file, each with its own format version. */
@@ -9,18 +10,23 @@ export type FileKind =
   | 'trash'
   | 'mkmodel'
   | 'tool-document'
-  | 'model-document';
+  | 'model-document'
+  | 'bundle'
+  | 'tool-package';
 
 /** The format version this release writes for each kind. Raising one needs a migration step below and a test (rule 8). */
 export const CURRENT_FORMAT: Readonly<Record<FileKind, number>> = {
   workspace: 1,
   tool: 1,
   model: 1,
-  snapshot: 1,
+  snapshot: 2,
   trash: 1,
   mkmodel: 1,
-  'tool-document': 1,
+  'tool-document': 4,
   'model-document': 1,
+  // .mkbundle (bundle.json) and .mktool (package.json), phase 6.
+  bundle: 1,
+  'tool-package': 1,
 };
 
 export interface Migration {
@@ -53,11 +59,43 @@ export const MIGRATIONS: MigrationRegistry = {
   ],
   tool: [],
   model: [],
-  snapshot: [],
+  snapshot: [
+    {
+      // Format 1 held a plain document; format 2 holds registers (ADR 0002).
+      from: 1,
+      to: 2,
+      up: (file) => snapshotV1ToV2(file),
+    },
+  ],
   trash: [],
   mkmodel: [],
-  'tool-document': [],
+  'tool-document': [
+    {
+      // Format 2 adds shapes and panel layouts (ADR 0004); older libraries have none.
+      from: 1,
+      to: 2,
+      up: (file) => ({
+        ...file,
+        shapes: file.shapes ?? {},
+        panels: file.panels ?? {},
+      }),
+    },
+    {
+      // Format 3 adds rules (ADR 0005); constraints and default formulas are optional fields.
+      from: 2,
+      to: 3,
+      up: (file) => ({ ...file, rules: file.rules ?? {} }),
+    },
+    {
+      // Format 4 adds scripts (ADR 0006); permissions in the manifest are optional.
+      from: 3,
+      to: 4,
+      up: (file) => ({ ...file, scripts: file.scripts ?? {} }),
+    },
+  ],
   'model-document': [],
+  bundle: [],
+  'tool-package': [],
 };
 
 export interface Migrated {

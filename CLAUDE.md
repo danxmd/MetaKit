@@ -3,7 +3,7 @@
 MetaKit is a browser-only metamodelling and modelling tool, a modern rebuild of ADOxx without simulation, analysis, database or user management. Method engineers build modelling tools in **Build mode**; modellers use them in **Model mode**. Tool libraries and models are plain JSON files in a shared folder synced by OneDrive, SharePoint, Google Drive or Dropbox. Tool libraries can also live in GitHub or GitLab (Git mode).
 
 - Full plan: `docs/implementation-plan.md`. Read only the sections a task needs.
-- Current phase brief: `docs/phase-2.md`.
+- Current phase brief: `docs/phase-10.md` (phases 5 to 9 are in `docs/phase-5.md` to `docs/phase-9.md`; phase 10 waits for Danial's choices).
 - Project owner and reviewer: Danial. He approves every spec and every pull request.
 
 ## Architecture rules (do not break these)
@@ -20,6 +20,20 @@ MetaKit is a browser-only metamodelling and modelling tool, a modern rebuild of 
 10. **Target browsers are Chrome and Edge on desktop** (File System Access API). Firefox and Safari must still load the app and show a clear message.
 
 If a task seems to require breaking a rule, stop and ask. Record agreed changes as a short ADR in `docs/decisions/`.
+
+## Sync and testing notes
+
+- Each browser tab has its own instance id (sessionStorage, ADR 0003); name and colour belong to the browser profile (IndexedDB).
+- Sync lives in `packages/sync`; tests run it over `MemoryFolder` with several sessions. `docs/phase-3-test-protocol.md` is the real-service test Danial runs.
+- E2E tests use the `window.__METAKIT_TEST__` seam (`pickFolder`, `remember: false`, `profile`) because the headless browser crashes on handles stored in IndexedDB. Locally set `PW_CHROMIUM_PATH` to the installed Chromium.
+
+- Shapes and panel layouts live in the tool library (format 2, ADR 0004). `packages/formula` is the formula subset; phase 5.1 extends it. `packages/shapes` compiles shapes to draw lists; the canvas replays them.
+- Computed values are derived and never stored (ADR 0005). `ModelCalculator` (core) tracks dependencies; `packages/behaviour` holds the event bridge, the rule engine and the command registry. Events never fire for merged changes. Rules change the model only through `store.execute`.
+- Exports (SVG, PNG, PDF) replay the same draw lists as the screen; jsPDF and svg2pdf load lazily. Model files, bundles, CSV and tool packages live in `packages/storage`; auto-layout runs ELK in a worker through the `applyLayout` command.
+- Scripts (tool format 4, ADR 0006) are TypeScript run in QuickJS inside `packages/behaviour` (`ScriptEngine`, started by `attachScripts` only when a tool has scripts). They change the model only through commands (`store.transact` groups them into one undo step) and need the `files` and `network` permissions, which each browser grants in IndexedDB. The editor's TypeScript language service runs in a worker that loads only when an editor opens. Set `PW_PORT` to run Playwright on another port when several checkouts share a machine.
+- Git mode (ADR 0007): a Git tool library is a normal workspace tool library plus a `GitLink` in IndexedDB. `GitRemote` (`packages/storage/src/git/remote.ts`) is the only hosting interface; GitHub and GitLab implement it with their REST APIs and tests use `MemoryRemote`. Tokens live only in IndexedDB (`TokenStore`). Pulls merge per file and field and are applied as one batch of tool commands. E2E tests replace the services through `__METAKIT_TEST__.gitRemote`.
+- The assistant (ADR 0008, `packages/assistant`) is off by default, uses the person's own key from IndexedDB, sends tool definitions only, and loads `@anthropic-ai/sdk` lazily. Drafts are validated, then accepted as one undoable batch of tool commands.
+- Build mode edits the tool library through tool commands (`putClass`, `putAttribute`, `renameKey`, ...); the editors never write state directly.
 
 ## Performance budget
 

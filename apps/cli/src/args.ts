@@ -4,7 +4,7 @@ export interface ParsedArgs {
 }
 
 /** Flags that take a value; anything else starting with `--` is a switch. */
-const WITH_VALUE = new Set(['tool', 'workspace', 'out', 'format']);
+const WITH_VALUE = new Set(['tool', 'workspace', 'out', 'format', 'name']);
 
 export class UsageError extends Error {}
 

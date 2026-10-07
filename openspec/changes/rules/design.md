@@ -1,0 +1,9 @@
+# Design
+
+- **Rule.** `{ id: rule_..., label, enabled?, when: { event, class?, attribute?, relation?, command? }, if?: formula text starting with =, then: Action[] }`. `command` is `{ label, place: 'model' | 'toolbar' | 'context' }` and only for `when.event == "command"`.
+- **Actions.** `setAttribute {attribute, value, target?}` (value fixed or formula), `createObject {class, attributes?, near?}`, `createConnector {relation, from, to}` (from and to are formulas giving ids, default `self` and the event target), `delete {target?}`, `message {kind, text}`, `ask {text, then, else}` (confirm) and `choose {text, options, attribute}`, `cancel {reason}`, `openModel {model}`, `runCommand {command}`, `runScript {script}` (stub: shows that scripts are not available).
+- **Scope of `if` and values.** The element the event is about as `self` and its attributes by key, plus `$old` and `$new` for attribute events, `$event` (the event name).
+- **Engine.** `RuleEngine(tool, calculator, bus, host)` registers one bus handler per enabled rule; actions run through `store.execute` so they undo with the user's action; depth limit 8; a rule does not run twice for the same element and event inside one cascade; errors in formulas become a message `host.message('warning', ...)` and the rule is skipped.
+- **Dry run.** `engine.test(rule, selection)` evaluates `if` and describes each action without running it.
+- **Editor.** A Build mode section with a list (label, enabled switch) and a form: When (event dropdown grouped by object, connector, attribute, ...; class and attribute pickers filtered to the event), If (formula field with completion and its error), Then (action rows with their own small forms, reorder, remove), command placement, and a "Try on the selected object" button using the preview.
+- **Buttons.** `action` attributes with `run: { kind: 'rule', ref: <rule id> }` call `engine.runCommand`.

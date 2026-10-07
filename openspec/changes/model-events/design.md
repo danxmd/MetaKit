@@ -1,0 +1,7 @@
+# Design
+
+- **Events** (name, can cancel): `app.started`, `app.closing`; `model.creating` (first), `model.created`, `model.opened`, `model.deleting` (yes), `model.deleted`; `object.creating` (yes), `object.created`, `object.deleting` (yes), `object.deleted`, `object.moved`, `object.resized`, `object.renamed`; `connector.creating` (yes), `connector.created`, `connector.reconnected`; `attribute.changing` (yes), `attribute.changed`; `table.rowAdded`, `table.rowRemoved`; `view.changing` (yes), `view.changed`; `selection.changed`. That is 24 with the three "first one" cancelling events counted once each.
+- **Payload.** `{ event, model, target (element or connector id), class, relation?, attribute?, old?, new?, from?, to?, user }`.
+- **Bus.** `on(pattern, handler, filter?)` where the pattern is a name or a `prefix.*`; filter by `class`, `attribute`, `relation`; `emit(event, payload) → { cancelled: boolean; reason?: string }`; the first handler that cancels stops the rest; a before handler cancels by returning `{ cancel: 'reason' }` or `false`.
+- **Store bridge.** Uses `store.before(type, ...)` and `store.after(type, ...)`; moves, resizes and renames come from `move`, `resize` and `setAttribute` on the label attribute; `object.renamed` fires when the first text attribute changes. Table rows: `setAttribute` on a table attribute with a longer or shorter list.
+- **No refire.** `applyRemote` and undo of merged changes never call these handlers (checked by a test).

@@ -8,5 +8,10 @@
     "rootDir": "src",
     "types": []
   },
-  "include": ["src"]
+  "include": ["src"],
+  "references": [
+    {
+      "path": "../formula"
+    }
+  ]
 }

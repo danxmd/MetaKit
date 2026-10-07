@@ -552,7 +552,9 @@ describe('delete', () => {
     expect(Object.keys(store.state.connectors)).toHaveLength(3);
   });
 
-  it('removes the contents of a container with their connectors', () => {
+  // Changed in 4.4: a deleted container no longer takes its contents with it. They move up to the
+  // container's own container (or the top level) and keep their connectors.
+  it('keeps the contents of a deleted container and moves them up', () => {
     const store = fresh();
     const lane = created(store, {
       type: 'createElement',
@@ -582,9 +584,15 @@ describe('delete', () => {
       to: outside,
     });
     store.execute({ type: 'delete', id: lane });
-    expect(Object.keys(store.state.elements)).toEqual([outside]);
-    expect(store.state.connectors).toEqual({});
+    expect(Object.keys(store.state.elements).sort()).toEqual(
+      [inner, deeper, outside].sort(),
+    );
+    expect('parent' in store.state.elements[inner]!).toBe(false);
+    expect(store.state.elements[deeper]!.parent).toBe(inner);
+    expect(Object.keys(store.state.connectors)).toHaveLength(1);
     expect(store.history().at(-1)).toBe('delete');
+    store.execute({ type: 'delete', id: inner });
+    expect('parent' in store.state.elements[deeper]!).toBe(false);
   });
 
   it('deletes a single connector', () => {

@@ -1,0 +1,8 @@
+# Design
+
+- **Layout.** `PanelLayout { class: ClassId | RelationId, tabs: Tab[], showRelations?: boolean }`, `Tab { label, visible?, items }`, `Item = { attribute, control?, readOnly?, required?, visible?, height? } | { group, items, visible? }`. Labels are text or per language maps. Attributes not mentioned are appended in a final tab "More" so nothing becomes unreachable.
+- **Conditions.** `visible`, `readOnly`, `required` are a boolean or a formula string; evaluated with the formula subset over the element's attribute values by key; failure means the default (visible, editable, optional).
+- **Panel model.** `buildPanel(layout, class, values)` in `packages/ui/src/panel` returns tabs, groups and fields with the evaluated conditions; the Svelte panel renders it. Without a layout the existing generated panel is used.
+- **Containers.** Dropping uses the element's centre; the deepest container whose box contains it and whose class accepts the dropped class becomes the parent (`reparent` command already in the model commands or added). Moving a container moves its descendants in one command batch. A swimlane grows to contain its children (`fitToChildren`) when a child is dropped or resized beyond its edge; it never shrinks below its own minimum size.
+- **Accepting classes.** `ModelTypeDef.containers?: Record<ClassId, ClassId[]>` lists accepted classes per container class; absent means any. (This adds an optional field, readable by format 2.)
+- **Layout editor.** A tree of tabs and groups with attributes, reorder by buttons (move up, down, into group), control override select, and condition fields with the fx switch.

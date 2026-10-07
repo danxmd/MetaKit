@@ -2,16 +2,15 @@ import type { ConnectorId, ElementId } from '@metakit-app/core';
 import type { Point, Rect } from './geometry';
 import { intersects } from './geometry';
 import { HANDLE_NAMES, HANDLE_PX, handlePoint } from './handles';
-import { arrowHead } from './route';
-import type { ConnectorItem, ElementItem, Scene } from './scene';
 import {
-  CONNECTOR_COLOR,
-  FONT_WORLD_PX,
-  SELECT_COLOR,
-  STROKE,
-  TEXT_COLOR,
-  traceShape,
-} from './shapes';
+  ImageCache,
+  paintConnectors,
+  paintOps,
+  traceOutline,
+  type RoutedLook,
+} from './paint';
+import type { ConnectorItem, ElementItem, Scene } from './scene';
+import { SELECT_COLOR, STROKE } from './shapes';
 import { visibleRect, type View } from './view';
 
 /** Text smaller than this on screen is skipped (level of detail). */
@@ -48,6 +47,15 @@ export interface ActiveState {
   target: ElementId | null;
   /** Show resize handles on a single selected element. */
   handles: boolean;
+  /** Elements other people have selected, outlined in their colour with their initials. */
+  remote: readonly RemoteSelection[];
+}
+
+export interface RemoteSelection {
+  colour: string;
+  /** Short text drawn on the outline, for example the person's initials. */
+  label: string;
+  elements: readonly ElementId[];
 }
 
 /** True when the active layer has nothing to show, so that it can be left out of a gesture. */
@@ -59,6 +67,7 @@ export function isActiveEmpty(state: ActiveState): boolean {
     state.routes.size === 0 &&
     state.band === null &&
     state.link === null &&
+    state.remote.length === 0 &&
     state.guides.x.length === 0 &&
     state.guides.y.length === 0
   );
@@ -75,6 +84,7 @@ export function emptyActiveState(): ActiveState {
     link: null,
     target: null,
     handles: true,
+    remote: [],
   };
 }
 
@@ -104,6 +114,8 @@ export class Renderer {
   width = 0;
   height = 0;
   grid: GridSettings = { size: 10, visible: true };
+  /** Images used by shapes; set `onLoaded` to redraw when one arrives. */
+  readonly images = new ImageCache();
   stats: RenderStats = {
     sceneMs: 0,
     activeMs: 0,
@@ -215,7 +227,11 @@ export class Renderer {
     }
     elements.sort((a, b) => a.rank - b.rank);
 
-    this.drawConnectors(ctx, connectors, s);
+    this.drawConnectors(
+      ctx,
+      connectors.map((c) => ({ route: this.routeOf(c), look: c.look })),
+      s,
+    );
     const labels = this.drawElements(ctx, elements, view);
     this.renderedView = { ...view };
     this.sceneCanvas.style.transform = '';
@@ -230,51 +246,17 @@ export class Renderer {
 
   private drawConnectors(
     ctx: CanvasRenderingContext2D,
-    connectors: readonly ConnectorItem[],
+    routed: readonly RoutedLook[],
     s: number,
-    colour: string = CONNECTOR_COLOR,
   ): void {
-    if (connectors.length === 0) return;
-    ctx.beginPath();
-    for (const c of connectors) {
-      const route = this.routeOf(c);
-      ctx.moveTo(route[0]!.x, route[0]!.y);
-      for (let i = 1; i < route.length; i++)
-        ctx.lineTo(route[i]!.x, route[i]!.y);
-    }
-    ctx.lineWidth = Math.max(1.2, 1 / s);
-    ctx.strokeStyle = colour;
-    ctx.stroke();
-    this.drawArrows(
-      ctx,
-      connectors.map((c) => this.routeOf(c)),
-      s,
-      colour,
-    );
+    paintConnectors(ctx, routed, {
+      scale: s,
+      minTextPx: MIN_TEXT_PX,
+      minArrowPx: MIN_ARROW_PX,
+    });
   }
 
-  private drawArrows(
-    ctx: CanvasRenderingContext2D,
-    routes: readonly (readonly Point[])[],
-    s: number,
-    colour: string,
-  ): void {
-    // Arrow heads are fine decoration: skipped when they would be a few pixels across.
-    if (12 * s < MIN_ARROW_PX) return;
-    ctx.beginPath();
-    for (const route of routes) {
-      const head = arrowHead(route, 10);
-      if (!head) continue;
-      ctx.moveTo(head[0].x, head[0].y);
-      ctx.lineTo(head[1].x, head[1].y);
-      ctx.lineTo(head[2].x, head[2].y);
-      ctx.closePath();
-    }
-    ctx.fillStyle = colour;
-    ctx.fill();
-  }
-
-  /** Draws elements bottom to top; returns how many labels were drawn. */
+  /** Draws elements bottom to top; returns how many text lines were drawn. */
   private drawElements(
     ctx: CanvasRenderingContext2D,
     elements: readonly ElementItem[],
@@ -282,18 +264,18 @@ export class Renderer {
   ): number {
     const { s } = view;
     const outline = Math.max(1.5, 1 / s);
-    const showText = FONT_WORLD_PX * s >= MIN_TEXT_PX;
     let labels = 0;
-    ctx.lineWidth = outline;
-    ctx.strokeStyle = STROKE;
+    const options = { scale: s, minTextPx: MIN_TEXT_PX, images: this.images };
 
-    // Tiny elements are batched per fill colour into one path each; everything else uses its
-    // cached outline. Drawing order is kept by flushing the batch before a large element.
+    // Tiny elements are batched per fill colour into one path each; everything else replays its
+    // compiled list. Drawing order is kept by flushing the batch before a large element.
     let batch = new Map<string, ElementItem[]>();
     const flush = () => {
+      ctx.lineWidth = outline;
+      ctx.strokeStyle = STROKE;
       for (const [fill, items] of batch) {
         ctx.beginPath();
-        for (const e of items) traceShape(ctx, e.shape, e.x, e.y, e.w, e.h);
+        for (const e of items) traceOutline(ctx, e.outline, e.x, e.y, e.w, e.h);
         ctx.fillStyle = fill;
         ctx.fill();
         if (s * 50 >= MIN_OUTLINE_PX) ctx.stroke();
@@ -310,27 +292,9 @@ export class Renderer {
       }
       flush();
       this.setElementTransform(ctx, view, e.x, e.y);
-      ctx.fillStyle = e.fill;
-      const path = e.draw.outline();
-      ctx.fill(path);
-      ctx.stroke(path);
+      labels += paintOps(ctx, e.compiled.compiled.ops, options);
     }
     flush();
-
-    if (showText) {
-      this.setTransform(ctx, view);
-      ctx.font = `${FONT_WORLD_PX}px system-ui, sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillStyle = TEXT_COLOR;
-      for (const e of elements) {
-        if (Math.min(e.w, e.h) * s < BATCH_PX) continue;
-        for (const run of e.draw.text) {
-          ctx.fillText(run.text, e.x + run.x, e.y + run.y);
-          labels += 1;
-        }
-      }
-    }
     return labels;
   }
 
@@ -396,26 +360,21 @@ export class Renderer {
     const movedConnectors = new Set<ConnectorId>();
     for (const id of state.previews.keys())
       for (const c of this.scene.connectorsOf(id)) movedConnectors.add(c);
-    const routes: (readonly Point[])[] = [];
+    const routed: RoutedLook[] = [];
     for (const id of movedConnectors) {
       if (state.routes.has(id)) continue;
       const item = this.scene.connectors.get(id);
       if (!item) continue;
-      routes.push(this.routeWithPreviews(item, state));
+      routed.push({
+        route: this.routeWithPreviews(item, state),
+        look: item.look,
+      });
     }
-    for (const [, route] of state.routes) routes.push(route);
-    if (routes.length > 0) {
-      ctx.beginPath();
-      for (const route of routes) {
-        ctx.moveTo(route[0]!.x, route[0]!.y);
-        for (let i = 1; i < route.length; i++)
-          ctx.lineTo(route[i]!.x, route[i]!.y);
-      }
-      ctx.lineWidth = Math.max(1.2, 1 / s);
-      ctx.strokeStyle = CONNECTOR_COLOR;
-      ctx.stroke();
-      this.drawArrows(ctx, routes, s, CONNECTOR_COLOR);
+    for (const [id, route] of state.routes) {
+      const item = this.scene.connectors.get(id);
+      if (item) routed.push({ route, look: item.look });
     }
+    this.drawConnectors(ctx, routed, s);
 
     const previewed: ElementItem[] = [];
     for (const [id, rect] of state.previews) {
@@ -427,16 +386,13 @@ export class Renderer {
         y: rect.minY,
         w: rect.maxX - rect.minX,
         h: rect.maxY - rect.minY,
-        draw:
+        compiled:
           rect.maxX - rect.minX === item.w && rect.maxY - rect.minY === item.h
-            ? item.draw
-            : this.scene.cache.get(
-                undefined,
-                item.shape,
+            ? item.compiled
+            : this.scene.compiledAt(
+                item,
                 rect.maxX - rect.minX,
                 rect.maxY - rect.minY,
-                item.label,
-                item.fill,
               ),
       });
     }
@@ -501,6 +457,8 @@ export class Renderer {
       ctx.stroke();
     }
 
+    for (const remote of state.remote) this.drawRemote(ctx, remote, s, area);
+
     if (state.target) {
       const rect = this.boxOf(state.target, state);
       if (rect) {
@@ -551,6 +509,44 @@ export class Renderer {
       ctx.strokeRect(b.minX, b.minY, b.maxX - b.minX, b.maxY - b.minY);
     }
     this.stats = { ...this.stats, activeMs: performance.now() - started };
+  }
+
+  /** Someone else's selection: an outline in their colour and a small tag with their initials. */
+  private drawRemote(
+    ctx: CanvasRenderingContext2D,
+    remote: RemoteSelection,
+    s: number,
+    area: Rect,
+  ): void {
+    ctx.strokeStyle = remote.colour;
+    ctx.fillStyle = remote.colour;
+    ctx.lineWidth = Math.max(2, 2 / s);
+    const pad = 5 / s;
+    for (const id of remote.elements) {
+      const e = this.scene.elements.get(id);
+      if (
+        !e ||
+        !intersects(area, {
+          minX: e.x,
+          minY: e.y,
+          maxX: e.x + e.w,
+          maxY: e.y + e.h,
+        })
+      )
+        continue;
+      ctx.setLineDash([6 / s, 3 / s]);
+      ctx.strokeRect(e.x - pad, e.y - pad, e.w + 2 * pad, e.h + 2 * pad);
+      ctx.setLineDash([]);
+      const tag = Math.max(16, 16 / s);
+      const width = Math.max(tag, (remote.label.length * 9) / s + 8 / s);
+      ctx.fillRect(e.x - pad, e.y - pad - tag, width, tag);
+      ctx.fillStyle = '#fff';
+      ctx.font = `${Math.max(10, 10 / s)}px system-ui, sans-serif`;
+      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'left';
+      ctx.fillText(remote.label, e.x - pad + 4 / s, e.y - pad - tag / 2);
+      ctx.fillStyle = remote.colour;
+    }
   }
 
   private boxOf(id: ElementId, state: ActiveState): Rect | null {

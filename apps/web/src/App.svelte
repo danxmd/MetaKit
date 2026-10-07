@@ -6,21 +6,52 @@
     type ReferenceServices,
   } from '@metakit-app/ui';
   import type { ElementId } from '@metakit-app/core';
+  import BuildView from '@metakit-app/ui/components/BuildView.svelte';
+  import AssistantSettings from '@metakit-app/ui/components/assistant/AssistantSettings.svelte';
+  import {
+    AssistantService,
+    browserKeyValue,
+    typeCheckWithClient,
+  } from '@metakit-app/ui/assistant';
+  import GitSettings from '@metakit-app/ui/components/git/GitSettings.svelte';
   import Explorer from '@metakit-app/ui/components/Explorer.svelte';
   import ModelView from '@metakit-app/ui/components/ModelView.svelte';
   import NewModelDialog from '@metakit-app/ui/components/NewModelDialog.svelte';
+  import PermissionDialog from '@metakit-app/ui/components/build/scripts/PermissionDialog.svelte';
+  import ProfileDialog from '@metakit-app/ui/components/ProfileDialog.svelte';
   import StartPage from '@metakit-app/ui/components/StartPage.svelte';
+  import { findAcrossModels } from '@metakit-app/ui';
+  import { PROFILE_COLOURS, type Profile } from '@metakit-app/storage';
   import {
     adapterFor,
     askAccess,
+    loadProfile,
     pickFolder,
+    saveProfile,
     rememberedFolder,
+    testGitRemote,
     type RememberedFolder,
   } from './access';
   import { supportsLocalFolders } from './browser-support';
 
   const supported = supportsLocalFolders(window);
-  const controller = new AppController();
+  // Imported by file, not through the package index, so the assistant stays out of the first download.
+  const assistant = new AssistantService({
+    kv: browserKeyValue(),
+    typeCheck: typeCheckWithClient(async () =>
+      (
+        await import('@metakit-app/ui/assistant-language')
+      ).startLanguageClient(),
+    ),
+  });
+  let showAssistant = $state(false);
+  void assistant.load();
+  const controller = new AppController({
+    // Read when used: the e2e harness sets the replacement after the app has started.
+    makeGitRemote: (...args) => testGitRemote()?.(...args),
+  });
+  // undefined while it is being read; null on the first visit, when the app asks.
+  let profile = $state<Profile | null | undefined>(undefined);
   let app = $state(controller.state);
   controller.subscribe((s) => (app = s));
 
@@ -33,8 +64,18 @@
   let showNew = $state(false);
 
   onMount(async () => {
+    const stored = await loadProfile();
+    if (stored) controller.setProfile(stored);
+    profile = stored;
     if (supported) remembered = await rememberedFolder();
   });
+
+  async function chooseProfile(chosen: Profile) {
+    controller.setProfile(chosen);
+    // The dialog closes only once the choice is stored, so a quick reload does not ask again.
+    await saveProfile(chosen);
+    profile = chosen;
+  }
 
   async function openHandle(handle: FileSystemDirectoryHandle) {
     busy = true;
@@ -139,22 +180,57 @@
     {onCreate}
     onCancelCreate={() => (pendingCreate = null)}
   />
+{:else if app.phase === 'build' && app.build}
+  {#key app.build.slug}
+    <BuildView {assistant} {app} {controller} onBack={() => undefined} />
+  {/key}
 {:else if app.phase === 'workspace' || !app.open}
   <Explorer
     workspaceName={app.workspaceName}
     models={app.models}
     trashed={app.trashed}
-    toolCount={app.tools.length}
+    tools={app.tools}
+    trashedTools={app.trashedTools}
+    health={app.health}
     warnings={app.warnings}
     error={app.error}
     onNew={() => (showNew = true)}
+    onGit={() => controller.openGitSettings(true)}
+    onAssistant={() => (showAssistant = true)}
     onAddTool={(text) => controller.addToolLibrary(text)}
+    onNewTool={(name) => controller.createToolLibrary(name)}
+    onEditTool={(slug) => controller.openBuild(slug)}
     onOpen={(slug) => controller.openModel(slug)}
     onRename={(slug, name) => controller.renameModel(slug, name)}
     onMove={(slug, folder) => controller.moveModel(slug, folder)}
     onTrash={(slug) => controller.trashModel(slug)}
     onRestore={(slug) => controller.restoreModel(slug)}
+    onTrashTool={(slug) => controller.trashTool(slug)}
+    onRestoreTool={(slug) => controller.restoreTool(slug)}
     onClose={() => controller.closeWorkspace()}
+    notes={app.notes}
+    toolImport={app.toolImport}
+    search={async (query) =>
+      findAcrossModels(
+        (await controller.readAllModels()).map(({ entry, model, tool }) => ({
+          slug: entry.slug,
+          name: entry.name,
+          model,
+          tool,
+        })),
+        query,
+      )}
+    onOpenHit={async (hit) => {
+      await controller.openModel(hit.slug);
+      selectElement?.(hit.element);
+    }}
+    onExportModel={(slug) => controller.exportModelFile(slug)}
+    onExportBundle={(slugs) => controller.exportBundle(slugs)}
+    onExportCsv={(slug) => controller.exportCsv(slug)}
+    onExportTool={(slug) => controller.exportToolPackage(slug)}
+    onImport={(files) => controller.importFiles(files)}
+    onConfirmToolImport={() => controller.confirmToolImport()}
+    onCancelToolImport={() => controller.cancelToolImport()}
   />
   {#if showNew}
     <NewModelDialog
@@ -169,8 +245,8 @@
 {:else}
   {#key app.open.slug}
     <ModelView
-      open={app.open}
-      save={app.save}
+      {app}
+      {controller}
       {references}
       registerOpenElement={(fn) => (selectElement = fn)}
       onBack={() => controller.closeModel()}
@@ -178,7 +254,68 @@
   {/key}
 {/if}
 
+{#if showAssistant}
+  <div class="assistant-panel" data-testid="assistant-panel">
+    <button
+      onclick={() => (showAssistant = false)}
+      data-testid="assistant-close">Close</button
+    >
+    <AssistantSettings service={assistant} tool={app.build?.store.state} />
+  </div>
+{/if}
+
+{#if app.git.settings}
+  <GitSettings
+    store={controller.gitTokens}
+    makeRemote={(service, host, repo, folder, token) =>
+      controller.makeGitRemote(service, host, repo, folder, token)}
+    onChoose={(target) => controller.openFromGit(target)}
+    onClose={() => controller.openGitSettings(false)}
+  />
+  {#if app.git.error}<p
+      role="alert"
+      class="git-error"
+      data-testid="git-open-error"
+    >
+      {app.git.error}
+    </p>{/if}
+{/if}
+
+{#if app.permissionAsk}
+  <PermissionDialog
+    toolName={app.permissionAsk.toolName}
+    wanted={app.permissionAsk.wanted}
+    onAllow={() => controller.answerPermission(true)}
+    onDeny={() => controller.answerPermission(false)}
+  />
+{/if}
+
+{#if profile === null && supported}
+  <ProfileDialog
+    initial={{
+      name: '',
+      colour:
+        PROFILE_COLOURS[Math.floor(Math.random() * PROFILE_COLOURS.length)]!,
+    }}
+    colours={PROFILE_COLOURS}
+    onSave={chooseProfile}
+  />
+{/if}
+
 <style>
+  .assistant-panel {
+    position: fixed;
+    inset: 4rem 1rem auto auto;
+    z-index: 50;
+    width: min(32rem, calc(100vw - 2rem));
+    max-height: 80vh;
+    overflow: auto;
+    padding: 1rem;
+    background: var(--panel, #fff);
+    border: 1px solid var(--line, #ccc);
+    border-radius: 8px;
+    box-shadow: 0 8px 28px rgb(0 0 0 / 20%);
+  }
   :global(:root) {
     --bg: #ffffff;
     --panel: #f8f9fa;

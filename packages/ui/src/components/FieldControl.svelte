@@ -20,9 +20,12 @@
     field,
     references,
     onCommit,
+    height,
   }: {
     field: Field;
     references: ReferenceServices;
+    /** Height in pixels from a panel layout; used by tables and text areas. */
+    height?: number;
     /** Called with the new value of the attribute (null clears it). */
     onCommit: (value: Json) => void;
   } = $props();
@@ -166,6 +169,7 @@
     <textarea
       {id}
       rows="3"
+      style:height={height ? `${height}px` : undefined}
       placeholder={field.mixed ? '—' : ''}
       bind:value={draft}
       oninput={() => (dirty = true)}
@@ -291,14 +295,19 @@
     {#if field.mixed}
       <p class="mixed">The selected objects have different tables.</p>
     {:else}
-      <TableGrid
-        attr={attr as TableAttribute}
-        rows={Array.isArray(field.value)
-          ? (field.value as unknown as Record<string, Json>[])
-          : []}
-        readOnly={field.readOnly}
-        onChange={(rows) => onCommit(rows as unknown as Json)}
-      />
+      <div
+        class:scroll={height !== undefined}
+        style:max-height={height ? `${height}px` : undefined}
+      >
+        <TableGrid
+          attr={attr as TableAttribute}
+          rows={Array.isArray(field.value)
+            ? (field.value as unknown as Record<string, Json>[])
+            : []}
+          readOnly={field.readOnly}
+          onChange={(rows) => onCommit(rows as unknown as Json)}
+        />
+      </div>
     {/if}
   {:else if field.control === 'reference'}
     {#if field.mixed}
@@ -312,6 +321,14 @@
         onChange={onCommit}
       />
     {/if}
+  {:else if field.control === 'button'}
+    <button
+      type="button"
+      {id}
+      class="action"
+      data-testid="action-{attr.key}"
+      onclick={() => onCommit(null)}>{field.label}</button
+    >
   {:else if field.control === 'readonly'}
     <output
       {id}
@@ -321,17 +338,16 @@
       {field.mixed
         ? '—'
         : field.value === undefined
-          ? 'Calculated when formulas arrive'
+          ? '—'
           : displayText(field.value)}
     </output>
-  {:else if field.control === 'button'}
-    <button
-      {id}
-      type="button"
-      disabled
-      title="Buttons start working when rules and scripts arrive."
-      >{field.label}</button
-    >
+    {#if field.error}<p
+        class="message"
+        role="alert"
+        data-testid="formula-error"
+      >
+        {field.error}
+      </p>{/if}
   {/if}
 
   {#if message}<p class="message" role="alert">
@@ -409,6 +425,9 @@
     background: var(--accent);
     border-color: var(--accent);
     color: #fff;
+  }
+  .scroll {
+    overflow: auto;
   }
   .readonly {
     padding: 0.25rem 0.4rem;

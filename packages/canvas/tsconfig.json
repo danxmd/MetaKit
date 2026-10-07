@@ -10,5 +10,9 @@
     "types": ["node"]
   },
   "include": ["src"],
-  "references": [{ "path": "../core" }]
+  "references": [
+    { "path": "../core" },
+    { "path": "../formula" },
+    { "path": "../shapes" }
+  ]
 }

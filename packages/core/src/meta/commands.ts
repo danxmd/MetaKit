@@ -1,4 +1,25 @@
-import { isId, type ClassId, type ModelTypeId, type RelationId } from '../ids';
+import {
+  isId,
+  type ClassId,
+  type ModelTypeId,
+  type RelationId,
+  type AttributeId,
+  type ShapeId,
+} from '../ids';
+import { formatIssues, validateAttribute, validateToolLibrary } from './guards';
+import {
+  keyProblem,
+  ownerDef,
+  planKeyRename,
+  relatedKeys,
+  scopeOwners,
+  type KeyOwner,
+  type KeyScope,
+} from './keys';
+import type { Constraint, Rule, RuleId } from './rule-types';
+import { MAX_SCRIPT_CHARS } from './script-guards';
+import type { Script, ScriptId, ToolPermissions } from './script-types';
+import type { PanelLayout, ShapeDef } from './shape-types';
 import {
   DocumentStore,
   type BatchCommand,
@@ -6,6 +27,7 @@ import {
 } from '../store/store';
 import { CommandError, type Tx } from '../store/tx';
 import type {
+  AttributeDef,
   ClassDef,
   ModelTypeDef,
   RelationDef,
@@ -20,6 +42,7 @@ export type ToolCommand =
       name?: string;
       version?: string;
       languages?: string[];
+      permissions?: ToolPermissions;
     }
   | {
       type: 'updateSettings';
@@ -32,7 +55,32 @@ export type ToolCommand =
   | { type: 'putModelType'; def: ModelTypeDef }
   | { type: 'removeClass'; id: ClassId }
   | { type: 'removeRelation'; id: RelationId }
-  | { type: 'removeModelType'; id: ModelTypeId };
+  | { type: 'removeModelType'; id: ModelTypeId }
+  | { type: 'renameKey'; scope: KeyScope; newKey: string }
+  | {
+      type: 'putAttribute';
+      owner: KeyOwner;
+      def: AttributeDef;
+      /** Where to insert a new attribute; at the end when absent. */
+      index?: number;
+    }
+  | { type: 'removeAttribute'; owner: KeyOwner; id: AttributeId }
+  | { type: 'moveAttribute'; owner: KeyOwner; id: AttributeId; to: number }
+  | { type: 'putRule'; rule: Rule }
+  | { type: 'removeRule'; id: RuleId }
+  | { type: 'putScript'; script: Script }
+  | { type: 'removeScript'; id: ScriptId }
+  | {
+      type: 'putConstraint';
+      owner: KeyOwner;
+      constraint: Constraint;
+      index?: number;
+    }
+  | { type: 'removeConstraint'; owner: KeyOwner; id: string }
+  | { type: 'putShape'; def: ShapeDef }
+  | { type: 'removeShape'; id: ShapeId }
+  | { type: 'putPanel'; layout: PanelLayout }
+  | { type: 'removePanel'; id: ClassId | RelationId };
 
 export type ToolCommandOrBatch = ToolCommand | BatchCommand<ToolCommand>;
 
@@ -57,6 +105,9 @@ function classUsers(tool: ToolLibrary, id: ClassId): string[] {
     for (const k of m.cardinalities)
       if (k.class === id)
         users.push(`model type ${nameOf(m)} has a cardinality for it`);
+    for (const [container, accepted] of Object.entries(m.containers ?? {}))
+      if (container === id || accepted.includes(id))
+        users.push(`model type ${nameOf(m)} has a container rule for it`);
   }
   return users;
 }
@@ -78,10 +129,61 @@ function relationUsers(tool: ToolLibrary, id: RelationId): string[] {
   return users;
 }
 
+/** Who still uses a shape, so that removing it can be refused with a useful message. */
+function shapeUsers(tool: ToolLibrary, id: ShapeId): string[] {
+  const users: string[] = [];
+  for (const c of Object.values(tool.classes))
+    if (c.shape === id) users.push(`class ${nameOf(c)} draws with it`);
+  for (const r of Object.values(tool.relations))
+    if (r.shape === id) users.push(`relation class ${nameOf(r)} draws with it`);
+  for (const m of Object.values(tool.modelTypes))
+    if (m.background === id)
+      users.push(`model type ${nameOf(m)} uses it as background`);
+  const uses = (
+    parts: { type: string; shape?: string; parts?: unknown[] }[],
+  ): boolean =>
+    parts.some(
+      (p) =>
+        (p.type === 'use' && p.shape === id) ||
+        (p.type === 'group' && uses((p.parts ?? []) as never)),
+    );
+  for (const s of Object.values(tool.shapes ?? {}))
+    if (
+      s.kind === 'node' &&
+      (uses(s.parts as never) ||
+        (s.variants ?? []).some((v) => uses(v.parts as never)))
+    )
+      users.push(`shape ${s.name ?? s.id} embeds it`);
+  return users;
+}
+
+function attributeTable(
+  owner: KeyOwner,
+): 'classes' | 'relations' | 'modelTypes' {
+  return owner.kind === 'class'
+    ? 'classes'
+    : owner.kind === 'relation'
+      ? 'relations'
+      : 'modelTypes';
+}
+
+interface PanelNode {
+  attribute?: string;
+  items?: PanelNode[];
+  [key: string]: unknown;
+}
+
+/** Removes the items that list an attribute key, inside tabs and groups. */
+function pruneItems(nodes: PanelNode[], key: string): PanelNode[] {
+  return nodes
+    .filter((n) => n.attribute !== key)
+    .map((n) => (n.items ? { ...n, items: pruneItems(n.items, key) } : n));
+}
+
 function put<D extends { id: string }>(
   tx: Tx<ToolLibrary>,
-  table: 'classes' | 'relations' | 'modelTypes',
-  prefix: 'class' | 'relation' | 'modelType',
+  table: 'classes' | 'relations' | 'modelTypes' | 'shapes',
+  prefix: 'class' | 'relation' | 'modelType' | 'shape',
   def: D,
   what: string,
 ) {
@@ -100,6 +202,8 @@ function applyToolCommand(tx: Tx<ToolLibrary>, command: ToolCommand): unknown {
       if (command.name !== undefined) patch.name = command.name;
       if (command.version !== undefined) patch.version = command.version;
       if (command.languages !== undefined) patch.languages = command.languages;
+      if (command.permissions !== undefined)
+        patch.permissions = command.permissions;
       for (const [k, v] of Object.entries(patch)) tx.set(['manifest', k], v);
       return undefined;
     }
@@ -151,6 +255,205 @@ function applyToolCommand(tx: Tx<ToolLibrary>, command: ToolCommand): unknown {
       if (!tool.modelTypes[command.id])
         throw new CommandError(`The model type ${command.id} does not exist.`);
       tx.remove(['modelTypes', command.id]);
+      return undefined;
+    }
+    case 'renameKey': {
+      const plan = planKeyRename(tool, command.scope, command.newKey);
+      if ('error' in plan) throw new CommandError(plan.error);
+      for (const change of plan.changes) tx.set(change.path, change.value);
+      return plan.usages;
+    }
+    case 'putAttribute': {
+      const def = ownerDef(tool, command.owner);
+      if (!def)
+        throw new CommandError(
+          'That class, relation class or model type does not exist.',
+        );
+      const attr = command.def;
+      const issues = validateAttribute(attr, tool.manifest.languages);
+      if (issues.length > 0)
+        throw new CommandError(
+          `The attribute is not valid.\n${formatIssues(issues)}`,
+        );
+      const at = def.attributes.findIndex((a) => a.id === attr.id);
+      if (at >= 0 && def.attributes[at]!.key !== attr.key)
+        throw new CommandError(
+          'To change the key of an attribute, rename it, so that the formulas that use it are rewritten.',
+        );
+      if (at < 0) {
+        const clash = relatedKeys(tool, command.owner, attr.id).get(attr.key);
+        if (clash)
+          throw new CommandError(
+            `The key "${attr.key}" is already used by an attribute of ${clash}.`,
+          );
+        const problem = keyProblem(attr.key);
+        if (problem) throw new CommandError(problem);
+      }
+      const next = [...def.attributes];
+      if (at >= 0) next[at] = attr;
+      else
+        next.splice(
+          Math.min(Math.max(command.index ?? next.length, 0), next.length),
+          0,
+          attr,
+        );
+      tx.set(
+        [attributeTable(command.owner), command.owner.id, 'attributes'],
+        next,
+      );
+      return attr.id;
+    }
+    case 'removeAttribute': {
+      const def = ownerDef(tool, command.owner);
+      const attr = def?.attributes.find((a) => a.id === command.id);
+      if (!def || !attr)
+        throw new CommandError('That attribute does not exist.');
+      tx.set(
+        [attributeTable(command.owner), command.owner.id, 'attributes'],
+        def.attributes.filter((a) => a.id !== command.id),
+      );
+      // A panel layout cannot list an attribute that is gone.
+      for (const o of scopeOwners(tool, command.owner)) {
+        const layout = o.kind === 'modelType' ? undefined : tool.panels?.[o.id];
+        if (!layout) continue;
+        const pruned = pruneItems(
+          layout.tabs as unknown as PanelNode[],
+          attr.key,
+        );
+        tx.set(['panels', o.id, 'tabs'], pruned);
+      }
+      return undefined;
+    }
+    case 'moveAttribute': {
+      const def = ownerDef(tool, command.owner);
+      const from = def?.attributes.findIndex((a) => a.id === command.id) ?? -1;
+      if (!def || from < 0)
+        throw new CommandError('That attribute does not exist.');
+      const next = [...def.attributes];
+      const [moved] = next.splice(from, 1);
+      next.splice(Math.min(Math.max(command.to, 0), next.length), 0, moved!);
+      tx.set(
+        [attributeTable(command.owner), command.owner.id, 'attributes'],
+        next,
+      );
+      return undefined;
+    }
+    case 'putRule': {
+      const rule = command.rule;
+      if (rule === null || typeof rule !== 'object' || !isId('rule', rule.id))
+        throw new CommandError(
+          `The rule needs an id of the form rule_something (it is ${JSON.stringify((rule as { id?: unknown } | null)?.id)}).`,
+        );
+      // Checked here so that a rule the engine could not run never reaches the tool library.
+      const probe = { ...tool, rules: { ...tool.rules, [rule.id]: rule } };
+      const issues = validateToolLibrary(probe).filter((i) =>
+        i.path.startsWith(`rules.${rule.id}`),
+      );
+      if (issues.length > 0)
+        throw new CommandError(
+          `The rule is not valid.\n${formatIssues(issues)}`,
+        );
+      tx.set(['rules', rule.id], rule);
+      return rule.id;
+    }
+    case 'removeRule': {
+      if (!tool.rules?.[command.id])
+        throw new CommandError(`The rule ${command.id} does not exist.`);
+      tx.remove(['rules', command.id]);
+      return undefined;
+    }
+    case 'putScript': {
+      const script = command.script;
+      if (
+        script === null ||
+        typeof script !== 'object' ||
+        !isId('script', script.id)
+      )
+        throw new CommandError(
+          `The script needs an id of the form scr_something (it is ${JSON.stringify((script as { id?: unknown } | null)?.id)}).`,
+        );
+      if (typeof script.name !== 'string' || script.name.trim() === '')
+        throw new CommandError('The script needs a name.');
+      if (typeof script.source !== 'string')
+        throw new CommandError('The script source must be text.');
+      if (script.source.length > MAX_SCRIPT_CHARS)
+        throw new CommandError(
+          `The script is longer than ${MAX_SCRIPT_CHARS} characters.`,
+        );
+      tx.set(['scripts', script.id], script);
+      return script.id;
+    }
+    case 'removeScript': {
+      if (!tool.scripts?.[command.id])
+        throw new CommandError(`The script ${command.id} does not exist.`);
+      tx.remove(['scripts', command.id]);
+      return undefined;
+    }
+    case 'putConstraint': {
+      const def = ownerDef(tool, command.owner) as
+        { constraints?: Constraint[] } | undefined;
+      if (!def)
+        throw new CommandError(
+          'That class, relation class or model type does not exist.',
+        );
+      const list = [...(def.constraints ?? [])];
+      const at = list.findIndex((k) => k.id === command.constraint.id);
+      if (at >= 0) list[at] = command.constraint;
+      else
+        list.splice(
+          Math.min(Math.max(command.index ?? list.length, 0), list.length),
+          0,
+          command.constraint,
+        );
+      tx.set(
+        [attributeTable(command.owner), command.owner.id, 'constraints'],
+        list,
+      );
+      return command.constraint.id;
+    }
+    case 'removeConstraint': {
+      const def = ownerDef(tool, command.owner) as
+        { constraints?: Constraint[] } | undefined;
+      if (!def?.constraints?.some((k) => k.id === command.id))
+        throw new CommandError('That constraint does not exist.');
+      const rest = def.constraints.filter((k) => k.id !== command.id);
+      const table = attributeTable(command.owner);
+      if (rest.length > 0)
+        tx.set([table, command.owner.id, 'constraints'], rest);
+      else tx.remove([table, command.owner.id, 'constraints']);
+      return undefined;
+    }
+    case 'putShape':
+      put(tx, 'shapes', 'shape', command.def, 'shape');
+      return command.def.id;
+    case 'removeShape': {
+      const def = tool.shapes?.[command.id];
+      if (!def)
+        throw new CommandError(`The shape ${command.id} does not exist.`);
+      const users = shapeUsers(tool, command.id);
+      if (users.length > 0)
+        throw new CommandError(
+          `The shape ${def.name ?? def.id} is still in use: ${users.join('; ')}.`,
+        );
+      tx.remove(['shapes', command.id]);
+      return undefined;
+    }
+    case 'putPanel': {
+      const id = command.layout?.class;
+      if (
+        typeof id !== 'string' ||
+        !(id in tool.classes || id in tool.relations)
+      )
+        throw new CommandError(
+          `The panel layout needs the id of an existing class or relation class (it is ${JSON.stringify(id)}).`,
+        );
+      tx.set(['panels', id], command.layout);
+      return id;
+    }
+    case 'removePanel': {
+      if (!tool.panels?.[command.id])
+        throw new CommandError(`There is no panel layout for ${command.id}.`);
+      tx.remove(['panels', command.id]);
       return undefined;
     }
     default: {

@@ -10,6 +10,7 @@ import {
   type Json,
   type Labels,
   type Model,
+  type ModelCalculator,
   type ToolLibrary,
   type ValidationIssue,
 } from '@metakit-app/core';
@@ -50,6 +51,8 @@ export interface Field {
   readOnly: boolean;
   required: boolean;
   issues: string[];
+  /** For a formula attribute: why it has no value, in plain English. */
+  error?: string;
   options?: PanelOption[];
   unit?: string;
   decimals?: number;
@@ -62,11 +65,16 @@ export interface PanelSection {
   fields: Field[];
 }
 
+export interface PanelOptions {
+  /** Shows formula attributes and constraint messages; without it formula attributes show nothing. */
+  calculator?: ModelCalculator;
+}
+
 export interface PanelTarget {
   id: ElementId | ConnectorId;
 }
 
-function text(
+export function pickLabel(
   labels: Labels | undefined,
   language: string,
 ): string | undefined {
@@ -79,11 +87,12 @@ function optionsOf(
 ): PanelOption[] {
   return options.map((o) => ({
     value: optionValue(o),
-    label: typeof o === 'string' ? o : (text(o.labels, language) ?? o.value),
+    label:
+      typeof o === 'string' ? o : (pickLabel(o.labels, language) ?? o.value),
   }));
 }
 
-function controlFor(attr: AttributeDef): ControlKind {
+export function controlFor(attr: AttributeDef): ControlKind {
   switch (attr.type) {
     case 'text':
       return attr.multiline ? 'textarea' : 'text';
@@ -111,6 +120,114 @@ function controlFor(attr: AttributeDef): ControlKind {
     case 'action':
       return 'button';
   }
+}
+
+function formatValue(value: unknown, asBoolean: boolean): string {
+  if (typeof value === 'number')
+    // Rounding hides floating point noise such as 0.1 + 0.2.
+    return String(Number(value.toFixed(10)));
+  if (typeof value === 'boolean' || (asBoolean && value !== null))
+    return value ? 'Yes' : 'No';
+  if (typeof value === 'string') return value;
+  if (Array.isArray(value))
+    return value.map((v) => formatValue(v, false)).join(', ');
+  return JSON.stringify(value);
+}
+
+/** A calculated value as the panel shows it, following the attribute's `result` type. */
+export function formatFormulaValue(
+  attr: AttributeDef,
+  value: unknown,
+): string | undefined {
+  if (value === null || value === undefined) return undefined;
+  return formatValue(
+    value,
+    attr.type === 'formula' && attr.result === 'boolean',
+  );
+}
+
+/** The value and the problem of a formula attribute of one object. */
+export function computedValue(
+  calculator: ModelCalculator,
+  id: string,
+  attr: AttributeDef,
+): { value: string | undefined; error?: string } {
+  const error = calculator.errorOf(id, attr.key);
+  const value = formatFormulaValue(attr, calculator.get(id, attr.key));
+  return error === undefined ? { value } : { value, error };
+}
+
+/** The issue messages that belong to no single field, such as a constraint that names two attributes. */
+export function objectMessages(
+  issues: readonly ValidationIssue[],
+  ids: readonly string[],
+): string[] {
+  const set = new Set(ids);
+  const out: string[] = [];
+  for (const i of issues) {
+    if (!set.has(i.id) || i.attr !== undefined) continue;
+    if (i.code !== 'constraint' && i.code !== 'formula-error') continue;
+    if (!out.includes(i.message)) out.push(i.message);
+  }
+  return out;
+}
+
+/** Issues shown under a field; a formula attribute's own problem is already shown as its error. */
+export function fieldIssues(
+  issues: readonly ValidationIssue[],
+  ids: ReadonlySet<string>,
+  attr: AttributeDef,
+  hasCalculator: boolean,
+): string[] {
+  return [
+    ...new Set(
+      issues
+        .filter(
+          (i) =>
+            ids.has(i.id) &&
+            i.attr === attr.id &&
+            !(
+              hasCalculator &&
+              i.code === 'formula-error' &&
+              attr.type === 'formula'
+            ),
+        )
+        .map((i) => i.message),
+    ),
+  ];
+}
+
+/**
+ * The field model of one attribute for the given targets' values (one entry per target; an unset
+ * value is `undefined`). Shared by the generated panel and the layout panel so both look the same.
+ */
+export function buildField(
+  attr: AttributeDef,
+  values: readonly (Json | undefined)[],
+  issues: string[],
+  language = 'en',
+): Field {
+  const mixed = values.some((v) => !deepEqual(v, values[0]));
+  const field: Field = {
+    attr,
+    label: pickLabel(attr.labels, language) ?? attr.key,
+    control: controlFor(attr),
+    value: mixed ? undefined : values[0],
+    mixed,
+    readOnly: attr.type === 'formula' || attr.type === 'action',
+    required: attr.required === true,
+    issues,
+  };
+  const help = pickLabel(attr.help, language);
+  if (help !== undefined) field.help = help;
+  if (attr.type === 'choice' || attr.type === 'multi-choice')
+    field.options = optionsOf(attr.options, language);
+  if (attr.type === 'number') {
+    if (attr.unit !== undefined) field.unit = attr.unit;
+    if (attr.decimals !== undefined) field.decimals = attr.decimals;
+  }
+  if (attr.group !== undefined) field.group = attr.group;
+  return field;
 }
 
 function attributesOf(
@@ -152,6 +269,7 @@ export function buildPanel(
   targets: readonly PanelTarget[],
   issues: readonly ValidationIssue[],
   language = 'en',
+  options: PanelOptions = {},
 ): PanelSection[] {
   const first = targets[0];
   if (first === undefined) return [];
@@ -172,34 +290,21 @@ export function buildPanel(
   sections.push(ungrouped);
 
   for (const attr of common) {
-    const values = targets.map((t) => storedValue(model, t.id, attr));
-    const mixed = values.some((v) => !deepEqual(v, values[0]));
-    const control = controlFor(attr);
-    const field: Field = {
+    const calc = options.calculator;
+    const computed =
+      attr.type === 'formula' && calc
+        ? targets.map((t) => computedValue(calc, t.id, attr))
+        : undefined;
+    const field = buildField(
       attr,
-      label: text(attr.labels, language) ?? attr.key,
-      control,
-      value: mixed ? undefined : values[0],
-      mixed,
-      readOnly: attr.type === 'formula' || attr.type === 'action',
-      required: attr.required === true,
-      issues: [
-        ...new Set(
-          issues
-            .filter((i) => ids.has(i.id) && i.attr === attr.id)
-            .map((i) => i.message),
-        ),
-      ],
-    };
-    const help = text(attr.help, language);
-    if (help !== undefined) field.help = help;
-    if (attr.type === 'choice' || attr.type === 'multi-choice')
-      field.options = optionsOf(attr.options, language);
-    if (attr.type === 'number') {
-      if (attr.unit !== undefined) field.unit = attr.unit;
-      if (attr.decimals !== undefined) field.decimals = attr.decimals;
-    }
-    if (attr.group !== undefined) field.group = attr.group;
+      computed
+        ? computed.map((c) => c.value)
+        : targets.map((t) => storedValue(model, t.id, attr)),
+      fieldIssues(issues, ids, attr, calc !== undefined),
+      language,
+    );
+    const problem = computed?.find((c) => c.error !== undefined)?.error;
+    if (problem !== undefined) field.error = problem;
 
     let section = byTitle.get(attr.group);
     if (!section) {

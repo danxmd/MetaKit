@@ -1,8 +1,8 @@
 import { freezeCopy, type Json } from '../json';
 import {
-  applyPatches,
+  applyPatchesChecked,
   CommandError,
-  revertPatches,
+  revertPatchesChecked,
   Tx,
   type Patch,
 } from './tx';
@@ -30,7 +30,10 @@ export interface ChangeEvent<S, C extends BaseCommand> {
   state: S;
   previous: S;
   patches: readonly Patch[];
-  origin: 'execute' | 'undo' | 'redo';
+  /** `remote` is a change read from another instance: not an undo step, no rules run. */
+  origin: 'execute' | 'undo' | 'redo' | 'remote';
+  /** For undo and redo: writes left out because someone else changed them since. */
+  skipped?: number;
   user: string;
   command?: C;
 }
@@ -106,8 +109,71 @@ export class DocumentStore<S, C extends BaseCommand, Ctx = undefined> {
   }
 
   /** The current state. It is frozen: assigning to it throws. */
+  /**
+   * Changes what commands are checked against, for example the tool library of a model after the
+   * tool was edited. The state and the undo history are left as they are.
+   */
+  updateContext(patch: Partial<Ctx>): void {
+    Object.assign(this.context as object, patch);
+  }
+
   get state(): S {
     return this.current;
+  }
+
+  /**
+   * The state including the writes of the command in progress. An after handler or a script that
+   * runs inside a step reads this, because `state` only changes when the whole step is done.
+   */
+  get working(): S {
+    return this.active ? this.active.tx.state : this.current;
+  }
+
+  /**
+   * Runs `fn`, which may call `execute` any number of times, as one undo step labelled `label`
+   * (its type shows in the history). If `fn` throws nothing is kept. Inside a step already in
+   * progress the commands simply join it, so a script started by an event undoes together with
+   * the action that triggered it.
+   */
+  transact<T>(
+    label: C | BatchCommand<C>,
+    fn: () => T,
+    options: { user?: string } = {},
+  ): { ok: true; value: T } {
+    if (this.inBefore)
+      throw new CommandError(
+        'A before handler cannot run commands; it can only cancel.',
+      );
+    if (this.active) return { ok: true, value: fn() };
+    const user = options.user ?? this.defaultUser;
+    const tx = new Tx(this.current);
+    this.active = { tx, user, depth: 0 };
+    let value: T;
+    try {
+      value = fn();
+    } finally {
+      this.active = null;
+    }
+    this.commit(tx, label as C, user);
+    return { ok: true, value };
+  }
+
+  private commit(tx: Tx<S>, command: C, user: string): void {
+    if (tx.patches.length === 0) return;
+    const previous = this.current;
+    this.current = tx.state;
+    const stacks = this.stacksFor(user);
+    stacks.undo.push({ command, patches: tx.patches });
+    if (stacks.undo.length > this.historyLimit) stacks.undo.shift();
+    stacks.redo.length = 0;
+    this.notify({
+      state: this.current,
+      previous,
+      patches: tx.patches,
+      origin: 'execute',
+      user,
+      command,
+    });
   }
 
   subscribe(listener: (event: ChangeEvent<S, C>) => void): () => void {
@@ -182,21 +248,7 @@ export class DocumentStore<S, C extends BaseCommand, Ctx = undefined> {
       return { ok: false, cancelled: true, reason: outcome.reason };
     if (tx.patches.length === 0)
       return { ok: true, value: outcome.value, patches: [] };
-
-    const previous = this.current;
-    this.current = tx.state;
-    const stacks = this.stacksFor(user);
-    stacks.undo.push({ command: command as C, patches: tx.patches });
-    if (stacks.undo.length > this.historyLimit) stacks.undo.shift();
-    stacks.redo.length = 0;
-    this.notify({
-      state: this.current,
-      previous,
-      patches: tx.patches,
-      origin: 'execute',
-      user,
-      command: command as C,
-    });
+    this.commit(tx, command as C, user);
     return { ok: true, value: outcome.value, patches: tx.patches };
   }
 
@@ -274,21 +326,28 @@ export class DocumentStore<S, C extends BaseCommand, Ctx = undefined> {
     return (this.stacks.get(user)?.redo.length ?? 0) > 0;
   }
 
-  /** Reverts the user's latest step, a whole batch at once. Returns false if there is nothing to undo. */
+  /**
+   * Reverts the user's latest step, a whole batch at once, except for writes that someone else
+   * changed since (those are left alone and counted in the event's `skipped`). Returns false if
+   * there is nothing to undo.
+   */
   undo(user: string = this.defaultUser): boolean {
     const stacks = this.stacks.get(user);
     const step = stacks?.undo.pop();
     if (!stacks || !step) return false;
     const previous = this.current;
-    this.current = revertPatches(this.current, step.patches);
-    stacks.redo.push(step);
+    const result = revertPatchesChecked(this.current, step.patches);
+    this.current = result.state;
+    if (result.applied.length > 0)
+      stacks.redo.push({ command: step.command, patches: result.applied });
     this.notify({
       state: this.current,
       previous,
-      patches: step.patches,
+      patches: result.applied,
       origin: 'undo',
       user,
       command: step.command,
+      skipped: result.skipped,
     });
     return true;
   }
@@ -298,17 +357,31 @@ export class DocumentStore<S, C extends BaseCommand, Ctx = undefined> {
     const step = stacks?.redo.pop();
     if (!stacks || !step) return false;
     const previous = this.current;
-    this.current = applyPatches(this.current, step.patches);
-    stacks.undo.push(step);
+    const result = applyPatchesChecked(this.current, step.patches);
+    this.current = result.state;
+    if (result.applied.length > 0)
+      stacks.undo.push({ command: step.command, patches: result.applied });
     this.notify({
       state: this.current,
       previous,
-      patches: step.patches,
+      patches: result.applied,
       origin: 'redo',
       user,
       command: step.command,
+      skipped: result.skipped,
     });
     return true;
+  }
+
+  /**
+   * Takes in a change made by another instance. The new state is used as it is: it is not an
+   * undo step, and before and after handlers do not run (rules apply to what a person does here).
+   * `patches` say which paths changed, for listeners such as the canvas.
+   */
+  applyRemote(next: S, patches: readonly Patch[], user = 'remote'): void {
+    const previous = this.current;
+    this.current = next;
+    this.notify({ state: next, previous, patches, origin: 'remote', user });
   }
 
   /** The command types of the user's undo stack, oldest first, for menus such as "Undo move". */

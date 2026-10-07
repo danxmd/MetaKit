@@ -186,6 +186,10 @@ export function sampleTool(): ToolLibrary {
         ],
       },
     },
+    shapes: {},
+    panels: {},
+    rules: {},
+    scripts: {},
   } as unknown as ToolLibrary;
 }
 
@@ -208,4 +212,18 @@ export function emptySampleModel(): Model {
 /** A deep copy through JSON, for tests; `packages/core` has no DOM or Node types, so no `structuredClone`. */
 export function clone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
+}
+
+/** The sample tool, an empty model of it and the ids the tests need, for packages that test behaviour. */
+export function SAMPLE_FOR_TESTS() {
+  return {
+    tool: sampleTool(),
+    model: emptySampleModel(),
+    ids: {
+      task: SAMPLE.task,
+      effort: SAMPLE.attEffort,
+      name: SAMPLE.attName,
+      priority: SAMPLE.attPriority,
+    },
+  };
 }

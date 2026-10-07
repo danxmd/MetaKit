@@ -1,4 +1,11 @@
 import { isId, type IdKind } from '../ids';
+import { checkShapeReferences, checkShapeTables } from './shape-guards';
+import {
+  checkConstraints,
+  checkRuleReferences,
+  checkRules,
+} from './rule-guards';
+import { checkPermissions, checkScripts } from './script-guards';
 import {
   ATTRIBUTE_TYPES,
   CLASS_KINDS,
@@ -178,6 +185,8 @@ function kindPrefix(kind: IdKind): string {
     connector: 'cn',
     model: 'mdl',
     view: 'vw',
+    rule: 'rule',
+    script: 'scr',
   }[kind];
 }
 
@@ -189,6 +198,7 @@ const BASE_ATTRIBUTE_KEYS = [
   'help',
   'required',
   'group',
+  'defaultFormula',
 ];
 const TYPE_KEYS: Record<string, string[]> = {
   text: ['multiline', 'maxLength', 'pattern', 'default'],
@@ -268,6 +278,8 @@ function checkAttribute(
     c.boolean(a.required, `${path}.required`, 'required');
   if (a.group !== undefined)
     c.string(a.group, `${path}.group`, 'The group name');
+  if (a.defaultFormula !== undefined)
+    c.string(a.defaultFormula, `${path}.defaultFormula`, 'The default formula');
   if (
     typeof typeName !== 'string' ||
     !(ATTRIBUTE_TYPES as readonly string[]).includes(typeName)
@@ -519,6 +531,19 @@ function nameOf(def: Rec, fallback: string): string {
  * Checks a tool library and returns every problem found, each with the path of the offending
  * part and a message a tool builder can act on. An empty list means the library is sound.
  */
+/** Checks one attribute definition on its own, for editors that add or change attributes one at a time. */
+export function validateAttribute(
+  def: unknown,
+  languages: readonly string[] = [],
+): Issue[] {
+  const c = new Checker();
+  checkAttributes(c, [def], 'attribute', languages);
+  return c.issues.map((i) => ({
+    ...i,
+    path: i.path.replace(/^attribute\[0\]\.?/, '') || 'attribute',
+  }));
+}
+
 export function validateToolLibrary(value: unknown): Issue[] {
   const c = new Checker();
   const root = c.object(
@@ -531,6 +556,10 @@ export function validateToolLibrary(value: unknown): Issue[] {
       'classes',
       'relations',
       'modelTypes',
+      'shapes',
+      'panels',
+      'rules',
+      'scripts',
     ],
     'The tool library',
   );
@@ -543,10 +572,11 @@ export function validateToolLibrary(value: unknown): Issue[] {
   const manifest = c.object(
     root.manifest,
     'manifest',
-    ['id', 'name', 'version', 'languages'],
+    ['id', 'name', 'version', 'languages', 'permissions'],
     'The manifest',
   );
   if (manifest) {
+    checkPermissions(c, manifest.permissions);
     c.id('tool', manifest.id, 'manifest.id', 'The tool id');
     c.string(manifest.name, 'manifest.name', 'The tool name');
     if (
@@ -712,6 +742,7 @@ export function validateToolLibrary(value: unknown): Issue[] {
         'extends',
         'abstract',
         'attributes',
+        'constraints',
         'shape',
         'panel',
         'help',
@@ -773,6 +804,7 @@ export function validateToolLibrary(value: unknown): Issue[] {
         required: false,
       });
     checkAttributes(c, d.attributes, `${path}.attributes`, languages);
+    checkConstraints(c, d.constraints, `${path}.constraints`);
   }
 
   // relations
@@ -791,6 +823,7 @@ export function validateToolLibrary(value: unknown): Issue[] {
         'from',
         'to',
         'attributes',
+        'constraints',
         'shape',
         'help',
       ],
@@ -883,6 +916,7 @@ export function validateToolLibrary(value: unknown): Issue[] {
         required: false,
       });
     checkAttributes(c, d.attributes, `${path}.attributes`, languages);
+    checkConstraints(c, d.constraints, `${path}.constraints`);
   }
 
   // model types
@@ -900,7 +934,9 @@ export function validateToolLibrary(value: unknown): Issue[] {
         'relations',
         'views',
         'cardinalities',
+        'containers',
         'attributes',
+        'constraints',
         'background',
         'help',
       ],
@@ -1054,7 +1090,41 @@ export function validateToolLibrary(value: unknown): Issue[] {
       if (o.min === undefined && o.max === undefined)
         c.add(p, 'A cardinality needs a minimum, a maximum or both.');
     });
+    if (d.containers !== undefined) {
+      const rules = c.object(
+        d.containers,
+        `${path}.containers`,
+        Object.keys((d.containers as Rec | null) ?? {}),
+        'The container rules',
+      );
+      for (const [containerId, accepted] of Object.entries(rules ?? {})) {
+        const p = `${path}.containers.${containerId}`;
+        if (
+          c.id('class', containerId, p, 'A container class id') !== null &&
+          !allowedClasses.has(containerId)
+        )
+          c.add(
+            p,
+            `The container rule is for the class ${containerId}, which the model type does not allow.`,
+          );
+        const kind = (classes as Record<string, Rec> | null)?.[containerId]
+          ?.kind;
+        if (kind !== undefined && kind !== 'container' && kind !== 'swimlane')
+          c.add(p, `The class ${containerId} is not a container or swimlane.`);
+        c.array(accepted, p, 'The accepted classes')?.forEach((x, i) => {
+          if (
+            c.id('class', x, `${p}[${i}]`, 'The accepted class id') !== null &&
+            !allowedClasses.has(x as string)
+          )
+            c.add(
+              `${p}[${i}]`,
+              `The class ${x as string} is accepted, but the model type does not allow it.`,
+            );
+        });
+      }
+    }
     checkAttributes(c, d.attributes, `${path}.attributes`, languages);
+    checkConstraints(c, d.constraints, `${path}.constraints`);
     if (d.background !== undefined)
       c.id('shape', d.background, `${path}.background`, 'The background shape');
     if (d.help !== undefined)
@@ -1129,6 +1199,20 @@ export function validateToolLibrary(value: unknown): Issue[] {
         `The model type "${nameOf(modelTypes![id] as Rec, id)}"`,
       );
     }
+  }
+
+  for (const key of ['shapes', 'panels', 'rules', 'scripts'])
+    if (root[key] === undefined)
+      c.add(
+        key,
+        `The ${key} are missing. Use an empty object if there are none (format 2).`,
+      );
+  checkShapeTables(c, root);
+  checkRules(c, root.rules);
+  checkScripts(c, root.scripts);
+  if (c.issues.length === 0) {
+    checkShapeReferences(c, value as ToolLibrary);
+    checkRuleReferences(c, value as ToolLibrary);
   }
 
   return c.issues;

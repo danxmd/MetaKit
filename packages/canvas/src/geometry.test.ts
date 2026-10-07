@@ -15,9 +15,6 @@ import {
   worldToScreen,
   zoomAt,
 } from './view';
-import { buildDrawList } from './drawlist';
-import { builtinShape, wrapText } from './shapes';
-import type { ClassDef } from '@metakit-app/core';
 
 describe('geometry', () => {
   it('intersects, contains and unions rectangles', () => {
@@ -113,35 +110,5 @@ describe('view', () => {
     expect(v.s).toBeLessThan(1);
     const c = centreOn({ s: 1, ox: 0, oy: 0 }, { x: 500, y: 300 }, 1000, 600);
     expect(c).toEqual({ s: 1, ox: 0, oy: 0 });
-  });
-});
-
-describe('shapes and draw lists', () => {
-  const cls = (key: string, kind: ClassDef['kind'] = 'node') =>
-    ({ id: 'cls_x', key, kind, labels: {}, attributes: [] }) as ClassDef;
-
-  it('picks a shape from the class', () => {
-    expect(builtinShape(cls('StartEvent'))).toBe('ellipse');
-    expect(builtinShape(cls('Gateway'))).toBe('diamond');
-    expect(builtinShape(cls('Lane', 'swimlane'))).toBe('rectangle');
-    expect(builtinShape(cls('Task'))).toBe('rounded');
-  });
-
-  it('wraps and cuts text', () => {
-    expect(wrapText('one two three', 40, 12, 5)).toEqual([
-      'one',
-      'two',
-      'three',
-    ]);
-    const cut = wrapText('a b c d e f g h', 10, 12, 2);
-    expect(cut).toHaveLength(2);
-    expect(cut[1]!.endsWith('…')).toBe(true);
-    expect(wrapText('x'.repeat(30), 33, 12, 9).join('')).toBe('x'.repeat(30));
-  });
-
-  it('centres label lines', () => {
-    const list = buildDrawList('rounded', 120, 60, 'Hello', '#fff');
-    expect(list.text).toEqual([{ text: 'Hello', x: 60, y: 30 }]);
-    expect(buildDrawList('rounded', 120, 60, '', '#fff').text).toEqual([]);
   });
 });

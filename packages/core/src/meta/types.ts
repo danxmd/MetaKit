@@ -8,6 +8,9 @@ import type {
   ViewId,
 } from '../ids';
 import type { Json } from '../json';
+import type { Constraint, Rule, RuleId } from './rule-types';
+import type { Script, ScriptId, ToolPermissions } from './script-types';
+import type { PanelLayout, ShapeDef } from './shape-types';
 
 /** Text per language code, for example `{ "en": "Task", "de": "Aufgabe" }`. */
 export type Labels = Record<string, string>;
@@ -23,6 +26,8 @@ interface AttributeBase {
   required?: boolean;
   /** Name of the group in the attribute panel. */
   group?: string;
+  /** A formula (starting with `=`) that gives the value of a new object when none is set. */
+  defaultFormula?: string;
 }
 
 export type TextAttribute = AttributeBase & {
@@ -163,6 +168,8 @@ export interface ClassDef {
   extends?: ClassId;
   abstract?: boolean;
   attributes: AttributeDef[];
+  /** Checks on an object, each a formula that is true when the object is fine. */
+  constraints?: Constraint[];
   shape?: ShapeId;
   panel?: string;
   help?: Labels;
@@ -178,6 +185,7 @@ export interface RelationDef {
   from: ClassId[];
   to: ClassId[];
   attributes: AttributeDef[];
+  constraints?: Constraint[];
   shape?: ShapeId;
   help?: Labels;
 }
@@ -209,8 +217,14 @@ export interface ModelTypeDef {
   relations: RelationId[];
   views: ViewDef[];
   cardinalities: Cardinality[];
+  /**
+   * Which classes each container or swimlane class accepts as children (a listed class also
+   * accepts its subclasses). A container class that is not listed accepts any class.
+   */
+  containers?: Record<ClassId, ClassId[]>;
   /** Attributes of the model itself. */
   attributes: AttributeDef[];
+  constraints?: Constraint[];
   background?: ShapeId;
   help?: Labels;
 }
@@ -220,6 +234,8 @@ export interface ToolManifest {
   name: string;
   version: string;
   languages: string[];
+  /** What the scripts of this tool need beyond models and dialogs (ADR 0006). */
+  permissions?: ToolPermissions;
 }
 
 export interface ToolSettings {
@@ -235,10 +251,18 @@ export interface ToolLibrary {
   classes: Record<ClassId, ClassDef>;
   relations: Record<RelationId, RelationDef>;
   modelTypes: Record<ModelTypeId, ModelTypeDef>;
+  /** Shapes by id; a class or relation class names one in `shape`. */
+  shapes: Record<ShapeId, ShapeDef>;
+  /** Panel layouts, keyed by the id of the class or relation class they belong to. */
+  panels: Record<string, PanelLayout>;
+  /** No-code rules (phase 5). */
+  rules: Record<RuleId, Rule>;
+  /** TypeScript scripts (phase 7). */
+  scripts: Record<ScriptId, Script>;
 }
 
-/** The format version this release writes for tool libraries. */
-export const TOOL_FORMAT_VERSION = 1;
+/** The format version this release writes for tool libraries (2: shapes and panels, ADR 0004; 3: rules, constraints and default formulas, ADR 0005; 4: scripts and permissions, ADR 0006). */
+export const TOOL_FORMAT_VERSION = 4;
 
 export function optionValue(option: ChoiceOption): string {
   return typeof option === 'string' ? option : option.value;

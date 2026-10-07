@@ -1,5 +1,10 @@
 import {
   CommandError,
+  childrenIndex,
+  containerAt,
+  descendantsOf,
+  isContainerClass,
+  outermostOf,
   type ClassId,
   type ConnectorId,
   type ElementId,
@@ -22,6 +27,8 @@ import {
 } from './geometry';
 import { CURSORS, hitHandle, resizeRect, type HandleName } from './handles';
 import type { ActiveState } from './renderer';
+import { LayoutService } from './layout/layout-service';
+import type { LayoutOptions } from './layout/elk-layout';
 import { edgePoint } from './route';
 import type { ConnectorItem, ElementItem } from './scene';
 import {
@@ -71,6 +78,8 @@ export interface EditorOptions {
   host?: EditorHost;
   /** Relations offered in the current view; others are not used for new connectors. */
   allowedRelations?: () => ReadonlySet<string> | undefined;
+  /** Runs auto-layout. Defaults to a Web Worker that starts on first use. */
+  layout?: LayoutService;
 }
 
 /** Pointer moves under this many screen pixels are clicks, not drags. */
@@ -89,6 +98,8 @@ type Mode =
       screen: Point;
       ids: ElementId[];
       rects: Map<ElementId, Rect>;
+      /** What the moved containers hold; it follows them in the preview and is moved by the command. */
+      followers: Map<ElementId, Rect>;
       started: boolean;
       /** A click on an item that was already selected collapses the selection on release. */
       collapseTo: ElementId | null;
@@ -133,7 +144,7 @@ export class Editor {
   private currentTool: EditorTool = { type: 'select' };
   private readonly cleanups: (() => void)[] = [];
   private readonly store: ModelStore;
-  private readonly tool: ToolLibrary;
+  private tool: ToolLibrary;
   private readonly view: CanvasView;
   private readonly host: EditorHost;
 
@@ -163,6 +174,11 @@ export class Editor {
   }
 
   // Tool and selection --------------------------------------------------------------------
+
+  /** Takes a changed tool library (hot reload); the next action follows its rules. */
+  useToolLibrary(tool: ToolLibrary): void {
+    this.tool = tool;
+  }
 
   setTool(tool: EditorTool): void {
     this.currentTool = tool;
@@ -263,7 +279,24 @@ export class Editor {
     const grid = this.gridSize();
     const x = snapValue(at.x - 60, grid);
     const y = snapValue(at.y - 30, grid);
-    const values = this.run([{ type: 'createElement', class: cls, x, y }]);
+    // The element's centre decides its container; its default size is the one the command uses.
+    const parent = containerAt(
+      this.model,
+      this.tool,
+      this.model.manifest.modelType,
+      { x: x + 60, y: y + 30 },
+      [],
+      cls,
+    );
+    const values = this.run([
+      {
+        type: 'createElement',
+        class: cls,
+        x,
+        y,
+        ...(parent ? { parent } : {}),
+      },
+    ]);
     const id = values?.[0] as ElementId | undefined;
     if (id) this.select([id]);
     return id ?? null;
@@ -285,7 +318,8 @@ export class Editor {
   /** Moves the selected elements by a world offset (used by arrow keys and tests). */
   nudge(dx: number, dy: number): void {
     this.run(
-      [...this.selectionState.elements].flatMap((id) => {
+      // Containers carry their contents, so contents that are selected too stay out of the list.
+      outermostOf(this.model, this.selectionState.elements).flatMap((id) => {
         const e = this.model.elements[id];
         return e
           ? [{ type: 'move' as const, id, x: e.x + dx, y: e.y + dy }]
@@ -419,6 +453,59 @@ export class Editor {
   destroy(): void {
     for (const c of this.cleanups) c();
     this.cleanups.length = 0;
+    this.layoutAbort?.abort();
+    // A service handed in by the host is the host's to dispose.
+    if (!this.options.layout) this.layoutService?.dispose();
+  }
+
+  private layoutService: LayoutService | null = null;
+  private layoutAbort: AbortController | null = null;
+
+  /**
+   * Arranges the model, or the selection when two or more elements are selected, as one undo
+   * step. ELK runs in a worker, so the canvas stays responsive. Resolves true when it changed
+   * something; a layout started while another runs replaces it.
+   */
+  async autoLayout(
+    options: Pick<LayoutOptions, 'direction' | 'spacing' | 'keepFixed'> & {
+      selectionOnly?: boolean;
+    } = {},
+  ): Promise<boolean> {
+    this.layoutAbort?.abort();
+    const abort = new AbortController();
+    this.layoutAbort = abort;
+    const service = (this.layoutService ??=
+      this.options.layout ?? new LayoutService());
+    const picked = [...this.selectionState.elements];
+    const selectionOnly = options.selectionOnly ?? picked.length > 1;
+    try {
+      const result = await service.layout(this.model, {
+        ...options,
+        selectionOnly,
+        selection: picked,
+        signal: abort.signal,
+      });
+      // The model may have changed while ELK worked; skip what no longer exists.
+      const model = this.model;
+      const moves = result.moves.filter((m) => model.elements[m.id]);
+      const resizes = result.resizes.filter((r) => model.elements[r.id]);
+      const bends = result.bends.filter((b) => model.connectors[b.id]);
+      if (moves.length === 0 && bends.length === 0) {
+        this.host.onMessage?.('There is nothing to arrange.');
+        return false;
+      }
+      return (
+        this.run([{ type: 'applyLayout', moves, resizes, bends }]) !== null
+      );
+    } catch (error) {
+      if (abort.signal.aborted && this.layoutAbort !== abort) return false;
+      this.host.onMessage?.(
+        error instanceof Error ? error.message : 'The layout failed.',
+      );
+      return false;
+    } finally {
+      if (this.layoutAbort === abort) this.layoutAbort = null;
+    }
   }
 
   private cancelGesture(): void {
@@ -508,18 +595,21 @@ export class Editor {
       } else if (elements.size + connectors.size > 1) {
         collapseTo = hit.id;
       }
-      const ids = [...this.selectionState.elements];
+      // A container carries its contents, so only the outermost selected elements are moved.
+      const ids = outermostOf(this.model, this.selectionState.elements);
       const rects = new Map<ElementId, Rect>();
       for (const id of ids) {
         const it = scene.elements.get(id);
         if (it) rects.set(id, rectOf(it.x, it.y, it.w, it.h));
       }
+      const followers = this.followersOf(ids);
       this.mode = {
         kind: 'move',
         start: world,
         screen,
         ids,
         rects,
+        followers,
         started: false,
         collapseTo,
       };
@@ -700,20 +790,62 @@ export class Editor {
     mode.started = true;
     const delta = this.snappedDelta(mode, world, noSnap);
     const previews = new Map<ElementId, Rect>();
-    for (const [id, r] of mode.rects)
-      previews.set(id, {
-        minX: r.minX + delta.dx,
-        minY: r.minY + delta.dy,
-        maxX: r.maxX + delta.dx,
-        maxY: r.maxY + delta.dy,
-      });
+    for (const rects of [mode.rects, mode.followers])
+      for (const [id, r] of rects)
+        previews.set(id, {
+          minX: r.minX + delta.dx,
+          minY: r.minY + delta.dy,
+          maxX: r.maxX + delta.dx,
+          maxY: r.maxY + delta.dy,
+        });
     this.publishActive({
       selectedElements: this.selectionState.elements,
       selectedConnectors: this.selectionState.connectors,
       handles: false,
       previews,
       guides: delta.guides,
+      target: this.dropTarget(mode, delta),
     });
+  }
+
+  /** The rectangles of everything inside the given elements, found in one pass over the model. */
+  private followersOf(ids: readonly ElementId[]): Map<ElementId, Rect> {
+    const found = new Map<ElementId, Rect>();
+    const scene = this.view.scene;
+    const containers = ids.filter((id) => {
+      const cls = scene.elements.get(id)?.cls;
+      return cls !== undefined && isContainerClass(this.tool, cls);
+    });
+    if (containers.length === 0) return found;
+    const index = childrenIndex(this.model);
+    for (const id of containers)
+      for (const d of descendantsOf(this.model, id, index)) {
+        const it = scene.elements.get(d);
+        if (it) found.set(d, rectOf(it.x, it.y, it.w, it.h));
+      }
+    return found;
+  }
+
+  /** The container the first dragged element would land in, for the highlight and the drop. */
+  private dropTarget(
+    mode: Extract<Mode, { kind: 'move' }>,
+    delta: { dx: number; dy: number },
+  ): ElementId | null {
+    const id = mode.ids[0];
+    const r = id ? mode.rects.get(id) : undefined;
+    const cls = id ? this.model.elements[id]?.class : undefined;
+    if (!r || !id || !cls) return null;
+    return containerAt(
+      this.model,
+      this.tool,
+      this.model.manifest.modelType,
+      {
+        x: (r.minX + r.maxX) / 2 + delta.dx,
+        y: (r.minY + r.maxY) / 2 + delta.dy,
+      },
+      [id],
+      cls,
+    );
   }
 
   private snappedDelta(
@@ -737,7 +869,10 @@ export class Editor {
       const near = this.view.scene
         .search(inflate(shifted, threshold * 4 + 20))
         .filter(
-          (b) => b.kind === 'element' && !mode.rects.has(b.id as ElementId),
+          (b) =>
+            b.kind === 'element' &&
+            !mode.rects.has(b.id as ElementId) &&
+            !mode.followers.has(b.id as ElementId),
         );
       const snap = snapMove(shifted, near, {
         grid: this.gridSize(),
@@ -931,6 +1066,8 @@ export class Editor {
                     id,
                     x: r.minX + delta.dx,
                     y: r.minY + delta.dy,
+                    // Where it lands decides its container; the command works that out.
+                    drop: true,
                   },
                 ],
           ),

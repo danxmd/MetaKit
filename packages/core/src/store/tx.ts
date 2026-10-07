@@ -156,7 +156,7 @@ export class Tx<S> {
   }
 }
 
-function freezeDraft(draft: Draft): void {
+export function freezeDraft(draft: Draft): void {
   for (const object of draft) Object.freeze(object);
   draft.clear();
 }
@@ -180,4 +180,62 @@ export function revertPatches<S>(state: S, patches: readonly Patch[]): S {
   }
   freezeDraft(draft);
   return next;
+}
+
+export interface CheckedResult<S> {
+  state: S;
+  /** The patches that were applied, in their original order. */
+  applied: Patch[];
+  /** How many were left out because someone else changed that value since. */
+  skipped: number;
+}
+
+const same = (a: Json | undefined, b: Json | undefined): boolean =>
+  a === undefined || b === undefined ? a === b : deepEqual(a, b);
+
+/**
+ * Undo among people: reverts the patches whose path still holds the value the step left. A path
+ * that someone else changed since is left alone, so one person's undo never throws away another
+ * person's work.
+ */
+export function revertPatchesChecked<S>(
+  state: S,
+  patches: readonly Patch[],
+): CheckedResult<S> {
+  const draft: Draft = new Set();
+  let next = state;
+  const applied: Patch[] = [];
+  let skipped = 0;
+  for (let i = patches.length - 1; i >= 0; i--) {
+    const p = patches[i]!;
+    if (!same(getAt(next, p.path), p.after)) {
+      skipped += 1;
+      continue;
+    }
+    next = setAt(next, p.path, p.before, draft);
+    applied.push(p);
+  }
+  freezeDraft(draft);
+  return { state: next, applied: applied.reverse(), skipped };
+}
+
+/** The same check for redo: a patch is applied only while its path still holds what it replaced. */
+export function applyPatchesChecked<S>(
+  state: S,
+  patches: readonly Patch[],
+): CheckedResult<S> {
+  const draft: Draft = new Set();
+  let next = state;
+  const applied: Patch[] = [];
+  let skipped = 0;
+  for (const p of patches) {
+    if (!same(getAt(next, p.path), p.before)) {
+      skipped += 1;
+      continue;
+    }
+    next = setAt(next, p.path, p.after, draft);
+    applied.push(p);
+  }
+  freezeDraft(draft);
+  return { state: next, applied, skipped };
 }
