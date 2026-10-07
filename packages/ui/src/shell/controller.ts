@@ -1183,7 +1183,13 @@ export class AppController {
 
   /** Reads the link of the tool library that was just opened in Build mode. */
   private async loadGitLink(slug: string): Promise<void> {
-    const link = (await this.links().get(slug)) ?? null;
+    // Without IndexedDB (tests in Node, a blocked profile) there are no links, and Git mode is off.
+    const link = await this.links()
+      .get(slug)
+      .then(
+        (found) => found ?? null,
+        () => null,
+      );
     this.setGit({ ...NO_GIT, link });
     if (link) this.gitRefreshPending();
   }
