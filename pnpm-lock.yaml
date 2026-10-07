@@ -81,9 +81,6 @@ importers:
 
   spikes/behaviour:
     dependencies:
-      '@jitl/quickjs-ng-wasmfile-release-sync':
-        specifier: ^0.32.0
-        version: 0.32.0
       '@jitl/quickjs-wasmfile-release-sync':
         specifier: ^0.32.0
         version: 0.32.0
@@ -103,6 +100,8 @@ importers:
       '@types/rbush':
         specifier: ^4.0.0
         version: 4.0.0
+
+  spikes/git: {}
 
   spikes/sync:
     devDependencies:
@@ -179,9 +178,6 @@ packages:
 
   '@jitl/quickjs-ffi-types@0.32.0':
     resolution: {integrity: sha512-v9T+GQpmk43VDJ7d72sf0Nexhk+ArvtUihW27dy7lqAl0zBObFKtSBBIm5RBjwIhE8VwsPPm9PNuvPvNqLWUEg==}
-
-  '@jitl/quickjs-ng-wasmfile-release-sync@0.32.0':
-    resolution: {integrity: sha512-XAX2jjZWWh3M0YaRqi82xMKNW/gkF6mo3MpW3UY2cmVxnQai1JuboVsJQVoLU629iEL4XWvHtO4h5lo7NRnAcg==}
 
   '@jitl/quickjs-wasmfile-release-sync@0.32.0':
     resolution: {integrity: sha512-BKNDI/TPBfGlLNGYpLrhcDGXmIk4xHm4MRAisOBnOzpXVn9HZWsfmMAc9WMBrAHjvvds6HOikKeaOBKdPdpVrg==}
@@ -1231,10 +1227,6 @@ snapshots:
   '@humanwhocodes/retry@0.4.3': {}
 
   '@jitl/quickjs-ffi-types@0.32.0': {}
-
-  '@jitl/quickjs-ng-wasmfile-release-sync@0.32.0':
-    dependencies:
-      '@jitl/quickjs-ffi-types': 0.32.0
 
   '@jitl/quickjs-wasmfile-release-sync@0.32.0':
     dependencies:
