@@ -1,0 +1,487 @@
+/*
+ * MetaKit design system: tokens, base styles and a few shared patterns. Components keep only their
+ * own layout; colours, type, spacing, buttons, fields, menus and dialogs come from here.
+ * The theme is set by `data-theme="light|dark"` on <html> (see theme.ts); without it the system
+ * setting decides.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* Surfaces */
+  --app-bg: #f4f5f8;
+  --surface: #ffffff;
+  --surface-2: #f0f2f6;
+  --surface-3: #e7eaf0;
+  --hover-bg: #eceff4;
+  --overlay: rgb(15 18 30 / 45%);
+
+  /* Lines */
+  --line: #dfe3ea;
+  --line-strong: #c6ccd7;
+
+  /* Text */
+  --text: #1c2029;
+  --text-strong: #0f1219;
+  --text-muted: #5a6373;
+  --text-faint: #8a93a3;
+
+  /* Brand and status */
+  --accent: #4263eb;
+  --accent-hover: #3454d1;
+  --accent-soft: #e8edff;
+  --on-accent: #ffffff;
+  --danger: #d6336c;
+  --danger-soft: #ffe8f0;
+  --warning: #e67700;
+  --warning-soft: #fff4e0;
+  --success: #2b8a3e;
+  --success-soft: #e6f6ea;
+  --info-soft: #e7f1ff;
+
+  /* Canvas */
+  --canvas-bg: #fbfbfd;
+  --canvas-grid: #e4e8ef;
+  --canvas-grid-strong: #d3d9e3;
+  --canvas-selection: #4263eb;
+
+  /* Shape of things */
+  --radius-s: 4px;
+  --radius: 8px;
+  --radius-l: 12px;
+  --shadow-s: 0 1px 2px rgb(16 24 40 / 8%);
+  --shadow: 0 4px 14px rgb(16 24 40 / 12%);
+  --shadow-l: 0 16px 40px rgb(16 24 40 / 22%);
+
+  /* Type and space */
+  --font:
+    Inter, 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial,
+    sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', 'SF Mono', Menlo, monospace;
+  --text-s: 0.8125rem;
+  --text-m: 0.9375rem;
+  --text-l: 1.125rem;
+  --gap-1: 0.25rem;
+  --gap-2: 0.5rem;
+  --gap-3: 0.75rem;
+  --gap-4: 1rem;
+  --gap-5: 1.5rem;
+  --gap-6: 2rem;
+  --bar-height: 3rem;
+
+  /* Names used before the design system existed */
+  --bg: var(--surface);
+  --panel: var(--surface-2);
+  --muted: var(--text-muted);
+  --hover: var(--hover-bg);
+
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --app-bg: #0f1218;
+  --surface: #171b24;
+  --surface-2: #1e2330;
+  --surface-3: #272d3c;
+  --hover-bg: #252b3a;
+  --overlay: rgb(0 0 0 / 60%);
+  --line: #2b3242;
+  --line-strong: #3b4357;
+  --text: #e4e7ee;
+  --text-strong: #f6f7fb;
+  --text-muted: #a0a9ba;
+  --text-faint: #7a8396;
+  --accent: #7f97ff;
+  --accent-hover: #9aacff;
+  --accent-soft: #232b4d;
+  --on-accent: #0d1020;
+  --danger: #ff7aa2;
+  --danger-soft: #3b1e2b;
+  --warning: #ffb454;
+  --warning-soft: #3a2c14;
+  --success: #6fd085;
+  --success-soft: #17301f;
+  --info-soft: #1b2b45;
+  --canvas-bg: #131720;
+  --canvas-grid: #1f2530;
+  --canvas-grid-strong: #2a3140;
+  --canvas-selection: #9aacff;
+  --shadow-s: 0 1px 2px rgb(0 0 0 / 40%);
+  --shadow: 0 4px 14px rgb(0 0 0 / 45%);
+  --shadow-l: 0 16px 40px rgb(0 0 0 / 60%);
+}
+
+/* Follow the system when the person has not chosen. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']):not([data-theme='dark']) {
+    color-scheme: dark;
+    --app-bg: #0f1218;
+    --surface: #171b24;
+    --surface-2: #1e2330;
+    --surface-3: #272d3c;
+    --hover-bg: #252b3a;
+    --overlay: rgb(0 0 0 / 60%);
+    --line: #2b3242;
+    --line-strong: #3b4357;
+    --text: #e4e7ee;
+    --text-strong: #f6f7fb;
+    --text-muted: #a0a9ba;
+    --text-faint: #7a8396;
+    --accent: #7f97ff;
+    --accent-hover: #9aacff;
+    --accent-soft: #232b4d;
+    --on-accent: #0d1020;
+    --danger: #ff7aa2;
+    --danger-soft: #3b1e2b;
+    --warning: #ffb454;
+    --warning-soft: #3a2c14;
+    --success: #6fd085;
+    --success-soft: #17301f;
+    --info-soft: #1b2b45;
+    --canvas-bg: #131720;
+    --canvas-grid: #1f2530;
+    --canvas-grid-strong: #2a3140;
+    --canvas-selection: #9aacff;
+    --shadow-s: 0 1px 2px rgb(0 0 0 / 40%);
+    --shadow: 0 4px 14px rgb(0 0 0 / 45%);
+    --shadow-l: 0 16px 40px rgb(0 0 0 / 60%);
+  }
+}
+
+/* Base ---------------------------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--app-bg);
+  color: var(--text);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+  color: var(--text-strong);
+  line-height: 1.25;
+  font-weight: 650;
+}
+h1 {
+  font-size: 1.75rem;
+  letter-spacing: -0.01em;
+}
+h2 {
+  font-size: var(--text-l);
+}
+h3 {
+  font-size: var(--text-m);
+}
+p {
+  margin: 0;
+}
+a {
+  color: var(--accent);
+}
+code,
+kbd,
+pre {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+code {
+  background: var(--surface-3);
+  padding: 0.05em 0.35em;
+  border-radius: var(--radius-s);
+}
+hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: var(--gap-4) 0;
+}
+::selection {
+  background: var(--accent-soft);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Buttons ------------------------------------------------------------------------------------- */
+
+button {
+  font: inherit;
+  font-size: var(--text-s);
+  font-weight: 500;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-s);
+  padding: 0.35rem 0.75rem;
+  min-height: 2rem;
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    border-color 0.12s,
+    color 0.12s;
+}
+button:hover:not(:disabled) {
+  background: var(--hover-bg);
+}
+button:active:not(:disabled) {
+  background: var(--surface-3);
+}
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+button.primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+button.ghost {
+  background: transparent;
+  border-color: transparent;
+}
+button.ghost:hover:not(:disabled) {
+  background: var(--hover-bg);
+}
+button.danger {
+  color: var(--danger);
+  border-color: var(--danger);
+  background: transparent;
+}
+button.danger:hover:not(:disabled) {
+  background: var(--danger-soft);
+}
+button.icon {
+  padding: 0;
+  width: 2rem;
+  display: inline-grid;
+  place-items: center;
+}
+
+/* Fields -------------------------------------------------------------------------------------- */
+
+input:not([type='checkbox']):not([type='radio']):not([type='range']),
+select,
+textarea {
+  font: inherit;
+  font-size: var(--text-s);
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-s);
+  padding: 0.35rem 0.55rem;
+  min-height: 2rem;
+}
+textarea {
+  line-height: 1.4;
+}
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-faint);
+}
+input:disabled,
+select:disabled,
+textarea:disabled {
+  opacity: 0.6;
+}
+input[type='checkbox'],
+input[type='radio'] {
+  accent-color: var(--accent);
+}
+label {
+  font-size: var(--text-s);
+  color: var(--text-muted);
+}
+
+/* Patterns ------------------------------------------------------------------------------------ */
+
+.muted {
+  color: var(--text-muted);
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-s);
+}
+
+.badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: var(--surface-3);
+  color: var(--text-muted);
+}
+.badge.accent {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.notice {
+  padding: var(--gap-3) var(--gap-4);
+  border-radius: var(--radius);
+  background: var(--info-soft);
+  border: 1px solid var(--line);
+  font-size: var(--text-s);
+}
+.notice.warning {
+  background: var(--warning-soft);
+}
+.notice.error {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.notice.success {
+  background: var(--success-soft);
+}
+
+/* A segmented set of buttons, such as a mode switch. */
+.segmented-control {
+  display: inline-flex;
+  padding: 2px;
+  gap: 2px;
+  background: var(--surface-3);
+  border-radius: var(--radius);
+}
+.segmented-control > button {
+  border: 0;
+  background: transparent;
+  border-radius: calc(var(--radius) - 2px);
+  padding: 0.3rem 0.9rem;
+}
+.segmented-control > button[aria-current='page'],
+.segmented-control > button[aria-pressed='true'] {
+  background: var(--surface);
+  color: var(--text-strong);
+  box-shadow: var(--shadow-s);
+}
+
+/* A menu opened by a <details class="menu"><summary>…</summary><div class="menu-list">…</div></details>. */
+details.menu {
+  position: relative;
+}
+details.menu > summary {
+  list-style: none;
+  cursor: pointer;
+  font-size: var(--text-s);
+  font-weight: 500;
+  padding: 0.35rem 0.7rem;
+  border-radius: var(--radius-s);
+  user-select: none;
+}
+details.menu > summary::-webkit-details-marker {
+  display: none;
+}
+details.menu > summary::after {
+  content: '▾';
+  margin-left: 0.35rem;
+  font-size: 0.7em;
+  color: var(--text-faint);
+}
+details.menu > summary:hover,
+details.menu[open] > summary {
+  background: var(--hover-bg);
+}
+details.menu > .menu-list {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 13rem;
+  padding: var(--gap-1);
+  display: grid;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+details.menu > .menu-list.right {
+  left: auto;
+  right: 0;
+}
+.menu-list > button,
+.menu-list > a {
+  display: block;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  border-radius: var(--radius-s);
+  padding: 0.4rem 0.6rem;
+  font-size: var(--text-s);
+  color: var(--text);
+  text-decoration: none;
+}
+.menu-list > button:hover:not(:disabled),
+.menu-list > a:hover {
+  background: var(--hover-bg);
+}
+.menu-list .menu-heading {
+  padding: 0.4rem 0.6rem 0.15rem;
+  font-size: 0.7rem;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-faint);
+}
+.menu-list .menu-sep {
+  height: 1px;
+  margin: var(--gap-1) 0;
+  background: var(--line);
+}
+
+/* Dialogs ------------------------------------------------------------------------------------- */
+
+dialog {
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow-l);
+  padding: var(--gap-5);
+  max-width: min(36rem, calc(100vw - 2rem));
+}
+dialog::backdrop {
+  background: var(--overlay);
+}
+
+/* Scrollbars ---------------------------------------------------------------------------------- */
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

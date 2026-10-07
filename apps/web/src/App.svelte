@@ -316,49 +316,4 @@
     border-radius: 8px;
     box-shadow: 0 8px 28px rgb(0 0 0 / 20%);
   }
-  :global(:root) {
-    --bg: #ffffff;
-    --panel: #f8f9fa;
-    --line: #dee2e6;
-    --muted: #6b7280;
-    --accent: #364fc7;
-    --danger: #c92a2a;
-    --hover: #e9ecef;
-    font-family: system-ui, sans-serif;
-    color: #212529;
-  }
-  :global(body) {
-    margin: 0;
-    background: var(--bg);
-  }
-  :global(button) {
-    font: inherit;
-    border: 1px solid var(--line);
-    background: var(--bg);
-    border-radius: 6px;
-    padding: 0.25rem 0.7rem;
-    cursor: pointer;
-  }
-  :global(button:disabled) {
-    opacity: 0.5;
-    cursor: default;
-  }
-  :global(button.primary) {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #fff;
-  }
-  :global(input:not([type='checkbox'])),
-  :global(select),
-  :global(textarea) {
-    font: inherit;
-    padding: 0.25rem 0.4rem;
-    border: 1px solid var(--line);
-    border-radius: 4px;
-    background: var(--bg);
-  }
-  :global(:focus-visible) {
-    outline: 2px solid var(--accent);
-    outline-offset: 1px;
-  }
 </style>

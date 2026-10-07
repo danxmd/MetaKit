@@ -6,6 +6,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./components/*": "./src/components/*",
+    "./theme.css": "./src/theme/theme.css",
+    "./theme": "./src/theme/theme.ts",
     "./assistant": "./src/assistant/entry.ts",
     "./assistant-language": "./src/assistant/language-client.ts"
   },
