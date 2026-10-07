@@ -325,3 +325,57 @@ describe('after hooks', () => {
     expect(after).not.toHaveBeenCalled();
   });
 });
+
+describe('working state and transactions', () => {
+  it('shows an after handler the state with its own change, not the old one', () => {
+    const store = make();
+    let seen = -1;
+    store.after('createElement', () => {
+      seen = Object.keys(store.working.elements).length;
+    });
+    add(store);
+    expect(seen).toBe(1);
+    expect(Object.keys(store.working.elements)).toHaveLength(1);
+  });
+
+  it('groups several commands into one undo step and reads its own writes', () => {
+    const store = make();
+    const outcome = store.transact({ type: 'batch', commands: [] }, () => {
+      const a = add(store, 1);
+      add(store, 2);
+      store.execute({ type: 'move', id: a, x: 50, y: 0 });
+      return Object.keys(store.working.elements).length;
+    });
+    expect(outcome).toEqual({ ok: true, value: 2 });
+    expect(store.history()).toHaveLength(1);
+    store.undo();
+    expect(store.state.elements).toEqual({});
+  });
+
+  it('commits nothing when the function throws', () => {
+    const store = make();
+    expect(() =>
+      store.transact({ type: 'batch', commands: [] }, () => {
+        add(store);
+        throw new Error('script failed');
+      }),
+    ).toThrow('script failed');
+    expect(store.state.elements).toEqual({});
+    expect(store.canUndo()).toBe(false);
+    expect(add(store)).toBeTruthy();
+  });
+
+  it('joins the step in progress when called from a handler, and records no step when nothing changed', () => {
+    const store = make();
+    store.transact({ type: 'batch', commands: [] }, () => undefined);
+    expect(store.canUndo()).toBe(false);
+    store.after('createElement', () => {
+      store.transact({ type: 'batch', commands: [] }, () => {
+        store.execute({ type: 'updateManifest', name: 'Changed' });
+      });
+    });
+    add(store);
+    expect(store.history()).toHaveLength(1);
+    expect(store.state.manifest.name).toBe('Changed');
+  });
+});

@@ -9,6 +9,7 @@ import type {
 } from '../ids';
 import type { Json } from '../json';
 import type { Constraint, Rule, RuleId } from './rule-types';
+import type { Script, ScriptId, ToolPermissions } from './script-types';
 import type { PanelLayout, ShapeDef } from './shape-types';
 
 /** Text per language code, for example `{ "en": "Task", "de": "Aufgabe" }`. */
@@ -233,6 +234,8 @@ export interface ToolManifest {
   name: string;
   version: string;
   languages: string[];
+  /** What the scripts of this tool need beyond models and dialogs (ADR 0006). */
+  permissions?: ToolPermissions;
 }
 
 export interface ToolSettings {
@@ -254,10 +257,12 @@ export interface ToolLibrary {
   panels: Record<string, PanelLayout>;
   /** No-code rules (phase 5). */
   rules: Record<RuleId, Rule>;
+  /** TypeScript scripts (phase 7). */
+  scripts: Record<ScriptId, Script>;
 }
 
-/** The format version this release writes for tool libraries (2: shapes and panels, ADR 0004; 3: rules, constraints and default formulas, ADR 0005). */
-export const TOOL_FORMAT_VERSION = 3;
+/** The format version this release writes for tool libraries (2: shapes and panels, ADR 0004; 3: rules, constraints and default formulas, ADR 0005; 4: scripts and permissions, ADR 0006). */
+export const TOOL_FORMAT_VERSION = 4;
 
 export function optionValue(option: ChoiceOption): string {
   return typeof option === 'string' ? option : option.value;

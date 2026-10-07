@@ -25,5 +25,6 @@ export function createEmptyTool(
     shapes: {},
     panels: {},
     rules: {},
+    scripts: {},
   };
 }

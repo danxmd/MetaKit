@@ -1,5 +1,5 @@
 {
-  "formatVersion": 3,
+  "formatVersion": 4,
   "manifest": {
     "id": "tool_bpmnlite",
     "name": "BPMN lite",
@@ -553,5 +553,6 @@
     }
   },
   "panels": {},
-  "rules": {}
+  "rules": {},
+  "scripts": {}
 }

@@ -11,6 +11,7 @@ export const ID_PREFIXES = {
   model: 'mdl',
   view: 'vw',
   rule: 'rule',
+  script: 'scr',
 } as const;
 
 export type IdKind = keyof typeof ID_PREFIXES;

@@ -20,7 +20,7 @@ export const CURRENT_FORMAT: Readonly<Record<FileKind, number>> = {
   snapshot: 2,
   trash: 1,
   mkmodel: 1,
-  'tool-document': 3,
+  'tool-document': 4,
   'model-document': 1,
 };
 
@@ -80,6 +80,12 @@ export const MIGRATIONS: MigrationRegistry = {
       from: 2,
       to: 3,
       up: (file) => ({ ...file, rules: file.rules ?? {} }),
+    },
+    {
+      // Format 4 adds scripts (ADR 0006); permissions in the manifest are optional.
+      from: 3,
+      to: 4,
+      up: (file) => ({ ...file, scripts: file.scripts ?? {} }),
     },
   ],
   'model-document': [],

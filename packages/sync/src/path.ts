@@ -9,7 +9,15 @@ export type DocKind = 'tool' | 'model';
  */
 export const COLLECTIONS: Readonly<Record<DocKind, readonly string[]>> = {
   model: ['elements', 'connectors'],
-  tool: ['classes', 'relations', 'modelTypes', 'shapes', 'panels', 'rules'],
+  tool: [
+    'classes',
+    'relations',
+    'modelTypes',
+    'shapes',
+    'panels',
+    'rules',
+    'scripts',
+  ],
 };
 
 const escapePart = (part: string): string =>
