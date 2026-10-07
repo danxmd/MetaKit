@@ -35,7 +35,7 @@ Run the CLI after a build: `node apps/cli/dist/bin.js --version`.
 apps/web        the static web app (Vite + Svelte 5)
 apps/cli        headless export and validation (Node.js)
 packages/       core, sync, storage, formula, shapes, canvas, behaviour, assistant, ui
-spikes/         phase-0 experiments (canvas, sync); never imported by packages/ or apps/
+spikes/         phase-0 experiments (canvas, sync, behaviour, git); never imported by packages/ or apps/
 tools/          sample tool libraries used as test fixtures
 bench/          canvas and merge benchmarks
 docs/           plan, phase briefs, decisions
@@ -59,3 +59,7 @@ Phase-0 experiments, each with a report in `docs/spikes/`:
 
 - `spikes/canvas`: `pnpm --filter @metakit-app/spike-canvas dev`, then open `http://localhost:4174/?bench` in Chrome or Edge and press **Run benchmark**.
 - `spikes/sync`: `pnpm --filter @metakit-app/spike-sync dev` (port 4175). The test protocol for real sync services is in `docs/spikes/sync.md`.
+- `spikes/behaviour`: `pnpm --filter @metakit-app/spike-behaviour dev` (port 4176), formula engine and QuickJS sandbox; `pnpm --filter @metakit-app/spike-behaviour measure` records sizes and timings.
+- `spikes/git`: `pnpm --filter @metakit-app/spike-git dev` (port 4177). Steps for running it against throwaway GitHub and GitLab repositories are in `docs/spikes/git.md`.
+
+The phase 0 decision report is `docs/spikes/phase-0-report.md`.

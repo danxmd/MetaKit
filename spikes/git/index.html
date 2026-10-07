@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MetaKit Git spike</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 1rem 2rem;
+        max-width: 62rem;
+      }
+      label {
+        display: block;
+        margin: 0.5rem 0 0.15rem;
+        font-size: 0.85rem;
+        color: #495057;
+      }
+      input,
+      select {
+        font: inherit;
+        padding: 0.3rem;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0 1rem;
+      }
+      .row {
+        margin: 0.8rem 0;
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      pre {
+        background: #f1f3f5;
+        padding: 0.6rem;
+        min-height: 8rem;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      .warn {
+        background: #fff4e6;
+        border: 1px solid #ffd8a8;
+        padding: 0.5rem 0.7rem;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Git hosting spike</h1>
+    <p class="warn">
+      Use a <strong>throwaway repository</strong> only. The token is typed here,
+      kept in memory and never saved: reloading the page forgets it. Everything
+      the check writes goes to a new branch named <code>metakit-spike/…</code>,
+      which is deleted at the end.
+    </p>
+    <div class="grid">
+      <div>
+        <label for="provider">Service</label>
+        <select id="provider">
+          <option value="github">GitHub</option>
+          <option value="gitlab">GitLab</option>
+        </select>
+      </div>
+      <div>
+        <label for="base">API address</label>
+        <input id="base" type="text" />
+      </div>
+      <div>
+        <label for="repo"
+          >Repository (owner/name, or group/project on GitLab)</label
+        >
+        <input
+          id="repo"
+          type="text"
+          placeholder="your-name/metakit-spike-test"
+        />
+      </div>
+      <div>
+        <label for="branch">Branch to start from</label>
+        <input id="branch" type="text" value="main" />
+      </div>
+      <div>
+        <label for="token"
+          >Access token (fine-grained token on GitHub; personal access token on
+          GitLab)</label
+        >
+        <input id="token" type="password" autocomplete="off" />
+      </div>
+      <div>
+        <label for="client"
+          >GitLab OAuth application ID (for sign-in with PKCE, optional)</label
+        >
+        <input id="client" type="text" autocomplete="off" />
+      </div>
+    </div>
+    <div class="row">
+      <button id="cors">1. Check browser access (CORS)</button>
+      <button id="tree">2. Read the tree</button>
+      <button id="check">3. Run the full check</button>
+      <button id="signin">GitLab: sign in with PKCE</button>
+      <label style="margin: 0"
+        ><input id="keep" type="checkbox" style="width: auto" /> keep the
+        throwaway branch</label
+      >
+    </div>
+    <pre id="log">Ready.</pre>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
