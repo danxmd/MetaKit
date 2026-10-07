@@ -1,9 +1,4 @@
-import {
-  deepEqual,
-  freezeCopy,
-  type Json,
-  type Patch,
-} from '@metakit-app/core';
+import { deepEqual, type Json, type Patch } from '@metakit-app/core';
 import { encode, type SyncAdapter } from './adapter';
 import { HybridClock } from './clock';
 import { updateDocument } from './doc';

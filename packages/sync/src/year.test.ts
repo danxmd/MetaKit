@@ -23,7 +23,6 @@ import {
 import { MemoryFolder } from './memory-adapter';
 import { patchesToOps, toLine, type StampedOp } from './ops';
 import { SyncSession, writeNewDocument } from './session';
-import { loadDocument } from './scanner';
 import { materialize, SyncState } from './state';
 
 const FOLDER = 'models/year';
