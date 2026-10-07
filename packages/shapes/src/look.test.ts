@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { NodeLook, ShapeId, ToolLibrary } from '@metakit-app/core';
-import { validateToolLibrary } from '@metakit-app/core';
+import { createToolStore, validateToolLibrary } from '@metakit-app/core';
+import { SAMPLE, sampleTool } from '@metakit-app/core/testing';
 import type { Scope, Value } from '@metakit-app/formula';
 import { compileNode } from './compile';
 import { compileRelation } from './relation';
@@ -247,5 +248,62 @@ describe('renaming an attribute', () => {
         scope: scopeOf({ $label: 'T', Name: 'N', [key]: 'Done' }),
       }).ops;
     expect(draw(renamed, 'State')).toEqual(draw(look, 'Status'));
+  });
+});
+
+describe('renaming an attribute in the tool library', () => {
+  it('keeps the shape drawing the same and equal to a fresh compile of the renamed look', () => {
+    const look: NodeLook = {
+      ...defaultNodeLook('node', 'rounded'),
+      fill: {
+        by: 'Priority',
+        values: { High: '#f00', Low: '#0f0' },
+        fallback: '#ccc',
+      },
+      subtitle: { attribute: 'Priority' },
+      badge: {
+        attribute: 'Priority',
+        equals: 'High',
+        text: 'High',
+        colour: '#900',
+      },
+    };
+    const base = sampleTool();
+    const tool: ToolLibrary = {
+      ...base,
+      shapes: { [ID]: nodeShapeFromLook(look, ID, 'Task look') },
+      classes: {
+        ...base.classes,
+        [SAMPLE.task]: { ...base.classes[SAMPLE.task]!, shape: ID },
+      },
+    };
+    const store = createToolStore(tool);
+    store.execute({
+      type: 'renameKey',
+      scope: {
+        kind: 'attribute',
+        owner: { kind: 'class', id: SAMPLE.task },
+        id: SAMPLE.attPriority,
+      },
+      newKey: 'Urgency',
+    });
+    const renamed = store.state.shapes[ID] as NodeShape;
+    expect(renamed.look).toEqual(renameLookKey(look, 'Priority', 'Urgency'));
+    expect(renamed).toEqual(
+      nodeShapeFromLook(
+        renameLookKey(look, 'Priority', 'Urgency'),
+        ID,
+        'Task look',
+      ),
+    );
+    const draw = (s: NodeShape, key: string) =>
+      compileNode(s, {
+        w: 150,
+        h: 70,
+        scope: scopeOf({ $label: 'T', [key]: 'High' }),
+      }).ops;
+    expect(draw(renamed, 'Urgency')).toEqual(
+      draw(tool.shapes[ID] as NodeShape, 'Priority'),
+    );
   });
 });
