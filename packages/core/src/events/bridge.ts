@@ -81,7 +81,7 @@ export function attachEvents(
     )?.path[1];
 
   stops.push(
-    store.before('createElement', ({ command, user }) => {
+    store.before('createElement', ({ command, user, state }) => {
       const c = command as Extract<ModelCommand, { type: 'createElement' }>;
       return cancelOf(
         bus.emit(
@@ -89,15 +89,19 @@ export function attachEvents(
             class: c.class,
             new: { x: c.x, y: c.y },
           }),
+          state,
         ),
       );
     }),
     store.after('createElement', ({ patches, state, user }) => {
       const id = created(patches, 'elements');
       if (id)
-        bus.emit(base('object.created', id, user, target(state as Model, id)));
+        bus.emit(
+          base('object.created', id, user, target(state as Model, id)),
+          state,
+        );
     }),
-    store.before('createConnector', ({ command, user }) => {
+    store.before('createConnector', ({ command, user, state }) => {
       const c = command as Extract<ModelCommand, { type: 'createConnector' }>;
       return cancelOf(
         bus.emit(
@@ -106,6 +110,7 @@ export function attachEvents(
             from: c.from,
             to: c.to,
           }),
+          state,
         ),
       );
     }),
@@ -119,8 +124,8 @@ export function attachEvents(
             from: c.from,
             to: c.to,
           }),
+          state,
         );
-      void state;
     }),
     store.before('delete', ({ command, state, user }) => {
       const id = (command as Extract<ModelCommand, { type: 'delete' }>).id;
@@ -128,10 +133,10 @@ export function attachEvents(
       // Only objects have delete events; deleting a connector is a plain change.
       if (!m.elements[id as ElementId]) return undefined;
       return cancelOf(
-        bus.emit(base('object.deleting', id, user, target(m, id))),
+        bus.emit(base('object.deleting', id, user, target(m, id)), state),
       );
     }),
-    store.after('delete', ({ command, patches, user }) => {
+    store.after('delete', ({ command, patches, user, state }) => {
       const id = (command as Extract<ModelCommand, { type: 'delete' }>).id;
       const gone = patches.find(
         (p) =>
@@ -146,6 +151,7 @@ export function attachEvents(
           user,
           was?.class ? { class: was.class as never } : {},
         ),
+        state,
       );
     }),
     store.after('move', ({ command, patches, state, user }) => {
@@ -164,6 +170,7 @@ export function attachEvents(
           },
           new: { x: e?.x ?? 0, y: e?.y ?? 0 },
         }),
+        state,
       );
     }),
     store.after('resize', ({ command, patches, state, user }) => {
@@ -182,6 +189,7 @@ export function attachEvents(
           },
           new: { w: e?.w ?? 0, h: e?.h ?? 0 },
         }),
+        state,
       );
     }),
     store.after('reconnect', ({ command, patches, state, user }) => {
@@ -197,6 +205,7 @@ export function attachEvents(
             old: (p.before as string | undefined) ?? null,
             new: (p.after as string | undefined) ?? null,
           }),
+          state,
         );
       }
     }),
@@ -221,6 +230,7 @@ export function attachEvents(
             old: data?.[c.attr] ?? null,
             new: c.value,
           }),
+          state,
         ),
       );
     }),
@@ -238,15 +248,19 @@ export function attachEvents(
         old: (p.before as Json | undefined) ?? null,
         new: (p.after as Json | undefined) ?? null,
       };
-      bus.emit(base('attribute.changed', c.target, user, payload));
+      bus.emit(base('attribute.changed', c.target, user, payload), state);
       if (def?.type === 'table') {
         const before = rowCount(p.before);
         const after = rowCount(p.after);
         for (let row = before; row < after; row++)
-          bus.emit(base('table.rowAdded', c.target, user, { ...payload, row }));
+          bus.emit(
+            base('table.rowAdded', c.target, user, { ...payload, row }),
+            state,
+          );
         for (let row = after; row < before; row++)
           bus.emit(
             base('table.rowRemoved', c.target, user, { ...payload, row }),
+            state,
           );
       }
       // A rename is a change of the attribute that gives the object its label: the first text attribute.
@@ -257,7 +271,7 @@ export function attachEvents(
         c.target !== 'model' &&
         m.elements[c.target as ElementId]
       )
-        bus.emit(base('object.renamed', c.target, user, payload));
+        bus.emit(base('object.renamed', c.target, user, payload), state);
     }),
   );
   void isA;

@@ -62,6 +62,7 @@ export function isEventName(name: string): name is EventName {
  */
 export class EventBus {
   private readonly registrations = new Set<Registration>();
+  private live: unknown = undefined;
 
   constructor(
     private readonly options: {
@@ -69,6 +70,16 @@ export class EventBus {
       isA?: (cls: ClassId, ancestor: ClassId) => boolean;
     } = {},
   ) {}
+
+  /**
+   * The document state the event being emitted was announced with: inside a command it is the
+   * state of the step in progress, which the store's own `state` does not show until the step
+   * ends. Undefined for events the app emits itself, outside any command. Handlers (rules) read it
+   * so that their formulas see the change that triggered them.
+   */
+  get state(): unknown {
+    return this.live;
+  }
 
   on(
     pattern: string,
@@ -105,7 +116,17 @@ export class EventBus {
   }
 
   /** Runs the handlers of an event; for events that can be cancelled the first cancel wins. */
-  emit(payload: EventPayload): EmitResult {
+  emit(payload: EventPayload, state?: unknown): EmitResult {
+    const outer = this.live;
+    this.live = state;
+    try {
+      return this.dispatch(payload);
+    } finally {
+      this.live = outer;
+    }
+  }
+
+  private dispatch(payload: EventPayload): EmitResult {
     const cancellable = (CANCELLABLE_EVENTS as readonly string[]).includes(
       payload.event,
     );
