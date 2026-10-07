@@ -69,13 +69,16 @@
 
 <div class="editor" data-testid="shapes-section">
   <h2>Shapes</h2>
-  <p class="muted">
+  <p class="muted lead">
     A shape says how a class or a relation class is drawn. Classes pick theirs
     in the class editor.
   </p>
+  {#if shapes.length === 0}<p class="muted">
+      No shapes yet. Add one from a starter below, or create one from a class.
+    </p>{/if}
   <ul>
     {#each shapes as s (s.id)}
-      <li>
+      <li class="card">
         <div class="line">
           <strong>{s.name ?? s.id}</strong>
           <span class="muted"
@@ -100,6 +103,7 @@
           <button type="button" onclick={() => duplicate(s)}>Duplicate</button>
           <button
             type="button"
+            class="danger"
             onclick={() => exec({ type: 'removeShape', id: s.id })}
             aria-label="Delete {s.name ?? s.id}">Delete</button
           >
@@ -122,7 +126,7 @@
       {#each starters as s (s.id)}<option value={s.id}>{s.name ?? s.id}</option
         >{/each}
     </select>
-    <button type="button" onclick={add} data-testid="shapes-add"
+    <button type="button" class="primary" onclick={add} data-testid="shapes-add"
       >Add from starter</button
     >
     <DraftWithAssistant
@@ -132,7 +136,7 @@
       onAccept={(commands) => exec(asOneStep(commands) as never)}
     />
   </div>
-  {#if error}<p class="problem" role="alert" data-testid="shapes-problem">
+  {#if error}<p class="notice error" role="alert" data-testid="shapes-problem">
       {error}
     </p>{/if}
 </div>
@@ -140,37 +144,40 @@
 <style>
   .editor {
     display: grid;
-    gap: 0.7rem;
+    gap: var(--gap-3);
+    max-width: 56rem;
   }
-  h2 {
+  .lead {
     margin: 0;
-    font-size: 1.15rem;
   }
   ul {
     list-style: none;
     padding: 0;
     margin: 0;
     display: grid;
-    gap: 0.4rem;
+    gap: var(--gap-2);
+  }
+  li {
+    padding: var(--gap-2) var(--gap-3);
+    display: grid;
+    gap: var(--gap-2);
   }
   .line {
     display: flex;
-    gap: 0.5rem;
-    align-items: baseline;
+    gap: var(--gap-2);
+    align-items: center;
   }
   .spacer {
     flex: 1;
   }
   .row {
     display: flex;
-    gap: 0.5rem;
+    gap: var(--gap-2);
+    align-items: center;
+    padding-top: var(--gap-2);
   }
   .muted {
-    color: var(--muted);
-    font-size: 0.85rem;
+    font-size: var(--text-s);
     margin: 0;
-  }
-  .problem {
-    color: #c92a2a;
   }
 </style>

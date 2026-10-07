@@ -313,14 +313,14 @@
     color: var(--muted);
   }
   .problem {
-    color: #c92a2a;
+    color: var(--danger);
     margin: 0;
   }
   .hint {
     color: var(--muted);
   }
   .ok {
-    color: #2b8a3e;
+    color: var(--success);
     margin: 0;
   }
   .messages {

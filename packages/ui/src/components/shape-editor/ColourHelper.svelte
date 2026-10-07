@@ -167,7 +167,7 @@
 
 <style>
   dialog {
-    border: 1px solid var(--line, #dee2e6);
+    border: 1px solid var(--line, var(--line));
     border-radius: 10px;
     padding: 1.25rem 1.5rem;
     min-width: 22rem;
@@ -191,7 +191,7 @@
   th {
     text-align: left;
     font-size: 0.8rem;
-    color: var(--muted, #6b7280);
+    color: var(--muted, var(--text-muted));
   }
   td {
     padding: 0.2rem 0.5rem 0.2rem 0;
@@ -213,6 +213,6 @@
     margin: 0;
     padding: 0.5rem 0.7rem;
     border-radius: 6px;
-    background: #fff4e6;
+    background: var(--warning-soft);
   }
 </style>

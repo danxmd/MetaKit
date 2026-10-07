@@ -106,15 +106,17 @@
     overflow-wrap: anywhere;
   }
   li.error {
-    color: #c92a2a;
-    background: #fff5f5;
+    color: var(--danger);
+    background: var(--danger-soft);
   }
   li.warn {
-    color: #8a5a00;
-    background: #fff9db;
+    color: var(--warning);
+    background: var(--warning-soft);
   }
   li.empty {
-    color: var(--muted);
+    display: block;
+    white-space: normal;
+    color: var(--text-muted);
     font-family: inherit;
   }
   time {

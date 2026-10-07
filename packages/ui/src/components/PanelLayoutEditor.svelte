@@ -612,7 +612,7 @@
   .fx[aria-pressed='true'] {
     background: var(--accent);
     border-color: var(--accent);
-    color: #fff;
+    color: var(--on-accent);
   }
   .problem {
     color: var(--danger);

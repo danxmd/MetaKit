@@ -110,8 +110,8 @@
     font-size: 0.75rem;
   }
   canvas {
-    background: #fff;
-    border: 1px solid var(--line, #dee2e6);
+    background: var(--canvas-bg);
+    border: 1px solid var(--line, var(--line));
     border-radius: 4px;
   }
 </style>

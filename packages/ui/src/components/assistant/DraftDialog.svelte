@@ -162,21 +162,15 @@
 
 <style>
   dialog {
-    border: 1px solid var(--line, #d0d7de);
-    border-radius: 10px;
-    padding: 1.25rem 1.5rem;
     width: min(42rem, 92vw);
   }
   .body {
     display: grid;
-    gap: 0.8rem;
+    gap: var(--gap-3);
   }
   h2,
   h3 {
     margin: 0;
-  }
-  h2 {
-    font-size: 1.15rem;
   }
   h3 {
     font-size: 1rem;
@@ -196,12 +190,12 @@
     box-sizing: border-box;
   }
   .raw {
-    font-family: ui-monospace, monospace;
+    font-family: var(--font-mono);
     font-size: 0.8rem;
   }
   .row {
     display: flex;
-    gap: 0.8rem;
+    gap: var(--gap-3);
     align-items: center;
     flex-wrap: wrap;
   }
@@ -215,14 +209,14 @@
     padding-left: 1.2rem;
   }
   .muted {
-    color: var(--muted, #5c6670);
+    color: var(--text-muted);
     font-size: 0.8rem;
   }
   .problem {
-    color: #c92a2a;
-    background: #fff5f5;
+    color: var(--danger);
+    background: var(--danger-soft);
     padding: 0.5rem 0.7rem;
-    border-radius: 6px;
+    border-radius: var(--radius);
     margin: 0;
     font-size: 0.85rem;
   }

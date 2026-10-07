@@ -176,7 +176,7 @@
   }
   .label {
     font-size: 0.85rem;
-    color: var(--muted, #6b7280);
+    color: var(--muted, var(--text-muted));
   }
   .control {
     display: flex;
@@ -207,8 +207,8 @@
     padding: 0.15rem 0.5rem;
   }
   .fx[aria-pressed='true'] {
-    background: var(--accent, #364fc7);
-    border-color: var(--accent, #364fc7);
-    color: #fff;
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--on-accent);
   }
 </style>

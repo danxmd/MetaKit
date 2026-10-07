@@ -50,15 +50,54 @@
     | 'rules'
     | 'scripts'
     | 'settings';
-  const SECTIONS: [Section, string][] = [
-    ['classes', 'Classes'],
-    ['relations', 'Relation classes'],
-    ['modelTypes', 'Model types'],
-    ['shapes', 'Shapes'],
-    ['rules', 'Rules'],
-    ['scripts', 'Scripts'],
-    ['settings', 'Settings'],
+  const LABELS: Record<Section, string> = {
+    classes: 'Classes',
+    relations: 'Relation classes',
+    modelTypes: 'Model types',
+    shapes: 'Shapes',
+    rules: 'Rules',
+    scripts: 'Scripts',
+    settings: 'Settings',
+  };
+  // Panel layouts are reached from a class or relation class ("Panel layout" in its editor).
+  const GROUPS: { id: string; title: string; sections: Section[] }[] = [
+    {
+      id: 'metamodel',
+      title: 'Metamodel',
+      sections: ['classes', 'relations', 'modelTypes'],
+    },
+    { id: 'appearance', title: 'Appearance', sections: ['shapes'] },
+    { id: 'behaviour', title: 'Behaviour', sections: ['rules', 'scripts'] },
+    { id: 'tool', title: 'Tool library', sections: ['settings'] },
   ];
+  const NEW_LABEL: Record<string, string> = {
+    classes: 'New class',
+    relations: 'New relation class',
+    modelTypes: 'New model type',
+  };
+  const NEW_PLACEHOLDER: Record<string, string> = {
+    classes: 'For example Task',
+    relations: 'For example Assigned to',
+    modelTypes: 'For example Process map',
+  };
+  const EMPTY_LIST: Record<string, string> = {
+    classes:
+      'A class describes one kind of object, such as Task. Add your first class above.',
+    relations:
+      'A relation class describes how two kinds of object connect, such as Assigned to. Add one above.',
+    modelTypes:
+      'A model type chooses which classes and relations a modeller can use in one kind of model. Add one above.',
+  };
+  const EMPTY_TITLE: Record<string, string> = {
+    classes: 'No class selected',
+    relations: 'No relation class selected',
+    modelTypes: 'No model type selected',
+  };
+  const EMPTY_HELP: Record<string, string> = {
+    classes: 'Choose a class in the list, or add a new one.',
+    relations: 'Choose a relation class in the list, or add a new one.',
+    modelTypes: 'Choose a model type in the list, or add a new one.',
+  };
 
   const build = $derived(app.build!);
   // Reading `revision` makes this run again after every change to the tool library.
@@ -78,6 +117,10 @@
   let showPreview = $state(true);
   let committing = $state(false);
   const git = $derived(app.git);
+  let sourceMenu = $state<HTMLDetailsElement>();
+  const closeMenu = () => {
+    if (sourceMenu) sourceMenu.open = false;
+  };
 
   function openCommit() {
     controller.gitRefreshPending();
@@ -115,6 +158,17 @@
     [...items].sort((a, b) => a.key.localeCompare(b.key)),
   );
   const current = $derived(selected[section]);
+  const isListSection = $derived(
+    section === 'classes' ||
+      section === 'relations' ||
+      section === 'modelTypes',
+  );
+  const counts = $derived<Partial<Record<Section, number>>>({
+    classes: Object.keys(tool.classes).length,
+    relations: Object.keys(tool.relations).length,
+    modelTypes: Object.keys(tool.modelTypes).length,
+    shapes: Object.keys(tool.shapes).length,
+  });
 
   function add() {
     const name = newName.trim();
@@ -218,7 +272,7 @@
 
 <div class="build" data-testid="build-view">
   <header class="bar">
-    <button type="button" onclick={back} data-testid="build-back"
+    <button type="button" class="ghost" onclick={back} data-testid="build-back"
       >← Tool libraries</button
     >
     <input
@@ -235,49 +289,84 @@
         data-testid="build-version"
       /></label
     >
+    <span class="status" data-testid="build-status">{status}</span>
     <span class="spacer"></span>
     <button
       type="button"
+      class="icon"
       disabled={!build.canUndo}
       onclick={() => controller.undoBuild()}
-      data-testid="build-undo">Undo</button
+      title="Undo"
+      aria-label="Undo"
+      data-testid="build-undo">↶</button
     >
     <button
       type="button"
+      class="icon"
       disabled={!build.canRedo}
       onclick={() => controller.redoBuild()}
-      data-testid="build-redo">Redo</button
+      title="Redo"
+      aria-label="Redo"
+      data-testid="build-redo">↷</button
     >
     {#if git.link}
-      <span class="git" data-testid="git-repo" title="Linked repository"
-        >{git.link.repo} · {git.link.branch}</span
-      >
-      <button type="button" onclick={openCommit} data-testid="git-commit"
-        >Commit and push{git.pending.length > 0
-          ? ` (${git.pending.length})`
-          : ''}</button
-      >
-      <button
-        type="button"
-        disabled={git.busy}
-        onclick={() => controller.gitPull()}
-        data-testid="git-pull">Pull</button
-      >
-      <button
-        type="button"
-        disabled={git.busy}
-        onclick={() => controller.gitLoadReleases()}
-        data-testid="git-releases">Releases</button
-      >
+      <details class="menu" bind:this={sourceMenu} data-testid="git-menu">
+        <summary data-testid="git-menu-summary">Source control</summary>
+        <div class="menu-list right">
+          <div class="menu-heading">Linked repository</div>
+          <div class="repo">
+            <span
+              class="badge accent"
+              data-testid="git-repo"
+              title="Linked repository"
+              >{git.link.repo} · {git.link.branch}</span
+            >
+          </div>
+          <div class="menu-sep"></div>
+          <button
+            type="button"
+            onclick={() => {
+              closeMenu();
+              openCommit();
+            }}
+            data-testid="git-commit"
+            >Commit and push{git.pending.length > 0
+              ? ` (${git.pending.length})`
+              : ''}</button
+          >
+          <button
+            type="button"
+            disabled={git.busy}
+            onclick={() => {
+              closeMenu();
+              controller.gitPull();
+            }}
+            data-testid="git-pull">Pull</button
+          >
+          <button
+            type="button"
+            disabled={git.busy}
+            onclick={() => {
+              closeMenu();
+              controller.gitLoadReleases();
+            }}
+            data-testid="git-releases">Releases</button
+          >
+        </div>
+      </details>
     {/if}
-    <span class="status" data-testid="build-status">{status}</span>
-    <button type="button" onclick={() => (showPreview = !showPreview)}
-      >{showPreview ? 'Hide preview' : 'Show preview'}</button
+    <button
+      type="button"
+      aria-pressed={showPreview}
+      onclick={() => (showPreview = !showPreview)}
+      data-testid="build-preview-toggle">Try it</button
     >
   </header>
-  {#if git.note}<p class="message" data-testid="git-note">{git.note}</p>{/if}
+  {#if git.note}<p class="notice success" data-testid="git-note">
+      {git.note}
+    </p>{/if}
   {#if git.error && !committing}<p
-      class="message"
+      class="notice error"
       role="alert"
       data-testid="git-error"
     >
@@ -313,11 +402,11 @@
       onCancel={() => controller.gitCloseReleases()}
     />
   {/if}
-  {#if message}<p class="message" role="alert" data-testid="build-message">
+  {#if message}<p class="notice error" role="alert" data-testid="build-message">
       {message}
     </p>{/if}
   {#if build.issues.length > 0}
-    <details class="issues" data-testid="build-issues">
+    <details class="notice warning issues" data-testid="build-issues">
       <summary
         >{build.issues.length} problem{build.issues.length === 1 ? '' : 's'} in this
         tool library</summary
@@ -331,42 +420,33 @@
     </details>
   {/if}
 
-  <div class="body" class:with-preview={showPreview}>
-    <nav>
-      <div class="tabs" role="tablist">
-        {#each SECTIONS as [id, label] (id)}
-          <button
-            type="button"
-            role="tab"
-            aria-selected={section === id}
-            class:on={section === id}
-            onclick={() => (section = id)}
-            data-testid="build-tab-{id}">{label}</button
-          >
-        {/each}
-      </div>
-      {#if section === 'classes' || section === 'relations' || section === 'modelTypes'}
-        <ul class="list">
-          {#each sortedItems as item (item.id)}
-            <li class:on={current === item.id}>
+  <div class="body">
+    <nav aria-label="Tool library sections">
+      {#each GROUPS as group (group.id)}
+        <div class="group" role="group" aria-labelledby="grp-{group.id}">
+          <h3 id="grp-{group.id}" class="group-title">{group.title}</h3>
+          <div role="tablist" aria-orientation="vertical">
+            {#each group.sections as id (id)}
               <button
                 type="button"
-                class="pick"
-                onclick={() => (selected = { ...selected, [section]: item.id })}
-                data-testid="build-item-{item.key}"
-                >{item.key}<small
-                  >{item.text !== item.key ? item.text : ''}</small
-                ></button
+                role="tab"
+                aria-selected={section === id}
+                class="tab"
+                class:on={section === id}
+                onclick={() => (section = id)}
+                data-testid="build-tab-{id}"
+                ><span>{LABELS[id]}</span>
+                {#if counts[id] !== undefined}<span class="count"
+                    >{counts[id]}</span
+                  >{/if}</button
               >
-              <button
-                type="button"
-                onclick={() => remove(item.id)}
-                aria-label="Delete {item.key}"
-                data-testid="build-delete-{item.key}">Delete</button
-              >
-            </li>
-          {/each}
-        </ul>
+            {/each}
+          </div>
+        </div>
+      {/each}
+    </nav>
+    {#if isListSection}
+      <section class="items" aria-label={LABELS[section]}>
         <form
           class="new"
           onsubmit={(e) => {
@@ -374,16 +454,52 @@
             add();
           }}
         >
-          <input
-            bind:value={newName}
-            placeholder="Name"
-            aria-label="Name of the new item"
-            data-testid="build-new-name"
-          />
-          <button type="submit" data-testid="build-add">Add</button>
+          <label for="build-new-name">{NEW_LABEL[section]}</label>
+          <div class="new-row">
+            <input
+              id="build-new-name"
+              bind:value={newName}
+              placeholder={NEW_PLACEHOLDER[section]}
+              data-testid="build-new-name"
+            />
+            <button type="submit" class="primary" data-testid="build-add"
+              >Add</button
+            >
+          </div>
         </form>
-      {/if}
-    </nav>
+        {#if sortedItems.length === 0}
+          <p class="empty muted" data-testid="build-list-empty">
+            {EMPTY_LIST[section]}
+          </p>
+        {:else}
+          <ul class="list">
+            {#each sortedItems as item (item.id)}
+              <li class:on={current === item.id}>
+                <button
+                  type="button"
+                  class="pick"
+                  aria-current={current === item.id ? 'true' : undefined}
+                  onclick={() =>
+                    (selected = { ...selected, [section]: item.id })}
+                  data-testid="build-item-{item.key}"
+                  >{item.key}<small
+                    >{item.text !== item.key ? item.text : ''}</small
+                  ></button
+                >
+                <button
+                  type="button"
+                  class="ghost icon delete"
+                  onclick={() => remove(item.id)}
+                  title="Delete {item.key}"
+                  aria-label="Delete {item.key}"
+                  data-testid="build-delete-{item.key}">✕</button
+                >
+              </li>
+            {/each}
+          </ul>
+        {/if}
+      </section>
+    {/if}
     <main>
       {#if section === 'classes' && current && tool.classes[current as ClassId]}
         {#key current}
@@ -433,11 +549,16 @@
       {:else if section === 'settings'}
         <SettingsEditor {tool} {run} />
       {:else}
-        <p class="muted">Choose an item on the left, or add one.</p>
+        <div class="empty-state" data-testid="build-empty">
+          <h2>{EMPTY_TITLE[section]}</h2>
+          <p class="muted">{EMPTY_HELP[section]}</p>
+        </div>
       {/if}
     </main>
     {#if showPreview}
-      <div class="side"><ToolPreview {tool} /></div>
+      <aside class="dock" aria-label="Try it">
+        <ToolPreview {tool} onCollapse={() => (showPreview = false)} />
+      </aside>
     {/if}
   </div>
 
@@ -491,28 +612,30 @@
 
 <style>
   .build {
-    display: grid;
-    grid-template-rows: auto auto auto 1fr;
-    height: 100vh;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
     min-height: 0;
+    background: var(--app-bg);
   }
   .bar {
     display: flex;
-    gap: 0.6rem;
+    gap: var(--gap-2);
     align-items: center;
-    padding: 0.5rem 0.8rem;
+    padding: var(--gap-2) var(--gap-4);
+    background: var(--surface);
     border-bottom: 1px solid var(--line);
   }
   .name {
-    font-size: 1.05rem;
-    font-weight: 600;
+    font-size: var(--text-m);
+    font-weight: 650;
     min-width: 12rem;
   }
   .version {
     display: flex;
-    gap: 0.3rem;
+    gap: var(--gap-2);
     align-items: center;
-    font-size: 0.85rem;
   }
   .version input {
     width: 6rem;
@@ -521,98 +644,192 @@
     flex: 1;
   }
   .status {
-    color: var(--muted);
-    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-size: var(--text-s);
   }
-  .message {
-    margin: 0;
-    padding: 0.4rem 0.8rem;
-    background: #fff5f5;
-    color: #c92a2a;
+  .repo {
+    padding: 0.2rem 0.6rem;
   }
-  .issues {
+  .notice {
     margin: 0;
-    padding: 0.3rem 0.8rem;
-    background: #fff4e6;
-    font-size: 0.9rem;
+    border-radius: 0;
+    border-width: 0 0 1px;
+  }
+  .issues ul {
+    margin: var(--gap-2) 0 0;
+    padding-left: 1.2rem;
   }
   .body {
-    display: grid;
-    grid-template-columns: 16rem 1fr;
+    flex: 1;
+    display: flex;
     min-height: 0;
   }
-  .body.with-preview {
-    grid-template-columns: 16rem 1fr 24rem;
-  }
   nav {
+    flex: 0 0 13rem;
+    background: var(--surface);
     border-right: 1px solid var(--line);
-    padding: 0.6rem;
+    padding: var(--gap-3);
     overflow: auto;
     display: grid;
     align-content: start;
-    gap: 0.6rem;
+    gap: var(--gap-4);
   }
-  .tabs {
+  .group-title {
+    font-size: 0.7rem;
+    font-weight: 650;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-faint);
+    padding: 0 var(--gap-2) var(--gap-1);
+  }
+  .group [role='tablist'] {
     display: grid;
-    gap: 0.2rem;
+    gap: 2px;
   }
-  .tabs button {
+  .tab {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     text-align: left;
+    border-color: transparent;
+    background: transparent;
   }
-  .tabs .on {
-    background: #e7f5ff;
-    border-color: #1971c2;
+  .tab.on {
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .count {
+    font-size: 0.72rem;
+    color: var(--text-faint);
+  }
+  .items {
+    flex: 0 0 15rem;
+    background: var(--surface);
+    border-right: 1px solid var(--line);
+    padding: var(--gap-3);
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-3);
+  }
+  .new {
+    display: grid;
+    gap: var(--gap-1);
+  }
+  .new-row {
+    display: flex;
+    gap: var(--gap-1);
+  }
+  .new-row input {
+    flex: 1;
+    min-width: 0;
+    width: 0;
+  }
+  .empty {
+    font-size: var(--text-s);
+    margin: 0;
   }
   .list {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
-    gap: 0.2rem;
+    gap: 2px;
   }
   .list li {
     display: flex;
-    gap: 0.2rem;
+    gap: 2px;
+    border-radius: var(--radius-s);
   }
-  .list li.on .pick {
-    background: #e7f5ff;
+  .list li.on {
+    background: var(--accent-soft);
   }
   .pick {
     flex: 1;
+    min-width: 0;
     text-align: left;
     display: flex;
-    gap: 0.4rem;
+    gap: var(--gap-2);
     align-items: baseline;
+    border-color: transparent;
+    background: transparent;
+  }
+  .list li.on .pick {
+    color: var(--accent);
+    font-weight: 600;
   }
   .pick small {
-    color: var(--muted);
+    color: var(--text-muted);
+    font-weight: 400;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
-  .new {
-    display: flex;
-    gap: 0.3rem;
+  .delete {
+    color: var(--text-faint);
+    opacity: 0;
   }
-  .new input {
-    flex: 1;
-    min-width: 0;
+  .list li:hover .delete,
+  .delete:focus-visible {
+    opacity: 1;
   }
   main {
-    padding: 1rem 1.2rem;
+    flex: 1;
+    min-width: 0;
+    padding: var(--gap-5);
     overflow: auto;
   }
-  .side {
-    border-left: 1px solid var(--line);
-    padding: 0.6rem;
-    min-height: 0;
+  .empty-state {
+    max-width: 28rem;
+    display: grid;
+    gap: var(--gap-2);
+    padding: var(--gap-6) 0;
   }
-  .muted {
-    color: var(--muted);
+  .dock {
+    flex: 0 0 24rem;
+    min-height: 0;
+    background: var(--surface);
+    border-left: 1px solid var(--line);
+    padding: var(--gap-3);
+    display: flex;
+    flex-direction: column;
+  }
+  /* One look for the pieces every editor shares, so each editor keeps only its own layout. */
+  main :global(h2) {
+    margin-bottom: var(--gap-1);
+  }
+  main :global(.problem) {
+    margin: 0;
+    padding: var(--gap-2) var(--gap-3);
+    border-radius: var(--radius);
+    background: var(--danger-soft);
+    color: var(--danger);
+    font-size: var(--text-s);
+  }
+  main :global(.confirm) {
+    padding: var(--gap-2) var(--gap-3);
+    border-radius: var(--radius);
+    background: var(--warning-soft);
+    font-size: var(--text-s);
+  }
+  main :global(fieldset) {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+  main :global(button.ghost.danger) {
+    border-color: transparent;
+  }
+  main :global(.muted) {
+    color: var(--text-muted);
   }
   .overlay {
-    position: fixed;
+    position: absolute;
     inset: 0;
-    background: rgba(255, 255, 255, 0.98);
+    background: var(--app-bg);
     overflow: auto;
-    padding: 1rem;
+    padding: var(--gap-4);
     z-index: 20;
   }
 </style>

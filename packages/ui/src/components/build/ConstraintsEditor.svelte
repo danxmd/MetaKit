@@ -79,7 +79,7 @@
   }
 </script>
 
-<section class="constraints" data-testid="constraints-editor">
+<section class="constraints card" data-testid="constraints-editor">
   <h3>Constraints</h3>
   <p class="muted">
     A constraint is a formula that is true when an object is fine. When it is
@@ -117,7 +117,7 @@
           data-testid="constraint-message"
         />
       </label>
-      {#if mProblem}<p class="problem" role="alert">{mProblem}</p>{/if}
+      {#if mProblem}<p class="notice error" role="alert">{mProblem}</p>{/if}
       <div class="row">
         <label class="inline">
           Severity
@@ -135,6 +135,7 @@
         </label>
         <button
           type="button"
+          class="danger"
           onclick={() => remove(k)}
           data-testid="constraint-remove">Remove</button
         >
@@ -144,7 +145,11 @@
   <button type="button" onclick={add} data-testid="constraint-add"
     >Add constraint</button
   >
-  {#if error}<p class="problem" role="alert" data-testid="constraint-problem">
+  {#if error}<p
+      class="notice error"
+      role="alert"
+      data-testid="constraint-problem"
+    >
       {error}
     </p>{/if}
 </section>
@@ -152,44 +157,39 @@
 <style>
   .constraints {
     display: grid;
-    gap: 0.6rem;
-  }
-  h3 {
-    margin: 0;
-    font-size: 1rem;
+    gap: var(--gap-3);
+    padding: var(--gap-4);
   }
   .constraint {
     display: grid;
-    gap: 0.4rem;
-    padding: 0.6rem 0.8rem;
-    background: #f8f9fa;
-    border-radius: 6px;
+    gap: var(--gap-2);
+    padding: var(--gap-3);
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
   }
   label {
     display: grid;
-    gap: 0.2rem;
-    font-size: 0.9rem;
+    gap: var(--gap-1);
   }
   label.inline {
     display: inline-flex;
-    gap: 0.4rem;
+    gap: var(--gap-2);
     align-items: center;
   }
   .row {
     display: flex;
-    gap: 0.8rem;
+    gap: var(--gap-3);
     align-items: center;
+    justify-content: space-between;
     flex-wrap: wrap;
   }
   .muted {
-    color: var(--muted);
-    font-size: 0.85rem;
+    font-size: var(--text-s);
     margin: 0;
   }
-  .problem {
-    color: #c92a2a;
+  .notice {
     margin: 0;
-    font-size: 0.85rem;
   }
   button {
     justify-self: start;

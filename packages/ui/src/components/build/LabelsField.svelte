@@ -49,23 +49,24 @@
     padding: 0;
     margin: 0;
     display: grid;
-    gap: 0.3rem;
+    gap: var(--gap-1);
   }
   legend {
-    font-size: 0.85rem;
-    color: var(--muted);
+    font-size: var(--text-s);
+    color: var(--text-muted);
     padding: 0;
-    margin-bottom: 0.2rem;
+    margin-bottom: var(--gap-1);
   }
   label {
     display: flex;
-    gap: 0.4rem;
+    gap: var(--gap-2);
     align-items: center;
   }
   .lang {
     width: 2rem;
-    color: var(--muted);
-    font-size: 0.8rem;
+    color: var(--text-faint);
+    font-size: 0.75rem;
+    text-transform: uppercase;
   }
   input,
   textarea {
