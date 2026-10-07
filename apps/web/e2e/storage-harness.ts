@@ -52,32 +52,47 @@ async function runContract(useObserver: boolean): Promise<CaseResult[]> {
   return results;
 }
 
-async function runExtras(): Promise<Record<string, unknown>> {
-  const out: Record<string, unknown> = {};
+async function handleStorage(): Promise<Record<string, unknown>> {
+  // The folder handle is kept in IndexedDB.
   const folder = await freshFolder();
-  // The folder handle and the instance id are kept in IndexedDB.
   await rememberWorkspaceFolder(folder);
   const recalled = await recallWorkspaceFolder();
-  out.recalled =
-    recalled !== null && (await recalled.handle.isSameEntry(folder));
-  out.granted = recalled?.granted;
-  out.requestAccess = await requestAccess(folder);
-  const first = await getInstanceId();
-  out.instanceStable =
-    first === (await getInstanceId()) && /^[0-9a-f]{8}$/.test(first);
-  out.stored = (await kvGet<string>('instanceId')) === first;
+  return {
+    recalled: recalled !== null && (await recalled.handle.isSameEntry(folder)),
+    granted: recalled?.granted,
+  };
+}
 
+async function permission(): Promise<Record<string, unknown>> {
+  return { requestAccess: await requestAccess(await freshFolder()) };
+}
+
+async function instance(): Promise<Record<string, unknown>> {
+  const first = await getInstanceId();
+  return {
+    instanceStable:
+      first === (await getInstanceId()) && /^[0-9a-f]{8}$/.test(first),
+    stored: (await kvGet<string>('instanceId')) === first,
+  };
+}
+
+async function workspace(): Promise<Record<string, unknown>> {
   // A whole workspace on a folder in the browser.
-  const adapter = new LocalFolderAdapter(folder, first, { pollIntervalMs: 40 });
-  await Workspace.create(adapter, { name: 'Browser workspace' });
+  const folder = await freshFolder();
+  await Workspace.create(
+    new LocalFolderAdapter(folder, 'aaaa0001', { pollIntervalMs: 40 }),
+    { name: 'Browser workspace' },
+  );
   const again = await Workspace.open(
     new LocalFolderAdapter(folder, 'cccc0003'),
   );
-  out.workspaceName = again.info.name;
-  return out;
+  return { workspaceName: again.info.name };
 }
 
 (window as unknown as { __storage: unknown }).__storage = {
   runContract,
-  runExtras,
+  handleStorage,
+  permission,
+  instance,
+  workspace,
 };
