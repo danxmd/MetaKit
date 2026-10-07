@@ -58,7 +58,9 @@ export interface GitRemote {
 }
 
 export class NonFastForwardError extends Error {
-  constructor(message = 'The branch has changed since you last pulled. Pull first, then commit again.') {
+  constructor(
+    message = 'The branch has changed since you last pulled. Pull first, then commit again.',
+  ) {
     super(message);
     this.name = 'NonFastForwardError';
   }
