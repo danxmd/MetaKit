@@ -43,6 +43,7 @@
   import { labelOf, paletteFor } from '../shell/palette';
   import type { ReferenceServices } from '../shell/references';
   import { runActionAttribute } from '@metakit-app/behaviour';
+  import ValidationList from './ValidationList.svelte';
   import ExportDialog from './ExportDialog.svelte';
   import AttributePanel from './AttributePanel.svelte';
 
@@ -272,6 +273,21 @@
     }
     viewId = next;
     emit('view.changed');
+  }
+
+  let problemsOpen = $state(false);
+
+  function showIssue(target: string) {
+    if (target.startsWith('el_')) editor.select([target as ElementId]);
+    else if (target.startsWith('cn_'))
+      editor.select([], [target as ConnectorId]);
+    else return;
+    centreOn(target as ElementId | ConnectorId);
+  }
+
+  async function autoLayout() {
+    const changed = await editor.autoLayout();
+    if (changed) say('Laid out the model. Undo restores the old positions.');
   }
 
   let exportOpen = $state(false);
@@ -551,6 +567,13 @@
   <header class="bar">
     <button onclick={onBack} data-testid="back-to-explorer">← Models</button>
     <strong class="name" data-testid="model-name">{model.manifest.name}</strong>
+    <button onclick={autoLayout} data-testid="auto-layout">Auto-layout</button>
+    <button
+      onclick={() => (problemsOpen = !problemsOpen)}
+      aria-expanded={problemsOpen}
+      data-testid="problems-toggle"
+      >Problems{issues.length > 0 ? ` (${issues.length})` : ''}</button
+    >
     <button onclick={() => (exportOpen = true)} data-testid="export-open"
       >Export</button
     >
@@ -833,6 +856,12 @@
       </ul>
     {/if}
   </div>
+
+  {#if problemsOpen}
+    <aside class="problems" data-testid="problems-panel">
+      <ValidationList {issues} {model} {tool} onSelect={showIssue} />
+    </aside>
+  {/if}
 
   {#if exportOpen}
     <ExportDialog
@@ -1127,6 +1156,18 @@
   }
   .chooser button:hover {
     background: var(--hover);
+  }
+  .problems {
+    position: fixed;
+    right: 21rem;
+    bottom: 1rem;
+    width: 26rem;
+    max-height: 40vh;
+    overflow: auto;
+    background: var(--panel, #fff);
+    border: 1px solid var(--line, #ccc);
+    border-radius: 6px;
+    z-index: 5;
   }
   .behaviour-messages {
     position: absolute;
