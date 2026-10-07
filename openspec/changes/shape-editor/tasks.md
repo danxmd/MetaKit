@@ -9,4 +9,4 @@
 
 - [x] 2.1 Editor view: canvas, layer list, properties panel, fx switch.
 - [x] 2.2 Colour helper, preview strip, SVG import, gallery.
-- [ ] 2.3 e2e test: build the task shape using only editor actions.
+- [x] 2.3 e2e test: build the task shape using only editor actions.

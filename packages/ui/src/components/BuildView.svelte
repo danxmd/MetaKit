@@ -6,6 +6,7 @@
     newId,
     type ClassId,
     type KeyOwner,
+    type NodeShape,
     type ModelTypeId,
     type RelationId,
     type ToolLibrary,
@@ -19,6 +20,7 @@
   import ShapesSection from './build/ShapesSection.svelte';
   import ToolPreview from './build/ToolPreview.svelte';
   import PanelLayoutEditor from './PanelLayoutEditor.svelte';
+  import ShapeEditor from './shape-editor/ShapeEditor.svelte';
   import { defaultLayout } from '../build/panel-layout-model';
 
   let {
@@ -340,6 +342,31 @@
       <div class="side"><ToolPreview {tool} /></div>
     {/if}
   </div>
+
+  {#if overlay?.kind === 'shape'}
+    {@const id = overlay.id}
+    {@const shape = tool.shapes[id as keyof typeof tool.shapes]}
+    {#if shape?.kind === 'node'}
+      {@const user = Object.values(tool.classes).find((c) => c.shape === id)}
+      <div
+        class="overlay"
+        role="dialog"
+        aria-label="Shape editor"
+        data-testid="shape-overlay"
+      >
+        {#key id}
+          <ShapeEditor
+            shape={shape as NodeShape}
+            attributes={user ? effectiveAttributes(tool, user.id) : []}
+            className={user?.key ?? ''}
+            shapes={(sid) => tool.shapes[sid]}
+            onChange={(next) => run({ type: 'putShape', def: next } as never)}
+            onClose={() => (overlay = null)}
+          />
+        {/key}
+      </div>
+    {/if}
+  {/if}
 
   {#if overlay?.kind === 'panel'}
     {@const id = overlay.id}
