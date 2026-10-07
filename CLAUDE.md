@@ -72,7 +72,8 @@ Keep this section current whenever scripts change.
 - `pnpm format`: apply Prettier
 - `pnpm test`: unit and property tests (Vitest)
 - `pnpm test:e2e`: end-to-end tests (Playwright, Chromium) for the web app and the spikes; each builds what it serves first
-- `pnpm bench`: canvas benchmark from `spikes/canvas` (headless, indicative only; about 1 minute)
+- `pnpm bench`: canvas benchmark on 5,000 elements and 7,000 connectors; fails when `bench/budget.json` is exceeded (headless; about 1 minute)
+- `pnpm bench:spike`: the phase-0 canvas spike benchmark
 - `pnpm build`: build the web app and the CLI
 
 ## Workflow

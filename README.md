@@ -22,7 +22,7 @@ pnpm dev          # serve the web app locally
 | `pnpm format`    | Apply Prettier                                                   |
 | `pnpm test`      | Unit tests (Vitest)                                              |
 | `pnpm test:e2e`  | End-to-end tests (Playwright, Chromium), web app and spikes      |
-| `pnpm bench`     | Canvas benchmark (headless, indicative; about 1 minute)          |
+| `pnpm bench`     | Canvas benchmark; fails when `bench/budget.json` is exceeded     |
 | `pnpm build`     | Build the web app and the CLI                                    |
 
 The first `pnpm test:e2e` needs Chromium: `pnpm --filter @metakit-app/web exec playwright install chromium`. If Chromium is already installed, set `PW_CHROMIUM_PATH` to its executable instead.

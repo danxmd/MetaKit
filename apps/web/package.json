@@ -11,6 +11,8 @@
     "test:e2e": "playwright test"
   },
   "devDependencies": {
+    "@metakit-app/canvas": "workspace:*",
+    "@metakit-app/core": "workspace:*",
     "@metakit-app/storage": "workspace:*"
   }
 }
