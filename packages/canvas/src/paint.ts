@@ -37,12 +37,17 @@ export class ImageCache {
   }
 }
 
+/** Where drawing finds loaded images; the on-screen cache and the export's preloaded set both fit. */
+export interface ImageSource {
+  get(src: string): HTMLImageElement | null;
+}
+
 export interface PaintOptions {
   /** Screen pixels per world unit, used for shadows, level of detail and hairlines. */
   scale: number;
   /** Text under this size on screen is skipped. */
   minTextPx: number;
-  images: ImageCache;
+  images: ImageSource;
 }
 
 const pathCache = new WeakMap<object, Path2D>();
@@ -478,4 +483,62 @@ export function endpoint(
   const dy = tip.y - from.y;
   if (dx === 0 && dy === 0) return null;
   return { x: tip.x, y: tip.y, angle: Math.atan2(dy, dx) };
+}
+
+/** A connector's route with how it looks. */
+export interface RoutedLook {
+  route: readonly Point[];
+  look: CompiledRelation;
+}
+
+export interface ConnectorPaintOptions {
+  /** Screen pixels per world unit. */
+  scale: number;
+  /** Labels under this size on screen are skipped; 0 draws all of them. */
+  minTextPx: number;
+  /** Markers and labels of lines whose marker is under this size on screen are skipped; 0 draws all. */
+  minArrowPx: number;
+}
+
+/**
+ * Draws connector lines, markers and labels; connectors with the same look share one path.
+ * Used by the screen renderer and by the image export, so that both show the same thing.
+ */
+export function paintConnectors(
+  ctx: CanvasRenderingContext2D,
+  routed: readonly RoutedLook[],
+  o: ConnectorPaintOptions,
+): void {
+  if (routed.length === 0) return;
+  const groups = new Map<CompiledRelation, (readonly Point[])[]>();
+  for (const r of routed) {
+    const list = groups.get(r.look);
+    if (list) list.push(r.route);
+    else groups.set(r.look, [r.route]);
+  }
+  for (const [look, routes] of groups) {
+    ctx.beginPath();
+    for (const route of routes) tracePolyline(ctx, route, look.line);
+    ctx.lineWidth = Math.max(look.line.width, 1 / o.scale);
+    ctx.strokeStyle = look.line.stroke;
+    ctx.setLineDash(look.line.dash);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    // Markers and labels are fine decoration: skipped when they would be a few pixels across.
+    const size = look.end?.size ?? look.start?.size ?? 10;
+    if (size * o.scale < o.minArrowPx) continue;
+    for (const route of routes) {
+      for (const [marker, which] of [
+        [look.start, 'start'],
+        [look.end, 'end'],
+      ] as const) {
+        if (!marker) continue;
+        const e = endpoint(route, which);
+        if (e)
+          drawMarker(ctx, marker.type, marker.fill, marker.size, e, e.angle);
+      }
+      if (look.labels.length > 0)
+        drawLabels(ctx, route, look, o.scale, o.minTextPx);
+    }
+  }
 }

@@ -3,3 +3,4 @@ export * from './explorer';
 export * from './find';
 export * from './palette';
 export * from './references';
+export * from './download';

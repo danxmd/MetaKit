@@ -13,3 +13,7 @@ export * from './tools/snap';
 export * from './tools/arrange';
 export * from './tools/clipboard';
 export * from './minimap';
+export * from './export/content';
+export * from './export/svg';
+export * from './export/png';
+export * from './export/pdf';

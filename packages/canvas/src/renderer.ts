@@ -3,17 +3,14 @@ import type { Point, Rect } from './geometry';
 import { intersects } from './geometry';
 import { HANDLE_NAMES, HANDLE_PX, handlePoint } from './handles';
 import {
-  drawLabels,
-  drawMarker,
-  endpoint,
   ImageCache,
+  paintConnectors,
   paintOps,
   traceOutline,
-  tracePolyline,
+  type RoutedLook,
 } from './paint';
 import type { ConnectorItem, ElementItem, Scene } from './scene';
 import { SELECT_COLOR, STROKE } from './shapes';
-import type { CompiledRelation } from '@metakit-app/shapes';
 import { visibleRect, type View } from './view';
 
 /** Text smaller than this on screen is skipped (level of detail). */
@@ -23,11 +20,6 @@ const BATCH_PX = 8;
 /** Outlines of elements under this size on screen are invisible detail. */
 const MIN_OUTLINE_PX = 2;
 const MIN_ARROW_PX = 6;
-
-interface RoutedLook {
-  route: readonly Point[];
-  look: CompiledRelation;
-}
 
 export interface GridSettings {
   size: number;
@@ -252,44 +244,16 @@ export class Renderer {
     };
   }
 
-  /** Draws connector lines, markers and labels; connectors with the same look share one path. */
   private drawConnectors(
     ctx: CanvasRenderingContext2D,
     routed: readonly RoutedLook[],
     s: number,
   ): void {
-    if (routed.length === 0) return;
-    const groups = new Map<CompiledRelation, (readonly Point[])[]>();
-    for (const r of routed) {
-      const list = groups.get(r.look);
-      if (list) list.push(r.route);
-      else groups.set(r.look, [r.route]);
-    }
-    for (const [look, routes] of groups) {
-      ctx.beginPath();
-      for (const route of routes) tracePolyline(ctx, route, look.line);
-      ctx.lineWidth = Math.max(look.line.width, 1 / s);
-      ctx.strokeStyle = look.line.stroke;
-      ctx.setLineDash(look.line.dash);
-      ctx.stroke();
-      ctx.setLineDash([]);
-      // Markers and labels are fine decoration: skipped when they would be a few pixels across.
-      const size = look.end?.size ?? look.start?.size ?? 10;
-      if (size * s < MIN_ARROW_PX) continue;
-      for (const route of routes) {
-        for (const [marker, which] of [
-          [look.start, 'start'],
-          [look.end, 'end'],
-        ] as const) {
-          if (!marker) continue;
-          const e = endpoint(route, which);
-          if (e)
-            drawMarker(ctx, marker.type, marker.fill, marker.size, e, e.angle);
-        }
-        if (look.labels.length > 0)
-          drawLabels(ctx, route, look, s, MIN_TEXT_PX);
-      }
-    }
+    paintConnectors(ctx, routed, {
+      scale: s,
+      minTextPx: MIN_TEXT_PX,
+      minArrowPx: MIN_ARROW_PX,
+    });
   }
 
   /** Draws elements bottom to top; returns how many text lines were drawn. */
