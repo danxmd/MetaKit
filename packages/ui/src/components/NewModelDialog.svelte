@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { DocsLayer, pushDocsContext } from '../docs/context';
   import { onMount } from 'svelte';
   import type { ToolEntry } from '@metakit-app/storage';
   import type { ModelTypeDef, ModelTypeId } from '@metakit-app/core';
@@ -75,6 +76,9 @@
     if (!ready) return;
     onCreate({ toolSlug, modelType: modelType as ModelTypeId, name, folder });
   }
+
+  // Tells Help which dialog is open.
+  $effect(() => pushDocsContext('dialog.new-model', DocsLayer.dialog));
 </script>
 
 <dialog bind:this={dialog} onclose={onCancel} data-testid="new-model-dialog">

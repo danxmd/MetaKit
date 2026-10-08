@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { DocsLayer, pushDocsContext } from '../../docs/context';
   import { onMount } from 'svelte';
   import type { PartChange } from '@metakit-app/storage';
   import {
@@ -38,6 +39,9 @@
     if (busy || problem) return;
     onCommit(message.trim());
   }
+
+  // Tells Help which dialog is open.
+  $effect(() => pushDocsContext('git.commit', DocsLayer.dialog));
 </script>
 
 <dialog

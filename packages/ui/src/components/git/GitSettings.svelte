@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { DocsLayer, pushDocsContext } from '../../docs/context';
   import type { TokenInfo } from '@metakit-app/storage';
   import {
     SERVICE_NAMES,
@@ -134,6 +135,9 @@
   function forget() {
     report = null;
   }
+
+  // Tells Help which dialog is open.
+  $effect(() => pushDocsContext('settings.git', DocsLayer.dialog));
 </script>
 
 <section class="git-settings" data-testid="git-settings">

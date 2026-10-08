@@ -1,4 +1,6 @@
 <script lang="ts">
+  import type { DocContext } from '@metakit-app/docs';
+  import { openDocs, pushDocsContext } from '../docs/context';
   import {
     effectiveAttributes,
     effectiveRelationAttributes,
@@ -76,6 +78,19 @@
     { id: 'behaviour', title: 'Behaviour', sections: ['rules', 'scripts'] },
     { id: 'tool', title: 'Tool library', sections: ['settings'] },
   ];
+  // The topic the "?" button of the header opens for each page of Build mode.
+  const HELP_TOPIC: Partial<Record<DocContext, string>> = {
+    'build.classes': 'classes',
+    'build.relations': 'relations',
+    'build.modelTypes': 'model-types',
+    'build.shapes': 'shapes-section',
+    'build.rules': 'rules',
+    'build.scripts': 'scripts',
+    'build.settings': 'tool-settings',
+    'build.panel-layout': 'panel-layout',
+    'build.appearance': 'appearance-editor',
+    'build.shape-editor': 'shape-editor',
+  };
   const NEW_LABEL: Record<string, string> = {
     classes: 'New class',
     relations: 'New relation class',
@@ -125,6 +140,17 @@
   >(null);
   // A line shape whose form the Shapes list opens first (a relation class asked to edit it).
   let openLine = $state<string | null>(null);
+  // What Help shows: an open editor wins over the section behind it.
+  const docsContextNow = $derived<DocContext>(
+    overlay?.kind === 'panel'
+      ? 'build.panel-layout'
+      : overlay?.kind === 'appearance'
+        ? 'build.appearance'
+        : overlay?.kind === 'shape'
+          ? 'build.shape-editor'
+          : `build.${section}`,
+  );
+  $effect(() => pushDocsContext(docsContextNow));
   let showPreview = $state(true);
   let committing = $state(false);
   const git = $derived(app.git);
@@ -416,6 +442,14 @@
         </div>
       </details>
     {/if}
+    <button
+      type="button"
+      class="icon"
+      onclick={() => openDocs(HELP_TOPIC[docsContextNow])}
+      title="Help on this section"
+      aria-label="Help on this section"
+      data-testid="build-help">?</button
+    >
     <button
       type="button"
       aria-pressed={showPreview}

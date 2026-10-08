@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { DocsLayer, pushDocsContext } from '../../docs/context';
   import { onMount } from 'svelte';
   import type {
     Choice,
@@ -36,6 +37,9 @@
   onMount(() => dialog?.showModal());
 
   const ready = $derived(allChosen(conflicts, choices));
+
+  // Tells Help which dialog is open.
+  $effect(() => pushDocsContext('git.conflict', DocsLayer.dialog));
 </script>
 
 <dialog

@@ -11,6 +11,8 @@
     onReopen,
     onCreate,
     onCancelCreate,
+    helpOpen = false,
+    onHelp,
   }: {
     supported: boolean;
     /** The name of the remembered folder, if there is one. */
@@ -23,6 +25,9 @@
     onReopen: () => void;
     onCreate: (name: string) => void;
     onCancelCreate: () => void;
+    helpOpen?: boolean;
+    /** The start page has no top bar, so it carries its own Help button. */
+    onHelp: () => void;
   } = $props();
 
   let name = $state('');
@@ -47,6 +52,15 @@
 </script>
 
 <main class="start" data-testid="start-page">
+  <button
+    type="button"
+    class="ghost help"
+    aria-pressed={helpOpen}
+    onclick={onHelp}
+    title="Help for this page (F1)"
+    data-testid="toggle-help"
+    ><span class="mark" aria-hidden="true">?</span> Help</button
+  >
   <div class="wrap">
     <section class="hero">
       <div class="brand">
@@ -157,10 +171,32 @@
 
 <style>
   .start {
+    position: relative;
     min-height: 100dvh;
     display: grid;
     align-items: center;
     padding: var(--gap-6) var(--gap-4);
+  }
+  .help {
+    position: absolute;
+    top: var(--gap-3);
+    right: var(--gap-4);
+  }
+  .help[aria-pressed='true'] {
+    color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .mark {
+    display: inline-grid;
+    place-items: center;
+    width: 1.15rem;
+    height: 1.15rem;
+    margin-right: 0.15rem;
+    border: 1.5px solid currentColor;
+    border-radius: 50%;
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1;
   }
   .wrap {
     max-width: 64rem;

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { DocsLayer, pushDocsContext } from '../docs/context';
   let {
     initial,
     colours,
@@ -26,6 +27,9 @@
     onSave({ name: name.trim(), colour });
     dialog?.close();
   }
+
+  // Tells Help which dialog is open.
+  $effect(() => pushDocsContext('settings.profile', DocsLayer.dialog));
 </script>
 
 <dialog
