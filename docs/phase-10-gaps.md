@@ -18,6 +18,30 @@ A language for pipelines where agents and humans perform tasks and create artifa
 | 8   | The attribute panel's tabs per class are written by hand in the tool file; Build mode's panel editor was not used for this tool, so the editor was not tested with a real layout of three tabs and `visible` formulas.                              | Open                                                                                                | Open the tool in Build mode and edit the Task and Agent panels to see whether the editor handles them.                                                                                         |
 | 9   | Stage totals (effort of the tasks inside a stage) were not built. `children()` exists in formulas, but a stage shape that prints a total was not tried.                                                                                              | Open                                                                                                | Try `sum(children().Effort)` in the stage shape.                                                                                                                                               |
 
+## Found while writing the documentation
+
+The documentation (`packages/docs/content`) was written from the code. These behaviours looked like bugs or gaps; the topics describe them as they are today. All are **Open**.
+
+| #   | Gap                                                                                                                                                         |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | The panel setting "Show the connected relations" is stored but the Model mode attribute panel does not read it.                                             |
+| D2  | The relation class editor has no help-text field, and relation classes have no panel layout button.                                                         |
+| D3  | The Build form cannot edit the options of a Choice table column, so that column type is refused.                                                            |
+| D4  | Tool library settings has no editor for layers or numbering.                                                                                                |
+| D5  | The shape colour helper reads only the `? :` chain form, so the shipped Task shape's `if(...)` formula is not recognised.                                   |
+| D6  | Renaming a key rewrites formulas, constraints, rules, shapes, looks and panel layouts, but not scripts. Renaming a class, relation class or model type changes only the key. |
+| D7  | Unticking a class in a model type does not clean up its views, cardinalities or container rules.                                                            |
+| D8  | Build mode Undo and Redo have no keyboard shortcut (header buttons only).                                                                                   |
+| D9  | The rule action "Run a script" finds the script by its id (`scr_...`) but the field says "Name of the script" and the editor never shows ids.               |
+| D10 | `BuildView` does not pass `api` to the Scripts section, so the Run button, status notes and console do not work in Build mode.                              |
+| D11 | The web app's script host provides messages, confirm, prompt and choose only. `ui.form`, `ui.progress`, `files.open` and `files.save` fail, so the ER-to-SQL example cannot save a file. |
+| D12 | GitLab OAuth code exists but nothing in the UI uses it.                                                                                                     |
+| D13 | A Git release is applied as an undoable edit to the open tool library, not as the read-only version ADR 0007 describes.                                     |
+| D14 | There is no history viewer in the app (undo, snapshots, trash, and your sync service's or Git's history stand in).                                          |
+| D15 | Pasted objects always land at the top level; container membership is not copied. There is no Duplicate command.                                             |
+| D16 | Refusal messages read "a Agent" and "a Artifact" (no a/an agreement).                                                                                       |
+| D17 | Dialogs open with `showModal`, so the Help side bar behind a dialog cannot be clicked (F1 still toggles it).                                                |
+
 ## How to read this list
 
 Fixed gaps are in the pull request. For the open ones, Danial decides which become work in phase 10 and which stay known limits for 1.0.

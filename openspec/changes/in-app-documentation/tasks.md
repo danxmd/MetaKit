@@ -4,7 +4,7 @@
 - [x] 2.1 DocsReader, DocsPanel (side bar), Documentation area, top-bar Help and Docs entries, context reporting from every view
 - [x] 2.2 End-to-end tests
 ## 3. Content
-- [ ] 3.1 Getting started and app pages
-- [ ] 3.2 Model mode
-- [ ] 3.3 Build mode
-- [ ] 3.4 Behaviour, collaboration, assistant, reference
+- [x] 3.1 Getting started and app pages
+- [x] 3.2 Model mode
+- [x] 3.3 Build mode
+- [x] 3.4 Behaviour, collaboration, assistant, reference

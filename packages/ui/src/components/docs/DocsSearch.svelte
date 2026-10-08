@@ -114,6 +114,8 @@
     overflow: auto;
     display: grid;
     align-content: start;
+    /* Rows size to their text; without this a two-line title is squeezed onto the next row. */
+    grid-auto-rows: max-content;
     gap: 2px;
     padding: 0 var(--gap-2) var(--gap-3);
     min-height: 0;
@@ -127,6 +129,7 @@
     gap: 0 var(--gap-2);
     text-align: left;
     height: auto;
+    min-height: max-content;
     padding: var(--gap-2) var(--gap-3);
     border-color: transparent;
     background: none;

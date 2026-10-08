@@ -145,6 +145,7 @@ export class DocsIndex {
   private readonly linkedCache = new Map<string, Block[]>();
   private readonly records = new Map<string, SearchRecord>();
   private termOwners: Map<string, string[]> | null = null;
+  private termRegex: RegExp | null = null;
   private termOrder: string[] = [];
   private backlinkMap: Map<string, string[]> | null = null;
   private readonly categoryRank = new Map<string, number>(
@@ -379,17 +380,14 @@ export class DocsIndex {
    */
   linkKeywords(ast: readonly Block[], currentId: string): Block[] {
     const owners = this.buildTerms();
-    const terms = this.termOrder.filter((t) => {
-      const list = owners.get(t)!;
-      return !list.includes(currentId);
-    });
-    if (terms.length === 0) return [...ast];
-    const regex = new RegExp(
-      `(?<![\\p{L}\\p{N}_])(${terms
+    // One regex for all terms, built once: compiling it per topic made the first open take seconds.
+    this.termRegex ??= new RegExp(
+      `(?<![\\p{L}\\p{N}_])(${this.termOrder
         .map((t) => escapeRegExp(t).replace(/ /g, '\\s+'))
         .join('|')})(?![\\p{L}\\p{N}_])`,
       'giu',
     );
+    const regex = this.termRegex;
 
     const seen = new Set<string>([currentId]);
     eachInline(ast, (node) => {
@@ -402,7 +400,10 @@ export class DocsIndex {
       regex.lastIndex = 0;
       for (let m = regex.exec(text); m; m = regex.exec(text)) {
         const key = m[1]!.toLowerCase().replace(/\s+/g, ' ');
-        const target = owners.get(key)![0]!;
+        const owner = owners.get(key)!;
+        // A term of the current topic is never linked, and it also hides shorter terms inside it.
+        if (owner.includes(currentId)) continue;
+        const target = owner[0]!;
         if (seen.has(target)) continue;
         seen.add(target);
         if (m.index > last)

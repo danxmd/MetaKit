@@ -8,7 +8,7 @@ import { docsFromFiles, loadDocs } from './content';
  * Turn this on once every page has its topic: then a known context without a topic fails the
  * run. Until then the missing contexts are only printed.
  */
-const strictContexts = false;
+const strictContexts = true;
 
 const contentDir = fileURLToPath(new URL('../content', import.meta.url));
 

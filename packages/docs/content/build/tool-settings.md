@@ -3,7 +3,7 @@ id: tool-settings
 title: Tool library settings
 category: build
 summary: The tool library's name, version, languages and canvas grid, and where the other settings that live in its file are changed.
-keywords: [tool library settings, tool library name, tool library version, tool languages, canvas grid, snap to grid, show grid]
+keywords: [tool library settings, tool library name, tool library version, tool languages, canvas grid, default snap setting]
 contexts: [build.settings]
 order: 220
 ---

@@ -202,7 +202,10 @@ test.describe('Documentation area', () => {
 
     // Browse: open a group, pick a topic.
     await page.getByTestId('docs-tree-topic').first().click();
-    await expect(page.getByTestId('docs-reader')).toBeVisible();
+    // The side bar is open too (F1), and shows its own reader.
+    await expect(
+      page.getByTestId('docs-page').getByTestId('docs-reader'),
+    ).toBeVisible();
 
     await page.getByTestId('mode-model').click();
     await expect(page.getByTestId('docs-page')).toBeHidden();
