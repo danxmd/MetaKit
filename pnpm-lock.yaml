@@ -176,6 +176,12 @@ importers:
         specifier: ^4.0.0
         version: 4.10.2
 
+  packages/docs:
+    devDependencies:
+      fast-check:
+        specifier: ^4.0.0
+        version: 4.10.2
+
   packages/formula:
     devDependencies:
       fast-check:
