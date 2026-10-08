@@ -3,7 +3,7 @@ id: concepts-model
 title: Model
 category: start
 summary: A model is a drawing of objects and connections made with one tool library, saved as a document in the workspace.
-keywords: [models, model file, objects and connectors, modelling, diagram, mkmodel.json]
+keywords: [models, objects and connectors, modelling, diagram, model name]
 contexts: []
 order: 40
 ---
