@@ -178,6 +178,8 @@ export interface NodeShape {
   let?: Record<string, string>;
   parts: Part[];
   variants?: ShapeVariant[];
+  /** The simple look the parts were generated from; absent for a hand-drawn shape (ADR 0009). */
+  look?: NodeLook;
 }
 
 export type MarkerType =
@@ -189,6 +191,129 @@ export type MarkerType =
   | 'circle'
   | 'cross'
   | 'bar';
+
+// Simple looks (ADR 0009) ---------------------------------------------------------------------
+
+/** The forms a concept can take in the simple editor. */
+export type LookBase =
+  | 'box'
+  | 'rounded'
+  | 'pill'
+  | 'circle'
+  | 'diamond'
+  | 'hexagon'
+  | 'document'
+  | 'person'
+  | 'header-box'
+  | 'container'
+  | 'swimlane';
+
+export const LOOK_BASE_IDS: readonly LookBase[] = [
+  'box',
+  'rounded',
+  'pill',
+  'circle',
+  'diamond',
+  'hexagon',
+  'document',
+  'person',
+  'header-box',
+  'container',
+  'swimlane',
+];
+
+/** A fixed colour, or one that depends on the value of one attribute. */
+export type LookColour =
+  | string
+  | {
+      /** The attribute key. */
+      by: string;
+      /** A colour for each value, written as text (`true` and `false` for yes/no attributes). */
+      values: Record<string, string>;
+      fallback: string;
+    };
+
+export type LookLineStyle = 'solid' | 'dashed' | 'dotted';
+
+export type LookIconName =
+  | 'bot'
+  | 'person'
+  | 'document'
+  | 'gear'
+  | 'check'
+  | 'warning'
+  | 'star'
+  | 'database'
+  | 'cloud'
+  | 'lock'
+  | 'mail'
+  | 'flag'
+  | 'clock'
+  | 'bolt';
+
+export const LOOK_ICON_NAMES: readonly LookIconName[] = [
+  'bot',
+  'person',
+  'document',
+  'gear',
+  'check',
+  'warning',
+  'star',
+  'database',
+  'cloud',
+  'lock',
+  'mail',
+  'flag',
+  'clock',
+  'bolt',
+];
+
+/** A line of text on a concept: an attribute, the label, or fixed text. */
+export interface LookText {
+  /** The attribute key; null shows the label of the concept. */
+  attribute?: string | null;
+  /** Fixed text, used when there is no attribute. */
+  text?: string;
+  colour?: LookColour;
+  bold?: boolean;
+  size?: number;
+}
+
+export interface LookBadge {
+  /** The mark shows when this attribute has this value. */
+  attribute: string;
+  equals: string;
+  text: string;
+  colour: string;
+}
+
+export interface NodeLook {
+  base: LookBase;
+  fill: LookColour;
+  border: LookColour;
+  borderWidth: number;
+  borderStyle: LookLineStyle;
+  /** Corner radius of box-like forms. */
+  corner?: number;
+  title: LookText;
+  subtitle?: LookText;
+  icon?: { name: LookIconName; colour?: string };
+  badge?: LookBadge;
+  /** Attribute keys listed inside a header box, one line each. */
+  fields?: string[];
+  size: { width: number; height: number; resizable?: boolean };
+}
+
+export interface RelationLook {
+  colour: LookColour;
+  width: number;
+  style: LookLineStyle;
+  routing: 'straight' | 'orthogonal' | 'curved';
+  start: MarkerType;
+  end: MarkerType;
+  /** The text on the line: an attribute, or none. */
+  label: { attribute: string } | null;
+}
 
 export interface MarkerDef {
   type: Prop<MarkerType>;
@@ -222,6 +347,8 @@ export interface RelationShape {
   startMarker?: MarkerDef;
   endMarker?: MarkerDef;
   labels?: LabelDef[];
+  /** The simple look the line was generated from; absent for a hand-drawn shape (ADR 0009). */
+  look?: RelationLook;
 }
 
 export type ShapeDef = NodeShape | RelationShape;

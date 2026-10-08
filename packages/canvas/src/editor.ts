@@ -44,7 +44,11 @@ import {
   serializeClipboard,
   type ClipboardData,
 } from './tools/clipboard';
-import { allowedRelations, refusalReason } from './tools/relations';
+import {
+  allowedRelations,
+  canConnectAt,
+  refusalReason,
+} from './tools/relations';
 import { snapMove, snapValue } from './tools/snap';
 
 export interface Selection {
@@ -182,7 +186,9 @@ export class Editor {
 
   setTool(tool: EditorTool): void {
     this.currentTool = tool;
+    this.connectHover = null;
     this.cancelGesture();
+    this.publishActive({});
     this.view.surface.style.cursor = tool.type === 'select' ? '' : 'crosshair';
     this.host.onToolChange?.(tool);
   }
@@ -237,6 +243,7 @@ export class Editor {
       guides: { x: [], y: [] },
       link: null,
       target: null,
+      hover: null,
       ...extra,
     });
   }
@@ -441,6 +448,18 @@ export class Editor {
     on(surface, 'pointermove', (e: PointerEvent) => this.pointerMove(e));
     on(surface, 'pointerup', (e: PointerEvent) => this.pointerUp(e));
     on(surface, 'pointercancel', () => this.cancelGesture());
+    // A right-click while placing or connecting leaves that mode instead of opening a menu.
+    on(surface, 'contextmenu', (e: MouseEvent) => {
+      if (this.currentTool.type === 'select') return;
+      e.stopPropagation();
+      this.setTool({ type: 'select' });
+    });
+    on(surface, 'pointerleave', () => {
+      if (this.connectHover) {
+        this.connectHover = null;
+        this.publishActive({});
+      }
+    });
     on(surface, 'dblclick', (e: MouseEvent) => this.doubleClick(e));
     on(window, 'keydown', (e: KeyboardEvent) => this.keyDown(e));
     on(document, 'copy', (e: ClipboardEvent) => this.clipboardEvent('copy', e));
@@ -719,6 +738,7 @@ export class Editor {
     switch (mode.kind) {
       case 'idle':
         this.updateCursor(world);
+        this.updateConnectHover(world);
         return;
       case 'move':
         this.moveGesture(mode, world, screen, e.altKey);
@@ -751,6 +771,29 @@ export class Editor {
         this.endGesture(mode, world);
         return;
     }
+  }
+
+  /** The element the connect tool would start a connector on, outlined while the pointer is over it. */
+  private connectHover: ElementId | null = null;
+
+  private updateConnectHover(world: Point): void {
+    let next: ElementId | null = null;
+    if (this.currentTool.type === 'connect') {
+      const item = this.view.scene.elementAt(world);
+      const modelType = this.tool.modelTypes[this.model.manifest.modelType];
+      if (
+        item &&
+        modelType &&
+        canConnectAt(this.tool, modelType, item.cls, {
+          relation: this.currentTool.relation,
+          only: this.onlyRelations(),
+        })
+      )
+        next = item.id;
+    }
+    if (next === this.connectHover) return;
+    this.connectHover = next;
+    this.publishActive({ hover: next });
   }
 
   private updateCursor(world: Point): void {
@@ -972,7 +1015,10 @@ export class Editor {
       selectedConnectors: this.selectionState.connectors,
       handles: false,
       link: { from: origin, to: world, ok: options.length > 0 },
-      target: target && target.id !== from.id ? target.id : null,
+      hover:
+        target && target.id !== from.id && options.length > 0
+          ? target.id
+          : null,
     });
   }
 
@@ -1269,6 +1315,15 @@ export class Editor {
       else this.undo();
       return;
     }
+    // Leaving the place or connect mode works wherever the focus is, as the palette keeps it.
+    if (
+      key === 'escape' &&
+      this.currentTool.type !== 'select' &&
+      !isTyping(e.target)
+    ) {
+      this.setTool({ type: 'select' });
+      return;
+    }
     if (!this.keyboardIsOurs(e.target)) return;
     if (mod && key === 'a') {
       e.preventDefault();
@@ -1277,9 +1332,8 @@ export class Editor {
       e.preventDefault();
       this.deleteSelection();
     } else if (key === 'escape') {
-      if (this.mode.kind !== 'idle') this.cancelGesture();
-      else if (this.currentTool.type !== 'select')
-        this.setTool({ type: 'select' });
+      if (this.currentTool.type !== 'select') this.setTool({ type: 'select' });
+      else if (this.mode.kind !== 'idle') this.cancelGesture();
       else this.clearSelection();
     } else if (key.startsWith('arrow') && !mod) {
       e.preventDefault();

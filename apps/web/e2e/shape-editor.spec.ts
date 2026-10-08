@@ -22,6 +22,7 @@ async function newTool(page: Page, name: string) {
   await page.goto('/MetaKit/');
   await page.getByTestId('open-folder').click();
   await page.getByRole('button', { name: 'Create workspace' }).click();
+  await page.getByTestId('mode-build').click();
   await page.getByTestId('new-tool').click();
   await page.getByTestId('new-tool-name').fill(name);
   await page.getByTestId('new-tool-create').click();
@@ -68,6 +69,7 @@ test('the task shape of the plan can be built with editor actions only', async (
   await addAttribute(page, 'number', 'Effort');
 
   // A new shape starts as a copy of a starter and opens in the editor.
+  await page.getByTestId('appearance-more').locator('summary').click();
   await page.getByTestId('class-new-shape').click();
   await expect(page.getByTestId('shape-editor')).toBeVisible();
 

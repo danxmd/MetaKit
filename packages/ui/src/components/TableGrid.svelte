@@ -174,6 +174,9 @@
 <style>
   .grid {
     overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-s);
+    padding: var(--gap-1);
   }
   table {
     border-collapse: collapse;
@@ -182,29 +185,29 @@
   th {
     text-align: left;
     font-weight: 600;
-    font-size: 0.8rem;
-    color: var(--muted);
-    padding: 0.1rem 0.25rem;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    padding: var(--gap-1);
   }
   td {
-    padding: 0.1rem;
+    padding: 2px;
   }
   td input:not([type='checkbox']),
   td select {
     width: 100%;
     min-width: 4rem;
-    box-sizing: border-box;
   }
   .narrow {
-    width: 1.5rem;
+    width: 2rem;
   }
   .add {
-    margin-top: 0.3rem;
-    font-size: 0.85rem;
+    margin-top: var(--gap-2);
   }
   .problem {
     color: var(--danger);
-    font-size: 0.8rem;
-    margin: 0.2rem 0 0;
+    font-size: var(--text-s);
+    margin: var(--gap-1) 0 0;
   }
 </style>

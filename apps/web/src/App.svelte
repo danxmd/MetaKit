@@ -1,6 +1,16 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import {
+    closeDocs,
+    DocsLayer,
+    docsOpen,
+    isTypingTarget,
+    pushDocsContext,
+    setDocsContext,
+    toggleDocs,
+    type PanelState,
+  } from '@metakit-app/ui/docs';
+  import {
     AppController,
     ReferenceIndex,
     type ReferenceServices,
@@ -14,13 +24,19 @@
     typeCheckWithClient,
   } from '@metakit-app/ui/assistant';
   import GitSettings from '@metakit-app/ui/components/git/GitSettings.svelte';
-  import Explorer from '@metakit-app/ui/components/Explorer.svelte';
+  import DocsPage from '@metakit-app/ui/components/docs/DocsPage.svelte';
+  import DocsPanel from '@metakit-app/ui/components/docs/DocsPanel.svelte';
+  import ModalPanel from '@metakit-app/ui/components/ModalPanel.svelte';
+  import ModelsPage from '@metakit-app/ui/components/ModelsPage.svelte';
+  import ToolImportDialog from '@metakit-app/ui/components/ToolImportDialog.svelte';
+  import ToolLibrariesPage from '@metakit-app/ui/components/ToolLibrariesPage.svelte';
+  import TopBar from '@metakit-app/ui/components/TopBar.svelte';
   import ModelView from '@metakit-app/ui/components/ModelView.svelte';
   import NewModelDialog from '@metakit-app/ui/components/NewModelDialog.svelte';
   import PermissionDialog from '@metakit-app/ui/components/build/scripts/PermissionDialog.svelte';
   import ProfileDialog from '@metakit-app/ui/components/ProfileDialog.svelte';
   import StartPage from '@metakit-app/ui/components/StartPage.svelte';
-  import { findAcrossModels } from '@metakit-app/ui';
+  import { findAcrossModels, folderPaths } from '@metakit-app/ui';
   import { PROFILE_COLOURS, type Profile } from '@metakit-app/storage';
   import {
     adapterFor,
@@ -63,12 +79,18 @@
   );
   let showNew = $state(false);
 
-  onMount(async () => {
+  onMount(() => {
+    const stopDocs = docsOpen.subscribe((p) => (docs = p));
+    void bootProfile();
+    return stopDocs;
+  });
+
+  async function bootProfile() {
     const stored = await loadProfile();
     if (stored) controller.setProfile(stored);
     profile = stored;
     if (supported) remembered = await rememberedFolder();
-  });
+  }
 
   async function chooseProfile(chosen: Profile) {
     controller.setProfile(chosen);
@@ -156,11 +178,88 @@
     },
   };
 
-  const folders = $derived(
-    [
-      ...new Set(app.models.flatMap((m) => (m.folder ? [m.folder] : []))),
-    ].sort(),
+  const folders = $derived(folderPaths(app.models));
+
+  // Help ----------------------------------------------------------------------------------------
+
+  let docs = $state<PanelState>(docsOpen.get());
+  // The Documentation area is a third place next to Model and Build. Whatever is open there (a
+  // model, a tool library) stays mounted underneath, so coming back finds it unchanged.
+  let docsArea = $state(false);
+  let docsVisited = $state(false);
+  let docsRequest = $state<{ topic: string | null } | null>(null);
+
+  function showDocsArea(topic: string | null | undefined) {
+    docsVisited = true;
+    docsArea = true;
+    if (topic !== undefined) docsRequest = { topic };
+  }
+
+  function openInDocs(topic: string | null) {
+    closeDocs();
+    showDocsArea(topic);
+  }
+
+  $effect(() => {
+    // What the person is looking at, for Help. Build mode refines it per section.
+    setDocsContext(
+      app.phase === 'start'
+        ? 'start'
+        : app.phase === 'build' && app.build
+          ? 'build'
+          : app.phase === 'model' && app.open
+            ? 'model'
+            : area === 'build'
+              ? 'tool-libraries'
+              : 'models',
+    );
+  });
+  $effect(() =>
+    docsArea ? pushDocsContext('docs', DocsLayer.area) : undefined,
   );
+
+  function onWindowKey(event: KeyboardEvent) {
+    if (event.defaultPrevented) return;
+    if (event.key === 'F1') {
+      event.preventDefault();
+      toggleDocs();
+    } else if (
+      event.key === '?' &&
+      !event.ctrlKey &&
+      !event.metaKey &&
+      !event.altKey &&
+      !isTypingTarget(event.target)
+    ) {
+      event.preventDefault();
+      toggleDocs();
+    }
+  }
+
+  // Which area the workspace shows. An open model or tool library decides it; with none open the
+  // person's last choice stays, so that "back" from a tool library lands on the tool libraries.
+  let area = $state<'model' | 'build'>('model');
+  $effect(() => {
+    if (app.phase === 'model') area = 'model';
+    else if (app.phase === 'build') area = 'build';
+  });
+
+  async function chooseArea(next: 'model' | 'build') {
+    const fromDocs = docsArea;
+    docsArea = false;
+    // Back from the Documentation to where the person was: nothing to close or open.
+    if (fromDocs && next === area) return;
+    if (next === 'build' && app.open) await controller.closeModel();
+    if (next === 'model' && app.build) await controller.closeBuild();
+    area = next;
+  }
+
+  let showProfile = $state(false);
+
+  async function closeWorkspace() {
+    docsArea = false;
+    await controller.closeWorkspace();
+    area = 'model';
+  }
 
   async function create(input: Parameters<typeof controller.createModel>[0]) {
     showNew = false;
@@ -168,70 +267,142 @@
   }
 </script>
 
+<svelte:window onkeydown={onWindowKey} />
+
 {#if app.phase === 'start'}
-  <StartPage
-    {supported}
-    remembered={remembered?.name ?? null}
-    {busy}
-    error={startError}
-    pendingCreate={pendingCreate ? pendingCreate.handle.name : null}
-    {onOpen}
-    {onReopen}
-    {onCreate}
-    onCancelCreate={() => (pendingCreate = null)}
-  />
-{:else if app.phase === 'build' && app.build}
-  {#key app.build.slug}
-    <BuildView {assistant} {app} {controller} onBack={() => undefined} />
-  {/key}
-{:else if app.phase === 'workspace' || !app.open}
-  <Explorer
-    workspaceName={app.workspaceName}
-    models={app.models}
-    trashed={app.trashed}
-    tools={app.tools}
-    trashedTools={app.trashedTools}
-    health={app.health}
-    warnings={app.warnings}
-    error={app.error}
-    onNew={() => (showNew = true)}
-    onGit={() => controller.openGitSettings(true)}
-    onAssistant={() => (showAssistant = true)}
-    onAddTool={(text) => controller.addToolLibrary(text)}
-    onNewTool={(name) => controller.createToolLibrary(name)}
-    onEditTool={(slug) => controller.openBuild(slug)}
-    onOpen={(slug) => controller.openModel(slug)}
-    onRename={(slug, name) => controller.renameModel(slug, name)}
-    onMove={(slug, folder) => controller.moveModel(slug, folder)}
-    onTrash={(slug) => controller.trashModel(slug)}
-    onRestore={(slug) => controller.restoreModel(slug)}
-    onTrashTool={(slug) => controller.trashTool(slug)}
-    onRestoreTool={(slug) => controller.restoreTool(slug)}
-    onClose={() => controller.closeWorkspace()}
-    notes={app.notes}
-    toolImport={app.toolImport}
-    search={async (query) =>
-      findAcrossModels(
-        (await controller.readAllModels()).map(({ entry, model, tool }) => ({
-          slug: entry.slug,
-          name: entry.name,
-          model,
-          tool,
-        })),
-        query,
-      )}
-    onOpenHit={async (hit) => {
-      await controller.openModel(hit.slug);
-      selectElement?.(hit.element);
-    }}
-    onExportModel={(slug) => controller.exportModelFile(slug)}
-    onExportBundle={(slugs) => controller.exportBundle(slugs)}
-    onExportCsv={(slug) => controller.exportCsv(slug)}
-    onExportTool={(slug) => controller.exportToolPackage(slug)}
-    onImport={(files) => controller.importFiles(files)}
-    onConfirmToolImport={() => controller.confirmToolImport()}
-    onCancelToolImport={() => controller.cancelToolImport()}
-  />
+  <div class="row start-row">
+    <div class="start-scroll">
+      <StartPage
+        {supported}
+        remembered={remembered?.name ?? null}
+        {busy}
+        error={startError}
+        pendingCreate={pendingCreate ? pendingCreate.handle.name : null}
+        {onOpen}
+        {onReopen}
+        {onCreate}
+        onCancelCreate={() => (pendingCreate = null)}
+        helpOpen={docs.open}
+        onHelp={toggleDocs}
+      />
+    </div>
+    {#if docs.open}
+      <DocsPanel onClose={closeDocs} onOpenInDocs={openInDocs} />
+    {/if}
+  </div>
+{:else}
+  <div class="shell" data-testid="app-shell">
+    <TopBar
+      workspaceName={app.workspaceName}
+      {area}
+      docsActive={docsArea}
+      helpOpen={docs.open}
+      onMode={chooseArea}
+      onDocs={() => showDocsArea(undefined)}
+      onHelp={toggleDocs}
+      onGit={() => controller.openGitSettings(true)}
+      onAssistant={() => (showAssistant = true)}
+      onProfile={() => (showProfile = true)}
+      onCloseWorkspace={closeWorkspace}
+    />
+    <div class="row">
+      <!-- The views fill this box (height: 100%); the home pages scroll inside it. -->
+      <div class="content">
+        <div class="views" class:covered={docsArea} inert={docsArea}>
+          {#if app.phase === 'build' && app.build}
+            {#key app.build.slug}
+              <BuildView
+                {assistant}
+                {app}
+                {controller}
+                onBack={() => undefined}
+              />
+            {/key}
+          {:else if app.phase === 'model' && app.open}
+            {#key app.open.slug}
+              <ModelView
+                {app}
+                {controller}
+                {references}
+                registerOpenElement={(fn) => (selectElement = fn)}
+                onBack={() => controller.closeModel()}
+              />
+            {/key}
+          {:else if area === 'build'}
+            <ToolLibrariesPage
+              tools={app.tools}
+              trashedTools={app.trashedTools}
+              models={app.models}
+              health={app.health}
+              warnings={app.warnings}
+              error={app.error}
+              notes={app.notes}
+              onNewTool={(name) => controller.createToolLibrary(name)}
+              onAddTool={(text) => controller.addToolLibrary(text)}
+              onGit={() => controller.openGitSettings(true)}
+              onEditTool={(slug) => controller.openBuild(slug)}
+              onExportTool={(slug) => controller.exportToolPackage(slug)}
+              onTrashTool={(slug) => controller.trashTool(slug)}
+              onRestoreTool={(slug) => controller.restoreTool(slug)}
+            />
+          {:else}
+            <ModelsPage
+              models={app.models}
+              trashed={app.trashed}
+              tools={app.tools}
+              health={app.health}
+              warnings={app.warnings}
+              error={app.error}
+              notes={app.notes}
+              onNew={() => (showNew = true)}
+              onGoBuild={() => chooseArea('build')}
+              onOpen={(slug) => controller.openModel(slug)}
+              onRename={(slug, name) => controller.renameModel(slug, name)}
+              onMove={(slug, folder) => controller.moveModel(slug, folder)}
+              onTrash={(slug) => controller.trashModel(slug)}
+              onRestore={(slug) => controller.restoreModel(slug)}
+              search={async (query) =>
+                findAcrossModels(
+                  (await controller.readAllModels()).map(
+                    ({ entry, model, tool }) => ({
+                      slug: entry.slug,
+                      name: entry.name,
+                      model,
+                      tool,
+                    }),
+                  ),
+                  query,
+                )}
+              onOpenHit={async (hit) => {
+                await controller.openModel(hit.slug);
+                selectElement?.(hit.element);
+              }}
+              onExportModel={(slug) => controller.exportModelFile(slug)}
+              onExportBundle={(slug) => controller.exportBundle([slug])}
+              onExportCsv={(slug) => controller.exportCsv(slug)}
+              onImport={(files) => controller.importFiles(files)}
+            />
+          {/if}
+        </div>
+        {#if docsVisited}
+          <div class="docs-area" hidden={!docsArea}>
+            <DocsPage request={docsRequest} />
+          </div>
+        {/if}
+      </div>
+      {#if docs.open}
+        <DocsPanel onClose={closeDocs} onOpenInDocs={openInDocs} />
+      {/if}
+    </div>
+  </div>
+
+  {#if app.toolImport}
+    <ToolImportDialog
+      plan={app.toolImport}
+      onConfirm={() => controller.confirmToolImport()}
+      onCancel={() => controller.cancelToolImport()}
+    />
+  {/if}
   {#if showNew}
     <NewModelDialog
       tools={app.tools}
@@ -242,43 +413,45 @@
       onCancel={() => (showNew = false)}
     />
   {/if}
-{:else}
-  {#key app.open.slug}
-    <ModelView
-      {app}
-      {controller}
-      {references}
-      registerOpenElement={(fn) => (selectElement = fn)}
-      onBack={() => controller.closeModel()}
-    />
-  {/key}
 {/if}
 
 {#if showAssistant}
-  <div class="assistant-panel" data-testid="assistant-panel">
-    <button
-      onclick={() => (showAssistant = false)}
-      data-testid="assistant-close">Close</button
-    >
+  <ModalPanel
+    label="Assistant"
+    testid="assistant-panel"
+    onClose={() => (showAssistant = false)}
+  >
     <AssistantSettings service={assistant} tool={app.build?.store.state} />
-  </div>
+    <div class="panel-actions">
+      <button
+        class="primary"
+        onclick={() => (showAssistant = false)}
+        data-testid="assistant-close">Close</button
+      >
+    </div>
+  </ModalPanel>
 {/if}
 
 {#if app.git.settings}
-  <GitSettings
-    store={controller.gitTokens}
-    makeRemote={(service, host, repo, folder, token) =>
-      controller.makeGitRemote(service, host, repo, folder, token)}
-    onChoose={(target) => controller.openFromGit(target)}
+  <ModalPanel
+    label="Git settings"
     onClose={() => controller.openGitSettings(false)}
-  />
-  {#if app.git.error}<p
-      role="alert"
-      class="git-error"
-      data-testid="git-open-error"
-    >
-      {app.git.error}
-    </p>{/if}
+  >
+    {#if app.git.error}<p
+        role="alert"
+        class="notice error"
+        data-testid="git-open-error"
+      >
+        {app.git.error}
+      </p>{/if}
+    <GitSettings
+      store={controller.gitTokens}
+      makeRemote={(service, host, repo, folder, token) =>
+        controller.makeGitRemote(service, host, repo, folder, token)}
+      onChoose={(target) => controller.openFromGit(target)}
+      onClose={() => controller.openGitSettings(false)}
+    />
+  </ModalPanel>
 {/if}
 
 {#if app.permissionAsk}
@@ -300,65 +473,64 @@
     colours={PROFILE_COLOURS}
     onSave={chooseProfile}
   />
+{:else if showProfile}
+  <ProfileDialog
+    initial={{ name: app.me.name, colour: app.me.colour }}
+    colours={PROFILE_COLOURS}
+    onSave={async (chosen) => {
+      await chooseProfile(chosen);
+      showProfile = false;
+    }}
+    onCancel={() => (showProfile = false)}
+  />
 {/if}
 
 <style>
-  .assistant-panel {
-    position: fixed;
-    inset: 4rem 1rem auto auto;
-    z-index: 50;
-    width: min(32rem, calc(100vw - 2rem));
-    max-height: 80vh;
+  .shell {
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    background: var(--app-bg);
+  }
+  .row {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+  }
+  .start-row {
+    height: 100dvh;
+    background: var(--app-bg);
+  }
+  .start-scroll {
+    flex: 1;
+    min-width: 0;
     overflow: auto;
-    padding: 1rem;
-    background: var(--panel, #fff);
-    border: 1px solid var(--line, #ccc);
-    border-radius: 8px;
-    box-shadow: 0 8px 28px rgb(0 0 0 / 20%);
   }
-  :global(:root) {
-    --bg: #ffffff;
-    --panel: #f8f9fa;
-    --line: #dee2e6;
-    --muted: #6b7280;
-    --accent: #364fc7;
-    --danger: #c92a2a;
-    --hover: #e9ecef;
-    font-family: system-ui, sans-serif;
-    color: #212529;
+  .content {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
   }
-  :global(body) {
-    margin: 0;
-    background: var(--bg);
+  .views {
+    height: 100%;
   }
-  :global(button) {
-    font: inherit;
-    border: 1px solid var(--line);
-    background: var(--bg);
-    border-radius: 6px;
-    padding: 0.25rem 0.7rem;
-    cursor: pointer;
+  /* Hidden but still laid out, so the canvas keeps its size and nothing reloads. */
+  .views.covered {
+    visibility: hidden;
   }
-  :global(button:disabled) {
-    opacity: 0.5;
-    cursor: default;
+  .docs-area {
+    position: absolute;
+    inset: 0;
+    background: var(--app-bg);
   }
-  :global(button.primary) {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #fff;
+  .docs-area[hidden] {
+    display: none;
   }
-  :global(input:not([type='checkbox'])),
-  :global(select),
-  :global(textarea) {
-    font: inherit;
-    padding: 0.25rem 0.4rem;
-    border: 1px solid var(--line);
-    border-radius: 4px;
-    background: var(--bg);
-  }
-  :global(:focus-visible) {
-    outline: 2px solid var(--accent);
-    outline-offset: 1px;
+  .panel-actions {
+    display: flex;
+    justify-content: flex-end;
   }
 </style>

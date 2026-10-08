@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { DocsLayer, pushDocsContext } from '../../docs/context';
   import { onMount } from 'svelte';
   import type {
     Choice,
@@ -36,6 +37,9 @@
   onMount(() => dialog?.showModal());
 
   const ready = $derived(allChosen(conflicts, choices));
+
+  // Tells Help which dialog is open.
+  $effect(() => pushDocsContext('git.conflict', DocsLayer.dialog));
 </script>
 
 <dialog
@@ -85,7 +89,9 @@
     </ol>
 
     {#if error}
-      <p role="alert" class="error" data-testid="conflict-error">{error}</p>
+      <p role="alert" class="notice error" data-testid="conflict-error">
+        {error}
+      </p>
     {/if}
 
     <div class="actions">
@@ -117,23 +123,17 @@
 
 <style>
   dialog {
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 1.25rem 1.5rem;
     min-width: 28rem;
     max-width: 48rem;
   }
   .body {
     display: grid;
-    gap: 0.7rem;
+    gap: var(--gap-3);
   }
   h2,
   h3,
   p {
     margin: 0;
-  }
-  h2 {
-    font-size: 1.15rem;
   }
   h3 {
     font-size: 0.95rem;
@@ -141,7 +141,7 @@
   .count,
   .file,
   .who {
-    color: #555;
+    color: var(--text-muted);
     font-size: 0.85rem;
   }
   .list {
@@ -163,16 +163,17 @@
     display: grid;
     gap: 0.2rem;
     text-align: left;
-    padding: 0.5rem 0.6rem;
+    padding: var(--gap-2) var(--gap-3);
     border: 1px solid var(--line);
-    border-radius: 6px;
-    background: transparent;
+    border-radius: var(--radius);
+    background: var(--surface);
     font: inherit;
     cursor: pointer;
   }
   .side.picked {
-    border-color: #1971c2;
-    outline: 2px solid #1971c2;
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    outline: 2px solid var(--accent);
   }
   pre {
     margin: 0;
@@ -181,11 +182,6 @@
     font-size: 0.85rem;
     max-height: 9rem;
     overflow: auto;
-  }
-  .error {
-    padding: 0.5rem 0.7rem;
-    border-radius: 6px;
-    background: #fff4e6;
   }
   .actions {
     display: flex;

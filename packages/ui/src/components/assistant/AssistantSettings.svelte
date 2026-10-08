@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { DocsLayer, pushDocsContext } from '../../docs/context';
   import { onMount } from 'svelte';
   import type { ToolLibrary } from '@metakit-app/core';
   import type { AssistantService } from '../../assistant/assistant-service';
@@ -74,6 +75,9 @@
       await service.removeKey();
       return 'The key is removed from this browser.';
     });
+
+  // Tells Help which dialog is open.
+  $effect(() => pushDocsContext('settings.assistant', DocsLayer.dialog));
 </script>
 
 <section class="assistant" data-testid="assistant-settings">
@@ -189,45 +193,36 @@
 <style>
   .assistant {
     display: grid;
-    gap: 0.8rem;
-    max-width: 46rem;
+    gap: var(--gap-4);
   }
-  h2,
-  h3 {
-    margin: 0;
-  }
-  h3 {
-    font-size: 1rem;
-  }
-  p {
-    margin: 0;
-  }
+  p,
   .muted {
-    color: var(--muted, #5c6670);
-    font-size: 0.85rem;
+    font-size: var(--text-s);
   }
   .check {
     display: flex;
-    gap: 0.5rem;
+    gap: var(--gap-2);
     align-items: center;
+    color: var(--text);
+    font-size: var(--text-m);
   }
   .box {
-    border: 1px solid var(--line, #d0d7de);
-    border-radius: 8px;
-    padding: 0.8rem 1rem;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: var(--gap-3) var(--gap-4);
     display: grid;
-    gap: 0.6rem;
+    gap: var(--gap-3);
   }
   .row {
     display: flex;
-    gap: 0.5rem;
+    gap: var(--gap-2);
     align-items: end;
     flex-wrap: wrap;
   }
   label {
     display: grid;
-    gap: 0.25rem;
-    font-size: 0.9rem;
+    gap: var(--gap-1);
   }
   label.check {
     display: flex;
@@ -239,18 +234,23 @@
   pre {
     max-height: 18rem;
     overflow: auto;
-    background: var(--panel, #f1f3f5);
-    padding: 0.6rem;
-    border-radius: 6px;
+    background: var(--surface-3);
+    padding: var(--gap-3);
+    border-radius: var(--radius-s);
     font-size: 0.75rem;
     white-space: pre-wrap;
   }
+  summary {
+    cursor: pointer;
+    font-size: var(--text-s);
+    color: var(--text-muted);
+  }
   .ok {
-    color: #2b8a3e;
-    font-size: 0.85rem;
+    color: var(--success);
+    font-size: var(--text-s);
   }
   .problem {
-    color: #c92a2a;
-    font-size: 0.85rem;
+    color: var(--danger);
+    font-size: var(--text-s);
   }
 </style>

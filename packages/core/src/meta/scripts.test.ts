@@ -22,8 +22,8 @@ const withScripts = (scripts: unknown, manifest: object = {}): ToolLibrary => {
 };
 
 describe('scripts in the tool library', () => {
-  it('are format 4 and a library with scripts and permissions is valid', () => {
-    expect(TOOL_FORMAT_VERSION).toBe(4);
+  it('are in format 4 and later, and a library with scripts and permissions is valid', () => {
+    expect(TOOL_FORMAT_VERSION).toBe(5);
     const tool = withScripts(
       { [SCRIPT.id]: SCRIPT },
       { permissions: { network: true, files: false } },

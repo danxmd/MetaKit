@@ -100,10 +100,18 @@
 
     const sw = size.width * zoom;
     const sh = size.height * zoom;
-    ctx.fillStyle = '#ffffff';
+    // Theme colours are read at draw time so the canvas follows light and dark mode.
+    const css = getComputedStyle(canvas);
+    const token = (name: string, fallback: string) =>
+      css.getPropertyValue(name).trim() || fallback;
+    const paper = token('--canvas-bg', '#ffffff');
+    const gridColour = token('--canvas-grid', '#f1f3f5');
+    const edgeColour = token('--canvas-grid-strong', '#adb5bd');
+    const selectColour = token('--canvas-selection', '#364fc7');
+    ctx.fillStyle = paper;
     ctx.fillRect(PAD, PAD, sw, sh);
     // A faint grid every 10 px of the shape; the drag snaps to whole pixels.
-    ctx.strokeStyle = '#f1f3f5';
+    ctx.strokeStyle = gridColour;
     ctx.lineWidth = 1;
     ctx.beginPath();
     for (let gx = 10; gx < size.width; gx += 10) {
@@ -126,7 +134,7 @@
     });
     ctx.restore();
 
-    ctx.strokeStyle = '#adb5bd';
+    ctx.strokeStyle = edgeColour;
     ctx.setLineDash([4, 3]);
     ctx.strokeRect(PAD - 0.5, PAD - 0.5, sw + 1, sh + 1);
     ctx.setLineDash([]);
@@ -136,7 +144,7 @@
     for (const p of paths) {
       const b = model.boxOf(p);
       if (!b) continue;
-      ctx.strokeStyle = '#364fc7';
+      ctx.strokeStyle = selectColour;
       ctx.lineWidth = 1.5;
       ctx.setLineDash(b.exact ? [] : [4, 3]);
       ctx.strokeRect(
@@ -148,7 +156,7 @@
       ctx.setLineDash([]);
       if (b.exact && primary && p === primary)
         for (const [, hx, hy] of handlePoints(b.box)) {
-          ctx.fillStyle = '#ffffff';
+          ctx.fillStyle = paper;
           ctx.fillRect(hx - HANDLE, hy - HANDLE, HANDLE * 2, HANDLE * 2);
           ctx.strokeRect(hx - HANDLE, hy - HANDLE, HANDLE * 2, HANDLE * 2);
         }
@@ -161,6 +169,16 @@
     void cssWidth;
     void cssHeight;
     draw();
+  });
+
+  // Draw again when the theme switch changes data-theme.
+  $effect(() => {
+    const observer = new MutationObserver(() => draw());
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme'],
+    });
+    return () => observer.disconnect();
   });
 
   // Pointer handling ------------------------------------------------------------------------
@@ -376,9 +394,9 @@
   }
   .scroll {
     overflow: auto;
-    background: var(--panel, #f8f9fa);
-    border: 1px solid var(--line, #dee2e6);
-    border-radius: 6px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
   }
   canvas {
     display: block;

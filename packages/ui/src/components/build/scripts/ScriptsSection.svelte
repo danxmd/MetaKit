@@ -173,13 +173,13 @@
               >
               <button
                 type="button"
-                class="small"
+                class="small ghost"
                 onclick={() => startRename(s)}
                 aria-label="Rename {s.name}">Rename</button
               >
               <button
                 type="button"
-                class="small"
+                class="small ghost danger"
                 onclick={() => remove(s)}
                 aria-label="Delete {s.name}">Delete</button
               >
@@ -188,11 +188,17 @@
           {#if note}<p class="problem" role="status">{note}</p>{/if}
         </li>
       {:else}
-        <li class="muted">No scripts yet.</li>
+        <li class="muted">
+          No scripts yet. A script is TypeScript for what formulas and rules
+          cannot do, such as a check across the whole model.
+        </li>
       {/each}
       <li>
-        <button type="button" onclick={add} data-testid="script-add"
-          >Add a script</button
+        <button
+          type="button"
+          class="primary"
+          onclick={add}
+          data-testid="script-add">Add a script</button
         >
         <DraftWithAssistant
           kind="script"
@@ -235,7 +241,7 @@
           />
         {/key}
       {:else}
-        <p class="muted">Add a script to start writing.</p>
+        <p class="muted">Add a script on the left to start writing.</p>
       {/if}
       <ScriptConsole {lines} onClear={() => api?.clearLog()} />
     </div>
@@ -298,7 +304,7 @@
   }
   .layout {
     display: grid;
-    grid-template-columns: minmax(12rem, 16rem) 1fr;
+    grid-template-columns: minmax(16rem, 20rem) 1fr;
     gap: 1rem;
     align-items: start;
   }
@@ -319,7 +325,7 @@
     border-radius: 6px;
   }
   .list li.current {
-    background: var(--panel, #f1f3f5);
+    background: var(--accent-soft);
   }
   .line {
     display: flex;
@@ -332,8 +338,10 @@
     background: none;
     border: none;
     padding: 0.1rem 0.2rem;
-    cursor: pointer;
-    font: inherit;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .rename {
     flex: 1;
@@ -355,10 +363,12 @@
     flex: 1;
   }
   fieldset {
-    border: 1px solid var(--line);
-    border-radius: 6px;
+    padding: var(--gap-3) var(--gap-4);
     display: grid;
-    gap: 0.3rem;
+    gap: var(--gap-2);
+  }
+  .ghost.danger {
+    border-color: transparent;
   }
   .check {
     display: flex;
@@ -371,7 +381,7 @@
     margin: 0;
   }
   .problem {
-    color: #c92a2a;
+    color: var(--danger);
     font-size: 0.85rem;
     margin: 0.2rem 0 0;
   }

@@ -46,6 +46,7 @@ test.describe('Rules', () => {
     page,
   }) => {
     await bareWorkspace(page);
+    await page.getByTestId('mode-build').click();
     await page.getByTestId('new-tool').click();
     await page.getByTestId('new-tool-name').fill('Task tracker');
     await page.getByTestId('new-tool-create').click();
@@ -93,6 +94,7 @@ test.describe('Rules', () => {
 
     // A model with the tool.
     await page.getByTestId('build-back').click();
+    await page.getByTestId('mode-model').click();
     await page.getByTestId('new-model').click();
     await page
       .getByTestId('new-model-tool')

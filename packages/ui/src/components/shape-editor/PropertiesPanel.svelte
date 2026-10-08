@@ -183,14 +183,14 @@
     font-size: 1rem;
   }
   fieldset {
-    border: 1px solid var(--line, #dee2e6);
+    border: 1px solid var(--line, var(--line));
     border-radius: 6px;
     margin: 0;
     padding: 0.3rem 0.6rem 0.5rem;
   }
   legend {
     font-size: 0.8rem;
-    color: var(--muted, #6b7280);
+    color: var(--muted, var(--text-muted));
     padding: 0 0.3rem;
   }
   .line {
@@ -210,11 +210,11 @@
   .hint {
     margin: 0;
     font-size: 0.85rem;
-    color: var(--muted, #6b7280);
+    color: var(--muted, var(--text-muted));
   }
   .problem {
     margin: 0;
-    color: var(--danger, #c92a2a);
+    color: var(--danger, var(--danger));
     font-size: 0.85rem;
   }
 </style>

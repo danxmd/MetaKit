@@ -10,7 +10,7 @@ test('shows the start page without a browser warning in Chromium', async ({
     if (r.status() >= 400) failed.push(`${r.status()} ${r.url()}`);
   });
   await page.goto(appUrl);
-  await expect(page.getByRole('heading', { name: 'MetaKit' })).toBeVisible();
+  await expect(page.getByTestId('start-page')).toBeVisible();
   await expect(page.getByTestId('open-folder')).toBeVisible();
   await expect(page.getByTestId('unsupported-browser')).toHaveCount(0);
   expect(failed).toEqual([]);
@@ -24,7 +24,7 @@ test('explains that local folders need Chrome or Edge when the API is missing', 
     delete (window as { showDirectoryPicker?: unknown }).showDirectoryPicker;
   });
   await page.goto(appUrl);
-  await expect(page.getByRole('heading', { name: 'MetaKit' })).toBeVisible();
+  await expect(page.getByTestId('start-page')).toBeVisible();
   await expect(page.getByTestId('unsupported-browser')).toContainText(
     'Chrome or Edge',
   );

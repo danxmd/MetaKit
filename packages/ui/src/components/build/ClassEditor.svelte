@@ -8,12 +8,20 @@
     type ClassKind,
     type ToolLibrary,
   } from '@metakit-app/core';
-  import { copyStarter, STARTER_IDS } from '@metakit-app/shapes';
+  import {
+    copyStarter,
+    defaultNodeLook,
+    nodeShapeFromLook,
+    STARTER_IDS,
+  } from '@metakit-app/shapes';
+  import { appearanceOfClass, withBase } from '../../build/appearance-model';
+  import AppearanceCard from './appearance/AppearanceCard.svelte';
   import { withPatch } from '../../build/attributes';
   import type { CommandResult } from '../../shell/controller';
   import AttributeList from './AttributeList.svelte';
   import ConstraintsEditor from './ConstraintsEditor.svelte';
   import KeyField from './KeyField.svelte';
+  import Section from './Section.svelte';
   import LabelsField from './LabelsField.svelte';
   import { asOneStep } from '@metakit-app/assistant';
   import type { AssistantPort } from '../../assistant/assistant-service';
@@ -24,6 +32,7 @@
     id,
     run,
     onEditShape,
+    onEditAppearance,
     onEditPanel,
     usages,
     assistant,
@@ -32,6 +41,7 @@
     id: ClassId;
     run: (command: never) => CommandResult;
     onEditShape: (shapeId: string) => void;
+    onEditAppearance: (classId: string) => void;
     onEditPanel: (classId: string) => void;
     usages: (attributeId: string) => string[];
     /** The assistant; when absent there is no "Draft with assistant" button. */
@@ -50,6 +60,33 @@
   const patch = (changes: Record<string, unknown>) => {
     if (def) exec({ type: 'putClass', def: withPatch<ClassDef>(def, changes) });
   };
+
+  // A container or a swimlane starts with its own form; a look still on the default form follows.
+  function changeKind(kind: ClassKind) {
+    if (!def) return;
+    const next = withPatch<ClassDef>(def, { kind });
+    const current = appearanceOfClass(tool, id);
+    if (
+      current.kind === 'look' &&
+      current.shared.length === 0 &&
+      current.look.base === defaultNodeLook(def.kind).base
+    ) {
+      exec({
+        type: 'batch',
+        commands: [
+          { type: 'putClass', def: next },
+          {
+            type: 'putShape',
+            def: nodeShapeFromLook(
+              withBase(current.look, defaultNodeLook(kind).base),
+              current.shape.id,
+              current.shape.name,
+            ),
+          },
+        ],
+      });
+    } else exec({ type: 'putClass', def: next });
+  }
 
   const parents = $derived(
     Object.values(tool.classes)
@@ -82,6 +119,8 @@
   <div class="editor" data-testid="class-editor">
     <div class="head">
       <h2>Class {def.key}</h2>
+      {#if def.abstract}<span class="badge">Abstract</span>{/if}
+      <span class="spacer"></span>
       <DraftWithAssistant
         kind="class"
         {tool}
@@ -89,103 +128,131 @@
         onAccept={(commands) => exec(asOneStep(commands) as never)}
       />
     </div>
-    <KeyField
-      value={def.key}
-      testid="class-key"
-      onRename={(key) =>
-        exec({ type: 'renameKey', scope: { kind: 'class', id }, newKey: key })}
-    />
-    <LabelsField
-      title="Label"
-      labels={def.labels}
-      {languages}
-      testid="class-label"
-      onChange={(labels) => patch({ labels })}
-    />
-    <div class="row">
-      <label>
-        Kind
-        <select
-          value={def.kind}
-          onchange={(e) => patch({ kind: e.currentTarget.value as ClassKind })}
-          data-testid="class-kind"
-        >
-          {#each CLASS_KINDS as k (k)}
-            <option value={k}
-              >{k === 'node'
-                ? 'Object'
-                : k === 'container'
-                  ? 'Container'
-                  : 'Swimlane'}</option
+    {#if error}<p class="notice error" role="alert" data-testid="class-problem">
+        {error}
+      </p>{/if}
+    <Section
+      title="Identity"
+      help="What the class is called and how it relates to other classes."
+    >
+      <KeyField
+        value={def.key}
+        testid="class-key"
+        onRename={(key) =>
+          exec({
+            type: 'renameKey',
+            scope: { kind: 'class', id },
+            newKey: key,
+          })}
+      />
+      <LabelsField
+        title="Label"
+        labels={def.labels}
+        {languages}
+        testid="class-label"
+        onChange={(labels) => patch({ labels })}
+      />
+      <div class="row">
+        <label>
+          Kind
+          <select
+            value={def.kind}
+            onchange={(e) => changeKind(e.currentTarget.value as ClassKind)}
+            data-testid="class-kind"
+          >
+            {#each CLASS_KINDS as k (k)}
+              <option value={k}
+                >{k === 'node'
+                  ? 'Object'
+                  : k === 'container'
+                    ? 'Container'
+                    : 'Swimlane'}</option
+              >
+            {/each}
+          </select>
+        </label>
+        <label>
+          Extends
+          <select
+            value={def.extends ?? ''}
+            onchange={(e) =>
+              patch({ extends: e.currentTarget.value || undefined })}
+            data-testid="class-parent"
+          >
+            <option value="">Nothing</option>
+            {#each parents as p (p.id)}<option value={p.id}>{p.key}</option
+              >{/each}
+          </select>
+        </label>
+        <label class="inline">
+          <input
+            type="checkbox"
+            checked={def.abstract === true}
+            onchange={(e) =>
+              patch({ abstract: e.currentTarget.checked || undefined })}
+            data-testid="class-abstract"
+          />
+          Abstract (only for others to extend)
+        </label>
+      </div>
+      <LabelsField
+        title="Help text"
+        labels={def.help}
+        {languages}
+        multiline
+        testid="class-help"
+        onChange={(help) =>
+          patch({ help: Object.keys(help).length ? help : undefined })}
+      />
+    </Section>
+    <Section
+      title="Appearance"
+      help="How objects of this class look on the canvas. Pick a form, colours and text; no drawing needed."
+    >
+      <AppearanceCard
+        {tool}
+        owner={{ kind: 'class', id }}
+        {run}
+        {onEditAppearance}
+        {onEditShape}
+      >
+        <div class="row">
+          <label>
+            Use an existing shape
+            <select
+              value={def.shape ?? ''}
+              onchange={(e) =>
+                patch({ shape: e.currentTarget.value || undefined })}
+              data-testid="class-shape"
             >
-          {/each}
-        </select>
-      </label>
-      <label>
-        Extends
-        <select
-          value={def.extends ?? ''}
-          onchange={(e) =>
-            patch({ extends: e.currentTarget.value || undefined })}
-          data-testid="class-parent"
-        >
-          <option value="">Nothing</option>
-          {#each parents as p (p.id)}<option value={p.id}>{p.key}</option
-            >{/each}
-        </select>
-      </label>
-      <label class="inline">
-        <input
-          type="checkbox"
-          checked={def.abstract === true}
-          onchange={(e) =>
-            patch({ abstract: e.currentTarget.checked || undefined })}
-          data-testid="class-abstract"
-        />
-        Abstract (only for others to extend)
-      </label>
-    </div>
-    <LabelsField
-      title="Help text"
-      labels={def.help}
-      {languages}
-      multiline
-      testid="class-help"
-      onChange={(help) =>
-        patch({ help: Object.keys(help).length ? help : undefined })}
-    />
-    <div class="row">
-      <label>
-        Shape
-        <select
-          value={def.shape ?? ''}
-          onchange={(e) => patch({ shape: e.currentTarget.value || undefined })}
-          data-testid="class-shape"
-        >
-          <option value="">Automatic (starter shape)</option>
-          {#each nodeShapes as s (s.id)}<option value={s.id}
-              >{s.name ?? s.id}</option
-            >{/each}
-        </select>
-      </label>
-      {#if def.shape}
+              <option value="">Automatic (starter shape)</option>
+              {#each nodeShapes as s (s.id)}<option value={s.id}
+                  >{s.name ?? s.id}</option
+                >{/each}
+            </select>
+          </label>
+          {#if def.shape && appearanceOfClass(tool, id).kind === 'look'}
+            <button
+              type="button"
+              onclick={() => onEditShape(def.shape!)}
+              data-testid="class-edit-shape">Edit as drawing</button
+            >
+          {/if}
+          <button type="button" onclick={newShape} data-testid="class-new-shape"
+            >New drawn shape</button
+          >
+        </div>
+      </AppearanceCard>
+      <div class="row">
         <button
           type="button"
-          onclick={() => onEditShape(def.shape!)}
-          data-testid="class-edit-shape">Edit shape</button
+          onclick={() => onEditPanel(id)}
+          data-testid="class-edit-panel"
         >
-      {/if}
-      <button type="button" onclick={newShape} data-testid="class-new-shape"
-        >New shape</button
-      >
-      <button
-        type="button"
-        onclick={() => onEditPanel(id)}
-        data-testid="class-edit-panel"
-      >
-        {tool.panels[id] ? 'Edit panel layout' : 'Set up panel layout'}
-      </button>
-    </div>
+          {tool.panels[id] ? 'Edit panel layout' : 'Set up panel layout'}
+        </button>
+      </div>
+    </Section>
     <AttributeList
       owner={{ kind: 'class', id }}
       attributes={def.attributes}
@@ -200,43 +267,37 @@
       {tool}
       {run}
     />
-    {#if error}<p class="problem" role="alert" data-testid="class-problem">
-        {error}
-      </p>{/if}
   </div>
 {/if}
 
 <style>
   .editor {
     display: grid;
-    gap: 0.8rem;
+    gap: var(--gap-4);
+    max-width: 56rem;
   }
   .head {
     display: flex;
-    gap: 0.8rem;
+    gap: var(--gap-3);
     align-items: center;
   }
-  h2 {
-    margin: 0;
-    font-size: 1.15rem;
+  .spacer {
+    flex: 1;
   }
   .row {
     display: flex;
-    gap: 1rem;
+    gap: var(--gap-4);
     flex-wrap: wrap;
     align-items: end;
   }
   label {
     display: grid;
-    gap: 0.2rem;
-    font-size: 0.9rem;
+    gap: var(--gap-1);
   }
   label.inline {
     display: inline-flex;
-    gap: 0.4rem;
+    gap: var(--gap-2);
     align-items: center;
-  }
-  .problem {
-    color: #c92a2a;
+    align-self: center;
   }
 </style>

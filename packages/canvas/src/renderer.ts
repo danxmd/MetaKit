@@ -10,7 +10,7 @@ import {
   type RoutedLook,
 } from './paint';
 import type { ConnectorItem, ElementItem, Scene } from './scene';
-import { SELECT_COLOR, STROKE } from './shapes';
+import { SELECT_COLOR, STROKE, TEXT_COLOR } from './shapes';
 import { visibleRect, type View } from './view';
 
 /** Text smaller than this on screen is skipped (level of detail). */
@@ -20,6 +20,23 @@ const BATCH_PX = 8;
 /** Outlines of elements under this size on screen are invisible detail. */
 const MIN_OUTLINE_PX = 2;
 const MIN_ARROW_PX = 6;
+
+/** Colours that follow the page theme; the defaults are the light values the canvas always had. */
+export interface CanvasPalette {
+  /** The drawing surface behind the grid. */
+  background: string;
+  grid: string;
+  selection: string;
+  /** Text of connector labels whose colour the shape leaves at its default. */
+  text: string;
+}
+
+export const LIGHT_PALETTE: CanvasPalette = {
+  background: '#ffffff',
+  grid: '#eceff3',
+  selection: SELECT_COLOR,
+  text: TEXT_COLOR,
+};
 
 export interface GridSettings {
   size: number;
@@ -45,6 +62,10 @@ export interface ActiveState {
   link: { from: Point; to: Point; ok: boolean } | null;
   /** An element to highlight as a drop target. */
   target: ElementId | null;
+  /** An element the chosen relation can be used on, outlined in the selection colour. */
+  hover: ElementId | null;
+  /** Elements a suggestion could connect to, outlined softly (smart modelling). */
+  suggest: ReadonlySet<ElementId>;
   /** Show resize handles on a single selected element. */
   handles: boolean;
   /** Elements other people have selected, outlined in their colour with their initials. */
@@ -69,7 +90,9 @@ export function isActiveEmpty(state: ActiveState): boolean {
     state.link === null &&
     state.remote.length === 0 &&
     state.guides.x.length === 0 &&
-    state.guides.y.length === 0
+    state.guides.y.length === 0 &&
+    state.hover === null &&
+    state.suggest.size === 0
   );
 }
 
@@ -83,6 +106,8 @@ export function emptyActiveState(): ActiveState {
     guides: { x: [], y: [] },
     link: null,
     target: null,
+    hover: null,
+    suggest: new Set(),
     handles: true,
     remote: [],
   };
@@ -114,6 +139,7 @@ export class Renderer {
   width = 0;
   height = 0;
   grid: GridSettings = { size: 10, visible: true };
+  palette: CanvasPalette = LIGHT_PALETTE;
   /** Images used by shapes; set `onLoaded` to redraw when one arrives. */
   readonly images = new ImageCache();
   stats: RenderStats = {
@@ -193,7 +219,7 @@ export class Renderer {
       ctx.lineTo(r.maxX, y);
     }
     ctx.lineWidth = 1 / s;
-    ctx.strokeStyle = '#eceff3';
+    ctx.strokeStyle = this.palette.grid;
     ctx.stroke();
   }
 
@@ -253,6 +279,10 @@ export class Renderer {
       scale: s,
       minTextPx: MIN_TEXT_PX,
       minArrowPx: MIN_ARROW_PX,
+      labelTheme: {
+        text: this.palette.text,
+        background: this.palette.background,
+      },
     });
   }
 
@@ -401,7 +431,8 @@ export class Renderer {
 
     // Selection outlines and handles.
     this.setTransform(ctx, view);
-    ctx.strokeStyle = SELECT_COLOR;
+    const selectColor = this.palette.selection;
+    ctx.strokeStyle = selectColor;
     ctx.lineWidth = Math.max(2, 2 / s);
     const selectedBoxes: Rect[] = [];
     ctx.beginPath();
@@ -451,13 +482,52 @@ export class Renderer {
           ctx.rect(p.x - h / 2, p.y - h / 2, h, h);
         }
       }
-      ctx.fillStyle = '#fff';
+      ctx.fillStyle = this.palette.background;
       ctx.fill();
       ctx.lineWidth = 1 / s;
       ctx.stroke();
     }
 
     for (const remote of state.remote) this.drawRemote(ctx, remote, s, area);
+
+    if (state.hover) {
+      const rect = this.boxOf(state.hover, state);
+      if (rect) {
+        const w = rect.maxX - rect.minX;
+        const h = rect.maxY - rect.minY;
+        ctx.globalAlpha = 0.12;
+        ctx.fillStyle = selectColor;
+        ctx.fillRect(rect.minX, rect.minY, w, h);
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = selectColor;
+        ctx.lineWidth = Math.max(3, 3 / s);
+        ctx.strokeRect(rect.minX, rect.minY, w, h);
+      }
+    }
+
+    for (const id of state.suggest) {
+      const rect = this.boxOf(id, state);
+      if (!rect) continue;
+      ctx.globalAlpha = 0.1;
+      ctx.fillStyle = selectColor;
+      ctx.fillRect(
+        rect.minX,
+        rect.minY,
+        rect.maxX - rect.minX,
+        rect.maxY - rect.minY,
+      );
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = selectColor;
+      ctx.lineWidth = Math.max(2, 2 / s);
+      ctx.setLineDash([6 / s, 4 / s]);
+      ctx.strokeRect(
+        rect.minX,
+        rect.minY,
+        rect.maxX - rect.minX,
+        rect.maxY - rect.minY,
+      );
+      ctx.setLineDash([]);
+    }
 
     if (state.target) {
       const rect = this.boxOf(state.target, state);
@@ -502,10 +572,12 @@ export class Renderer {
     if (state.band) {
       ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
       const b = state.band;
-      ctx.fillStyle = 'rgba(232, 89, 12, 0.12)';
-      ctx.strokeStyle = SELECT_COLOR;
+      ctx.fillStyle = selectColor;
+      ctx.strokeStyle = selectColor;
       ctx.lineWidth = 1;
+      ctx.globalAlpha = 0.12;
       ctx.fillRect(b.minX, b.minY, b.maxX - b.minX, b.maxY - b.minY);
+      ctx.globalAlpha = 1;
       ctx.strokeRect(b.minX, b.minY, b.maxX - b.minX, b.maxY - b.minY);
     }
     this.stats = { ...this.stats, activeMs: performance.now() - started };
@@ -581,7 +653,7 @@ export class Renderer {
       ctx.moveTo(p.x + h / 2, p.y);
       ctx.arc(p.x, p.y, h / 2, 0, Math.PI * 2);
     }
-    ctx.fillStyle = '#fff';
+    ctx.fillStyle = this.palette.background;
     ctx.fill();
     ctx.lineWidth = 1 / s;
     ctx.stroke();

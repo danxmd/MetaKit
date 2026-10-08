@@ -14,6 +14,7 @@
   import AttributeList from './AttributeList.svelte';
   import ConstraintsEditor from './ConstraintsEditor.svelte';
   import KeyField from './KeyField.svelte';
+  import Section from './Section.svelte';
   import LabelsField from './LabelsField.svelte';
 
   let {
@@ -170,76 +171,90 @@
 {#if def}
   <div class="editor" data-testid="modeltype-editor">
     <h2>Model type {def.key}</h2>
-    <KeyField
-      value={def.key}
-      testid="modeltype-key"
-      onRename={(key) =>
-        exec({
-          type: 'renameKey',
-          scope: { kind: 'modelType', id },
-          newKey: key,
-        })}
-    />
-    <LabelsField
-      title="Label"
-      labels={def.labels}
-      {languages}
-      testid="modeltype-label"
-      onChange={(labels) => patch({ labels })}
-    />
-    <LabelsField
-      title="Help text"
-      labels={def.help}
-      {languages}
-      multiline
-      onChange={(help) =>
-        patch({ help: Object.keys(help).length ? help : undefined })}
-    />
-    <div class="ends">
-      <fieldset>
-        <legend>Classes allowed in the model</legend>
-        {#each classes as c (c.id)}
-          <label class="inline"
-            ><input
-              type="checkbox"
-              checked={def.classes.includes(c.id)}
-              onchange={(e) => toggleClass(c.id, e.currentTarget.checked)}
-              data-testid="mt-class-{c.key}"
-            />
-            {c.key}</label
-          >
-        {/each}
-      </fieldset>
-      <fieldset>
-        <legend>Relation classes allowed</legend>
-        {#each relations as r (r.id)}
-          <label class="inline"
-            ><input
-              type="checkbox"
-              checked={def.relations.includes(r.id)}
-              onchange={(e) => toggleRelation(r.id, e.currentTarget.checked)}
-              data-testid="mt-relation-{r.key}"
-            />
-            {r.key}</label
-          >
-        {/each}
-      </fieldset>
-    </div>
-    <label>
-      Background shape
-      <select
-        value={def.background ?? ''}
-        onchange={(e) =>
-          patch({ background: e.currentTarget.value || undefined })}
+    {#if error}<p
+        class="notice error"
+        role="alert"
+        data-testid="modeltype-problem"
       >
-        <option value="">None</option>
-        {#each nodeShapes as s (s.id)}<option value={s.id}
-            >{s.name ?? s.id}</option
-          >{/each}
-      </select>
-    </label>
+        {error}
+      </p>{/if}
+    <Section title="Identity" help="What this kind of model is called.">
+      <KeyField
+        value={def.key}
+        testid="modeltype-key"
+        onRename={(key) =>
+          exec({
+            type: 'renameKey',
+            scope: { kind: 'modelType', id },
+            newKey: key,
+          })}
+      />
+      <LabelsField
+        title="Label"
+        labels={def.labels}
+        {languages}
+        testid="modeltype-label"
+        onChange={(labels) => patch({ labels })}
+      />
+      <LabelsField
+        title="Help text"
+        labels={def.help}
+        {languages}
+        multiline
+        onChange={(help) =>
+          patch({ help: Object.keys(help).length ? help : undefined })}
+      />
+    </Section>
+    <Section
+      title="Allowed content"
+      help="The classes and relation classes a modeller can use in a model of this type."
+    >
+      <div class="ends">
+        <fieldset>
+          <legend>Classes allowed in the model</legend>
+          {#each classes as c (c.id)}
+            <label class="inline"
+              ><input
+                type="checkbox"
+                checked={def.classes.includes(c.id)}
+                onchange={(e) => toggleClass(c.id, e.currentTarget.checked)}
+                data-testid="mt-class-{c.key}"
+              />
+              {c.key}</label
+            >
+          {/each}
+        </fieldset>
+        <fieldset>
+          <legend>Relation classes allowed</legend>
+          {#each relations as r (r.id)}
+            <label class="inline"
+              ><input
+                type="checkbox"
+                checked={def.relations.includes(r.id)}
+                onchange={(e) => toggleRelation(r.id, e.currentTarget.checked)}
+                data-testid="mt-relation-{r.key}"
+              />
+              {r.key}</label
+            >
+          {/each}
+        </fieldset>
+      </div>
+      <label>
+        Background shape
+        <select
+          value={def.background ?? ''}
+          onchange={(e) =>
+            patch({ background: e.currentTarget.value || undefined })}
+        >
+          <option value="">None</option>
+          {#each nodeShapes as s (s.id)}<option value={s.id}
+              >{s.name ?? s.id}</option
+            >{/each}
+        </select>
+      </label>
+    </Section>
 
-    <section>
+    <section class="card block">
       <h3>Views</h3>
       <p class="muted">
         A view offers a smaller set of classes and relation classes in the
@@ -299,6 +314,7 @@
           </div>
           <button
             type="button"
+            class="danger"
             onclick={() => setViews(def.views.filter((_, j) => j !== i))}
             >Delete view</button
           >
@@ -309,14 +325,14 @@
       >
     </section>
 
-    <section>
+    <section class="card block">
       <h3>Cardinalities</h3>
       <p class="muted">
         Limits on how many objects, or how many connections at an object, a
         model may have.
       </p>
       {#each def.cardinalities as c, i (i)}
-        <div class="card">
+        <div class="limit">
           <select
             value={c.kind}
             onchange={(e) =>
@@ -392,7 +408,7 @@
     </section>
 
     {#if containerClasses.length > 0}
-      <section>
+      <section class="card block">
         <h3>What containers accept</h3>
         <p class="muted">
           By default a container or swimlane accepts every class. Choose classes
@@ -452,72 +468,72 @@
       {tool}
       {run}
     />
-    {#if error}<p class="problem" role="alert" data-testid="modeltype-problem">
-        {error}
-      </p>{/if}
   </div>
 {/if}
 
 <style>
   .editor {
     display: grid;
-    gap: 0.9rem;
+    gap: var(--gap-4);
+    max-width: 56rem;
   }
-  h2 {
-    margin: 0;
-    font-size: 1.15rem;
-  }
-  h3 {
-    margin: 0 0 0.3rem;
-    font-size: 1rem;
+  .block {
+    padding: var(--gap-4);
+    display: grid;
+    gap: var(--gap-3);
+    justify-items: start;
   }
   .ends {
     display: flex;
-    gap: 1rem;
+    gap: var(--gap-3);
     flex-wrap: wrap;
   }
   fieldset {
     border: 1px solid var(--line);
-    border-radius: 6px;
+    border-radius: var(--radius);
     display: flex;
     flex-wrap: wrap;
-    gap: 0.6rem;
+    gap: var(--gap-3);
     flex: 1;
+    min-width: 14rem;
+  }
+  legend {
+    font-size: var(--text-s);
+    color: var(--text-muted);
   }
   label {
     display: grid;
-    gap: 0.2rem;
-    font-size: 0.9rem;
+    gap: var(--gap-1);
   }
   label.inline {
     display: inline-flex;
-    gap: 0.4rem;
+    gap: var(--gap-2);
     align-items: center;
   }
-  .card {
+  .limit {
     display: flex;
-    gap: 0.5rem;
+    gap: var(--gap-2);
     flex-wrap: wrap;
     align-items: center;
-    margin-bottom: 0.4rem;
   }
-  .card input[type='number'] {
+  .limit input[type='number'] {
     width: 4.5rem;
   }
   .view {
+    width: 100%;
+    background: var(--surface-2);
     border: 1px solid var(--line);
-    border-radius: 6px;
-    padding: 0.4rem 0.7rem;
-    margin-bottom: 0.4rem;
+    border-radius: var(--radius);
+    padding: var(--gap-2) var(--gap-3);
     display: grid;
-    gap: 0.5rem;
+    gap: var(--gap-2);
+  }
+  .view summary {
+    cursor: pointer;
+    font-weight: 600;
   }
   .muted {
-    color: var(--muted);
-    font-size: 0.85rem;
-    margin: 0 0 0.4rem;
-  }
-  .problem {
-    color: #c92a2a;
+    font-size: var(--text-s);
+    margin: 0;
   }
 </style>

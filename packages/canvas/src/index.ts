@@ -18,3 +18,4 @@ export * from './export/svg';
 export * from './export/png';
 export * from './export/pdf';
 export * from './layout';
+export * from './preview';

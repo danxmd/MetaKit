@@ -148,8 +148,48 @@ function rewriteFormulaText(text: string, w: Walk): string {
   return m[1]! + next;
 }
 
+/**
+ * A simple look names attributes by key: `by` (colour by data), `attribute` (text, badge, label)
+ * and the `fields` list. Core cannot use the look compiler, so the same rename is written here;
+ * the stored parts hold formulas, which the ordinary rewrite handles.
+ */
+function rewriteLookKeys(value: Json, w: Walk): Json {
+  if (Array.isArray(value)) {
+    let changed = false;
+    const out = value.map((v) => {
+      const n = rewriteLookKeys(v, w);
+      if (n !== v) changed = true;
+      return n;
+    });
+    return changed ? out : value;
+  }
+  if (value !== null && typeof value === 'object') {
+    let changed = false;
+    const out: Record<string, Json> = {};
+    for (const [k, v] of Object.entries(value)) {
+      let n: Json;
+      if ((k === 'by' || k === 'attribute') && v === w.from) {
+        n = w.to;
+        w.hits++;
+      } else if (k === 'fields' && Array.isArray(v)) {
+        n = v.map((f) => {
+          if (f !== w.from) return f;
+          w.hits++;
+          return w.to;
+        });
+      } else if (k === 'values') n = v as Json;
+      else n = rewriteLookKeys(v as Json, w);
+      if (n !== v) changed = true;
+      out[k] = n;
+    }
+    return changed ? out : value;
+  }
+  return value;
+}
+
 /** Copies a JSON value, rewriting every formula inside it; unchanged parts keep their identity. */
 function rewriteJson(value: Json, key: string | null, w: Walk): Json {
+  if (key === 'look') return rewriteLookKeys(value, w);
   if (typeof value === 'string') {
     // `over` (repeat) and `when` (variant) hold formula text with or without a leading `=`.
     if (

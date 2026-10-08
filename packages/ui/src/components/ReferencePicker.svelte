@@ -101,50 +101,65 @@
 </div>
 
 <style>
+  .refs {
+    display: grid;
+    gap: var(--gap-1);
+  }
   ul {
     list-style: none;
-    margin: 0 0 0.3rem;
+    margin: 0;
     padding: 0;
+    display: grid;
+    gap: var(--gap-1);
   }
   li {
     display: flex;
-    gap: 0.4rem;
+    gap: var(--gap-2);
     align-items: center;
-    padding: 0.1rem 0;
+    padding: 0.15rem var(--gap-2);
+    background: var(--surface-3);
+    border-radius: var(--radius-s);
+    font-size: var(--text-s);
+  }
+  .title {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
   .where {
-    color: var(--muted);
-    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-size: 0.75rem;
   }
   .gone {
     color: var(--danger);
-    font-size: 0.85rem;
+    font-size: var(--text-s);
   }
   .hits {
     border: 1px solid var(--line);
-    border-radius: 6px;
+    border-radius: var(--radius-s);
+    background: var(--surface);
     max-height: 10rem;
     overflow: auto;
-    margin-top: 0.2rem;
+  }
+  .hits li {
+    padding: 0;
+    background: none;
   }
   .hits button {
     width: 100%;
     text-align: left;
-    border: none;
+    border: 0;
     background: none;
-    padding: 0.25rem 0.5rem;
-    cursor: pointer;
   }
   .hits button:hover {
-    background: var(--hover);
+    background: var(--hover-bg);
   }
   .hint {
-    color: var(--muted);
-    font-size: 0.8rem;
-    margin: 0.2rem 0;
+    color: var(--text-muted);
+    font-size: var(--text-s);
+    margin: 0;
   }
   input[type='search'] {
     width: 100%;
-    box-sizing: border-box;
   }
 </style>

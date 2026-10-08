@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { DocsLayer, pushDocsContext } from '../../docs/context';
   import { onMount } from 'svelte';
   import type { GitTag } from '@metakit-app/storage';
   import {
@@ -30,6 +31,9 @@
   onMount(() => dialog?.showModal());
 
   const sorted = $derived(sortReleases(releases));
+
+  // Tells Help which dialog is open.
+  $effect(() => pushDocsContext('git.releases', DocsLayer.dialog));
 </script>
 
 <dialog
@@ -70,7 +74,9 @@
     {/if}
 
     {#if error}
-      <p role="alert" class="error" data-testid="release-error">{error}</p>
+      <p role="alert" class="notice error" data-testid="release-error">
+        {error}
+      </p>
     {/if}
 
     <div class="actions">
@@ -97,22 +103,16 @@
 
 <style>
   dialog {
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 1.25rem 1.5rem;
     min-width: 24rem;
     max-width: 36rem;
   }
   .body {
     display: grid;
-    gap: 0.7rem;
+    gap: var(--gap-3);
   }
   h2,
   p {
     margin: 0;
-  }
-  h2 {
-    font-size: 1.15rem;
   }
   .list {
     margin: 0;
@@ -129,13 +129,8 @@
     align-items: center;
   }
   em {
-    color: #555;
+    color: var(--text-muted);
     font-size: 0.85rem;
-  }
-  .error {
-    padding: 0.5rem 0.7rem;
-    border-radius: 6px;
-    background: #fff4e6;
   }
   .actions {
     display: flex;

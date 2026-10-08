@@ -40,7 +40,9 @@
     type ExportRequest,
   } from '../shell/download';
   import { findInModel, type FindHit } from '../shell/find';
+  import { canvasTheme } from '../shell/canvas-theme';
   import { labelOf, paletteFor } from '../shell/palette';
+  import { pageTheme } from '../theme/theme';
   import type { ReferenceServices } from '../shell/references';
   import {
     runActionAttribute,
@@ -51,6 +53,17 @@
   import ValidationList from './ValidationList.svelte';
   import ExportDialog from './ExportDialog.svelte';
   import AttributePanel from './AttributePanel.svelte';
+  import { pageAssist, type ModelingAssist } from '../shell/assist';
+  import { hintFor, type HintState } from '../shell/interaction-hints';
+  import {
+    spotBeside,
+    suggestConnections,
+    type RelationSuggestion,
+  } from '../shell/suggestions';
+  import HintLine from './HintLine.svelte';
+  import SuggestionCard from './SuggestionCard.svelte';
+  import ModelToolbar from './ModelToolbar.svelte';
+  import PaletteList from './Palette.svelte';
 
   let {
     app,
@@ -303,6 +316,235 @@
 
   let problemsOpen = $state(false);
 
+  // The overview can be hidden; the choice is remembered per browser where that is possible.
+  const MINIMAP_KEY = 'metakit.minimap';
+  function readMinimapChoice(): boolean {
+    try {
+      return localStorage.getItem(MINIMAP_KEY) !== 'off';
+    } catch {
+      return true;
+    }
+  }
+  // Help while modelling (per browser): hints and smart modelling.
+  const assistStore = pageAssist();
+  let assist = $state<ModelingAssist>(assistStore.value);
+  const stopAssist = assistStore.subscribe((v) => (assist = v));
+
+  let paletteHover = $state<
+    { class: ClassId } | { relation: RelationId } | null
+  >(null);
+  let connectorHover = $state<ConnectorId | null>(null);
+  const hintText = $derived.by(() => {
+    if (!assist.hints) return '';
+    const t = activeTool;
+    let state: HintState;
+    if (t.type === 'place') {
+      const cls = tool.classes[t.class];
+      state = cls
+        ? { kind: 'place', class: cls }
+        : { kind: 'idle', selected: 0 };
+    } else if (t.type === 'connect') {
+      const relation = t.relation ? tool.relations[t.relation] : undefined;
+      if (!relation)
+        return 'Choose a relation in the palette, then click the concept it should start at.';
+      state = { kind: 'connect', relation, picked: false };
+    } else if (paletteHover && 'relation' in paletteHover) {
+      const relation = tool.relations[paletteHover.relation];
+      state = relation
+        ? { kind: 'palette-relation', relation }
+        : { kind: 'idle', selected: 0 };
+    } else if (paletteHover) {
+      const cls = tool.classes[paletteHover.class];
+      state = cls
+        ? { kind: 'palette-class', class: cls }
+        : { kind: 'idle', selected: 0 };
+    } else if (connectorHover && model.connectors[connectorHover]) {
+      const c = model.connectors[connectorHover]!;
+      const relation = tool.relations[c.relation];
+      const name = (id: ElementId) =>
+        tool.classes[model.elements[id]?.class as ClassId]?.key ?? '?';
+      state = relation
+        ? { kind: 'connector', relation, from: name(c.from), to: name(c.to) }
+        : { kind: 'idle', selected: 0 };
+    } else {
+      state = {
+        kind: 'idle',
+        selected: selection.elements.size + selection.connectors.size,
+      };
+    }
+    return hintFor(tool, state);
+  });
+
+  /** The name a concept shows: its label attribute when it has one, else the class name. */
+  function labelOfElement(id: ElementId): string {
+    const element = model.elements[id];
+    if (!element) return '';
+    const attr = scene?.labelAttribute(element.class);
+    const value = attr ? element.attrs[attr as never] : undefined;
+    return typeof value === 'string' && value !== ''
+      ? value
+      : (tool.classes[element.class]?.key ?? 'concept');
+  }
+
+  // Smart modelling: hovering a concept lists what it can be connected to.
+  let suggest = $state<{
+    id: ElementId;
+    left: number;
+    top: number;
+    groups: RelationSuggestion[];
+  } | null>(null);
+  let dwellTimer: ReturnType<typeof setTimeout> | undefined;
+  let closeTimer: ReturnType<typeof setTimeout> | undefined;
+  const CARD_WIDTH = 288;
+
+  function cancelClose() {
+    clearTimeout(closeTimer);
+  }
+  function closeSuggest(delay = 0) {
+    clearTimeout(dwellTimer);
+    clearTimeout(closeTimer);
+    const close = () => {
+      suggest = null;
+      view?.setActive({ suggest: new Set() });
+    };
+    if (delay === 0) close();
+    else closeTimer = setTimeout(close, delay);
+  }
+  function openSuggest(id: ElementId) {
+    const element = (store.state as Model).elements[id];
+    if (!element || !modelType) return;
+    const groups = suggestConnections(
+      tool,
+      modelType,
+      store.state as Model,
+      id,
+      palette.relationIds,
+      new Set(palette.classes.map((c) => c.id)),
+    );
+    const box = host.getBoundingClientRect();
+    const right = view.toScreenFromWorld({
+      x: element.x + element.w,
+      y: element.y,
+    });
+    const leftEdge = view.toScreenFromWorld({ x: element.x, y: element.y });
+    // Beside the concept, on whichever side has room, and kept inside the canvas.
+    const fitsRight = right.x + 12 + CARD_WIDTH < box.width;
+    const left = fitsRight
+      ? right.x + 12
+      : Math.max(8, leftEdge.x - 12 - CARD_WIDTH);
+    // The card is at most 24rem or 70% of the canvas high; keep all of it on the canvas.
+    const cardHeight = Math.min(384, box.height * 0.7);
+    const top = Math.max(8, Math.min(right.y, box.height - cardHeight - 56));
+    suggest = { id, left, top, groups };
+  }
+
+  function onCanvasMove(event: PointerEvent) {
+    if (!ready) return;
+    // Moving over the suggestion card is not leaving the concept.
+    if ((event.target as Element | null)?.closest('.suggestions')) {
+      cancelClose();
+      return;
+    }
+    const world = view.toWorld(event);
+    // Hints about a connector under the pointer.
+    if (assist.hints && activeTool.type === 'select' && event.buttons === 0) {
+      const connector = scene.connectorAt(world, 6 / view.view.s);
+      connectorHover = connector ? connector.id : null;
+    } else connectorHover = null;
+
+    if (!assist.smart) return;
+    if (activeTool.type !== 'select' || event.buttons !== 0 || labelEdit) {
+      closeSuggest();
+      return;
+    }
+    const hit = scene.elementAt(world);
+    if (!hit) {
+      clearTimeout(dwellTimer);
+      if (suggest) closeSuggest(250);
+      return;
+    }
+    cancelClose();
+    if (suggest?.id === hit.id) return;
+    clearTimeout(dwellTimer);
+    dwellTimer = setTimeout(() => openSuggest(hit.id as ElementId), 350);
+  }
+
+  function suggestAdd(
+    relation: RelationDef,
+    direction: 'out' | 'in',
+    cls: { id: string; shape?: string | undefined; key: string },
+  ) {
+    const from = suggest?.id;
+    if (!from) return;
+    const model0 = store.state as Model;
+    const shape = cls.shape ? tool.shapes[cls.shape as never] : undefined;
+    const size =
+      shape?.kind === 'node'
+        ? { w: shape.size.width, h: shape.size.height }
+        : { w: 140, h: 70 };
+    const spot = spotBeside(model0, from, size);
+    let created: ElementId | null = null;
+    // One undo step for the new concept and its connector.
+    store.transact({ type: 'batch', commands: [] }, () => {
+      created = editor.placeAt(cls.id as ClassId, {
+        x: spot.x + size.w / 2,
+        y: spot.y + size.h / 2,
+      });
+      if (!created) return;
+      store.execute({
+        type: 'createConnector',
+        relation: relation.id as RelationId,
+        from: direction === 'out' ? from : created,
+        to: direction === 'out' ? created : from,
+      } as never);
+    });
+    closeSuggest();
+    if (created) {
+      editor.select([created]);
+      say(`Added a ${cls.key} and connected it with ${relation.key}.`);
+    }
+  }
+
+  function suggestPick(
+    relation: RelationDef,
+    direction: 'out' | 'in',
+    cls: { key: string },
+    existing: ElementId[],
+  ) {
+    const from = suggest?.id;
+    closeSuggest();
+    if (from) editor.select([from]);
+    editor.setTool({ type: 'connect', relation: relation.id as RelationId });
+    view.setActive({ suggest: new Set(existing) });
+    say(
+      direction === 'out'
+        ? `Click ${relation.key}'s start, then the ${cls.key} it should end at.`
+        : `Click the ${cls.key} the ${relation.key} should start at, then the concept it ends at.`,
+    );
+  }
+
+  let minimapOn = $state(readMinimapChoice());
+  function toggleMinimap() {
+    minimapOn = !minimapOn;
+    try {
+      localStorage.setItem(MINIMAP_KEY, minimapOn ? 'on' : 'off');
+    } catch {
+      // Not remembered; it still applies to this page.
+    }
+  }
+  const zoomBy = (factor: number) =>
+    view.zoomAtScreen({ x: view.width / 2, y: view.height / 2 }, factor);
+  function runCommand(command: { id: string }) {
+    [...commandsAt('toolbar'), ...commandsAt('model')]
+      .find((c) => c.id === command.id)
+      ?.run(selectedId());
+  }
+  function focusFind() {
+    findInput?.focus();
+    findInput?.select();
+  }
+  let stopTheme = () => undefined as void;
+
   function showIssue(target: string) {
     if (target.startsWith('el_')) editor.select([target as ElementId]);
     else if (target.startsWith('cn_'))
@@ -411,6 +653,14 @@
       },
     });
     minimap = new Minimap(mapHost, view);
+    // The canvas and the overview follow the theme; only the grid and the active layer are redrawn.
+    const followTheme = () => {
+      const theme = canvasTheme();
+      view.setPalette(theme.canvas);
+      minimap.setPalette(theme.minimap);
+    };
+    followTheme();
+    stopTheme = pageTheme().subscribe(followTheme);
     view.fit();
     const stop = store.subscribe(() => {
       version += 1;
@@ -452,6 +702,10 @@
     clearTimeout(messageTimer);
     clearTimeout(validateTimer);
     stopStore();
+    stopTheme();
+    stopAssist();
+    clearTimeout(dwellTimer);
+    clearTimeout(closeTimer);
     stopCommands?.();
     stopLog?.();
     scene?.destroy();
@@ -608,363 +862,289 @@
 />
 
 <div class="workbench" data-testid="model-view">
-  <header class="bar">
-    <button onclick={onBack} data-testid="back-to-explorer">← Models</button>
-    <strong class="name" data-testid="model-name">{model.manifest.name}</strong>
-    {#each commandsAt('toolbar') as command (command.id)}
-      <button
-        onclick={() => command.run(selectedId())}
-        data-testid="command-{command.id}">{command.label}</button
-      >
-    {/each}
-    {#if commandsAt('model').length > 0}
-      <details class="commands" data-testid="commands-menu">
-        <summary>Commands</summary>
-        <ul>
-          {#each commandsAt('model') as command (command.id)}
-            <li>
+  <div class="bar">
+    <ModelToolbar
+      name={model.manifest.name}
+      saveText={app.save === 'saved'
+        ? 'Saved'
+        : app.save === 'saving'
+          ? 'Saving…'
+          : 'Not saved'}
+      saveBad={app.save === 'error'}
+      syncText={statusText}
+      me={{
+        instance: app.me.instance,
+        name: app.me.name,
+        colour: app.me.colour,
+        initials: initials(app.me.name),
+      }}
+      people={here.map((p) => ({
+        instance: p.instance,
+        name: p.name,
+        colour: p.colour,
+        initials: initials(p.name),
+      }))}
+      {onBack}
+      {canUndo}
+      {canRedo}
+      onUndo={() => editor.undo()}
+      onRedo={() => editor.redo()}
+      onFit={() => view.fit()}
+      onZoomIn={() => zoomBy(1.25)}
+      onZoomOut={() => zoomBy(0.8)}
+      selectedElements={selection.elements.size}
+      selectedAny={selection.elements.size + selection.connectors.size > 0}
+      onSelectAll={() => editor.selectAll()}
+      onDelete={() => editor.deleteSelection()}
+      onFind={focusFind}
+      onAlign={align}
+      onDistribute={(axis) => editor.distribute(axis)}
+      onAutoLayout={autoLayout}
+      onExport={() => (exportOpen = true)}
+      views={palette.views.map((v) => ({ id: v.id, label: labelOf(v) }))}
+      {viewId}
+      onViewChange={changeView}
+      {minimapOn}
+      onToggleMinimap={toggleMinimap}
+      {assist}
+      onAssist={(patch) => assistStore.set(patch)}
+      {problemsOpen}
+      issueCount={issues.length}
+      onToggleProblems={() => (problemsOpen = !problemsOpen)}
+      consoleAvailable={scriptLog.length > 0 || consoleOpen}
+      {consoleOpen}
+      onToggleConsole={() => (consoleOpen = !consoleOpen)}
+      toolbarCommands={commandsAt('toolbar')}
+      modelCommands={commandsAt('model')}
+      onRunCommand={runCommand}
+    >
+      {#snippet trailing()}
+        <div class="find">
+          <input
+            bind:this={findInput}
+            type="search"
+            placeholder="Find (Ctrl+F)"
+            bind:value={query}
+            oninput={runFind}
+            onkeydown={(e) => e.key === 'Escape' && ((hits = []), (query = ''))}
+            data-testid="find-input"
+            aria-label="Find in this model"
+          />
+          {#if hits.length > 0}
+            <ul class="hits card" role="listbox" data-testid="find-results">
+              {#each hits as hit (hit.id)}
+                <li role="option" aria-selected="false">
+                  <button class="ghost" onclick={() => pick(hit)}>
+                    {hit.title || hit.id}
+                    <span class="where"
+                      >{hit.field === 'name'
+                        ? ''
+                        : `${hit.field}: `}{hit.excerpt === hit.title
+                        ? ''
+                        : hit.excerpt}</span
+                    >
+                  </button>
+                </li>
+              {/each}
+            </ul>
+          {:else if query.trim() !== ''}
+            <p class="no-hits card">Nothing found.</p>
+          {/if}
+        </div>
+      {/snippet}
+    </ModelToolbar>
+  </div>
+
+  <div class="palette-slot">
+    <PaletteList
+      {tool}
+      {palette}
+      {activeTool}
+      onSelect={chooseSelect}
+      onPlace={choosePlace}
+      onConnect={chooseConnect}
+      onDragClass={dragStart}
+      onHover={(target) => (paletteHover = target)}
+    />
+  </div>
+
+  <div class="centre">
+    <div
+      class="canvas"
+      bind:this={host}
+      ondragover={(e) => e.preventDefault()}
+      ondrop={dropOnCanvas}
+      onpointermove={onCanvasMove}
+      onpointerleave={() => {
+        connectorHover = null;
+        if (suggest) closeSuggest(300);
+      }}
+      role="application"
+      aria-label="Model canvas"
+      data-testid="canvas-host"
+    >
+      <div class="minimap" bind:this={mapHost} hidden={!minimapOn}></div>
+      <HintLine text={hintText} />
+      {#if suggest}
+        {@const el = model.elements[suggest.id]}
+        {#if el}
+          <SuggestionCard
+            name={labelOfElement(suggest.id)}
+            className={tool.classes[el.class]?.key ?? ''}
+            groups={suggest.groups}
+            left={suggest.left}
+            top={suggest.top}
+            onAdd={suggestAdd}
+            onPick={suggestPick}
+            onHighlight={(ids) =>
+              view.setActive({ suggest: new Set(ids ?? []) })}
+            onEnter={cancelClose}
+            onLeave={() => closeSuggest(250)}
+          />
+        {/if}
+      {/if}
+      {#if labelEdit}
+        <textarea
+          class="label-edit"
+          style="left:{labelEdit.left}px;top:{labelEdit.top}px;width:{labelEdit.width}px;height:{labelEdit.height}px"
+          bind:value={labelEdit.value}
+          onblur={commitLabel}
+          onkeydown={labelKey}
+          use:focusOnMount
+          data-testid="label-editor"
+          aria-label="Edit text"></textarea>
+      {/if}
+      {#if contextMenu}
+        <div
+          class="chooser card"
+          style="left:{contextMenu.x}px;top:{contextMenu.y}px"
+          role="menu"
+          data-testid="context-menu"
+        >
+          {#each commandsAt('context') as command (command.id)}
+            <button
+              role="menuitem"
+              onclick={() => {
+                contextMenu = null;
+                command.run(selectedId());
+              }}
+              data-testid="command-{command.id}">{command.label}</button
+            >
+          {/each}
+        </div>
+      {/if}
+      {#if chooser}
+        <div
+          class="chooser card"
+          style="left:{chooser.x}px;top:{chooser.y}px"
+          role="menu"
+          data-testid="relation-chooser"
+        >
+          {#each chooser.options as option (option.id)}
+            <button
+              role="menuitem"
+              onclick={() => {
+                chooser?.resolve(option);
+                chooser = null;
+              }}
+            >
+              {labelOf(option)}
+            </button>
+          {/each}
+          <button
+            role="menuitem"
+            onclick={() => {
+              chooser?.resolve(null);
+              chooser = null;
+            }}
+          >
+            Cancel
+          </button>
+        </div>
+      {/if}
+      {#if app.divergence.length > 0}
+        <p class="warning notice warning" role="alert" data-testid="divergence">
+          {app.divergence[0]!.a.name} and {app.divergence[0]!.b.name} have read the
+          same changes but see different models. Close and reopen the model; if this
+          stays, tell whoever looks after MetaKit for you.
+        </p>
+      {/if}
+      {#if app.notices.length > 0}
+        <ul class="notices" data-testid="notices">
+          {#each app.notices as notice (notice.id)}
+            <li class="notice">
+              <span>{notice.text}</span>
               <button
-                onclick={() => command.run(selectedId())}
-                data-testid="command-{command.id}">{command.label}</button
+                class="ghost icon"
+                onclick={() => controller.dismissNotice(notice.id)}
+                aria-label="Dismiss">×</button
               >
             </li>
           {/each}
         </ul>
-      </details>
-    {/if}
-    {#if scriptLog.length > 0 || consoleOpen}
-      <button
-        onclick={() => (consoleOpen = !consoleOpen)}
-        aria-expanded={consoleOpen}
-        data-testid="console-toggle">Script console</button
-      >
-    {/if}
-    <button onclick={autoLayout} data-testid="auto-layout">Auto-layout</button>
-    <button
-      onclick={() => (problemsOpen = !problemsOpen)}
-      aria-expanded={problemsOpen}
-      data-testid="problems-toggle"
-      >Problems{issues.length > 0 ? ` (${issues.length})` : ''}</button
-    >
-    <button onclick={() => (exportOpen = true)} data-testid="export-open"
-      >Export</button
-    >
-    <span
-      class="save"
-      class:bad={app.save === 'error'}
-      data-testid="save-status"
-      >{app.save === 'saved'
-        ? 'Saved'
-        : app.save === 'saving'
-          ? 'Saving…'
-          : 'Not saved'}</span
-    >
-    <span
-      class="sync"
-      data-testid="sync-status"
-      title="Who changed the model last">{statusText}</span
-    >
-    <ul class="people" aria-label="People in this model" data-testid="people">
-      <li
-        class="avatar me"
-        style="background:{app.me.colour}"
-        title="{app.me.name} (you)"
-        data-testid="avatar-me"
-      >
-        {initials(app.me.name)}
-      </li>
-      {#each here as person (person.instance)}
-        <li
-          class="avatar"
-          style="background:{person.colour}"
-          title={person.name}
-          data-testid="avatar-{person.instance}"
+      {/if}
+      {#if message}
+        <p class="toast" role="status" data-testid="message">{message}</p>
+      {/if}
+      {#if app.messages.length > 0}
+        <ul
+          class="behaviour-messages"
+          aria-label="Messages from rules and scripts"
         >
-          {initials(person.name)}
-        </li>
-      {/each}
-    </ul>
-    <span class="sep"></span>
-    <button
-      onclick={() => editor.undo()}
-      disabled={!canUndo}
-      aria-label="Undo"
-      title="Undo (Ctrl+Z)">Undo</button
-    >
-    <button
-      onclick={() => editor.redo()}
-      disabled={!canRedo}
-      aria-label="Redo"
-      title="Redo (Ctrl+Shift+Z)">Redo</button
-    >
-    <span class="sep"></span>
-    {#if palette.views.length > 0}
-      <label class="inline">
-        View
-        <select
-          value={viewId}
-          onchange={(e) => changeView(e.currentTarget)}
-          data-testid="view-switcher"
-        >
-          <option value="">All</option>
-          {#each palette.views as v (v.id)}<option value={v.id}
-              >{labelOf(v)}</option
-            >{/each}
-        </select>
-      </label>
-    {/if}
-    <button onclick={() => view.fit()} title="Show the whole model">Fit</button>
-    <button
-      onclick={() =>
-        view.zoomAtScreen({ x: view.width / 2, y: view.height / 2 }, 1.25)}
-      aria-label="Zoom in">+</button
-    >
-    <button
-      onclick={() =>
-        view.zoomAtScreen({ x: view.width / 2, y: view.height / 2 }, 0.8)}
-      aria-label="Zoom out">−</button
-    >
-    <span class="sep"></span>
-    <details class="menu">
-      <summary>Arrange</summary>
-      <div class="menu-body">
-        <button
-          disabled={selection.elements.size < 2}
-          onclick={() => align('left')}>Align left</button
-        >
-        <button
-          disabled={selection.elements.size < 2}
-          onclick={() => align('centre')}>Align centres</button
-        >
-        <button
-          disabled={selection.elements.size < 2}
-          onclick={() => align('right')}>Align right</button
-        >
-        <button
-          disabled={selection.elements.size < 2}
-          onclick={() => align('top')}>Align top</button
-        >
-        <button
-          disabled={selection.elements.size < 2}
-          onclick={() => align('middle')}>Align middle</button
-        >
-        <button
-          disabled={selection.elements.size < 2}
-          onclick={() => align('bottom')}>Align bottom</button
-        >
-        <button
-          disabled={selection.elements.size < 3}
-          onclick={() => editor.distribute('horizontal')}
-          >Distribute horizontally</button
-        >
-        <button
-          disabled={selection.elements.size < 3}
-          onclick={() => editor.distribute('vertical')}
-          >Distribute vertically</button
-        >
-      </div>
-    </details>
-    <span class="grow"></span>
-    <div class="find">
-      <input
-        bind:this={findInput}
-        type="search"
-        placeholder="Find (Ctrl+F)"
-        bind:value={query}
-        oninput={runFind}
-        onkeydown={(e) => e.key === 'Escape' && ((hits = []), (query = ''))}
-        data-testid="find-input"
-        aria-label="Find in this model"
-      />
-      {#if hits.length > 0}
-        <ul class="hits" role="listbox" data-testid="find-results">
-          {#each hits as hit (hit.id)}
-            <li role="option" aria-selected="false">
-              <button onclick={() => pick(hit)}>
-                {hit.title || hit.id}
-                <span class="where"
-                  >{hit.field === 'name'
-                    ? ''
-                    : `${hit.field}: `}{hit.excerpt === hit.title
-                    ? ''
-                    : hit.excerpt}</span
-                >
-              </button>
+          {#each app.messages as m (m.id)}
+            <li
+              class="notice {m.kind === 'error'
+                ? 'error'
+                : m.kind === 'warning'
+                  ? 'warning'
+                  : ''}"
+              data-testid="behaviour-message"
+            >
+              <span>{m.text}</span>
+              <button
+                type="button"
+                class="ghost icon"
+                onclick={() => controller.dismissMessage(m.id)}
+                aria-label="Dismiss"
+                data-testid="behaviour-message-dismiss">×</button
+              >
             </li>
           {/each}
         </ul>
-      {:else if query.trim() !== ''}
-        <p class="no-hits">Nothing found.</p>
       {/if}
     </div>
-  </header>
 
-  <nav class="palette" aria-label="Palette" data-testid="palette">
-    <button
-      class="tool"
-      class:on={activeTool.type === 'select'}
-      onclick={chooseSelect}
-      data-testid="tool-select">Select</button
-    >
-    <h3>Objects</h3>
-    {#each palette.classes as cls (cls.id)}
-      <button
-        class="tool"
-        class:on={activeTool.type === 'place' && activeTool.class === cls.id}
-        draggable="true"
-        ondragstart={(e) => dragStart(e, cls.id)}
-        onclick={() => choosePlace(cls.id)}
-        data-testid="palette-class-{cls.key}"
-      >
-        {labelOf(cls)}
-      </button>
-    {/each}
-    <h3>Relations</h3>
-    {#each palette.relations as rel (rel.id)}
-      <button
-        class="tool"
-        class:on={activeTool.type === 'connect' &&
-          activeTool.relation === rel.id}
-        onclick={() => chooseConnect(rel.id)}
-        data-testid="palette-relation-{rel.key}"
-      >
-        {labelOf(rel)}
-      </button>
-    {/each}
-    {#if palette.classes.length === 0}
-      <p class="hint">This view lists no objects.</p>
-    {/if}
-  </nav>
-
-  <div
-    class="canvas"
-    bind:this={host}
-    ondragover={(e) => e.preventDefault()}
-    ondrop={dropOnCanvas}
-    role="application"
-    aria-label="Model canvas"
-    data-testid="canvas-host"
-  >
-    <div class="minimap" bind:this={mapHost}></div>
-    {#if labelEdit}
-      <textarea
-        class="label-edit"
-        style="left:{labelEdit.left}px;top:{labelEdit.top}px;width:{labelEdit.width}px;height:{labelEdit.height}px"
-        bind:value={labelEdit.value}
-        onblur={commitLabel}
-        onkeydown={labelKey}
-        use:focusOnMount
-        data-testid="label-editor"
-        aria-label="Edit text"></textarea>
-    {/if}
-    {#if contextMenu}
-      <div
-        class="chooser"
-        style="left:{contextMenu.x}px;top:{contextMenu.y}px"
-        role="menu"
-        data-testid="context-menu"
-      >
-        {#each commandsAt('context') as command (command.id)}
-          <button
-            role="menuitem"
-            onclick={() => {
-              contextMenu = null;
-              command.run(selectedId());
-            }}
-            data-testid="command-{command.id}">{command.label}</button
-          >
-        {/each}
-      </div>
-    {/if}
-    {#if chooser}
-      <div
-        class="chooser"
-        style="left:{chooser.x}px;top:{chooser.y}px"
-        role="menu"
-        data-testid="relation-chooser"
-      >
-        {#each chooser.options as option (option.id)}
-          <button
-            role="menuitem"
-            onclick={() => {
-              chooser?.resolve(option);
-              chooser = null;
-            }}
-          >
-            {labelOf(option)}
-          </button>
-        {/each}
-        <button
-          role="menuitem"
-          onclick={() => {
-            chooser?.resolve(null);
-            chooser = null;
-          }}
-        >
-          Cancel
-        </button>
-      </div>
-    {/if}
-    {#if app.divergence.length > 0}
-      <p class="warning" role="alert" data-testid="divergence">
-        {app.divergence[0]!.a.name} and {app.divergence[0]!.b.name} have read the
-        same changes but see different models. Close and reopen the model; if this
-        stays, tell whoever looks after MetaKit for you.
-      </p>
-    {/if}
-    {#if app.notices.length > 0}
-      <ul class="notices" data-testid="notices">
-        {#each app.notices as notice (notice.id)}
-          <li>
-            <span>{notice.text}</span>
+    {#if consoleOpen || problemsOpen}
+      <div class="dock">
+        {#if consoleOpen}
+          <aside class="dock-panel" data-testid="script-console-panel">
             <button
-              onclick={() => controller.dismissNotice(notice.id)}
-              aria-label="Dismiss">×</button
+              class="ghost icon close"
+              onclick={() => (consoleOpen = false)}
+              aria-label="Close the script console">×</button
             >
-          </li>
-        {/each}
-      </ul>
-    {/if}
-    {#if message}
-      <p class="toast" role="status" data-testid="message">{message}</p>
-    {/if}
-    {#if app.messages.length > 0}
-      <ul
-        class="behaviour-messages"
-        aria-label="Messages from rules and scripts"
-      >
-        {#each app.messages as m (m.id)}
-          <li class={m.kind} data-testid="behaviour-message">
-            <span>{m.text}</span>
+            <ScriptConsole
+              lines={scriptLog}
+              onClear={() => {
+                scripts?.clearLog();
+                scriptLog = [];
+              }}
+            />
+          </aside>
+        {/if}
+        {#if problemsOpen}
+          <aside class="dock-panel" data-testid="problems-panel">
             <button
-              type="button"
-              onclick={() => controller.dismissMessage(m.id)}
-              aria-label="Dismiss"
-              data-testid="behaviour-message-dismiss">×</button
+              class="ghost icon close"
+              onclick={() => (problemsOpen = false)}
+              aria-label="Close the problems list">×</button
             >
-          </li>
-        {/each}
-      </ul>
+            <ValidationList {issues} {model} {tool} onSelect={showIssue} />
+          </aside>
+        {/if}
+      </div>
     {/if}
   </div>
-
-  {#if consoleOpen}
-    <aside class="problems" data-testid="script-console-panel">
-      <ScriptConsole
-        lines={scriptLog}
-        onClear={() => {
-          scripts?.clearLog();
-          scriptLog = [];
-        }}
-      />
-    </aside>
-  {/if}
-
-  {#if problemsOpen}
-    <aside class="problems" data-testid="problems-panel">
-      <ValidationList {issues} {model} {tool} onSelect={showIssue} />
-    </aside>
-  {/if}
 
   {#if exportOpen}
     <ExportDialog
@@ -994,343 +1174,205 @@
 <style>
   .workbench {
     display: grid;
-    grid-template-columns: 11rem 1fr 20rem;
-    grid-template-rows: auto 1fr;
-    grid-template-areas: 'bar bar bar' 'palette canvas side';
-    height: 100vh;
+    grid-template-columns: 13.5rem minmax(0, 1fr) 20rem;
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas: 'bar bar bar' 'palette centre side';
+    /* The app shell gives this a container with a height; it fills it. */
+    height: 100%;
+    /* Without a sized container the canvas would collapse; this keeps it usable. */
+    min-height: 32rem;
+    background: var(--surface);
   }
   .bar {
     grid-area: bar;
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.4rem 0.7rem;
-    border-bottom: 1px solid var(--line);
-    background: var(--panel);
-    flex-wrap: wrap;
-  }
-  .name {
-    margin: 0 0.3rem;
-  }
-  .save {
-    color: var(--muted);
-    font-size: 0.85rem;
-  }
-  .save.bad {
-    color: var(--danger);
-  }
-  .sync {
-    color: var(--muted);
-    font-size: 0.85rem;
-  }
-  .people {
-    display: flex;
-    gap: 0.2rem;
-    list-style: none;
-    margin: 0 0 0 0.4rem;
-    padding: 0;
-  }
-  .avatar {
-    width: 1.7rem;
-    height: 1.7rem;
-    border-radius: 50%;
-    color: #fff;
-    font-size: 0.7rem;
-    font-weight: 700;
-    display: grid;
-    place-items: center;
-    border: 2px solid var(--bg);
-  }
-  .avatar.me {
-    outline: 2px solid var(--line);
-  }
-  .warning {
-    position: absolute;
-    z-index: 13;
-    top: 0.6rem;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #fff4e6;
-    border: 1px solid #ffd8a8;
-    padding: 0.5rem 0.9rem;
-    border-radius: 6px;
-    max-width: 70%;
-    margin: 0;
-  }
-  .notices {
-    position: absolute;
-    z-index: 12;
-    left: 0.6rem;
-    bottom: 0.6rem;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    gap: 0.3rem;
-    max-width: 60%;
-  }
-  .notices li {
-    background: #e7f5ff;
-    border: 1px solid #a5d8ff;
-    border-radius: 6px;
-    padding: 0.35rem 0.6rem;
-    display: flex;
-    gap: 0.6rem;
-    align-items: flex-start;
-    font-size: 0.9rem;
-  }
-  .notices button {
-    border: none;
-    background: none;
-    padding: 0 0.2rem;
-  }
-  .sep {
-    width: 1px;
-    height: 1.4rem;
-    background: var(--line);
-    margin: 0 0.2rem;
-  }
-  .grow {
-    flex: 1;
-  }
-  .inline {
-    display: inline-flex;
-    gap: 0.3rem;
-    align-items: center;
-    font-size: 0.85rem;
-  }
-  .menu {
     position: relative;
-  }
-  .menu summary {
-    cursor: pointer;
-    padding: 0.2rem 0.5rem;
-    border: 1px solid var(--line);
-    border-radius: 6px;
-    list-style: none;
-  }
-  .menu-body {
-    position: absolute;
     z-index: 20;
-    top: 2rem;
-    left: 0;
-    display: grid;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 6px;
-    padding: 0.3rem;
-    min-width: 12rem;
-    box-shadow: 0 4px 14px rgb(0 0 0 / 12%);
   }
-  .menu-body button {
-    text-align: left;
-    border: none;
-    background: none;
-    padding: 0.25rem 0.5rem;
-  }
-  .menu-body button:hover:not(:disabled) {
-    background: var(--hover);
-  }
-  .find {
-    position: relative;
-  }
-  .hits {
-    position: absolute;
-    z-index: 30;
-    right: 0;
-    top: 2rem;
-    list-style: none;
-    margin: 0;
-    padding: 0.2rem;
-    width: 22rem;
-    max-height: 18rem;
-    overflow: auto;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 6px;
-    box-shadow: 0 4px 14px rgb(0 0 0 / 12%);
-  }
-  .hits button {
-    width: 100%;
-    text-align: left;
-    border: none;
-    background: none;
-    padding: 0.3rem 0.5rem;
-    cursor: pointer;
-  }
-  .hits button:hover {
-    background: var(--hover);
-  }
-  .where {
-    color: var(--muted);
-    font-size: 0.8rem;
-    margin-left: 0.4rem;
-  }
-  .no-hits {
-    position: absolute;
-    right: 0;
-    top: 2rem;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 6px;
-    padding: 0.3rem 0.6rem;
-    margin: 0;
-    color: var(--muted);
-  }
-  .palette {
+  .palette-slot {
     grid-area: palette;
+    min-height: 0;
+    display: grid;
+  }
+  .centre {
+    grid-area: centre;
+    min-width: 0;
+    min-height: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
-    padding: 0.6rem;
-    border-right: 1px solid var(--line);
-    overflow-y: auto;
-    background: var(--panel);
-  }
-  .palette h3 {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--muted);
-    margin: 0.8rem 0 0.2rem;
-  }
-  .tool {
-    text-align: left;
-    border: 1px solid var(--line);
-    background: var(--bg);
-    border-radius: 6px;
-    padding: 0.3rem 0.5rem;
-    cursor: pointer;
-  }
-  .tool.on {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #fff;
-  }
-  .hint {
-    color: var(--muted);
-    font-size: 0.85rem;
   }
   .canvas {
-    grid-area: canvas;
     position: relative;
+    flex: 1;
     min-width: 0;
     min-height: 0;
   }
   .minimap {
     position: absolute;
-    right: 0.6rem;
-    bottom: 0.6rem;
+    right: var(--gap-3);
+    bottom: var(--gap-3);
     z-index: 5;
+    box-shadow: var(--shadow-s);
+  }
+  .minimap[hidden] {
+    display: none;
   }
   .side {
     grid-area: side;
     border-left: 1px solid var(--line);
-    background: var(--panel);
+    background: var(--surface);
     min-height: 0;
+  }
+  .dock {
+    flex: none;
+    display: flex;
+    height: clamp(10rem, 32%, 20rem);
+    border-top: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .dock-panel {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    overflow: auto;
+    display: grid;
+    align-content: start;
+  }
+  .dock-panel + .dock-panel {
+    border-left: 1px solid var(--line);
+  }
+  .close {
+    position: absolute;
+    top: var(--gap-2);
+    right: var(--gap-2);
+    z-index: 1;
+  }
+  .find {
+    position: relative;
+  }
+  .find input {
+    width: 12rem;
+    transition: width 0.15s;
+  }
+  .find input:focus {
+    width: 18rem;
+  }
+  .hits {
+    position: absolute;
+    z-index: 30;
+    right: 0;
+    top: 2.4rem;
+    list-style: none;
+    margin: 0;
+    padding: var(--gap-1);
+    width: 22rem;
+    max-height: 18rem;
+    overflow: auto;
+  }
+  .hits button {
+    width: 100%;
+    text-align: left;
+    border-color: transparent;
+  }
+  .where {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    margin-left: var(--gap-2);
+  }
+  .no-hits {
+    position: absolute;
+    z-index: 30;
+    right: 0;
+    top: 2.4rem;
+    padding: var(--gap-2) var(--gap-3);
+    margin: 0;
+    color: var(--text-muted);
+    font-size: var(--text-s);
+    white-space: nowrap;
   }
   .label-edit {
     position: absolute;
     z-index: 10;
-    box-sizing: border-box;
     resize: none;
     text-align: center;
     border: 2px solid var(--accent);
-    border-radius: 4px;
-    padding: 0.3rem;
+    border-radius: var(--radius-s);
+    padding: var(--gap-2);
     font: inherit;
-  }
-  .commands {
-    position: relative;
-  }
-  .commands ul {
-    position: absolute;
-    z-index: 20;
-    margin: 0;
-    padding: 0.2rem;
-    list-style: none;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 6px;
-    box-shadow: 0 4px 14px rgb(0 0 0 / 15%);
-  }
-  .commands li button {
-    width: 100%;
-    text-align: left;
   }
   .chooser {
     position: absolute;
     z-index: 15;
     display: grid;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 6px;
-    padding: 0.2rem;
-    box-shadow: 0 4px 14px rgb(0 0 0 / 15%);
+    padding: var(--gap-1);
+    box-shadow: var(--shadow);
   }
   .chooser button {
     text-align: left;
-    border: none;
-    background: none;
-    padding: 0.3rem 0.7rem;
-    cursor: pointer;
+    border-color: transparent;
+    background: transparent;
   }
   .chooser button:hover {
-    background: var(--hover);
+    background: var(--hover-bg);
   }
-  .problems {
-    position: fixed;
-    right: 21rem;
-    bottom: 1rem;
-    width: 26rem;
-    max-height: 40vh;
-    overflow: auto;
-    background: var(--panel, #fff);
-    border: 1px solid var(--line, #ccc);
-    border-radius: 6px;
-    z-index: 5;
+  .warning {
+    position: absolute;
+    z-index: 13;
+    top: var(--gap-3);
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 70%;
+    margin: 0;
+    box-shadow: var(--shadow);
+  }
+  .notices {
+    position: absolute;
+    z-index: 12;
+    left: var(--gap-3);
+    bottom: var(--gap-3);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--gap-1);
+    max-width: 60%;
+  }
+  .notices li,
+  .behaviour-messages li {
+    display: flex;
+    gap: var(--gap-3);
+    align-items: flex-start;
+    box-shadow: var(--shadow);
   }
   .behaviour-messages {
     position: absolute;
     z-index: 12;
-    right: 1rem;
-    bottom: 1rem;
+    right: var(--gap-4);
+    bottom: 8rem;
     margin: 0;
     padding: 0;
     list-style: none;
     display: grid;
-    gap: 0.4rem;
+    gap: var(--gap-2);
     max-width: 24rem;
   }
-  .behaviour-messages li {
-    display: flex;
-    gap: 0.6rem;
-    align-items: flex-start;
-    padding: 0.5rem 0.7rem;
-    border-radius: 6px;
-    background: #e7f5ff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  }
-  .behaviour-messages li.warning {
-    background: #fff4e6;
-  }
-  .behaviour-messages li.error {
-    background: #fff5f5;
-  }
-  .behaviour-messages li span {
+  .behaviour-messages li span,
+  .notices li span {
     flex: 1;
   }
   .toast {
     position: absolute;
     z-index: 12;
     left: 50%;
-    bottom: 1rem;
+    bottom: var(--gap-4);
     transform: translateX(-50%);
-    background: #343a40;
-    color: #fff;
-    padding: 0.5rem 0.9rem;
-    border-radius: 6px;
+    /* Inverts with the theme: light text on a dark chip, or the other way round. */
+    background: var(--text-strong);
+    color: var(--surface);
+    padding: var(--gap-2) var(--gap-4);
+    border-radius: var(--radius);
     max-width: 80%;
     margin: 0;
+    box-shadow: var(--shadow);
   }
 </style>

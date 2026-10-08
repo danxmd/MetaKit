@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { DocsLayer, pushDocsContext } from '../../docs/context';
   import type { TokenInfo } from '@metakit-app/storage';
   import {
     SERVICE_NAMES,
@@ -134,6 +135,9 @@
   function forget() {
     report = null;
   }
+
+  // Tells Help which dialog is open.
+  $effect(() => pushDocsContext('settings.git', DocsLayer.dialog));
 </script>
 
 <section class="git-settings" data-testid="git-settings">
@@ -348,90 +352,72 @@
 <style>
   .git-settings {
     display: grid;
-    gap: 0.7rem;
-    max-width: 36rem;
+    gap: var(--gap-4);
   }
   header {
     display: flex;
     justify-content: space-between;
     align-items: center;
   }
-  h2,
   h3 {
-    margin: 0;
-  }
-  h2 {
-    font-size: 1.15rem;
-  }
-  h3 {
-    font-size: 1rem;
-    margin-top: 0.5rem;
-  }
-  .notice {
-    margin: 0;
-    padding: 0.5rem 0.7rem;
-    border: 1px solid var(--line);
-    border-radius: 6px;
-    font-size: 0.9rem;
+    margin-top: var(--gap-2);
+    padding-top: var(--gap-4);
+    border-top: 1px solid var(--line);
   }
   .hint {
-    margin: 0;
-    color: var(--muted);
-    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-size: var(--text-s);
   }
   .tokens {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
-    gap: 0.4rem;
+    gap: var(--gap-2);
   }
   .tokens li {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: var(--gap-2);
     align-items: center;
+    background: var(--surface-2);
     border: 1px solid var(--line);
-    border-radius: 6px;
-    padding: 0.4rem 0.6rem;
+    border-radius: var(--radius);
+    padding: var(--gap-2) var(--gap-3);
   }
   .name {
     font-weight: 600;
+    color: var(--text-strong);
   }
   .where {
-    color: var(--muted);
-    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-size: var(--text-s);
   }
   .actions {
     margin-left: auto;
     display: flex;
-    gap: 0.3rem;
+    gap: var(--gap-1);
   }
   form,
   .chooser {
     display: grid;
-    gap: 0.6rem;
+    gap: var(--gap-3);
   }
   label {
     display: grid;
-    gap: 0.25rem;
-    font-size: 0.9rem;
+    gap: var(--gap-1);
   }
   .row {
     display: flex;
-    gap: 0.5rem;
+    justify-content: flex-end;
+    gap: var(--gap-2);
   }
   .error {
-    margin: 0;
-    color: #c92a2a;
-    font-size: 0.9rem;
+    color: var(--danger);
+    font-size: var(--text-s);
   }
   .ok {
-    margin: 0;
-    color: #2b8a3e;
-    font-size: 0.9rem;
-  }
-  .danger {
-    color: #c92a2a;
+    color: var(--success);
+    font-size: var(--text-s);
   }
 </style>

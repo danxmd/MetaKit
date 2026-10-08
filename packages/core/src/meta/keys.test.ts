@@ -51,6 +51,72 @@ const nameAttr = (tool: ToolLibrary): AttributeDef =>
     .flatMap((c) => c.attributes)
     .find((a) => a.key === 'Name')!;
 
+describe('renameKey and simple looks', () => {
+  it('rewrites the keys a look names, and leaves colour values alone', () => {
+    const tool = sampleTool();
+    const shape = {
+      id: 'shp_look',
+      kind: 'node',
+      size: { width: 100, height: 50 },
+      parts: [{ type: 'text', text: '= Priority' }],
+      look: {
+        base: 'header-box',
+        fill: {
+          by: 'Priority',
+          values: { Priority: '#0f0' },
+          fallback: '#fff',
+        },
+        border: '#000',
+        borderWidth: 1,
+        borderStyle: 'solid',
+        title: { attribute: 'Priority' },
+        subtitle: { attribute: null },
+        badge: {
+          attribute: 'Priority',
+          equals: 'High',
+          text: 'H',
+          colour: '#f00',
+        },
+        fields: ['Name', 'Priority'],
+        size: { width: 100, height: 50 },
+      },
+    } as unknown as NodeShape;
+    const t = {
+      ...tool,
+      shapes: { shp_look: shape },
+      classes: {
+        ...tool.classes,
+        [SAMPLE.task]: { ...tool.classes[SAMPLE.task]!, shape: 'shp_look' },
+      },
+    } as unknown as ToolLibrary;
+    const store = createToolStore(t);
+    store.execute({
+      type: 'renameKey',
+      scope: {
+        kind: 'attribute',
+        owner: { kind: 'class', id: SAMPLE.task },
+        id: SAMPLE.attPriority,
+      },
+      newKey: 'Urgency',
+    });
+    const look = (store.state.shapes.shp_look as NodeShape).look!;
+    expect(look.fill).toEqual({
+      by: 'Urgency',
+      values: { Priority: '#0f0' },
+      fallback: '#fff',
+    });
+    expect(look.title.attribute).toBe('Urgency');
+    expect(look.subtitle!.attribute).toBeNull();
+    expect(look.badge!.attribute).toBe('Urgency');
+    expect(look.badge!.equals).toBe('High');
+    expect(look.fields).toEqual(['Name', 'Urgency']);
+    expect((store.state.shapes.shp_look as NodeShape).parts[0]).toEqual({
+      type: 'text',
+      text: '= Urgency',
+    });
+  });
+});
+
 describe('renameKey', () => {
   it('rewrites formulas, shapes and panel layouts, and leaves strings and longer names alone', () => {
     const tool = toolWithUses();

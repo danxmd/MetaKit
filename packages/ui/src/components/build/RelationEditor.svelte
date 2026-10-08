@@ -12,19 +12,24 @@
   import AttributeList from './AttributeList.svelte';
   import ConstraintsEditor from './ConstraintsEditor.svelte';
   import KeyField from './KeyField.svelte';
+  import Section from './Section.svelte';
   import LabelsField from './LabelsField.svelte';
+  import AppearanceCard from './appearance/AppearanceCard.svelte';
+  import { appearanceOfRelation } from '../../build/appearance-model';
 
   let {
     tool,
     id,
     run,
     onEditShape,
+    onEditAppearance,
     usages,
   }: {
     tool: ToolLibrary;
     id: RelationId;
     run: (command: never) => CommandResult;
     onEditShape: (shapeId: string) => void;
+    onEditAppearance: (relationId: string) => void;
     usages: (attributeId: string) => string[];
   } = $props();
 
@@ -69,102 +74,132 @@
 {#if def}
   <div class="editor" data-testid="relation-editor">
     <h2>Relation class {def.key}</h2>
-    <KeyField
-      value={def.key}
-      testid="relation-key"
-      onRename={(key) =>
-        exec({
-          type: 'renameKey',
-          scope: { kind: 'relation', id },
-          newKey: key,
-        })}
-    />
-    <LabelsField
-      title="Label"
-      labels={def.labels}
-      {languages}
-      testid="relation-label"
-      onChange={(labels) => patch({ labels })}
-    />
-    <div class="row">
-      <label>
-        Extends
-        <select
-          value={def.extends ?? ''}
-          onchange={(e) =>
-            patch({ extends: e.currentTarget.value || undefined })}
-        >
-          <option value="">Nothing</option>
-          {#each parents as p (p.id)}<option value={p.id}>{p.key}</option
-            >{/each}
-        </select>
-      </label>
-      <label class="inline">
-        <input
-          type="checkbox"
-          checked={def.abstract === true}
-          onchange={(e) =>
-            patch({ abstract: e.currentTarget.checked || undefined })}
-        />
-        Abstract
-      </label>
-    </div>
-    <div class="ends">
-      <fieldset>
-        <legend>From (where a connection may start)</legend>
-        {#each classes as c (c.id)}
-          <label class="inline"
-            ><input
-              type="checkbox"
-              checked={def.from.includes(c.id)}
-              onchange={(e) => toggle('from', c.id, e.currentTarget.checked)}
-              data-testid="relation-from-{c.key}"
-            />
-            {c.key}</label
-          >
-        {/each}
-      </fieldset>
-      <fieldset>
-        <legend>To (where it may end)</legend>
-        {#each classes as c (c.id)}
-          <label class="inline"
-            ><input
-              type="checkbox"
-              checked={def.to.includes(c.id)}
-              onchange={(e) => toggle('to', c.id, e.currentTarget.checked)}
-              data-testid="relation-to-{c.key}"
-            />
-            {c.key}</label
-          >
-        {/each}
-      </fieldset>
-    </div>
-    <p class="muted">
-      Leave a list empty to allow what the parent allows. A class that others
-      extend allows all of them.
-    </p>
-    <div class="row">
-      <label>
-        Line shape
-        <select
-          value={def.shape ?? ''}
-          onchange={(e) => patch({ shape: e.currentTarget.value || undefined })}
-          data-testid="relation-shape"
-        >
-          <option value="">Automatic (grey arrow)</option>
-          {#each relationShapes as s (s.id)}<option value={s.id}
-              >{s.name ?? s.id}</option
-            >{/each}
-        </select>
-      </label>
-      {#if def.shape}<button
-          type="button"
-          onclick={() => onEditShape(def.shape!)}>Edit line</button
-        >{/if}
-      <button type="button" onclick={newShape} data-testid="relation-new-shape"
-        >New line shape</button
+    {#if error}<p
+        class="notice error"
+        role="alert"
+        data-testid="relation-problem"
       >
-    </div>
+        {error}
+      </p>{/if}
+    <Section
+      title="Identity"
+      help="What the relation class is called and how it relates to other relation classes."
+    >
+      <KeyField
+        value={def.key}
+        testid="relation-key"
+        onRename={(key) =>
+          exec({
+            type: 'renameKey',
+            scope: { kind: 'relation', id },
+            newKey: key,
+          })}
+      />
+      <LabelsField
+        title="Label"
+        labels={def.labels}
+        {languages}
+        testid="relation-label"
+        onChange={(labels) => patch({ labels })}
+      />
+      <div class="row">
+        <label>
+          Extends
+          <select
+            value={def.extends ?? ''}
+            onchange={(e) =>
+              patch({ extends: e.currentTarget.value || undefined })}
+          >
+            <option value="">Nothing</option>
+            {#each parents as p (p.id)}<option value={p.id}>{p.key}</option
+              >{/each}
+          </select>
+        </label>
+        <label class="inline">
+          <input
+            type="checkbox"
+            checked={def.abstract === true}
+            onchange={(e) =>
+              patch({ abstract: e.currentTarget.checked || undefined })}
+          />
+          Abstract
+        </label>
+      </div>
+    </Section>
+    <Section
+      title="Connects"
+      help="Leave a list empty to allow what the parent allows. A class that others extend allows all of them."
+    >
+      <div class="ends">
+        <fieldset>
+          <legend>From (where a connection may start)</legend>
+          {#each classes as c (c.id)}
+            <label class="inline"
+              ><input
+                type="checkbox"
+                checked={def.from.includes(c.id)}
+                onchange={(e) => toggle('from', c.id, e.currentTarget.checked)}
+                data-testid="relation-from-{c.key}"
+              />
+              {c.key}</label
+            >
+          {/each}
+        </fieldset>
+        <fieldset>
+          <legend>To (where it may end)</legend>
+          {#each classes as c (c.id)}
+            <label class="inline"
+              ><input
+                type="checkbox"
+                checked={def.to.includes(c.id)}
+                onchange={(e) => toggle('to', c.id, e.currentTarget.checked)}
+                data-testid="relation-to-{c.key}"
+              />
+              {c.key}</label
+            >
+          {/each}
+        </fieldset>
+      </div>
+    </Section>
+    <Section
+      title="Appearance"
+      help="How the connection is drawn between two objects."
+    >
+      <AppearanceCard
+        {tool}
+        owner={{ kind: 'relation', id }}
+        {run}
+        {onEditAppearance}
+        {onEditShape}
+      >
+        <div class="row">
+          <label>
+            Use an existing line shape
+            <select
+              value={def.shape ?? ''}
+              onchange={(e) =>
+                patch({ shape: e.currentTarget.value || undefined })}
+              data-testid="relation-shape"
+            >
+              <option value="">Automatic (grey arrow)</option>
+              {#each relationShapes as s (s.id)}<option value={s.id}
+                  >{s.name ?? s.id}</option
+                >{/each}
+            </select>
+          </label>
+          {#if def.shape && appearanceOfRelation(tool, id).kind === 'look'}
+            <button type="button" onclick={() => onEditShape(def.shape!)}
+              >Edit as drawing</button
+            >
+          {/if}
+          <button
+            type="button"
+            onclick={newShape}
+            data-testid="relation-new-shape">New drawn line shape</button
+          >
+        </div>
+      </AppearanceCard>
+    </Section>
     <AttributeList
       owner={{ kind: 'relation', id }}
       attributes={def.attributes}
@@ -178,56 +213,46 @@
       {tool}
       {run}
     />
-    {#if error}<p class="problem" role="alert" data-testid="relation-problem">
-        {error}
-      </p>{/if}
   </div>
 {/if}
 
 <style>
   .editor {
     display: grid;
-    gap: 0.8rem;
-  }
-  h2 {
-    margin: 0;
-    font-size: 1.15rem;
+    gap: var(--gap-4);
+    max-width: 56rem;
   }
   .row {
     display: flex;
-    gap: 1rem;
+    gap: var(--gap-4);
     flex-wrap: wrap;
     align-items: end;
   }
   .ends {
     display: flex;
-    gap: 1rem;
+    gap: var(--gap-3);
     flex-wrap: wrap;
   }
   fieldset {
     border: 1px solid var(--line);
-    border-radius: 6px;
+    border-radius: var(--radius);
     display: flex;
     flex-wrap: wrap;
-    gap: 0.6rem;
+    gap: var(--gap-3);
     flex: 1;
+    min-width: 14rem;
+  }
+  legend {
+    font-size: var(--text-s);
+    color: var(--text-muted);
   }
   label {
     display: grid;
-    gap: 0.2rem;
-    font-size: 0.9rem;
+    gap: var(--gap-1);
   }
   label.inline {
     display: inline-flex;
-    gap: 0.4rem;
+    gap: var(--gap-2);
     align-items: center;
-  }
-  .muted {
-    color: var(--muted);
-    font-size: 0.85rem;
-    margin: 0;
-  }
-  .problem {
-    color: #c92a2a;
   }
 </style>

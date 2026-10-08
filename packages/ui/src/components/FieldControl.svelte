@@ -362,13 +362,13 @@
 <style>
   .field {
     display: grid;
-    gap: 0.2rem;
-    margin-bottom: 0.7rem;
+    gap: var(--gap-1);
+    min-width: 0;
   }
   label {
-    font-size: 0.8rem;
+    font-size: var(--text-s);
     font-weight: 600;
-    color: var(--muted);
+    color: var(--text-muted);
   }
   .unit {
     font-weight: 400;
@@ -377,10 +377,11 @@
     color: var(--danger);
   }
   input[type='text'],
+  input[type='date'],
+  input[type='datetime-local'],
   textarea,
   select {
     width: 100%;
-    box-sizing: border-box;
   }
   .invalid input,
   .invalid textarea,
@@ -389,50 +390,55 @@
   }
   .message {
     color: var(--danger);
-    font-size: 0.8rem;
+    background: var(--danger-soft);
+    border-radius: var(--radius-s);
+    padding: 0.15rem var(--gap-2);
+    font-size: var(--text-s);
     margin: 0;
   }
   .help,
   .mixed {
-    color: var(--muted);
-    font-size: 0.8rem;
+    color: var(--text-faint);
+    font-size: 0.75rem;
     margin: 0;
   }
   .duration {
     display: flex;
-    gap: 0.25rem;
+    gap: var(--gap-1);
     align-items: center;
+    font-size: var(--text-s);
+    color: var(--text-muted);
   }
   .duration input {
-    width: 3rem;
+    width: 3.2rem;
   }
   .segmented,
   .chips {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.25rem;
+    gap: var(--gap-1);
   }
   .segmented button,
   .chips button {
-    border: 1px solid var(--line);
-    background: var(--panel);
     border-radius: 999px;
     padding: 0.15rem 0.7rem;
-    cursor: pointer;
+    min-height: 1.7rem;
   }
   .segmented button.on,
   .chips button.on {
     background: var(--accent);
     border-color: var(--accent);
-    color: #fff;
+    color: var(--on-accent);
   }
   .scroll {
     overflow: auto;
   }
   .readonly {
-    padding: 0.25rem 0.4rem;
-    background: var(--hover);
-    border-radius: 4px;
-    min-height: 1.4rem;
+    padding: 0.3rem var(--gap-2);
+    background: var(--surface-3);
+    color: var(--text);
+    border-radius: var(--radius-s);
+    min-height: 2rem;
+    font-size: var(--text-s);
   }
 </style>

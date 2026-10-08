@@ -168,23 +168,28 @@
   input[type='search'] {
     box-sizing: border-box;
     width: 100%;
+    min-height: 2.25rem;
   }
   .hint {
     margin: 0;
-    color: var(--muted, #6b7280);
+    color: var(--text-muted);
     font-size: 0.85rem;
   }
   .problem {
-    color: var(--danger, #c92a2a);
+    color: var(--danger);
   }
   .results {
     max-height: 22rem;
     overflow: auto;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: var(--gap-1) var(--gap-2);
   }
   h4 {
     margin: 0.5rem 0 0.15rem;
     font-size: 0.85rem;
-    color: var(--muted, #6b7280);
+    color: var(--text-muted);
   }
   ul {
     list-style: none;
@@ -201,14 +206,15 @@
     background: none;
     border-color: transparent;
     padding: 0.25rem 0.4rem;
+    border-radius: var(--radius-s);
   }
   button:hover,
   button:focus-visible {
-    background: var(--hover, #e9ecef);
+    background: var(--hover-bg);
   }
   .class,
   .snippet {
-    color: var(--muted, #6b7280);
+    color: var(--text-muted);
     font-size: 0.8rem;
   }
   .snippet {

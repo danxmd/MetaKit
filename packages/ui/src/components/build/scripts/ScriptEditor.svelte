@@ -101,12 +101,22 @@
   }
   .editor {
     border: 1px solid var(--line);
-    border-radius: 6px;
+    border-radius: var(--radius);
+    --syn-keep: 100%;
+    --syn-lift: #fff;
     min-height: 14rem;
     max-height: 32rem;
     overflow: auto;
-    background: #fff;
-    color: #212529;
+    background: var(--surface);
+    color: var(--text);
+  }
+  :global(:root[data-theme='dark']) .editor {
+    --syn-keep: 45%;
+  }
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme='light'])) .editor {
+      --syn-keep: 45%;
+    }
   }
   .editor :global(.cm-editor.cm-focused) {
     outline: 2px solid var(--accent);
@@ -115,6 +125,6 @@
   .note {
     margin: 0;
     font-size: 0.85rem;
-    color: var(--muted);
+    color: var(--text-muted);
   }
 </style>

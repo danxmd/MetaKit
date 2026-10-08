@@ -95,7 +95,7 @@
   }
   legend {
     padding: 0;
-    color: var(--muted, #6b7280);
+    color: var(--muted, var(--text-muted));
   }
   .file {
     display: grid;
@@ -113,6 +113,6 @@
     margin: 0;
     padding-left: 1.1rem;
     font-size: 0.8rem;
-    color: var(--muted, #6b7280);
+    color: var(--muted, var(--text-muted));
   }
 </style>

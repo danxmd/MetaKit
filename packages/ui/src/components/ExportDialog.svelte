@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { DocsLayer, pushDocsContext } from '../docs/context';
   import { onMount } from 'svelte';
   import type { ExportFormat, ExportRequest } from '../shell/download';
 
@@ -48,6 +49,9 @@
     }
     await onExport(request);
   }
+
+  // Tells Help which dialog is open.
+  $effect(() => pushDocsContext('dialog.export', DocsLayer.dialog));
 </script>
 
 <dialog
@@ -170,43 +174,33 @@
 
 <style>
   dialog {
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 1.25rem 1.5rem;
-    min-width: 22rem;
+    width: min(26rem, calc(100vw - 2rem));
   }
   form {
     display: grid;
-    gap: 0.8rem;
-  }
-  h2 {
-    margin: 0;
-    font-size: 1.15rem;
+    gap: var(--gap-4);
   }
   label {
     display: grid;
-    gap: 0.25rem;
-    font-size: 0.9rem;
+    gap: var(--gap-1);
   }
   label.check {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--gap-2);
+    color: var(--text);
   }
   .hint {
-    margin: -0.4rem 0 0;
-    font-size: 0.8rem;
-    color: var(--muted, #5c6670);
+    margin: calc(var(--gap-2) * -1) 0 0;
+    font-size: var(--text-s);
+    color: var(--text-muted);
   }
   .actions {
     display: flex;
     justify-content: flex-end;
-    gap: 0.5rem;
+    gap: var(--gap-2);
   }
   .notice {
-    padding: 0.5rem 0.7rem;
-    border-radius: 6px;
-    background: #fff5f5;
     margin: 0;
   }
 </style>

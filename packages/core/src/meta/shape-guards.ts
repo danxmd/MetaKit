@@ -1,6 +1,11 @@
 import type { Checker } from './guards';
 import { effectiveAttributes, effectiveRelationAttributes } from './inherit';
-import { PANEL_CONTROLS, PART_TYPES } from './shape-types';
+import {
+  LOOK_BASE_IDS,
+  LOOK_ICON_NAMES,
+  PANEL_CONTROLS,
+  PART_TYPES,
+} from './shape-types';
 import type { ToolLibrary } from './types';
 
 type Rec = Record<string, unknown>;
@@ -338,6 +343,162 @@ function panelItems(
   });
 }
 
+const LOOK_LINE_STYLES = ['solid', 'dashed', 'dotted'];
+const LOOK_ROUTING = ['straight', 'orthogonal', 'curved'];
+const LOOK_MARKERS = [
+  'none',
+  'arrow',
+  'open-arrow',
+  'triangle',
+  'diamond',
+  'circle',
+  'cross',
+  'bar',
+];
+
+function lookColour(c: Checker, value: unknown, path: string): void {
+  if (typeof value === 'string') return;
+  const o = c.object(value, path, ['by', 'values', 'fallback'], 'A colour');
+  if (!o) return;
+  c.key(o.by, `${path}.by`, 'The attribute key');
+  c.string(o.fallback, `${path}.fallback`, 'The fallback colour');
+  const values = o.values;
+  if (values === null || typeof values !== 'object' || Array.isArray(values))
+    c.add(`${path}.values`, 'The values must be an object of colours.');
+  else
+    for (const [k, v] of Object.entries(values))
+      if (typeof v !== 'string')
+        c.add(`${path}.values.${k}`, 'A colour must be text such as #d93025.');
+}
+
+function lookText(c: Checker, value: unknown, path: string): void {
+  const o = c.object(
+    value,
+    path,
+    ['attribute', 'text', 'colour', 'bold', 'size'],
+    'A line of text',
+  );
+  if (!o) return;
+  if (o.attribute !== undefined && o.attribute !== null)
+    c.key(o.attribute, `${path}.attribute`, 'The attribute key');
+  if (o.text !== undefined) c.string(o.text, `${path}.text`, 'The text');
+  if (o.colour !== undefined) lookColour(c, o.colour, `${path}.colour`);
+}
+
+/** Checks the structure of a simple look (ADR 0009). */
+function checkLook(
+  c: Checker,
+  value: unknown,
+  path: string,
+  kind: string,
+): void {
+  if (kind === 'relation') {
+    const o = c.object(
+      value,
+      path,
+      ['colour', 'width', 'style', 'routing', 'start', 'end', 'label'],
+      'A relation look',
+    );
+    if (!o) return;
+    lookColour(c, o.colour, `${path}.colour`);
+    c.number(o.width, `${path}.width`, 'The line width');
+    if (!LOOK_LINE_STYLES.includes(o.style as string))
+      c.add(
+        `${path}.style`,
+        `The style must be one of ${LOOK_LINE_STYLES.join(', ')}.`,
+      );
+    if (!LOOK_ROUTING.includes(o.routing as string))
+      c.add(
+        `${path}.routing`,
+        `The routing must be one of ${LOOK_ROUTING.join(', ')}.`,
+      );
+    for (const end of ['start', 'end'])
+      if (!LOOK_MARKERS.includes(o[end] as string))
+        c.add(
+          `${path}.${end}`,
+          `The ${end} must be one of ${LOOK_MARKERS.join(', ')}.`,
+        );
+    if (o.label !== null) {
+      const l = c.object(o.label, `${path}.label`, ['attribute'], 'The label');
+      if (l) c.key(l.attribute, `${path}.label.attribute`, 'The attribute key');
+    }
+    return;
+  }
+  const o = c.object(
+    value,
+    path,
+    [
+      'base',
+      'fill',
+      'border',
+      'borderWidth',
+      'borderStyle',
+      'corner',
+      'title',
+      'subtitle',
+      'icon',
+      'badge',
+      'fields',
+      'size',
+    ],
+    'A look',
+  );
+  if (!o) return;
+  if (!LOOK_BASE_IDS.includes(o.base as never))
+    c.add(
+      `${path}.base`,
+      `The base form must be one of ${LOOK_BASE_IDS.join(', ')}.`,
+    );
+  lookColour(c, o.fill, `${path}.fill`);
+  lookColour(c, o.border, `${path}.border`);
+  c.number(o.borderWidth, `${path}.borderWidth`, 'The border width');
+  if (!LOOK_LINE_STYLES.includes(o.borderStyle as string))
+    c.add(
+      `${path}.borderStyle`,
+      `The border style must be one of ${LOOK_LINE_STYLES.join(', ')}.`,
+    );
+  if (o.corner !== undefined)
+    c.number(o.corner, `${path}.corner`, 'The corner');
+  lookText(c, o.title, `${path}.title`);
+  if (o.subtitle !== undefined) lookText(c, o.subtitle, `${path}.subtitle`);
+  if (o.icon !== undefined) {
+    const i = c.object(o.icon, `${path}.icon`, ['name', 'colour'], 'The icon');
+    if (i && !LOOK_ICON_NAMES.includes(i.name as never))
+      c.add(
+        `${path}.icon.name`,
+        `The icon must be one of ${LOOK_ICON_NAMES.join(', ')}.`,
+      );
+  }
+  if (o.badge !== undefined) {
+    const b = c.object(
+      o.badge,
+      `${path}.badge`,
+      ['attribute', 'equals', 'text', 'colour'],
+      'The badge',
+    );
+    if (b) {
+      c.key(b.attribute, `${path}.badge.attribute`, 'The attribute key');
+      c.string(b.equals, `${path}.badge.equals`, 'The value');
+      c.string(b.text, `${path}.badge.text`, 'The text');
+      c.string(b.colour, `${path}.badge.colour`, 'The colour');
+    }
+  }
+  if (o.fields !== undefined)
+    c.array(o.fields, `${path}.fields`, 'The fields')?.forEach((f, i) =>
+      c.key(f, `${path}.fields[${i}]`, 'The attribute key'),
+    );
+  const size = c.object(
+    o.size,
+    `${path}.size`,
+    ['width', 'height', 'resizable'],
+    'The size',
+  );
+  if (size) {
+    c.number(size.width, `${path}.size.width`, 'The width');
+    c.number(size.height, `${path}.size.height`, 'The height');
+  }
+}
+
 /** Checks the structure of `shapes`, `panels` and the container rules (version 2 tables). */
 export function checkShapeTables(c: Checker, root: Rec): void {
   const shapes = root.shapes;
@@ -361,6 +522,7 @@ export function checkShapeTables(c: Checker, root: Rec): void {
                 'startMarker',
                 'endMarker',
                 'labels',
+                'look',
               ]
             : [
                 'id',
@@ -371,6 +533,7 @@ export function checkShapeTables(c: Checker, root: Rec): void {
                 'let',
                 'parts',
                 'variants',
+                'look',
               ],
           'A shape',
         );
@@ -389,6 +552,7 @@ export function checkShapeTables(c: Checker, root: Rec): void {
           c.string(d.name, `${path}.name`, 'The shape name');
         if (kind === 'node') nodeShape(c, d, path);
         else relationShape(c, d, path);
+        if (d.look !== undefined) checkLook(c, d.look, `${path}.look`, kind);
       }
   }
   const panels = root.panels;

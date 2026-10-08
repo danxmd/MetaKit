@@ -24,6 +24,8 @@ async function openFromRepository(page: Page) {
   await loadHarness(page, './git-harness.ts');
   await page.getByTestId('open-folder').click();
   await page.getByRole('button', { name: 'Create workspace' }).click();
+  await page.getByTestId('mode-build').click();
+  await page.getByTestId('add-menu').locator('summary').click();
   await page.getByTestId('open-git').click();
 
   await page.getByTestId('git-token-label').fill('Test token');
@@ -36,6 +38,15 @@ async function openFromRepository(page: Page) {
   await expect(page.getByTestId('build-view')).toBeVisible();
   await expect(page.getByTestId('git-repo')).toContainText('acme/tools');
 }
+
+/** Commit, Pull and Releases live in the Source control menu. */
+const sourceControl = async (
+  page: Page,
+  action: 'commit' | 'pull' | 'releases',
+) => {
+  await page.getByTestId('git-menu-summary').click();
+  await page.getByTestId(`git-${action}`).click();
+};
 
 const setTaskLabel = async (page: Page, text: string) => {
   await page.getByTestId('build-item-Task').click();
@@ -52,7 +63,7 @@ test.describe('Git mode', () => {
 
     // A change here is a pending change; the commit sends it as one commit.
     await setTaskLabel(page, 'Job');
-    await page.getByTestId('git-commit').click();
+    await sourceControl(page, 'commit');
     await expect(page.getByTestId('commit-change')).toHaveCount(1);
     await expect(page.getByTestId('commit-change')).toContainText('Task');
     await page.getByTestId('commit-message').fill('Call tasks jobs');
@@ -73,7 +84,7 @@ test.describe('Git mode', () => {
         'Rename gateway',
       ),
     );
-    await page.getByTestId('git-pull').click();
+    await sourceControl(page, 'pull');
     await expect(page.getByTestId('git-note')).toContainText('Pulled');
     await page.getByTestId('build-item-Gateway').click();
     await expect(page.getByTestId('class-label-en')).toHaveValue('Decision');
@@ -89,7 +100,7 @@ test.describe('Git mode', () => {
         'Rename task again',
       ),
     );
-    await page.getByTestId('git-pull').click();
+    await sourceControl(page, 'pull');
     await expect(page.getByTestId('conflict-dialog')).toBeVisible();
     await expect(page.getByTestId('conflict-item')).toHaveCount(1);
     await expect(page.getByTestId('conflict-ours-value')).toContainText(

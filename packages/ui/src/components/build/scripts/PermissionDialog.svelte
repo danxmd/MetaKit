@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { DocsLayer, pushDocsContext } from '../../../docs/context';
   import { describePermissions } from '@metakit-app/behaviour';
   import type { ToolPermissions } from '@metakit-app/core';
 
@@ -19,6 +20,9 @@
   const lines = $derived(describePermissions(wanted));
 
   $effect(() => dialog?.showModal());
+
+  // Tells Help which dialog is open.
+  $effect(() => pushDocsContext('dialog.permission', DocsLayer.dialog));
 </script>
 
 <dialog

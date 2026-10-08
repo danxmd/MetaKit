@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { canvasPoint, model, newModel, prepare, toolJson } from './app';
+import { openMenu } from './menus';
 
 test.describe('start and explorer', () => {
   test('opens a workspace and reaches an empty model in no more than five clicks', async ({
@@ -33,7 +34,7 @@ test.describe('start and explorer', () => {
     await expect(page.getByTestId('create-workspace')).toBeVisible();
     await page.getByTestId('workspace-name').fill('Fresh');
     await page.getByRole('button', { name: 'Create workspace' }).click();
-    await expect(page.getByRole('heading', { name: 'Fresh' })).toBeVisible();
+    await expect(page.getByTestId('workspace-title')).toHaveText('Fresh');
     await expect(page.getByTestId('no-models')).toBeVisible();
   });
 
@@ -77,6 +78,11 @@ test.describe('start and explorer', () => {
     await page.goto('/MetaKit/');
     await page.getByTestId('open-folder').click();
     await page.getByRole('button', { name: 'Create workspace' }).click();
+    // The models page points to Build, where the tool library is added.
+    await expect(page.getByTestId('no-models')).toContainText(
+      'You need a tool library first',
+    );
+    await page.getByTestId('go-build').click();
     await expect(page.getByTestId('no-tools')).toBeVisible();
 
     await page.getByTestId('tool-file').setInputFiles({
@@ -94,6 +100,7 @@ test.describe('start and explorer', () => {
       buffer: Buffer.from(toolJson),
     });
     await expect(page.getByTestId('no-tools')).toHaveCount(0);
+    await page.getByTestId('mode-model').click();
     await page.getByTestId('new-model').click();
     await page.getByTestId('new-model-name').fill('From a file');
     await page.getByTestId('new-model-create').click();
@@ -109,8 +116,9 @@ test.describe('start and explorer', () => {
     await expect(page.getByTestId('folder-Sales')).toBeVisible();
     await expect(page.getByTestId('folder-Sales/2026')).toBeVisible();
 
-    const row = page.locator('[data-testid^="model-"]').first();
-    await row.hover();
+    const menu = () =>
+      page.locator('[data-testid^="model-actions-"]').locator('summary');
+    await menu().click();
     await page.getByRole('button', { name: 'Rename Alpha' }).click();
     await page.getByLabel('New name').fill('Alpha two');
     await page.getByRole('button', { name: 'Save' }).click();
@@ -118,7 +126,7 @@ test.describe('start and explorer', () => {
       page.getByRole('button', { name: 'Alpha two', exact: true }),
     ).toBeVisible();
 
-    await page.locator('[data-testid^="model-"]').first().hover();
+    await menu().click();
     await page
       .getByRole('button', { name: 'Move Alpha two to a folder' })
       .click();
@@ -127,7 +135,7 @@ test.describe('start and explorer', () => {
     await expect(page.getByTestId('folder-HR')).toBeVisible();
     await expect(page.getByTestId('folder-Sales')).toHaveCount(0);
 
-    await page.locator('[data-testid^="model-"]').first().hover();
+    await menu().click();
     await page.getByRole('button', { name: 'Delete Alpha two' }).click();
     await expect(page.getByTestId('no-models')).toBeVisible();
     await page.getByText('Deleted (1), kept for 30 days').click();
@@ -182,6 +190,7 @@ test.describe('model view', () => {
     await newModel(page);
     const all = await page.locator('[data-testid^="palette-class-"]').count();
     expect(all).toBeGreaterThan(0);
+    await openMenu(page, 'View');
     await page.getByTestId('view-switcher').selectOption({ index: 1 });
     const filtered = await page
       .locator('[data-testid^="palette-class-"]')

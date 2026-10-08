@@ -184,88 +184,107 @@
 
 <style>
   .panel {
-    padding: 0.75rem 0.9rem;
+    padding: var(--gap-4);
     overflow-y: auto;
     height: 100%;
-    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-3);
   }
   h2 {
-    font-size: 1rem;
-    margin: 0 0 0.5rem;
+    font-size: var(--text-m);
+    padding-bottom: var(--gap-2);
+    border-bottom: 1px solid var(--line);
   }
   h3 {
-    font-size: 0.8rem;
+    font-size: 0.72rem;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--muted);
-    margin: 1rem 0 0.4rem;
+    letter-spacing: 0.05em;
+    color: var(--text-faint);
+    margin: var(--gap-2) 0 var(--gap-2);
+  }
+  section {
+    display: grid;
+    gap: var(--gap-3);
   }
   .note,
   .empty {
-    color: var(--muted);
-    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-size: var(--text-s);
+  }
+  .empty {
+    padding: var(--gap-5) var(--gap-2);
+    text-align: center;
   }
   .messages {
+    list-style: none;
+    margin: 0;
+    padding: var(--gap-2) var(--gap-3);
+    display: grid;
+    gap: var(--gap-1);
+    border-radius: var(--radius);
+    background: var(--danger-soft);
     color: var(--danger);
-    font-size: 0.8rem;
-    margin: 0 0 0.6rem;
-    padding-left: 1.1rem;
+    font-size: var(--text-s);
   }
   .tabs {
     display: flex;
-    gap: 0.15rem;
+    gap: var(--gap-1);
     border-bottom: 1px solid var(--line);
-    margin-bottom: 0.6rem;
     flex-wrap: wrap;
   }
   .tabs button {
-    border: 1px solid transparent;
-    border-bottom: none;
+    border: 0;
+    border-bottom: 2px solid transparent;
     background: none;
-    padding: 0.25rem 0.7rem;
-    cursor: pointer;
-    border-radius: 4px 4px 0 0;
-    color: var(--muted);
+    border-radius: 0;
+    color: var(--text-muted);
   }
   .tabs button.on {
-    border-color: var(--line);
-    background: var(--panel);
-    color: inherit;
+    border-bottom-color: var(--accent);
+    color: var(--text-strong);
     font-weight: 600;
   }
+  .tabpanel {
+    display: grid;
+    gap: var(--gap-3);
+  }
   .group {
+    display: grid;
+    gap: var(--gap-3);
     border: 1px solid var(--line);
-    border-radius: 4px;
-    margin: 0 0 0.7rem;
-    padding: 0.4rem 0.6rem 0;
+    border-radius: var(--radius);
+    margin: 0;
+    padding: var(--gap-3);
+    min-width: 0;
   }
   .group legend {
-    font-size: 0.8rem;
+    font-size: 0.72rem;
+    font-weight: 650;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--muted);
-    padding: 0 0.3rem;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    padding: 0 var(--gap-1);
   }
   .unknown {
-    margin-top: 1rem;
     border-top: 1px solid var(--line);
-    padding-top: 0.5rem;
+    padding-top: var(--gap-2);
   }
   .unknown summary {
     cursor: pointer;
-    font-size: 0.85rem;
-    color: var(--muted);
+    font-size: var(--text-s);
+    color: var(--text-muted);
   }
   .entry {
     display: grid;
     grid-template-columns: auto 1fr auto;
-    gap: 0.4rem;
+    gap: var(--gap-2);
     align-items: center;
-    margin-bottom: 0.3rem;
-    font-size: 0.85rem;
+    margin-top: var(--gap-2);
+    font-size: var(--text-s);
   }
   .entry output {
     overflow-wrap: anywhere;
-    color: var(--muted);
+    color: var(--text-muted);
   }
 </style>
