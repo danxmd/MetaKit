@@ -58,7 +58,7 @@ else ui.message(problems.join('\n'), 'warning');
 | `model.objects('Task')` | All objects of a class. |
 | `task.incoming('Performs')`, `artifact.outgoing('Feeds')` | Neighbours through a relation class. |
 | `model.connectors('HandsOverTo')` | All connectors of a relation class, with `link.from`, `link.to` and `link.attrs`. |
-| `attrs.Name || 'unnamed'` | A readable name even when the field is empty. |
+| `nameOf(task, 'unnamed')` | A small helper of the script that gives a readable name even when the field is empty. |
 | `ui.message(text, kind)` | The result. |
 
 All of these are listed in [[script-api]].

@@ -3,7 +3,7 @@ id: git-mode
 title: Git mode
 category: teamwork
 summary: Keep a tool library in a GitHub or GitLab repository, with commits, pulls and tagged versions, straight from the browser.
-keywords: [git mode, git settings, open from git, git link, github, gitlab, repository, tool library in git]
+keywords: [git mode, open from git, git link, github, gitlab, repository, tool library in git]
 contexts: [settings.git]
 order: 150
 ---

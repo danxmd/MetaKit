@@ -95,6 +95,10 @@ Four promises hold:
 - **Use a limited key.** Make a key just for this, with a spending limit, and remove it when you no longer need it.
 - **Cost.** A draft is one request, or two if the first needs a correction. A request is about as long as the sample.
 - **One provider.** Only Claude is offered now. Others could be added later.
+- **Build mode only.** The drafting buttons exist in Build mode. The assistant cannot draft inside a model, and it cannot read one.
+- **Language.** Labels and messages in a draft use the first language of the tool library.
+- **Large tools.** A request lists at most 80 classes, 80 relation classes and so on. A tool with more is summarised with a line "... and N more".
+- **Not a reviewer.** The checks find wrong names and broken formulas. They cannot tell whether a rule does what you meant. Use **Try on the selected object** for rules (see [[rules]]).
 - **Script checks.** Scripts are compiled and type-checked with the same checker as the script editor. If the checker is not available, only syntax errors are found.
 - **Browsers.** The assistant needs the same browser as the rest of MetaKit (see [[browser-support]]).
 

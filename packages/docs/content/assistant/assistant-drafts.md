@@ -88,9 +88,7 @@ For a script: the name and size, which events it reacts to, which commands it ad
 
 - **Read before you accept.** A draft is a suggestion. A rule that passes every check can still do the wrong thing.
 - **Two attempts.** Drafting costs one request, or two when a fix is needed.
-- **One draft at a time.** If you press **Draft again** while one is still coming, the older answer is dropped.
 - **Errors from the service** appear in red at the top of the dialog, without the key. See [[assistant-overview]] for the texts.
-- **Keep it short.** A specific sentence ("When Status becomes Done, set the date to today") gives better drafts than a vague one.
 
 ## Related
 

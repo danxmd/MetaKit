@@ -81,13 +81,11 @@ The package contains the code for a GitLab sign-in without a stored secret (OAut
 ## Examples
 
 - A contractor gets a token valid for 30 days on one repository. When it expires, MetaKit shows `The token was refused. It may be wrong, expired or revoked.` The contractor makes a new token and replaces the saved one.
-- You use a work laptop and a home computer. You make two tokens, one for each, with the names "Work laptop" and "Home".
 
 ## Good to know
 
 - **Clearing site data removes tokens.** If you clear the data of MetaKit in the browser, or use a private window, your tokens are gone and you add them again. See [[script-permissions]] for other things kept in the browser.
 - **Do not paste tokens into rules, scripts, models or chat.** A tool library is shared in the folder and in Git.
-- **Revoke after leaving a team.** Revoking on GitHub or GitLab is the only way to be sure.
 - **Not tested on the real services.** The checks against github.com and gitlab.com, including browser access, are written in `docs/git-oauth-setup.md` and are run by the project owner.
 - **Troubleshooting.** See [[troubleshooting]].
 

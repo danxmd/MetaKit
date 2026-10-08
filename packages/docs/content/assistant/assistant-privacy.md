@@ -105,9 +105,7 @@ A request is as large as the sample plus your sentence. Two requests are sent wh
 ## Good to know
 
 - **Network panel.** Open the browser's network panel while drafting: only requests to the service appear. The body holds no model content.
-- **Shared screens.** The sample request is shown on screen. Be careful when you share your screen.
 - **Browser extensions.** Extensions that can read pages could read the key. The settings page says so.
-- **Agree on it in teams.** Each person uses their own key. Nobody else sees it.
 - **Same rule as Git.** Tokens and keys follow the same rule: browser only. See [[git-tokens]] and [[concepts-no-server]].
 
 ## Related
