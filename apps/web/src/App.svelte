@@ -1,6 +1,16 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import {
+    closeDocs,
+    DocsLayer,
+    docsOpen,
+    isTypingTarget,
+    pushDocsContext,
+    setDocsContext,
+    toggleDocs,
+    type PanelState,
+  } from '@metakit-app/ui/docs';
+  import {
     AppController,
     ReferenceIndex,
     type ReferenceServices,
@@ -14,6 +24,8 @@
     typeCheckWithClient,
   } from '@metakit-app/ui/assistant';
   import GitSettings from '@metakit-app/ui/components/git/GitSettings.svelte';
+  import DocsPage from '@metakit-app/ui/components/docs/DocsPage.svelte';
+  import DocsPanel from '@metakit-app/ui/components/docs/DocsPanel.svelte';
   import ModalPanel from '@metakit-app/ui/components/ModalPanel.svelte';
   import ModelsPage from '@metakit-app/ui/components/ModelsPage.svelte';
   import ToolImportDialog from '@metakit-app/ui/components/ToolImportDialog.svelte';
@@ -67,12 +79,18 @@
   );
   let showNew = $state(false);
 
-  onMount(async () => {
+  onMount(() => {
+    const stopDocs = docsOpen.subscribe((p) => (docs = p));
+    void bootProfile();
+    return stopDocs;
+  });
+
+  async function bootProfile() {
     const stored = await loadProfile();
     if (stored) controller.setProfile(stored);
     profile = stored;
     if (supported) remembered = await rememberedFolder();
-  });
+  }
 
   async function chooseProfile(chosen: Profile) {
     controller.setProfile(chosen);
@@ -162,6 +180,61 @@
 
   const folders = $derived(folderPaths(app.models));
 
+  // Help ----------------------------------------------------------------------------------------
+
+  let docs = $state<PanelState>(docsOpen.get());
+  // The Documentation area is a third place next to Model and Build. Whatever is open there (a
+  // model, a tool library) stays mounted underneath, so coming back finds it unchanged.
+  let docsArea = $state(false);
+  let docsVisited = $state(false);
+  let docsRequest = $state<{ topic: string | null } | null>(null);
+
+  function showDocsArea(topic: string | null | undefined) {
+    docsVisited = true;
+    docsArea = true;
+    if (topic !== undefined) docsRequest = { topic };
+  }
+
+  function openInDocs(topic: string | null) {
+    closeDocs();
+    showDocsArea(topic);
+  }
+
+  $effect(() => {
+    // What the person is looking at, for Help. Build mode refines it per section.
+    setDocsContext(
+      app.phase === 'start'
+        ? 'start'
+        : app.phase === 'build' && app.build
+          ? 'build'
+          : app.phase === 'model' && app.open
+            ? 'model'
+            : area === 'build'
+              ? 'tool-libraries'
+              : 'models',
+    );
+  });
+  $effect(() =>
+    docsArea ? pushDocsContext('docs', DocsLayer.area) : undefined,
+  );
+
+  function onWindowKey(event: KeyboardEvent) {
+    if (event.defaultPrevented) return;
+    if (event.key === 'F1') {
+      event.preventDefault();
+      toggleDocs();
+    } else if (
+      event.key === '?' &&
+      !event.ctrlKey &&
+      !event.metaKey &&
+      !event.altKey &&
+      !isTypingTarget(event.target)
+    ) {
+      event.preventDefault();
+      toggleDocs();
+    }
+  }
+
   // Which area the workspace shows. An open model or tool library decides it; with none open the
   // person's last choice stays, so that "back" from a tool library lands on the tool libraries.
   let area = $state<'model' | 'build'>('model');
@@ -171,6 +244,10 @@
   });
 
   async function chooseArea(next: 'model' | 'build') {
+    const fromDocs = docsArea;
+    docsArea = false;
+    // Back from the Documentation to where the person was: nothing to close or open.
+    if (fromDocs && next === area) return;
     if (next === 'build' && app.open) await controller.closeModel();
     if (next === 'model' && app.build) await controller.closeBuild();
     area = next;
@@ -179,6 +256,7 @@
   let showProfile = $state(false);
 
   async function closeWorkspace() {
+    docsArea = false;
     await controller.closeWorkspace();
     area = 'model';
   }
@@ -189,99 +267,131 @@
   }
 </script>
 
+<svelte:window onkeydown={onWindowKey} />
+
 {#if app.phase === 'start'}
-  <StartPage
-    {supported}
-    remembered={remembered?.name ?? null}
-    {busy}
-    error={startError}
-    pendingCreate={pendingCreate ? pendingCreate.handle.name : null}
-    {onOpen}
-    {onReopen}
-    {onCreate}
-    onCancelCreate={() => (pendingCreate = null)}
-  />
+  <div class="row start-row">
+    <div class="start-scroll">
+      <StartPage
+        {supported}
+        remembered={remembered?.name ?? null}
+        {busy}
+        error={startError}
+        pendingCreate={pendingCreate ? pendingCreate.handle.name : null}
+        {onOpen}
+        {onReopen}
+        {onCreate}
+        onCancelCreate={() => (pendingCreate = null)}
+        helpOpen={docs.open}
+        onHelp={toggleDocs}
+      />
+    </div>
+    {#if docs.open}
+      <DocsPanel onClose={closeDocs} onOpenInDocs={openInDocs} />
+    {/if}
+  </div>
 {:else}
   <div class="shell" data-testid="app-shell">
     <TopBar
       workspaceName={app.workspaceName}
       {area}
+      docsActive={docsArea}
+      helpOpen={docs.open}
       onMode={chooseArea}
+      onDocs={() => showDocsArea(undefined)}
+      onHelp={toggleDocs}
       onGit={() => controller.openGitSettings(true)}
       onAssistant={() => (showAssistant = true)}
       onProfile={() => (showProfile = true)}
       onCloseWorkspace={closeWorkspace}
     />
-    <!-- The views fill this box (height: 100%); the home pages scroll inside it. -->
-    <div class="content">
-      {#if app.phase === 'build' && app.build}
-        {#key app.build.slug}
-          <BuildView {assistant} {app} {controller} onBack={() => undefined} />
-        {/key}
-      {:else if app.phase === 'model' && app.open}
-        {#key app.open.slug}
-          <ModelView
-            {app}
-            {controller}
-            {references}
-            registerOpenElement={(fn) => (selectElement = fn)}
-            onBack={() => controller.closeModel()}
-          />
-        {/key}
-      {:else if area === 'build'}
-        <ToolLibrariesPage
-          tools={app.tools}
-          trashedTools={app.trashedTools}
-          models={app.models}
-          health={app.health}
-          warnings={app.warnings}
-          error={app.error}
-          notes={app.notes}
-          onNewTool={(name) => controller.createToolLibrary(name)}
-          onAddTool={(text) => controller.addToolLibrary(text)}
-          onGit={() => controller.openGitSettings(true)}
-          onEditTool={(slug) => controller.openBuild(slug)}
-          onExportTool={(slug) => controller.exportToolPackage(slug)}
-          onTrashTool={(slug) => controller.trashTool(slug)}
-          onRestoreTool={(slug) => controller.restoreTool(slug)}
-        />
-      {:else}
-        <ModelsPage
-          models={app.models}
-          trashed={app.trashed}
-          tools={app.tools}
-          health={app.health}
-          warnings={app.warnings}
-          error={app.error}
-          notes={app.notes}
-          onNew={() => (showNew = true)}
-          onGoBuild={() => chooseArea('build')}
-          onOpen={(slug) => controller.openModel(slug)}
-          onRename={(slug, name) => controller.renameModel(slug, name)}
-          onMove={(slug, folder) => controller.moveModel(slug, folder)}
-          onTrash={(slug) => controller.trashModel(slug)}
-          onRestore={(slug) => controller.restoreModel(slug)}
-          search={async (query) =>
-            findAcrossModels(
-              (await controller.readAllModels()).map(
-                ({ entry, model, tool }) => ({
-                  slug: entry.slug,
-                  name: entry.name,
-                  model,
-                  tool,
-                }),
-              ),
-              query,
-            )}
-          onOpenHit={async (hit) => {
-            await controller.openModel(hit.slug);
-            selectElement?.(hit.element);
-          }}
-          onExportModel={(slug) => controller.exportModelFile(slug)}
-          onExportBundle={(slug) => controller.exportBundle([slug])}
-          onExportCsv={(slug) => controller.exportCsv(slug)}
-          onImport={(files) => controller.importFiles(files)}
-        />
+    <div class="row">
+      <!-- The views fill this box (height: 100%); the home pages scroll inside it. -->
+      <div class="content">
+        <div class="views" class:covered={docsArea} inert={docsArea}>
+          {#if app.phase === 'build' && app.build}
+            {#key app.build.slug}
+              <BuildView
+                {assistant}
+                {app}
+                {controller}
+                onBack={() => undefined}
+              />
+            {/key}
+          {:else if app.phase === 'model' && app.open}
+            {#key app.open.slug}
+              <ModelView
+                {app}
+                {controller}
+                {references}
+                registerOpenElement={(fn) => (selectElement = fn)}
+                onBack={() => controller.closeModel()}
+              />
+            {/key}
+          {:else if area === 'build'}
+            <ToolLibrariesPage
+              tools={app.tools}
+              trashedTools={app.trashedTools}
+              models={app.models}
+              health={app.health}
+              warnings={app.warnings}
+              error={app.error}
+              notes={app.notes}
+              onNewTool={(name) => controller.createToolLibrary(name)}
+              onAddTool={(text) => controller.addToolLibrary(text)}
+              onGit={() => controller.openGitSettings(true)}
+              onEditTool={(slug) => controller.openBuild(slug)}
+              onExportTool={(slug) => controller.exportToolPackage(slug)}
+              onTrashTool={(slug) => controller.trashTool(slug)}
+              onRestoreTool={(slug) => controller.restoreTool(slug)}
+            />
+          {:else}
+            <ModelsPage
+              models={app.models}
+              trashed={app.trashed}
+              tools={app.tools}
+              health={app.health}
+              warnings={app.warnings}
+              error={app.error}
+              notes={app.notes}
+              onNew={() => (showNew = true)}
+              onGoBuild={() => chooseArea('build')}
+              onOpen={(slug) => controller.openModel(slug)}
+              onRename={(slug, name) => controller.renameModel(slug, name)}
+              onMove={(slug, folder) => controller.moveModel(slug, folder)}
+              onTrash={(slug) => controller.trashModel(slug)}
+              onRestore={(slug) => controller.restoreModel(slug)}
+              search={async (query) =>
+                findAcrossModels(
+                  (await controller.readAllModels()).map(
+                    ({ entry, model, tool }) => ({
+                      slug: entry.slug,
+                      name: entry.name,
+                      model,
+                      tool,
+                    }),
+                  ),
+                  query,
+                )}
+              onOpenHit={async (hit) => {
+                await controller.openModel(hit.slug);
+                selectElement?.(hit.element);
+              }}
+              onExportModel={(slug) => controller.exportModelFile(slug)}
+              onExportBundle={(slug) => controller.exportBundle([slug])}
+              onExportCsv={(slug) => controller.exportCsv(slug)}
+              onImport={(files) => controller.importFiles(files)}
+            />
+          {/if}
+        </div>
+        {#if docsVisited}
+          <div class="docs-area" hidden={!docsArea}>
+            <DocsPage request={docsRequest} />
+          </div>
+        {/if}
+      </div>
+      {#if docs.open}
+        <DocsPanel onClose={closeDocs} onOpenInDocs={openInDocs} />
       {/if}
     </div>
   </div>
@@ -382,11 +492,42 @@
     flex-direction: column;
     background: var(--app-bg);
   }
-  .content {
+  .row {
     position: relative;
     flex: 1;
     min-height: 0;
+    display: flex;
+  }
+  .start-row {
+    height: 100dvh;
+    background: var(--app-bg);
+  }
+  .start-scroll {
+    flex: 1;
+    min-width: 0;
+    overflow: auto;
+  }
+  .content {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
     overflow: hidden;
+  }
+  .views {
+    height: 100%;
+  }
+  /* Hidden but still laid out, so the canvas keeps its size and nothing reloads. */
+  .views.covered {
+    visibility: hidden;
+  }
+  .docs-area {
+    position: absolute;
+    inset: 0;
+    background: var(--app-bg);
+  }
+  .docs-area[hidden] {
+    display: none;
   }
   .panel-actions {
     display: flex;

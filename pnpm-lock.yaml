@@ -80,6 +80,9 @@ importers:
       '@metakit-app/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@metakit-app/docs':
+        specifier: workspace:*
+        version: link:../../packages/docs
       '@metakit-app/formula':
         specifier: workspace:*
         version: link:../../packages/formula
@@ -262,6 +265,9 @@ importers:
       '@metakit-app/core':
         specifier: workspace:*
         version: link:../core
+      '@metakit-app/docs':
+        specifier: workspace:*
+        version: link:../docs
       '@metakit-app/formula':
         specifier: workspace:*
         version: link:../formula

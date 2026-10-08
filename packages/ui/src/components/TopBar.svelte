@@ -7,7 +7,11 @@
   let {
     workspaceName,
     area,
+    docsActive = false,
+    helpOpen = false,
     onMode,
+    onDocs,
+    onHelp,
     onGit,
     onAssistant,
     onProfile,
@@ -15,7 +19,12 @@
   }: {
     workspaceName: string;
     area: 'model' | 'build';
+    /** The Documentation area is showing: neither Model nor Build is current. */
+    docsActive?: boolean;
+    helpOpen?: boolean;
     onMode: (area: 'model' | 'build') => void;
+    onDocs: () => void;
+    onHelp: () => void;
     onGit: () => void;
     onAssistant: () => void;
     onProfile: () => void;
@@ -46,19 +55,37 @@
   <div class="segmented-control mode" role="group" aria-label="Area">
     <button
       type="button"
-      aria-current={area === 'model' ? 'page' : undefined}
+      aria-current={!docsActive && area === 'model' ? 'page' : undefined}
       onclick={() => onMode('model')}
       data-testid="mode-model">Model</button
     >
     <button
       type="button"
-      aria-current={area === 'build' ? 'page' : undefined}
+      aria-current={!docsActive && area === 'build' ? 'page' : undefined}
       onclick={() => onMode('build')}
       data-testid="mode-build">Build</button
     >
   </div>
 
   <span class="spacer"></span>
+
+  <button
+    type="button"
+    class="ghost docs-btn"
+    aria-current={docsActive ? 'page' : undefined}
+    onclick={onDocs}
+    title="Read the documentation"
+    data-testid="open-docs">Docs</button
+  >
+  <button
+    type="button"
+    class="ghost help"
+    aria-pressed={helpOpen}
+    onclick={onHelp}
+    title="Help for this page (F1)"
+    data-testid="toggle-help"
+    ><span class="mark" aria-hidden="true">?</span> Help</button
+  >
 
   <details class="menu" use:menuBehaviour data-testid="settings-menu">
     <summary>Settings</summary>
@@ -137,6 +164,26 @@
   }
   .spacer {
     flex: 1;
+  }
+  .docs-btn[aria-current='page'] {
+    color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .help[aria-pressed='true'] {
+    color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .mark {
+    display: inline-grid;
+    place-items: center;
+    width: 1.15rem;
+    height: 1.15rem;
+    margin-right: 0.15rem;
+    border: 1.5px solid currentColor;
+    border-radius: 50%;
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1;
   }
   .theme {
     padding: var(--gap-1) var(--gap-2);

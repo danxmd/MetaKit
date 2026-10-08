@@ -14,6 +14,7 @@
     "@metakit-app/behaviour": "workspace:*",
     "@metakit-app/canvas": "workspace:*",
     "@metakit-app/core": "workspace:*",
+    "@metakit-app/docs": "workspace:*",
     "@metakit-app/formula": "workspace:*",
     "@metakit-app/shapes": "workspace:*",
     "@metakit-app/storage": "workspace:*",

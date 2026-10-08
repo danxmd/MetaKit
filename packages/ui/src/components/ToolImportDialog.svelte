@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { DocsLayer, pushDocsContext } from '../docs/context';
   import { onMount } from 'svelte';
   import type { ToolUpdatePlan } from '@metakit-app/storage';
 
@@ -27,6 +28,9 @@
         : `Version ${plan.version.from} to ${plan.version.to}`,
   );
   const verb = { added: 'Added', removed: 'Removed', changed: 'Changed' };
+
+  // Tells Help which dialog is open.
+  $effect(() => pushDocsContext('dialog.tool-import', DocsLayer.dialog));
 </script>
 
 <dialog

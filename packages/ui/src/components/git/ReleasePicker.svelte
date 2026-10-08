@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { DocsLayer, pushDocsContext } from '../../docs/context';
   import { onMount } from 'svelte';
   import type { GitTag } from '@metakit-app/storage';
   import {
@@ -30,6 +31,9 @@
   onMount(() => dialog?.showModal());
 
   const sorted = $derived(sortReleases(releases));
+
+  // Tells Help which dialog is open.
+  $effect(() => pushDocsContext('git.releases', DocsLayer.dialog));
 </script>
 
 <dialog

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { DocsLayer, pushDocsContext } from '../docs/context';
   import { onMount } from 'svelte';
   import type { ExportFormat, ExportRequest } from '../shell/download';
 
@@ -48,6 +49,9 @@
     }
     await onExport(request);
   }
+
+  // Tells Help which dialog is open.
+  $effect(() => pushDocsContext('dialog.export', DocsLayer.dialog));
 </script>
 
 <dialog

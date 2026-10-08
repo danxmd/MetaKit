@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { DocsLayer, pushDocsContext } from '../../docs/context';
   import { onMount } from 'svelte';
   import type { ToolLibrary } from '@metakit-app/core';
   import type { AssistantService } from '../../assistant/assistant-service';
@@ -74,6 +75,9 @@
       await service.removeKey();
       return 'The key is removed from this browser.';
     });
+
+  // Tells Help which dialog is open.
+  $effect(() => pushDocsContext('settings.assistant', DocsLayer.dialog));
 </script>
 
 <section class="assistant" data-testid="assistant-settings">
