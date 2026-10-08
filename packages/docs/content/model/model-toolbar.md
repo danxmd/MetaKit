@@ -53,6 +53,30 @@ It is the top strip of the model view. It is always visible while a model is ope
 - **Zoom out** (**−**), **Fit to window** (four corner marks, tooltip "Show the whole model") and **Zoom in** (**+**). See [[canvas-navigation]].
 - Extra buttons that the tool library adds to the toolbar (commands placed in the toolbar). See [[behaviour-commands]].
 
+### When items are grey
+
+| Item | Grey when |
+| --- | --- |
+| **Undo** (menu and button) | You have made no change yet, or you undid everything. |
+| **Redo** (menu and button) | You have not undone anything, or you made a new change after undoing. |
+| **Delete selection** | Nothing is selected. |
+| **Align left**, **Align centres**, **Align right**, **Align top**, **Align middle**, **Align bottom** | Fewer than two objects are selected. |
+| **Distribute horizontally**, **Distribute vertically** | Fewer than three objects are selected. |
+
+All other items are always available. Toolbar buttons that come from the tool library are always available too. See [[status-and-messages]] for the messages commands can show.
+
+### How the menus behave
+
+- A menu is a list under its name. You open it with a click, or with the keyboard: **Tab** to the name and press **Enter** or **Space**.
+- Choosing an item closes the menu. Choosing a grey item does nothing and leaves it open.
+- The tick (✓) in front of **Minimap**, **Interaction hints** and **Smart modelling** shows that the option is on. Clicking toggles it.
+- The **Palette view** list in the **View** menu is a drop-down inside the menu. Choosing a view changes the palette at once.
+- Shortcuts shown on the right of an item (for example **Ctrl+F** next to **Find**) are only reminders. Pressing them works with the menu closed.
+
+### What is remembered
+
+The header itself stores nothing in the model. Three settings are remembered in your browser: whether the minimap is shown, whether interaction hints are on, and whether smart modelling is on. They apply to every model you open in this browser.
+
 ## Examples
 
 In the Agent pipeline tool, rules add the toolbar buttons **Hand to human**, **Mark done** and **Mark ready**, and the **Commands** menu holds **Total effort and cost**. Select a task and click **Mark done** to set its status. See [[menu-commands]].

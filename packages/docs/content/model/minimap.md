@@ -3,7 +3,7 @@ id: minimap
 title: Minimap
 category: model
 summary: The minimap is a small overview of the whole model in the corner of the canvas; click or drag in it to jump to another part.
-keywords: [minimap, overview map, mini map]
+keywords: [minimap, overview map, mini map, minimap toggle, overview of the model]
 contexts: []
 order: 115
 ---

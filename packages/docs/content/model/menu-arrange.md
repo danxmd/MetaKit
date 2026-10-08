@@ -3,7 +3,7 @@ id: menu-arrange
 title: Arrange menu
 category: model
 summary: The Arrange menu lines up the selected objects, spaces them evenly and can lay out the whole model automatically.
-keywords: [arrange menu, distribute horizontally, distribute vertically]
+keywords: [arrange menu, distribute horizontally, distribute vertically, align menu items, auto-layout menu item]
 contexts: []
 order: 60
 ---

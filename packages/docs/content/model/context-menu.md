@@ -3,7 +3,7 @@ id: context-menu
 title: Context menu
 category: model
 summary: Right-clicking the canvas opens a menu of the commands the tool library placed there; while placing or connecting, a right-click leaves that mode instead.
-keywords: [context menu, right-click menu, canvas context menu, right click]
+keywords: [context menu, right-click menu, canvas context menu, right click, canvas right-click menu]
 contexts: []
 order: 180
 ---

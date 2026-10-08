@@ -3,7 +3,7 @@ id: attribute-panel
 title: Attribute panel
 category: model
 summary: The panel on the right shows and edits the attributes of whatever is selected, for one object or for several at once.
-keywords: [attribute panel, side panel, properties panel, panel tabs, unknown attributes]
+keywords: [attribute panel, side panel, object attribute panel, panel tabs, unknown attributes]
 contexts: []
 order: 210
 ---
@@ -52,7 +52,7 @@ To edit many objects at once, select them all (see [[selecting]]). Then change a
 | Part | Meaning |
 | --- | --- |
 | Label | The name of the attribute. Hover it to see the help text as a tooltip. |
-| Star (\*) | The attribute is required. |
+| Asterisk | The attribute is required. |
 | (unit) | The unit, for example (h) or ($). |
 | Control | The input. See [[field-types]]. |
 | Red message | A problem with the value. It appears under the field. |

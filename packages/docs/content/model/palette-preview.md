@@ -3,7 +3,7 @@ id: palette-preview
 title: Palette preview on hover
 category: model
 summary: Hovering over or focusing a palette entry shows a card with the drawing, the help text, what a relation connects and the first attributes.
-keywords: [palette preview, preview card, hover preview, hover card]
+keywords: [palette preview, preview card, hover preview, hover card, palette entry preview]
 contexts: []
 order: 100
 ---
@@ -35,7 +35,7 @@ With the keyboard, **Tab** to an entry. The card opens at once and closes when f
 | Badge | **Object**, **Container**, **Swimlane** or **Relation**. |
 | Sentence (relations only) | For example "Performs: from Actor to Task". "any object" is used when an end is not limited. |
 | Help text | The help the tool builder wrote. If the class has none, the help of the nearest parent class is used. |
-| **Attributes** | The first 8 attributes with their kind in plain words: text, whole number, number, yes / no, date, date and time, duration, choice, several choices, calculated, table, reference, button, link. A star (*) marks required ones. Inherited attributes are included. |
+| **Attributes** | The first 8 attributes with their kind in plain words: text, whole number, number, yes / no, date, date and time, duration, choice, several choices, calculated, table, reference, button, link. An asterisk marks required ones. Inherited attributes are included. |
 | "and N more" | Shown when there are more than 8 attributes. |
 | "No attributes." | Shown when there are none. |
 

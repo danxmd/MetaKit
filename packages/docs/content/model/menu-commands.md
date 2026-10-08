@@ -3,7 +3,7 @@ id: menu-commands
 title: Commands menu
 category: model
 summary: The Commands menu lists extra actions that the tool library adds through rules and scripts; it only exists when the tool has such commands.
-keywords: [commands menu, model commands, tool commands menu]
+keywords: [commands menu, model commands, tool commands menu, commands in the model menu, rule commands menu]
 contexts: []
 order: 80
 ---

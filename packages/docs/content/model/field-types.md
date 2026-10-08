@@ -83,7 +83,7 @@ A **Task** in the Agent pipeline shows: **Name** (text, required, max 100), **De
 
 - One edit of a field, even on several objects, is one undo step.
 - The label of every field can be translated by the tool builder. See [[tool-settings]].
-- Required fields show a star.
+- Required fields show an asterisk.
 
 ## Related
 

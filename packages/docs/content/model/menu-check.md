@@ -3,7 +3,7 @@ id: menu-check
 title: Check menu
 category: model
 summary: The Check menu opens the Problems panel and, when scripts have written output, the Script console; its title shows how many problems the model has.
-keywords: [check menu, problem count badge]
+keywords: [check menu, problem count badge, check menu problems, script console item, problems badge]
 contexts: []
 order: 70
 ---

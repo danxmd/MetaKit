@@ -3,7 +3,7 @@ id: menu-edit
 title: Edit menu
 category: model
 summary: The Edit menu undoes and redoes changes, starts a find, selects everything and deletes the selection.
-keywords: [edit menu, select all, delete selection]
+keywords: [edit menu, select all, delete selection, edit menu items, undo and redo menu]
 contexts: []
 order: 40
 ---
