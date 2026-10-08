@@ -12,11 +12,11 @@ Labels and help texts are what modellers see. You can write them in every langua
 
 ## What it is
 
-Many things in a tool library have a **Label** and some have a **Help text**: classes, relation classes, model types, attributes, views and options of a choice. Each is a small group of text boxes, one for every language you listed in [[tool-settings]]. The code of the language (`en`, `de`) is shown beside its box.
+Many things in a tool library have a **Label** and some have a **Help text**: classes, relation classes, model types, attributes, views and options of a choice. Help text can be edited for classes, model types and attributes. Each is a small group of text boxes, one for every language you listed in [[tool-settings]]. The code of the language (`en`, `de`) is shown beside its box.
 
 ## Where to find it
 
-- **Label** and **Help text** in the **Identity** block of a class, relation class or model type ([[classes]], [[relations]], [[model-types]]).
+- **Label** and **Help text** in the **Identity** block of a class or model type, and **Label** in the **Identity** block of a relation class ([[classes]], [[relations]], [[model-types]]). The relation class editor has no help text box yet.
 - **Label** and **Help text** in the form of an open attribute ([[attributes]]).
 - **Label** for each view in a model type.
 - Option labels inside the **Options, one per line** box of a choice attribute, as `value | Label` ([[attribute-types]]).
@@ -32,9 +32,9 @@ Many things in a tool library have a **Label** and some have a **Help text**: cl
 
 | Thing | Where it is shown to modellers |
 | --- | --- |
-| Class label | The palette, the canvas title if the look shows it, panels, search results and messages. |
+| Class label | The palette and the palette preview. |
 | Class help text | The palette preview that appears when the pointer rests on the class ([[palette-preview]]). |
-| Relation class label and help | The palette, the connector label and the palette preview. |
+| Relation class label | The palette and the palette preview. |
 | Model type label | The list when creating a model. |
 | View label | The view switcher of the model. |
 | Attribute label | The name of the field in the attribute panel ([[attribute-panel]]). |
