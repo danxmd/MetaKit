@@ -12,7 +12,7 @@ A key is the short, exact name of a thing in the tool library. A label is the fr
 
 ## What it is
 
-| | Key | Label |
+| Aspect | Key | Label |
 | --- | --- | --- |
 | Used by | formulas, rules, looks, panel layouts, scripts | modellers on screen |
 | Rules | letters, digits, underscores; starts with a letter or underscore | any text |

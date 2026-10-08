@@ -42,7 +42,7 @@ Open Build mode and choose **Shapes** under **Appearance**. The number beside it
 | Badge | **Simple look** (blue) or **Hand drawn**. |
 | **Edit appearance** | Only for a simple look that exactly one class or relation class uses. Opens the Appearance editor of that class ([[appearance-editor]], [[appearance-relations]]). |
 | **Edit** / **Edit as drawing** | For a hand-drawn object shape: opens the [[shape-editor]]. For a simple look the button reads **Edit as drawing** and asks first: "Editing as a drawing turns this into a hand-drawn look. The simple controls will no longer work for it. Continue?" For a hand-drawn line shape it opens or closes the line form on the card ([[appearance-relations]], section "Hand-drawn lines"). |
-| **Duplicate** | Makes a copy named "<name> copy". Nothing uses the copy until you pick it for a class. |
+| **Duplicate** | Makes a copy named "‹name› copy". Nothing uses the copy until you pick it for a class. |
 | **Delete** | Removes the shape. If something still uses it the change is refused, naming the users: The shape Task look is still in use: class "Task" draws with it. A shape that another shape embeds is also protected: shape X embeds it. |
 
 ### Adding

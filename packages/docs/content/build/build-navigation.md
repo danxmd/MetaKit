@@ -52,7 +52,7 @@ The label changes with the section: **New class**, **New relation class** or **N
 
 ### The item row
 
-Each row shows the key in bold and, in lighter text next to it, the label if it differs from the key. Rows are sorted by key. The **✕** button is labelled "Delete <key>".
+Each row shows the key in bold and, in lighter text next to it, the label if it differs from the key. Rows are sorted by key. The **✕** button is labelled "Delete ‹key›".
 
 - A class or relation class that is still used is not deleted. The red message names the users, for example: The class "Task" is still in use: relation class "Performs" allows it at TO; model type "Pipeline" allows it.
 - There is no confirmation for a delete, but it is a command, so **Undo** brings it back.

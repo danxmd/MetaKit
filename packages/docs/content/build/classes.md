@@ -27,7 +27,7 @@ A class does not appear in a model until a model type allows it ([[model-types]]
 
 ## Where to find it
 
-Open Build mode, choose **Classes** in the section list under **Metamodel** and click a class in the item list. The editor is headed **Class <key>**, with an **Abstract** badge when the class is abstract. When the optional assistant is turned on, a **Draft with assistant** button sits at the top right ([[assistant-overview]]).
+Open Build mode, choose **Classes** in the section list under **Metamodel** and click a class in the item list. The editor is headed **Class ‹key›**, with an **Abstract** badge when the class is abstract. When the optional assistant is turned on, a **Draft with assistant** button sits at the top right ([[assistant-overview]]).
 
 ## How to use it
 
@@ -68,7 +68,7 @@ Under **More ways to set the look**:
 | Control | What it does |
 | --- | --- |
 | **Use an existing shape** | Picks one of the shapes from [[shapes-section]] for this class. **Automatic (starter shape)** means no shape of its own. |
-| **New drawn shape** | Creates a hand-drawn shape from the Task starter, named "<Key> shape", and opens it in the drawing editor. |
+| **New drawn shape** | Creates a hand-drawn shape from the Task starter, named "‹Key› shape", and opens it in the drawing editor. |
 
 ### Panel layout
 

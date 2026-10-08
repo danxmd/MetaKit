@@ -90,7 +90,7 @@ Help text: "A named value is worked out once and can be used in any formula of t
 
 - Each row shows the name and a formula field.
 - To add one, type a name in the box with the hint "name" and press **Add**. A new named value starts as `= null`.
-- Names use letters, digits and underscores and start with a letter. Otherwise: A name uses letters, digits and underscores and starts with a letter. A repeat is refused: <name> is already used.
+- Names use letters, digits and underscores and start with a letter. Otherwise: A name uses letters, digits and underscores and starts with a letter. A repeat is refused: ‹name› is already used.
 - Clearing a formula field removes the named value.
 - A named value may read the ones above it.
 

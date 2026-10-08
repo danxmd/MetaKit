@@ -45,7 +45,7 @@ In the editor of a class, in the **Appearance** block, press **Set up panel layo
 
 ### Tabs
 
-Each tab shows as **Tab: <name>**. Click it to select it.
+Each tab shows as **Tab: ‹name›**. Click it to select it.
 
 | Control | What it does |
 | --- | --- |
@@ -58,7 +58,7 @@ Each tab shows as **Tab: <name>**. Click it to select it.
 
 ### Groups
 
-Each group shows as **Group: <name>**.
+Each group shows as **Group: ‹name›**.
 
 | Control | What it does |
 | --- | --- |

@@ -3,7 +3,7 @@ id: labels-and-help
 title: Labels, help text and languages
 category: build
 summary: Labels and help texts are the words modellers read; each can be given per language, while the key stays the same.
-keywords: [labels per language, help text, translated labels, label fields, tool languages]
+keywords: [labels per language, help text, translated labels, label fields, language boxes]
 contexts: []
 order: 75
 ---

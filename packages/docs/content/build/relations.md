@@ -18,7 +18,7 @@ Connections are directed. A relation class decides which way they may be drawn. 
 
 ## Where to find it
 
-Open Build mode, choose **Relation classes** under **Metamodel** and click a relation class. The heading reads **Relation class <key>**.
+Open Build mode, choose **Relation classes** under **Metamodel** and click a relation class. The heading reads **Relation class ‹key›**.
 
 ## How to use it
 
@@ -61,7 +61,7 @@ The block works as for classes. It shows a picture of the line and one of three 
 | --- | --- |
 | **Use an existing line shape** | Picks a line shape from [[shapes-section]]. **Automatic (grey arrow)** is the choice when none is picked. |
 | **Edit as drawing** | Shown for a line with a simple look. It asks first: "Editing as a drawing turns this into a hand-drawn look. The simple controls will no longer work for it. Continue?" |
-| **New drawn line shape** | Creates a hand-drawn line shape from the Flow (arrow) starter, named "<Key> line", and opens its form. |
+| **New drawn line shape** | Creates a hand-drawn line shape from the Flow (arrow) starter, named "‹Key› line", and opens its form. |
 
 ### Attributes and constraints
 

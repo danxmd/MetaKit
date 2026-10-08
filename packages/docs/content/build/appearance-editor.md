@@ -22,7 +22,7 @@ Looks are the simple path. A shape that you draw part by part is a **hand-drawn*
 2. In the **Appearance** block press **Edit appearance**.
 3. Or open **Shapes** and press **Edit appearance** on a shape that one class uses ([[shapes-section]]).
 
-The editor fills the Build view. It is headed **Appearance of <key>**. **Done** (or Escape) closes it. A new class already has a look, so the editor opens at once on something sensible.
+The editor fills the Build view. It is headed **Appearance of ‹key›**. **Done** (or Escape) closes it. A new class already has a look, so the editor opens at once on something sensible.
 
 ## How to use it
 

@@ -50,9 +50,9 @@ If the shape has no parts yet, it takes the size of the drawing. If it already h
 
 ### Safety
 
-Scripts, event handlers, animations and references to other files are never imported or kept. You are told what was dropped. In parts mode the messages say "ignored", for example "A script in the file was ignored." or "The event handler onclick on <rect> was ignored." In image mode they say "removed", for example "A script in the file was removed." A file that is not an SVG says "The file is not an SVG drawing." A damaged file says "The file is not a valid SVG drawing." followed by the reason.
+Scripts, event handlers, animations and references to other files are never imported or kept. You are told what was dropped. In parts mode the messages say "ignored", for example "A script in the file was ignored." or "The event handler onclick on ‹rect› was ignored." In image mode they say "removed", for example "A script in the file was removed." A file that is not an SVG says "The file is not an SVG drawing." A damaged file says "The file is not a valid SVG drawing." followed by the reason.
 
-In parts mode some things cannot be converted and are listed: a gradient or pattern fill ("A gradient or pattern fill or stroke on <rect> was not imported; it has no colour there."), definitions such as filters, masks, clip paths, markers and symbols ("The <filter> definition is not supported and was not imported."), and CSS style sheets ("Style sheets (CSS classes) are not supported; use plain attributes.").
+In parts mode some things cannot be converted and are listed: a gradient or pattern fill ("A gradient or pattern fill or stroke on ‹rect› was not imported; it has no colour there."), definitions such as filters, masks, clip paths, markers and symbols ("The ‹filter› definition is not supported and was not imported."), and CSS style sheets ("Style sheets (CSS classes) are not supported; use plain attributes.").
 
 A single import adds at most 2000 elements; the rest is reported: The drawing has too many elements; the rest was not imported.
 

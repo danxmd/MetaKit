@@ -63,14 +63,12 @@ Attribute keys are written exactly as in the Key box. If you rename an attribute
 
 ## Examples
 
-These constraints are in the Agent pipeline tool:
+These constraints are in the Agent pipeline tool. All four have the severity **Warning**.
 
-| On | Formula | Message | Severity |
-| --- | --- | --- | --- |
-| Task | `Status != 'Done' \|\| ActualEffort != null` | A finished task should say how much effort it took. | Warning |
-| Task | `Status != 'Failed' \|\| Description != null` | Say in the description why the task failed. | Warning |
-| Agent | `Autonomy != 'Autonomous' \|\| CostLimit != null` | An autonomous agent should have a cost limit. | Warning |
-| Artifact | `Status != 'Approved' \|\| ApprovedBy != null` | Say who approved this artifact. | Warning |
+- On **Task**: formula `Status != 'Done' || ActualEffort != null`, message "A finished task should say how much effort it took."
+- On **Task**: formula `Status != 'Failed' || Description != null`, message "Say in the description why the task failed."
+- On **Agent**: formula `Autonomy != 'Autonomous' || CostLimit != null`, message "An autonomous agent should have a cost limit."
+- On **Artifact**: formula `Status != 'Approved' || ApprovedBy != null`, message "Say who approved this artifact."
 
 The pattern `A != x || B != null` reads "unless A is x, B must be filled in". It is the usual way to say "if A is x then B is needed".
 

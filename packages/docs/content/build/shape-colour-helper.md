@@ -3,7 +3,7 @@ id: shape-colour-helper
 title: Colour helper
 category: build
 summary: The "Colour by attribute" dialog writes the formula that gives a shape part a different colour for each value of a choice or yes/no attribute.
-keywords: [colour helper, colour by attribute dialog, colour formula, colour for each value, anything else colour]
+keywords: [colour helper, colour by attribute dialog, colour formula, colour for each value, colour per value]
 contexts: []
 order: 210
 ---
@@ -18,7 +18,7 @@ For a look made in the simple Appearance editor you do not need this; use [[appe
 
 ## Where to find it
 
-In the properties panel ([[shape-properties]]), beside every colour property (**Fill colour**, **Line colour**, **Text colour**) there is a button **Colour by attribute...**. The dialog is titled "Colour <property> by attribute", for example "Colour fill colour by attribute".
+In the properties panel ([[shape-properties]]), beside every colour property (**Fill colour**, **Line colour**, **Text colour**) there is a button **Colour by attribute...**. The dialog is titled "Colour ‹property› by attribute", for example "Colour fill colour by attribute".
 
 ## How to use it
 

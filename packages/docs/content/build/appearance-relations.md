@@ -16,7 +16,7 @@ The line look is the short form of a relation class's drawing. It works like the
 
 ## Where to find it
 
-Open a relation class in Build mode ([[relations]]) and press **Edit appearance** in its **Appearance** block. The editor is headed **Appearance of <key>**. **Done** or Escape closes it.
+Open a relation class in Build mode ([[relations]]) and press **Edit appearance** in its **Appearance** block. The editor is headed **Appearance of ‹key›**. **Done** or Escape closes it.
 
 ## How to use it
 
@@ -69,7 +69,7 @@ The preview shows two boxes joined by your line. If the colour depends on an att
 
 ### Messages
 
-- "This look is also used by ... Changing it here gives <key> its own copy." appears when another relation class uses the same shape. Your first change creates a new line shape for this relation class only.
+- "This look is also used by ... Changing it here gives ‹key› its own copy." appears when another relation class uses the same shape. Your first change creates a new line shape for this relation class only.
 - A red notice shows a refused change in plain words.
 
 ### Hand-drawn lines

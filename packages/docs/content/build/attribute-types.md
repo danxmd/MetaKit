@@ -79,8 +79,10 @@ One value from a list.
 
 | Setting | Meaning |
 | --- | --- |
-| **Options, one per line** | Type one option per line. Add `| Label` to give an option a label in your first language, for example `Done | Finished`. The stored value is the text before the bar. Empty lines and repeated values are dropped. A new Choice starts with Option A and Option B. At least one option is required. |
+| **Options, one per line** | Type one option per line. Empty lines and repeated values are dropped. A new Choice starts with Option A and Option B. At least one option is required. |
 | **Default** | One of the options. |
+
+To give an option a label in your first language, write the value, a vertical bar and the label on one line, for example `Done | Finished`. The stored value is the text before the bar.
 
 Choice attributes can drive looks: a colour or mark can follow each option ([[appearance-data-rules]]).
 

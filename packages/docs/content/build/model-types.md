@@ -25,7 +25,7 @@ A class that is not allowed in a model type cannot be used in models of that typ
 
 ## Where to find it
 
-Build mode, **Model types** under **Metamodel**. Select a model type to see its editor, headed **Model type <key>**. Add one with **New model type** (for example "Process map").
+Build mode, **Model types** under **Metamodel**. Select a model type to see its editor, headed **Model type ‹key›**. Add one with **New model type** (for example "Process map").
 
 ## How to use it
 
