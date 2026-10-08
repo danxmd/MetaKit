@@ -87,7 +87,7 @@ Make the look of **Task** in the Agent pipeline tool:
 2. Leave the fill light blue. Under **Changes with data**, set **Fill colour depends on** to **Status**. Give Planned a grey, Running a blue, Waiting for human an orange, Done a green and Failed a red. Leave **Anything else** grey.
 3. Set the title to **Name of the object** and the subtitle to **Status**.
 4. Add a mark: **Show a mark on the corner** when **Priority** is **High**, mark text "!", red.
-5. Press **Done**. In the [[try-it-preview]] place some tasks and change their Status to see the colours.
+5. Press **Done**. In the [[try-it-preview]] place a task to see the new look on the canvas. The tiles under the preview in the editor show each Status. To see a task change colour, open a real model and edit its Status in the attribute panel.
 
 The shipped Agent pipeline tool draws its classes with hand-drawn shapes (for example "Task (status stripe)"). They are a good example of what the [[shape-editor]] can do, and of what you no longer need to do by hand.
 
