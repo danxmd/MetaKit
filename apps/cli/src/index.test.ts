@@ -64,6 +64,20 @@ describe('validate', () => {
     }
   });
 
+  it('accepts the Data and AI architecture tool and finds the one warning its sample shows on purpose', async () => {
+    const dir = join(toolsDir, 'data-ai-architecture');
+    const tool = await capture(['validate', dir]);
+    expect(tool.code).toBe(0);
+    expect(tool.out).toContain('0 errors, 0 warnings');
+    const sample = await capture([
+      'validate',
+      join(dir, 'customer-360.mkmodel.json'),
+    ]);
+    expect(sample.code).toBe(0);
+    expect(sample.out).toContain('0 errors, 1 warning');
+    expect(sample.out).toContain('Event archive');
+  });
+
   it('finds the tool next to a model file and shows no warnings for the samples', async () => {
     const result = await capture([
       'validate',
