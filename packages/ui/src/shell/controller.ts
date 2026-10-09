@@ -1,6 +1,7 @@
 import {
   CommandError,
   createEmptyModel,
+  cloneToolLibrary,
   createEmptyTool,
   createModelStore,
   formatIssues,
@@ -86,6 +87,7 @@ import type { GitTarget } from '../git/settings-model';
 import { browserHttp, workspaceFiles } from './script-services';
 import { describeClash, type ClashNotice } from './clash';
 import { normalizeFolder } from './explorer';
+import type { UndoSource } from './feedback';
 
 export interface OpenModel {
   slug: string;
@@ -249,6 +251,8 @@ export interface BuildPort {
   runBuild(command: ToolCommandOrBatch): CommandResult;
   undoBuild(): boolean;
   redoBuild(): boolean;
+  /** Undo bound to the tool library open now, for an Undo offered after a step. */
+  buildUndoSource(): UndoSource | null;
   closeBuild(): Promise<void>;
   gitRefreshPending(): void;
   gitCommit(message: string): Promise<boolean | undefined>;
@@ -878,39 +882,43 @@ export class AppController {
   async addToolLibrary(text: string): Promise<string | undefined> {
     return this.attempt(async () => {
       const ws = this.need();
-      let value: unknown;
-      try {
-        value = JSON.parse(text);
-      } catch {
-        throw new Error(
-          'That file is not a tool library: it is not valid JSON.',
-        );
-      }
-      let upgraded: unknown = value;
-      try {
-        // A file from an earlier release is brought up to the current format in memory.
-        upgraded = migrate('tool-document', value).value;
-      } catch (error) {
-        // A file from a newer release is refused; anything else is reported by the checks below.
-        if (error instanceof NewerFormatError)
-          throw new Error(`That file cannot be read: ${error.message}`, {
-            cause: error,
-          });
-      }
-      const parsed = parseToolLibrary(upgraded);
-      if (!parsed.ok)
-        throw new Error(
-          `That file is not a valid tool library.\n${formatIssues(parsed.issues)}`,
-        );
-      const existing = await ws.findToolSlug(parsed.value.manifest.id);
+      const tool = this.parseToolText(text);
+      const existing = await ws.findToolSlug(tool.manifest.id);
       if (existing)
         throw new Error(
-          `The tool library "${parsed.value.manifest.name}" is already in this workspace.`,
+          `The tool library "${tool.manifest.name}" is already in this workspace.`,
         );
-      const slug = await ws.createTool(parsed.value);
+      const slug = await ws.createTool(tool);
       await this.refresh();
       return slug;
     });
+  }
+
+  /** Reads the text of a tool library file, bringing an older format up to date. */
+  private parseToolText(text: string): ToolLibrary {
+    let value: unknown;
+    try {
+      value = JSON.parse(text);
+    } catch {
+      throw new Error('That file is not a tool library: it is not valid JSON.');
+    }
+    let upgraded: unknown = value;
+    try {
+      // A file from an earlier release is brought up to the current format in memory.
+      upgraded = migrate('tool-document', value).value;
+    } catch (error) {
+      // A file from a newer release is refused; anything else is reported by the checks below.
+      if (error instanceof NewerFormatError)
+        throw new Error(`That file cannot be read: ${error.message}`, {
+          cause: error,
+        });
+    }
+    const parsed = parseToolLibrary(upgraded);
+    if (!parsed.ok)
+      throw new Error(
+        `That file is not a valid tool library.\n${formatIssues(parsed.issues)}`,
+      );
+    return parsed.value;
   }
 
   /** The model types of a tool library of this workspace, for the new-model dialog. */
@@ -1428,6 +1436,28 @@ export class AppController {
     });
   }
 
+  /**
+   * Makes a new tool library from a copy of a workspace library (`slug`) or of the text of a
+   * built-in one (`text`), to extend it (ADR 0010). Returns its folder name; the original is not changed.
+   */
+  copyToolLibrary(
+    name: string,
+    from: { slug: string } | { text: string },
+  ): Promise<string | undefined> {
+    return this.attempt(async () => {
+      const trimmed = name.trim();
+      if (trimmed === '') throw new Error('Give the tool library a name.');
+      const ws = this.need();
+      const source =
+        'slug' in from
+          ? (await ws.loadTool(from.slug)).document
+          : this.parseToolText(from.text);
+      const slug = await ws.createTool(cloneToolLibrary(source, trimmed));
+      await this.refresh();
+      return slug;
+    });
+  }
+
   /** Opens a tool library for editing; its changes are written as they are made. */
   async openBuild(slug: string): Promise<boolean> {
     return (
@@ -1526,6 +1556,19 @@ export class AppController {
 
   redoBuild(): boolean {
     return this.current.build?.store.redo() ?? false;
+  }
+
+  buildUndoSource(): UndoSource | null {
+    const store = this.current.build?.store;
+    if (!store) return null;
+    return {
+      // Bound to this library: once it is closed, an old offer cannot undo in another one.
+      undo: () => this.current.build?.store === store && store.undo(),
+      onLocalChange: (listener) =>
+        store.subscribe((event) => {
+          if (event.origin !== 'remote') listener();
+        }),
+    };
   }
 
   /** Writes the open tool library's pending changes now. */

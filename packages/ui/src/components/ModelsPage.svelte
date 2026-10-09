@@ -85,14 +85,17 @@
   {#if models.length === 0}
     <section class="card empty" data-testid="no-models">
       {#if tools.length === 0}
-        <h2>You need a tool library first</h2>
+        <h2>No models yet</h2>
         <p class="muted">
-          A tool library says which kinds of objects and connections a model can
-          have. Add one in Build, then come back here to make a model.
+          A model is made with a tool library, which says which kinds of objects
+          and connections it can have. This workspace has no tool library of its
+          own yet: pick a built-in one in New model, or build your own in Build.
         </p>
         <div class="row">
-          <button class="primary" onclick={onGoBuild} data-testid="go-build"
-            >Go to Build</button
+          <button class="primary" onclick={onNew} data-testid="new-model-empty"
+            >New model</button
+          >
+          <button onclick={onGoBuild} data-testid="go-build">Go to Build</button
           >
         </div>
       {:else}

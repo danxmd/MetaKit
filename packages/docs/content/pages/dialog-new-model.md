@@ -21,7 +21,7 @@ A modal dialog titled **New model** with the line "A model is made with a tool l
 
 ## How to use it
 
-1. Choose a **Tool library**. If the workspace has only one, it is chosen for you.
+1. Choose a **Tool library**. If the workspace has only one of its own, it is chosen for you. Built-in libraries are listed too ([[built-in-tools]]).
 2. Choose a **Model type**. If the library has only one, it is chosen for you.
 3. Type a **Name**.
 4. Optionally type or choose a **Folder**.
@@ -31,7 +31,7 @@ A modal dialog titled **New model** with the line "A model is made with a tool l
 
 | Field or button | What it does |
 | --- | --- |
-| **Tool library** | A list of the tool libraries of the workspace, each shown as "name (version)", for example "Agent pipeline (1.0.0)". The first entry, "Choose a tool library", cannot be picked. |
+| **Tool library** | The tool libraries of the workspace, each shown as "name (version)", for example "Agent pipeline (1.0.0)". Below them, under **Built-in (added to this workspace when you create)**, the built-in libraries the workspace does not have yet. Choosing one adds it to the workspace when you choose **Create**. The first entry, "Choose a tool library", cannot be picked. |
 | **Model type** | The kinds of model the chosen library offers, sorted by name, for example **ArtifactLineage** and **Pipeline**. Disabled until you choose a library. The label shown is the English label of the model type. The first entry, "Choose a model type", cannot be picked. |
 | **Name** | The name of the model. Leading and trailing spaces are ignored. Required. |
 | **Folder (optional)** | A path such as `Sales/2026`. Parts are separated by `/`. As you type, the box suggests folders already in use. Leave it empty for the top level. |
@@ -40,7 +40,7 @@ A modal dialog titled **New model** with the line "A model is made with a tool l
 
 **Messages in the dialog**
 
-- "This workspace has no tool library yet. Add one in Build mode, or copy a tool library folder into `tools/`." No fields are shown. Close the dialog and see [[page-tool-libraries]].
+- "This workspace has no tool library yet. Add one in Build mode, or copy a tool library folder into `tools/`." Shown only when there is no tool library at all, not even a built-in one. No fields are shown. Close the dialog and see [[page-tool-libraries]].
 - A red message with the reason if the model types of the chosen library cannot be read, for example because the library file is damaged ([[tool-validation]]).
 
 ## Examples
@@ -59,6 +59,7 @@ For the Agent pipeline library, choose model type **Pipeline** (all six classes 
 ## Related
 
 - [[page-models]]
+- [[built-in-tools]]
 - [[concepts-model]]
 - [[model-types]]
 - [[folders-and-search]]

@@ -38,7 +38,7 @@ test.describe('start and explorer', () => {
     await expect(page.getByTestId('no-models')).toBeVisible();
   });
 
-  test('explains that a workspace without a tool library cannot make models yet', async ({
+  test('offers the built-in tool libraries when the workspace has none of its own', async ({
     page,
   }) => {
     await page.addInitScript(() => {
@@ -56,9 +56,10 @@ test.describe('start and explorer', () => {
     await page.getByTestId('open-folder').click();
     await page.getByRole('button', { name: 'Create workspace' }).click();
     await page.getByTestId('new-model').click();
-    await expect(page.getByTestId('new-model-dialog')).toContainText(
-      'no tool library',
-    );
+    await expect(
+      page.getByTestId('new-model-tool').locator('optgroup'),
+    ).toHaveAttribute('label', /Built-in/);
+    await expect(page.getByTestId('new-model-tool')).toContainText('ER lite');
   });
 
   test('adds a tool library from a file, refuses a broken one, and then makes a model', async ({
@@ -80,7 +81,7 @@ test.describe('start and explorer', () => {
     await page.getByRole('button', { name: 'Create workspace' }).click();
     // The models page points to Build, where the tool library is added.
     await expect(page.getByTestId('no-models')).toContainText(
-      'You need a tool library first',
+      'no tool library of its own yet',
     );
     await page.getByTestId('go-build').click();
     await expect(page.getByTestId('no-tools')).toBeVisible();

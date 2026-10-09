@@ -15,7 +15,7 @@
     ReferenceIndex,
     type ReferenceServices,
   } from '@metakit-app/ui';
-  import type { ElementId } from '@metakit-app/core';
+  import type { ElementId, ToolLibrary } from '@metakit-app/core';
   import BuildView from '@metakit-app/ui/components/BuildView.svelte';
   import AssistantSettings from '@metakit-app/ui/components/assistant/AssistantSettings.svelte';
   import {
@@ -27,6 +27,8 @@
   import DocsPage from '@metakit-app/ui/components/docs/DocsPage.svelte';
   import DocsPanel from '@metakit-app/ui/components/docs/DocsPanel.svelte';
   import ModalPanel from '@metakit-app/ui/components/ModalPanel.svelte';
+  import ConfirmDialog from '@metakit-app/ui/components/ConfirmDialog.svelte';
+  import Toast from '@metakit-app/ui/components/Toast.svelte';
   import ModelsPage from '@metakit-app/ui/components/ModelsPage.svelte';
   import ToolImportDialog from '@metakit-app/ui/components/ToolImportDialog.svelte';
   import ToolLibrariesPage from '@metakit-app/ui/components/ToolLibrariesPage.svelte';
@@ -36,7 +38,14 @@
   import PermissionDialog from '@metakit-app/ui/components/build/scripts/PermissionDialog.svelte';
   import ProfileDialog from '@metakit-app/ui/components/ProfileDialog.svelte';
   import StartPage from '@metakit-app/ui/components/StartPage.svelte';
-  import { findAcrossModels, folderPaths } from '@metakit-app/ui';
+  import {
+    BUILT_IN_TOOLS,
+    findAcrossModels,
+    folderPaths,
+    type BuiltInTool,
+    type ToolStart,
+  } from '@metakit-app/ui';
+  import { toasts } from '@metakit-app/ui/feedback';
   import { PROFILE_COLOURS, type Profile } from '@metakit-app/storage';
   import {
     adapterFor,
@@ -243,6 +252,26 @@
     else if (app.phase === 'build') area = 'build';
   });
 
+  // Deleted models and tool libraries go to the trash, so they are removed at once and the toast
+  // offers Undo, which restores them (ui-coherence).
+  async function trashModel(slug: string) {
+    const name = app.models.find((m) => m.slug === slug)?.name ?? slug;
+    await controller.trashModel(slug);
+    if (app.trashed.some((m) => m.slug === slug))
+      toasts.show(`Deleted model ${name}`, {
+        undo: () => void controller.restoreModel(slug),
+      });
+  }
+
+  async function trashTool(slug: string) {
+    const name = app.tools.find((t) => t.slug === slug)?.name ?? slug;
+    await controller.trashTool(slug);
+    if (app.trashedTools.some((t) => t.slug === slug))
+      toasts.show(`Deleted tool library ${name}`, {
+        undo: () => void controller.restoreTool(slug),
+      });
+  }
+
   async function chooseArea(next: 'model' | 'build') {
     const fromDocs = docsArea;
     docsArea = false;
@@ -261,8 +290,41 @@
     area = 'model';
   }
 
+  /** A new tool library: empty, or a copy of a workspace or built-in one (ADR 0010). */
+  async function newTool(name: string, start: ToolStart) {
+    if (start.kind === 'empty') return controller.createToolLibrary(name);
+    if (start.kind === 'workspace')
+      return controller.copyToolLibrary(name, { slug: start.slug });
+    return controller.copyToolLibrary(name, { text: await start.tool.load() });
+  }
+
+  async function useBuiltIn(tool: BuiltInTool) {
+    await controller.addToolLibrary(await tool.load());
+  }
+
+  const builtInKey = (tool: BuiltInTool) => `built-in:${tool.id}`;
+
+  /** Model types of a workspace library, or of a built-in one that is not added yet. */
+  async function modelTypesFor(key: string) {
+    const builtIn = BUILT_IN_TOOLS.find((t) => builtInKey(t) === key);
+    if (!builtIn) return controller.modelTypesOf(key);
+    const tool = JSON.parse(await builtIn.load()) as ToolLibrary;
+    return Object.values(tool.modelTypes).sort((a, b) =>
+      a.key.localeCompare(b.key),
+    );
+  }
+
   async function create(input: Parameters<typeof controller.createModel>[0]) {
     showNew = false;
+    // A built-in library is added to the workspace first; the model then uses that copy.
+    const builtIn = BUILT_IN_TOOLS.find(
+      (t) => builtInKey(t) === input.toolSlug,
+    );
+    if (builtIn) {
+      const slug = await controller.addToolLibrary(await builtIn.load());
+      if (!slug) return;
+      input = { ...input, toolSlug: slug };
+    }
     await controller.createModel(input);
   }
 </script>
@@ -337,12 +399,14 @@
               warnings={app.warnings}
               error={app.error}
               notes={app.notes}
-              onNewTool={(name) => controller.createToolLibrary(name)}
+              builtIns={BUILT_IN_TOOLS}
+              onNewTool={newTool}
+              onUseBuiltIn={useBuiltIn}
               onAddTool={(text) => controller.addToolLibrary(text)}
               onGit={() => controller.openGitSettings(true)}
               onEditTool={(slug) => controller.openBuild(slug)}
               onExportTool={(slug) => controller.exportToolPackage(slug)}
-              onTrashTool={(slug) => controller.trashTool(slug)}
+              onTrashTool={trashTool}
               onRestoreTool={(slug) => controller.restoreTool(slug)}
             />
           {:else}
@@ -359,7 +423,7 @@
               onOpen={(slug) => controller.openModel(slug)}
               onRename={(slug, name) => controller.renameModel(slug, name)}
               onMove={(slug, folder) => controller.moveModel(slug, folder)}
-              onTrash={(slug) => controller.trashModel(slug)}
+              onTrash={trashModel}
               onRestore={(slug) => controller.restoreModel(slug)}
               search={async (query) =>
                 findAcrossModels(
@@ -406,7 +470,10 @@
   {#if showNew}
     <NewModelDialog
       tools={app.tools}
-      loadModelTypes={(slug) => controller.modelTypesOf(slug)}
+      builtIns={BUILT_IN_TOOLS.filter(
+        (b) => !app.tools.some((t) => t.id === b.id),
+      ).map((b) => ({ key: builtInKey(b), name: b.name, version: b.version }))}
+      loadModelTypes={modelTypesFor}
       {folders}
       initialFolder=""
       onCreate={create}
@@ -484,6 +551,9 @@
     onCancel={() => (showProfile = false)}
   />
 {/if}
+
+<ConfirmDialog />
+<Toast />
 
 <style>
   .shell {

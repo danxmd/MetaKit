@@ -50,7 +50,7 @@ Choose **Model** in the [[top-bar]] with no model open. It is also the page you 
 
 **Empty states**
 
-- **You need a tool library first.** Shown when the workspace has no tool library. It says: "A tool library says which kinds of objects and connections a model can have. Add one in Build, then come back here to make a model." The button **Go to Build** switches to the [[page-tool-libraries|Tool libraries page]].
+- **No models yet, without a tool library.** Shown when the workspace has no tool library of its own. It says that a model is made with a tool library and that you can "pick a built-in one in New model, or build your own in Build". **New model** opens the dialog, where the built-in libraries are listed ([[built-in-tools]]). **Go to Build** switches to the [[page-tool-libraries|Tool libraries page]].
 - **No models yet.** Shown when there is at least one tool library but no model. It says: "Create one from a tool library, or import a model file with Import / Export." The button **New model** opens the dialog.
 
 **Messages at the top** (all are optional)

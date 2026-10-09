@@ -277,30 +277,31 @@ test('a hand-drawn look can be replaced, and a simple look asks before it is edi
   );
   await expect(page.getByTestId('class-edit-appearance')).toHaveCount(0);
 
-  // Replace with a simple look: confirmed, then the simple editor opens.
-  page.once('dialog', (d) => {
-    expect(d.message()).toBe('This replaces the drawing. You can undo it.');
-    void d.accept();
-  });
+  // Replace with a simple look: it happens at once, with Undo in the toast, and the simple
+  // editor opens.
   await page.getByTestId('class-replace-look').click();
+  await expect(page.getByTestId('message')).toContainText(
+    'Replaced the drawing',
+  );
+  await expect(page.getByTestId('toast-undo')).toBeVisible();
   await expect(page.getByTestId('appearance-editor')).toBeVisible();
   await page.getByTestId('appearance-done').click();
   await expect(page.getByTestId('appearance-drawn')).toHaveCount(0);
   await expect(page.getByTestId('appearance-kind')).toHaveText('Rounded box');
 
-  // Editing as a drawing needs a confirmation; saying no keeps the look.
+  // Editing as a drawing asks first; Cancel keeps the look.
   await openMore(page);
-  page.once('dialog', (d) => {
-    expect(d.message()).toContain('turns this into a hand-drawn look');
-    void d.dismiss();
-  });
   await page.getByTestId('class-edit-shape').click();
+  await expect(page.getByTestId('confirm-dialog')).toContainText(
+    'turns the look into a hand-drawn one',
+  );
+  await page.getByTestId('confirm-cancel').click();
   await expect(page.getByTestId('shape-editor')).toHaveCount(0);
   await expect(page.getByTestId('appearance-kind')).toHaveText('Rounded box');
 
-  // Saying yes opens the advanced editor and the look becomes hand drawn.
-  page.once('dialog', (d) => void d.accept());
+  // Going ahead opens the advanced editor and the look becomes hand drawn.
   await page.getByTestId('class-edit-shape').click();
+  await page.getByTestId('confirm-ok').click();
   await expect(page.getByTestId('shape-editor')).toBeVisible();
   await page.getByTestId('shape-add-rect').click();
   await page.getByTestId('shape-close').click();

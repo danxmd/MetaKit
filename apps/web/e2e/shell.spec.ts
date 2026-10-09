@@ -111,12 +111,12 @@ test.describe('the app shell', () => {
     await emptyWorkspace(page);
     await expect(page.getByTestId('models-page')).toBeVisible();
     await expect(page.getByTestId('no-models')).toContainText(
-      'You need a tool library first',
+      'pick a built-in one in New model',
     );
     await page.getByTestId('go-build').click();
     await expect(page.getByTestId('tools-page')).toBeVisible();
     await expect(page.getByTestId('no-tools')).toContainText(
-      'tools/agent-pipeline/tool.json',
+      'Use a built-in one',
     );
 
     // With a tool library the models page offers to make the first model.

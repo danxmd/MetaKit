@@ -22,7 +22,7 @@ export const CURRENT_FORMAT: Readonly<Record<FileKind, number>> = {
   snapshot: 2,
   trash: 1,
   mkmodel: 1,
-  'tool-document': 5,
+  'tool-document': 6,
   'model-document': 1,
   // .mkbundle (bundle.json) and .mktool (package.json), phase 6.
   bundle: 1,
@@ -96,6 +96,12 @@ export const MIGRATIONS: MigrationRegistry = {
       // Format 5 adds the optional `look` to shapes (ADR 0009); nothing existing changes.
       from: 4,
       to: 5,
+      up: (file) => ({ ...file }),
+    },
+    {
+      // Format 6 adds the optional `manifest.basedOn` of copies (ADR 0010); nothing existing changes.
+      from: 5,
+      to: 6,
       up: (file) => ({ ...file }),
     },
   ],
