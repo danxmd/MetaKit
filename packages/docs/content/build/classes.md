@@ -38,6 +38,8 @@ Open Build mode, choose **Classes** in the section list under **Metamodel** and 
 5. Allow the class in a model type, so that it shows up in the palette ([[model-types]]).
 6. Check the result in the [[try-it-preview]].
 
+To start from ready-made classes such as Dataset, Risk or AI use case instead, press **Add from catalog…** under the **New class** box. The catalog adds classes with their attributes and looks, and the relation classes between them, in one step ([[class-catalog]]).
+
 ## Every option explained
 
 ### Identity
@@ -97,4 +99,4 @@ In the Agent pipeline tool, **Task** is an object class with ten attributes, two
 
 ## Related
 
-[[attributes]], [[abstract-classes]], [[keys-and-renaming]], [[relations]], [[model-types]], [[appearance-editor]], [[panel-layout]], [[constraints]], [[palette]]
+[[attributes]], [[class-catalog]], [[abstract-classes]], [[keys-and-renaming]], [[relations]], [[model-types]], [[appearance-editor]], [[panel-layout]], [[constraints]], [[palette]]

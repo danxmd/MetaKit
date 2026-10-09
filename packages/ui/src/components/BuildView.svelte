@@ -35,6 +35,8 @@
     newRelationLookShape,
   } from '../build/appearance-model';
   import AppearanceEditor from './build/appearance/AppearanceEditor.svelte';
+  import type { CatalogAddResult } from '../build/catalog/catalog';
+  import type CatalogDialogType from './build/CatalogDialog.svelte';
   import RelationLookEditor from './build/appearance/RelationLookEditor.svelte';
 
   let {
@@ -132,6 +134,11 @@
   let selected = $state<Record<string, string | undefined>>({});
   let newName = $state('');
   let message = $state<string | null>(null);
+  // What the last catalog add did; cleared by the next change.
+  let note = $state<string | null>(null);
+  // The catalog and its dialog load on first use, so they stay out of the main bundle.
+  let CatalogDialog = $state<typeof CatalogDialogType | null>(null);
+  let catalogOpen = $state(false);
   let overlay = $state<
     | { kind: 'panel'; id: string }
     | { kind: 'shape'; id: string }
@@ -171,8 +178,29 @@
     const result = controller.runBuild(command);
     if (!result.ok) message = result.error;
     else message = null;
+    note = null;
     return result;
   };
+
+  async function openCatalog() {
+    catalogOpen = true;
+    try {
+      CatalogDialog ??= (await import('./build/CatalogDialog.svelte')).default;
+    } catch {
+      catalogOpen = false;
+      message =
+        'The catalog could not be loaded. Check the connection and try again.';
+    }
+  }
+
+  function addFromCatalog(result: CatalogAddResult, text: string): boolean {
+    const outcome = run(result.batch as never);
+    if (!outcome.ok) return false;
+    const first = result.added.classes[0];
+    if (first) selected = { ...selected, classes: first.id };
+    note = text;
+    return true;
+  }
 
   const items = $derived.by(() => {
     const labelOf = (x: {
@@ -500,6 +528,13 @@
   {#if message}<p class="notice error" role="alert" data-testid="build-message">
       {message}
     </p>{/if}
+  {#if note}<p
+      class="notice success"
+      role="status"
+      data-testid="catalog-result"
+    >
+      {note}
+    </p>{/if}
   {#if build.issues.length > 0}
     <details class="notice warning issues" data-testid="build-issues">
       <summary
@@ -562,6 +597,14 @@
             >
           </div>
         </form>
+        {#if section === 'classes'}
+          <button
+            type="button"
+            class="catalog-open"
+            onclick={openCatalog}
+            data-testid="catalog-open">Add from catalog…</button
+          >
+        {/if}
         {#if sortedItems.length === 0}
           <p class="empty muted" data-testid="build-list-empty">
             {EMPTY_LIST[section]}
@@ -726,6 +769,14 @@
     {/if}
   {/if}
 
+  {#if catalogOpen && CatalogDialog}
+    <CatalogDialog
+      {tool}
+      onAdd={addFromCatalog}
+      onClose={() => (catalogOpen = false)}
+    />
+  {/if}
+
   {#if overlay?.kind === 'panel'}
     {@const id = overlay.id}
     {@const layout = tool.panels[id]}
@@ -859,6 +910,9 @@
   .new-row {
     display: flex;
     gap: var(--gap-1);
+  }
+  .catalog-open {
+    margin-top: calc(-1 * var(--gap-2));
   }
   .new-row input {
     flex: 1;
