@@ -65,7 +65,7 @@ commands.register({
 | Switch **Run X** | Turns the script on or off. An off script is not loaded. |
 | Script name | Opens the script in the editor. |
 | **Rename** | Renames in place. Enter confirms, Escape cancels. |
-| **Delete** | Asks `Delete the script "X"? You can undo this.` |
+| **Delete** | Deletes the script at once; text you were still typing is saved first. The message **Deleted script X** offers **Undo** ([[undo-and-delete]]). |
 | **Add a script** | Adds a script from the template. |
 | **Draft with assistant** | Only when the assistant is on. See [[assistant-drafts]]. |
 | **Run** | Above the editor, for a script that registers a command. It runs the command on the selected object. Shown only while scripts are running. |

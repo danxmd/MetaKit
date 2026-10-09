@@ -33,7 +33,7 @@ The crumbs carry new test ids: `crumb-workspace`, `crumb-area`, `crumb-document`
 ## Menus
 
 - `shell/menu-action.ts` (`menuBehaviour`) becomes the only implementation.
-- It closes on `pointerdown` outside the menu without calling `preventDefault`, so the click reaches its target. That fixes the "two clicks to leave" problem.
+- It closes on `pointerdown` outside the menu without calling `preventDefault`, so the click still reaches its target.
 - Up and Down arrows move focus between `[role=menuitem]` items.
 - `ModelToolbar`'s window handlers and BuildView's `bind:this` + `closeMenu()` are replaced by it.
 - The markup stays `<details class="menu"><summary>`, so the e2e helpers keep working.
@@ -43,15 +43,15 @@ The crumbs carry new test ids: `crumb-workspace`, `crumb-area`, `crumb-document`
 **`ConfirmDialog.svelte`**
 - Uses the native `<dialog>` with a title, a message and buttons for cancel and the action. The action button can be marked `danger`.
 - `confirmAction({ title, message, action, danger })` returns a promise.
-- Used where undo cannot help:
-  - deleting a tool library (it goes to the trash, but undo is per document)
-  - closing the workspace with unsaved changes
-  - turning a simple look into a drawing (undoable, but the person loses the simple controls, so it is a choice to make first)
+- Used where undo cannot help, or where the person should choose first. Today that is one place: turning a simple look into a drawing. It can be undone, but the person loses the simple controls.
+- Deleting a model or a tool library moves it to the trash, so it happens at once too, and the toast's Undo restores it from the trash.
 
 **Undo toast**
 - `shell/toast.ts` holds a one-message store with an optional action. The model view's existing `message` toast and BuildView's `build-message` both render from it.
 - Deleting a class, relation class, model type, shape, rule, script or attribute calls the tool command, then shows "Deleted <kind> <label>" with **Undo**.
 - The inline confirms in AttributeList and RulesSection are removed. `attr-confirm-delete` is dropped from the panels e2e test.
+- The offer is withdrawn on the next local change to the tool library (`offerUndo` in `shell/feedback.ts`), so Undo can never revert a different step than the one the toast names.
+- Not in scope: the `confirm` and `choose` that rules and scripts call (`BehaviourHost`) stay on the browser's dialogs, because the script API answers them synchronously.
 
 ## Build layout
 

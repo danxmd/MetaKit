@@ -24,7 +24,7 @@ Status in the header. Messages, notices and rule messages on the canvas, mostly 
 ## How to use it
 
 1. Glance at the status in the header. **Saved** means all is stored.
-2. Read a message when it pops up. It disappears after six seconds.
+2. Read a message when it pops up. It disappears after six seconds, or ten when it offers **Undo** ([[undo-and-delete]]).
 3. Click **×** to dismiss a notice or a rule message.
 
 ## Every option explained

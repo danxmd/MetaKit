@@ -6,12 +6,12 @@
 
 ## 1. PR 1: shared controls (`feat/ui-coherence-controls`)
 
-- [ ] 1.1 `menuBehaviour` for every menu (outside click passes through, Escape, arrow keys); remove the ModelToolbar and BuildView copies.
-- [ ] 1.2 `ConfirmDialog` + `confirmAction`; replace the three `confirm()` calls.
-- [ ] 1.3 Toast store with an Undo action; delete-then-Undo for classes, relation classes, model types, shapes, rules, scripts and attributes; remove inline confirms.
-- [ ] 1.4 `Icon.svelte`; use it in ModelToolbar and the Build bar.
-- [ ] 1.5 Unit tests for the menu behaviour and the toast; e2e for delete + Undo in Build.
-- [ ] 1.6 Docs: new `pages/undo-and-delete.md`; update rules, scripts, attributes and shapes-section topics.
+- [x] 1.1 `menuBehaviour` for every menu (outside click passes through, Escape, arrow keys); remove the ModelToolbar and BuildView copies.
+- [x] 1.2 `ConfirmDialog` + `confirmAction`; replace the three `confirm()` calls.
+- [x] 1.3 Toast store with an Undo action; delete-then-Undo for classes, relation classes, model types, shapes, rules, scripts and attributes; remove inline confirms.
+- [x] 1.4 `Icon.svelte`; use it in ModelToolbar and the Build bar.
+- [x] 1.5 Unit tests for the menu behaviour and the toast; e2e for delete + Undo in Build.
+- [x] 1.6 Docs: new `pages/undo-and-delete.md`; update rules, scripts, attributes and shapes-section topics.
 
 ## 2. PR 2: location bar and Help (`feat/ui-coherence-shell`)
 

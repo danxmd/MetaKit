@@ -32,7 +32,7 @@ Every drop-down menu SHALL close on Escape, on choosing an item, and on a click 
 - **THEN** the menu closes and the models page opens
 
 ### Requirement: Destructive actions
-An action that can be undone SHALL happen at once and show a message with an Undo button. An action that cannot be undone SHALL ask first in the app's own confirm dialog. The browser's `confirm()` SHALL NOT be used.
+An action of the app that can be undone SHALL happen at once and show a message with an Undo button. An action that cannot be undone SHALL ask first in the app's own confirm dialog. The app's own actions SHALL NOT use the browser's `confirm()`. Questions asked by rules and scripts are outside this requirement, because the script API answers them synchronously.
 
 #### Scenario: Delete a class
 - **WHEN** a class is deleted in Build

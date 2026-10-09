@@ -86,6 +86,7 @@ import type { GitTarget } from '../git/settings-model';
 import { browserHttp, workspaceFiles } from './script-services';
 import { describeClash, type ClashNotice } from './clash';
 import { normalizeFolder } from './explorer';
+import type { UndoSource } from './feedback';
 
 export interface OpenModel {
   slug: string;
@@ -249,6 +250,8 @@ export interface BuildPort {
   runBuild(command: ToolCommandOrBatch): CommandResult;
   undoBuild(): boolean;
   redoBuild(): boolean;
+  /** Undo bound to the tool library open now, for an Undo offered after a step. */
+  buildUndoSource(): UndoSource | null;
   closeBuild(): Promise<void>;
   gitRefreshPending(): void;
   gitCommit(message: string): Promise<boolean | undefined>;
@@ -1526,6 +1529,19 @@ export class AppController {
 
   redoBuild(): boolean {
     return this.current.build?.store.redo() ?? false;
+  }
+
+  buildUndoSource(): UndoSource | null {
+    const store = this.current.build?.store;
+    if (!store) return null;
+    return {
+      // Bound to this library: once it is closed, an old offer cannot undo in another one.
+      undo: () => this.current.build?.store === store && store.undo(),
+      onLocalChange: (listener) =>
+        store.subscribe((event) => {
+          if (event.origin !== 'remote') listener();
+        }),
+    };
   }
 
   /** Writes the open tool library's pending changes now. */
