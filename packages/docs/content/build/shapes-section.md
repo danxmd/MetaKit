@@ -29,7 +29,7 @@ Open Build mode and choose **Shapes** under **Appearance**. The number beside it
 2. To start a new drawing, choose a starter next to **Add from starter** and press the button. An object shape opens in the drawing editor at once.
 3. To change a shape, press **Edit appearance** (simple look) or **Edit** (hand drawn).
 4. To reuse a shape for a class, open the class and choose it in **Use an existing shape** ([[classes]]). Relation classes do the same with **Use an existing line shape** ([[relations]]).
-5. To remove a shape nobody uses, press **Delete**.
+5. To remove a shape nobody uses, press **Delete**. The message at the bottom offers **Undo** ([[undo-and-delete]]).
 
 ## Every option explained
 
@@ -41,9 +41,9 @@ Open Build mode and choose **Shapes** under **Appearance**. The number beside it
 | Name | The name of the shape, in bold. Below it: "object" or "line", followed by ", used by Task, Agent" or ", not used yet". |
 | Badge | **Simple look** (blue) or **Hand drawn**. |
 | **Edit appearance** | Only for a simple look that exactly one class or relation class uses. Opens the Appearance editor of that class ([[appearance-editor]], [[appearance-relations]]). |
-| **Edit** / **Edit as drawing** | For a hand-drawn object shape: opens the [[shape-editor]]. For a simple look the button reads **Edit as drawing** and asks first: "Editing as a drawing turns this into a hand-drawn look. The simple controls will no longer work for it. Continue?" For a hand-drawn line shape it opens or closes the line form on the card ([[appearance-relations]], section "Hand-drawn lines"). |
+| **Edit** / **Edit as drawing** | For a hand-drawn object shape: opens the [[shape-editor]]. For a simple look the button reads **Edit as drawing** and asks first in a dialog: "This turns the look into a hand-drawn one. The simple controls will no longer work for it." For a hand-drawn line shape it opens or closes the line form on the card ([[appearance-relations]], section "Hand-drawn lines"). |
 | **Duplicate** | Makes a copy named "‹name› copy". Nothing uses the copy until you pick it for a class. |
-| **Delete** | Removes the shape. If something still uses it the change is refused, naming the users: The shape Task look is still in use: class "Task" draws with it. A shape that another shape embeds is also protected: shape X embeds it. |
+| **Delete** | Removes the shape at once, with **Undo** in the message. If something still uses it the change is refused, naming the users: The shape Task look is still in use: class "Task" draws with it. A shape that another shape embeds is also protected: shape X embeds it. |
 
 ### Adding
 

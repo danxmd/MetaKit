@@ -27,6 +27,8 @@
   import DocsPage from '@metakit-app/ui/components/docs/DocsPage.svelte';
   import DocsPanel from '@metakit-app/ui/components/docs/DocsPanel.svelte';
   import ModalPanel from '@metakit-app/ui/components/ModalPanel.svelte';
+  import ConfirmDialog from '@metakit-app/ui/components/ConfirmDialog.svelte';
+  import Toast from '@metakit-app/ui/components/Toast.svelte';
   import ModelsPage from '@metakit-app/ui/components/ModelsPage.svelte';
   import ToolImportDialog from '@metakit-app/ui/components/ToolImportDialog.svelte';
   import ToolLibrariesPage from '@metakit-app/ui/components/ToolLibrariesPage.svelte';
@@ -43,6 +45,7 @@
     type BuiltInTool,
     type ToolStart,
   } from '@metakit-app/ui';
+  import { toasts } from '@metakit-app/ui/feedback';
   import { PROFILE_COLOURS, type Profile } from '@metakit-app/storage';
   import {
     adapterFor,
@@ -249,6 +252,26 @@
     else if (app.phase === 'build') area = 'build';
   });
 
+  // Deleted models and tool libraries go to the trash, so they are removed at once and the toast
+  // offers Undo, which restores them (ui-coherence).
+  async function trashModel(slug: string) {
+    const name = app.models.find((m) => m.slug === slug)?.name ?? slug;
+    await controller.trashModel(slug);
+    if (app.trashed.some((m) => m.slug === slug))
+      toasts.show(`Deleted model ${name}`, {
+        undo: () => void controller.restoreModel(slug),
+      });
+  }
+
+  async function trashTool(slug: string) {
+    const name = app.tools.find((t) => t.slug === slug)?.name ?? slug;
+    await controller.trashTool(slug);
+    if (app.trashedTools.some((t) => t.slug === slug))
+      toasts.show(`Deleted tool library ${name}`, {
+        undo: () => void controller.restoreTool(slug),
+      });
+  }
+
   async function chooseArea(next: 'model' | 'build') {
     const fromDocs = docsArea;
     docsArea = false;
@@ -383,7 +406,7 @@
               onGit={() => controller.openGitSettings(true)}
               onEditTool={(slug) => controller.openBuild(slug)}
               onExportTool={(slug) => controller.exportToolPackage(slug)}
-              onTrashTool={(slug) => controller.trashTool(slug)}
+              onTrashTool={trashTool}
               onRestoreTool={(slug) => controller.restoreTool(slug)}
             />
           {:else}
@@ -400,7 +423,7 @@
               onOpen={(slug) => controller.openModel(slug)}
               onRename={(slug, name) => controller.renameModel(slug, name)}
               onMove={(slug, folder) => controller.moveModel(slug, folder)}
-              onTrash={(slug) => controller.trashModel(slug)}
+              onTrash={trashModel}
               onRestore={(slug) => controller.restoreModel(slug)}
               search={async (query) =>
                 findAcrossModels(
@@ -528,6 +551,9 @@
     onCancel={() => (showProfile = false)}
   />
 {/if}
+
+<ConfirmDialog />
+<Toast />
 
 <style>
   .shell {

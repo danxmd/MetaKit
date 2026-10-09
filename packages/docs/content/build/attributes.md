@@ -27,7 +27,7 @@ It is the **Attributes** block in the editor of a class, a relation class or a m
 3. Change the **Key** and **Label** so they say what the value means.
 4. Set the type-specific options. See [[attribute-types]].
 5. Use the **↑** and **↓** buttons to put the attributes in the order modellers should see them.
-6. To remove one, press **Delete** and confirm.
+6. To remove one, press **Delete**. It goes at once, and the message at the bottom offers **Undo** ([[undo-and-delete]]).
 
 The type of an attribute cannot be changed after it is created. Delete it and add a new one instead.
 
@@ -40,7 +40,7 @@ Each row shows the key in bold, the label in your first language, and the type, 
 | Button | What it does |
 | --- | --- |
 | **↑** / **↓** (titled "Move up" and "Move down") | Moves the attribute one place. The first cannot move up, the last cannot move down. |
-| **Delete** | Asks first: Delete "Status"? Values stored in models are kept and shown as unknown attributes. If formulas, constraints, rules, shapes or panel layouts read the attribute, they are listed: It is used in a formula attribute of "Task", a constraint of "Task". Choose **Delete** again to confirm or **Keep** to cancel. |
+| **Delete** | Deletes the attribute at once. Values stored in models are kept and shown as unknown attributes. The message at the bottom offers **Undo**; if formulas, constraints, rules, shapes or panel layouts read the attribute, it names them: Deleted attribute Status. It was used in a formula attribute of "Task", a constraint of "Task". |
 
 When an attribute is deleted, panel layout items for it are removed in the same step.
 

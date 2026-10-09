@@ -60,7 +60,7 @@ The block works as for classes. It shows a picture of the line and one of three 
 | Control | What it does |
 | --- | --- |
 | **Use an existing line shape** | Picks a line shape from [[shapes-section]]. **Automatic (grey arrow)** is the choice when none is picked. |
-| **Edit as drawing** | Shown for a line with a simple look. It asks first: "Editing as a drawing turns this into a hand-drawn look. The simple controls will no longer work for it. Continue?" |
+| **Edit as drawing** | Shown for a line with a simple look. It asks first in a dialog: "This turns the look into a hand-drawn one. The simple controls will no longer work for it." Choose **Edit as drawing** or **Cancel**. |
 | **New drawn line shape** | Creates a hand-drawn line shape from the Flow (arrow) starter, named "‹Key› line", and opens its form. |
 
 ### Attributes and constraints

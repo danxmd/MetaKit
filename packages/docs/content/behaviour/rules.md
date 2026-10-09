@@ -52,7 +52,7 @@ The form saves after every committed change. You do not press a save button. The
 | --- | --- |
 | Switch before the name | Turns the rule on or off. A rule is on unless it is switched off. |
 | Name and event | Click to open or close the rule. The grey text shows the event, for example "An object was created". |
-| **Delete** | Asks `Delete the rule "Name"?` with the buttons **Delete** and **Keep**. Deleting is one undo step in Build mode. |
+| **Delete** | Deletes the rule at once. The message **Deleted rule Name** offers **Undo** ([[undo-and-delete]]). |
 | **Add rule** | Adds a new rule. |
 | **Draft with assistant** | Appears only when the assistant is on. See [[assistant-drafts]]. |
 
