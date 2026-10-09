@@ -1,6 +1,8 @@
 <script lang="ts">
   import type { ModelingAssist } from '../shell/assist';
   import type { Snippet } from 'svelte';
+  import { menuBehaviour } from '../shell/menu-action';
+  import Icon from './Icon.svelte';
 
   interface Person {
     instance: string;
@@ -100,21 +102,6 @@
     trailing?: Snippet;
   } = $props();
 
-  let root: HTMLElement | undefined = $state();
-
-  function closeMenus(except: Element | null = null) {
-    for (const menu of root?.querySelectorAll('details.menu[open]') ?? [])
-      if (menu !== except) menu.removeAttribute('open');
-  }
-
-  /** One menu open at a time; choosing an item or clicking elsewhere closes it. */
-  function clicked(event: MouseEvent) {
-    const target = event.target as Element | null;
-    const menu = target?.closest('details.menu') ?? null;
-    const item = target?.closest('.menu-list button');
-    closeMenus(item && !item.hasAttribute('disabled') ? null : menu);
-  }
-
   const alignments: [AlignMode, string][] = [
     ['left', 'Align left'],
     ['centre', 'Align centres'],
@@ -125,12 +112,7 @@
   ];
 </script>
 
-<svelte:window
-  onclick={clicked}
-  onkeydown={(e) => e.key === 'Escape' && closeMenus()}
-/>
-
-<header class="header" bind:this={root} data-testid="model-header">
+<header class="header" data-testid="model-header">
   <div class="top">
     <button
       class="ghost back"
@@ -173,7 +155,7 @@
   </div>
 
   <div class="tools" role="toolbar" aria-label="Model tools">
-    <details class="menu">
+    <details class="menu" use:menuBehaviour>
       <summary>File</summary>
       <div class="menu-list">
         <button onclick={onExport} data-testid="export-open"
@@ -182,7 +164,7 @@
       </div>
     </details>
 
-    <details class="menu">
+    <details class="menu" use:menuBehaviour>
       <summary>Edit</summary>
       <div class="menu-list">
         <button onclick={onUndo} disabled={!canUndo}
@@ -202,7 +184,7 @@
       </div>
     </details>
 
-    <details class="menu">
+    <details class="menu" use:menuBehaviour>
       <summary>View</summary>
       <div class="menu-list">
         <button onclick={onFit}>Fit to window</button>
@@ -251,7 +233,7 @@
       </div>
     </details>
 
-    <details class="menu">
+    <details class="menu" use:menuBehaviour>
       <summary>Arrange</summary>
       <div class="menu-list">
         <div class="menu-heading">Align</div>
@@ -277,7 +259,7 @@
       </div>
     </details>
 
-    <details class="menu">
+    <details class="menu" use:menuBehaviour>
       <summary
         >Check{#if issueCount > 0}<span class="badge count">{issueCount}</span
           >{/if}</summary
@@ -302,7 +284,7 @@
     </details>
 
     {#if modelCommands.length > 0}
-      <details class="menu" data-testid="commands-menu">
+      <details class="menu" use:menuBehaviour data-testid="commands-menu">
         <summary>Commands</summary>
         <div class="menu-list">
           {#each modelCommands as command (command.id)}
@@ -324,16 +306,7 @@
       aria-label="Undo"
       title="Undo (Ctrl+Z)"
     >
-      <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"
-        ><path
-          d="M8 5 4 9l4 4M4 9h7a4 4 0 0 1 0 8H8"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        /></svg
-      >
+      <Icon name="undo" />
     </button>
     <button
       class="icon ghost"
@@ -342,16 +315,7 @@
       aria-label="Redo"
       title="Redo (Ctrl+Shift+Z)"
     >
-      <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"
-        ><path
-          d="m12 5 4 4-4 4m4-4H9a4 4 0 0 0 0 8h3"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        /></svg
-      >
+      <Icon name="redo" />
     </button>
 
     <span class="sep"></span>
@@ -360,7 +324,7 @@
       class="icon ghost"
       onclick={onZoomOut}
       aria-label="Zoom out"
-      title="Zoom out">−</button
+      title="Zoom out"><Icon name="zoom-out" /></button
     >
     <button
       class="icon ghost"
@@ -368,22 +332,13 @@
       aria-label="Fit to window"
       title="Show the whole model"
     >
-      <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"
-        ><path
-          d="M3 7V3h4M13 3h4v4M17 13v4h-4M7 17H3v-4"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        /></svg
-      >
+      <Icon name="fit" />
     </button>
     <button
       class="icon ghost"
       onclick={onZoomIn}
       aria-label="Zoom in"
-      title="Zoom in">+</button
+      title="Zoom in"><Icon name="zoom-in" /></button
     >
 
     {#if toolbarCommands.length > 0}

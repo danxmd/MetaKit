@@ -90,7 +90,9 @@ test.describe('panel layouts and unknown attributes', () => {
     await builder.getByTestId('build-item-FlowNode').click();
     await builder.getByTestId('attr-Name').click();
     await builder.getByRole('button', { name: 'Delete Name' }).click();
-    await builder.getByTestId('attr-confirm-delete').click();
+    await expect(builder.getByTestId('message')).toContainText(
+      'Deleted attribute Name',
+    );
 
     const group = modeller.getByTestId('unknown-attributes');
     await expect(group).toBeVisible({ timeout: 15_000 });
