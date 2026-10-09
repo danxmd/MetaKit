@@ -23,6 +23,7 @@
   import { asOneStep } from '@metakit-app/assistant';
   import type { AssistantPort } from '../../../assistant/assistant-service';
   import DraftWithAssistant from '../../assistant/DraftWithAssistant.svelte';
+  import { useBuildUndo } from '../../../build/undo-context';
   import type { LanguageClient } from './script-language-client';
 
   let {
@@ -43,6 +44,8 @@
     /** The assistant; when absent there is no "Draft with assistant" button. */
     assistant?: AssistantPort | undefined;
   } = $props();
+
+  const offerUndo = useBuildUndo();
 
   let error = $state<string | null>(null);
   let selectedId = $state<ScriptId | null>(null);
@@ -95,9 +98,10 @@
     renaming = null;
   }
   function remove(script: Script) {
-    if (!confirm(`Delete the script "${script.name}"? You can undo this.`))
-      return;
-    exec(removeScript(script.id));
+    // A pending edit is saved first, so Undo brings the script back as it was typed.
+    flush();
+    if (exec(removeScript(script.id)))
+      offerUndo(`Deleted script ${script.name}`);
   }
 
   // The source is saved a moment after typing stops, as one undo step per pause; a pending save is
