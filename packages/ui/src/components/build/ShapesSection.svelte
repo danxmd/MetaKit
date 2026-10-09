@@ -21,6 +21,7 @@
   import { asOneStep } from '@metakit-app/assistant';
   import type { AssistantPort } from '../../assistant/assistant-service';
   import DraftWithAssistant from '../assistant/DraftWithAssistant.svelte';
+  import { useBuildUndo } from '../../build/undo-context';
 
   let {
     tool,
@@ -41,6 +42,7 @@
     assistant?: AssistantPort | undefined;
   } = $props();
 
+  const offerUndo = useBuildUndo();
   let error = $state<string | null>(null);
   let starter = $state('shp_starter_task');
   let openLine = $state<string | null>(untrack(() => open));
@@ -72,6 +74,10 @@
       name: `${s.name ?? 'Shape'} copy`,
     } as ShapeDef;
     exec({ type: 'putShape', def: copy });
+  }
+  function remove(s: ShapeDef) {
+    if (exec({ type: 'removeShape', id: s.id }) === null)
+      offerUndo(`Deleted shape ${s.name ?? s.id}`);
   }
   const images = new ImageCache();
   const thumb = (s: ShapeDef) => {
@@ -203,7 +209,7 @@
           <button
             type="button"
             class="danger"
-            onclick={() => exec({ type: 'removeShape', id: s.id })}
+            onclick={() => remove(s)}
             aria-label="Delete {s.name ?? s.id}">Delete</button
           >
         </div>

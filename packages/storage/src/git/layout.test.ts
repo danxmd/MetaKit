@@ -236,7 +236,7 @@ describe('hand edits', () => {
         ? {
             ...f,
             content: f.content.replace(
-              '"formatVersion": 5',
+              '"formatVersion": 6',
               '"formatVersion": 99',
             ),
           }

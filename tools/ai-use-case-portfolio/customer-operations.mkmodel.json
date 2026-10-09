@@ -1,0 +1,860 @@
+{
+  "attributes": {
+    "Period": "Next 12 months",
+    "Title": "Customer operations AI portfolio"
+  },
+  "connectors": [
+    {
+      "from": "el_v3bztvswzm",
+      "id": "cn_44zhdwgxz0",
+      "relation": "ContributesTo",
+      "to": "el_6nm6v4ya72"
+    },
+    {
+      "from": "el_3dxyytn3jp",
+      "id": "cn_z5pgkgbpyz",
+      "relation": "ContributesTo",
+      "to": "el_mv3gawvr33"
+    },
+    {
+      "from": "el_y943g0f1zz",
+      "id": "cn_gdnxaw7c7c",
+      "relation": "ContributesTo",
+      "to": "el_mv3gawvr33"
+    },
+    {
+      "from": "el_56xaszhfxw",
+      "id": "cn_gxqdmz47qa",
+      "relation": "ContributesTo",
+      "to": "el_6nm6v4ya72"
+    },
+    {
+      "from": "el_9zsxhdfxh7",
+      "id": "cn_4n8jkzhyr0",
+      "relation": "ContributesTo",
+      "to": "el_mv3gawvr33"
+    },
+    {
+      "from": "el_t8bfhxwgd9",
+      "id": "cn_5jzcgjrdz4",
+      "relation": "ContributesTo",
+      "to": "el_8ech71czrq"
+    },
+    {
+      "from": "el_g173n7rjrm",
+      "id": "cn_5ewasqzpec",
+      "relation": "ContributesTo",
+      "to": "el_8ech71czrq"
+    },
+    {
+      "from": "el_2pq61w7q2y",
+      "id": "cn_1thzx9t5rc",
+      "relation": "ContributesTo",
+      "to": "el_mv3gawvr33"
+    },
+    {
+      "from": "el_6nm6v4ya72",
+      "id": "cn_fqq0gk54te",
+      "relation": "MeasuredBy",
+      "to": "el_1jbdfm7n63"
+    },
+    {
+      "from": "el_mv3gawvr33",
+      "id": "cn_73v75c934f",
+      "relation": "MeasuredBy",
+      "to": "el_hfw3pses0g"
+    },
+    {
+      "from": "el_8ech71czrq",
+      "id": "cn_rt9cnywg9z",
+      "relation": "MeasuredBy",
+      "to": "el_e60cqgwa69"
+    },
+    {
+      "from": "el_v3bztvswzm",
+      "id": "cn_35nkhpdz9w",
+      "relation": "MeasuredBy",
+      "to": "el_1jbdfm7n63"
+    },
+    {
+      "from": "el_3dxyytn3jp",
+      "id": "cn_y0y1n8v1r5",
+      "relation": "MeasuredBy",
+      "to": "el_hfw3pses0g"
+    },
+    {
+      "from": "el_y943g0f1zz",
+      "id": "cn_v2c3zdq6jn",
+      "relation": "MeasuredBy",
+      "to": "el_k6rsy6aktt"
+    },
+    {
+      "from": "el_a79ctbs5ap",
+      "id": "cn_sz5j0t9hq8",
+      "relation": "Sponsors",
+      "to": "el_v3bztvswzm"
+    },
+    {
+      "from": "el_a79ctbs5ap",
+      "id": "cn_vxdcnje2rm",
+      "relation": "Sponsors",
+      "to": "el_3dxyytn3jp"
+    },
+    {
+      "from": "el_a79ctbs5ap",
+      "id": "cn_x9x8feyx81",
+      "relation": "Sponsors",
+      "to": "el_56xaszhfxw"
+    },
+    {
+      "from": "el_nhd915janw",
+      "id": "cn_t0c708x2t3",
+      "relation": "Sponsors",
+      "to": "el_y943g0f1zz"
+    },
+    {
+      "from": "el_mawweyf7zx",
+      "id": "cn_9nyek5arnm",
+      "relation": "Sponsors",
+      "to": "el_9zsxhdfxh7"
+    },
+    {
+      "attributes": {
+        "Criticality": "High"
+      },
+      "from": "el_v3bztvswzm",
+      "id": "cn_kcer4yg61w",
+      "relation": "NeedsData",
+      "to": "el_082fj20vsh"
+    },
+    {
+      "attributes": {
+        "Criticality": "High"
+      },
+      "from": "el_3dxyytn3jp",
+      "id": "cn_f1jh46vetn",
+      "relation": "NeedsData",
+      "to": "el_ap7z1rg79q"
+    },
+    {
+      "attributes": {
+        "Criticality": "High"
+      },
+      "from": "el_t8bfhxwgd9",
+      "id": "cn_hmppd0jww9",
+      "relation": "NeedsData",
+      "to": "el_6t08qwmhe1"
+    },
+    {
+      "attributes": {
+        "Criticality": "High"
+      },
+      "from": "el_g173n7rjrm",
+      "id": "cn_xb1qtvk333",
+      "relation": "NeedsData",
+      "to": "el_6t08qwmhe1"
+    },
+    {
+      "attributes": {
+        "Criticality": "High"
+      },
+      "from": "el_y943g0f1zz",
+      "id": "cn_p4qaav496j",
+      "relation": "NeedsData",
+      "to": "el_34kgsnwrv0"
+    },
+    {
+      "attributes": {
+        "Criticality": "High"
+      },
+      "from": "el_56xaszhfxw",
+      "id": "cn_wq7ncp94b4",
+      "relation": "NeedsData",
+      "to": "el_vgwahhf4fr"
+    },
+    {
+      "attributes": {
+        "Criticality": "Medium"
+      },
+      "from": "el_9zsxhdfxh7",
+      "id": "cn_y862dtdsmf",
+      "relation": "NeedsData",
+      "to": "el_06qqc5v1e8"
+    },
+    {
+      "attributes": {
+        "Criticality": "Medium"
+      },
+      "from": "el_2pq61w7q2y",
+      "id": "cn_jhrhwsfrdp",
+      "relation": "NeedsData",
+      "to": "el_6t08qwmhe1"
+    },
+    {
+      "from": "el_v3bztvswzm",
+      "id": "cn_j5rdmcyyxz",
+      "relation": "UsesTechnique",
+      "to": "el_fp7cg5swfq"
+    },
+    {
+      "from": "el_3dxyytn3jp",
+      "id": "cn_s7vy50xwrq",
+      "relation": "UsesTechnique",
+      "to": "el_rydhdqafcd"
+    },
+    {
+      "from": "el_t8bfhxwgd9",
+      "id": "cn_g28x4xe6me",
+      "relation": "UsesTechnique",
+      "to": "el_ye6amc4zm4"
+    },
+    {
+      "from": "el_g173n7rjrm",
+      "id": "cn_y4bh0fhafq",
+      "relation": "UsesTechnique",
+      "to": "el_axxvd7617h"
+    },
+    {
+      "from": "el_y943g0f1zz",
+      "id": "cn_cz8ztba281",
+      "relation": "UsesTechnique",
+      "to": "el_hjhkhywwmb"
+    },
+    {
+      "from": "el_56xaszhfxw",
+      "id": "cn_1vnm7jw4n4",
+      "relation": "UsesTechnique",
+      "to": "el_d0jntap7yc"
+    },
+    {
+      "from": "el_9zsxhdfxh7",
+      "id": "cn_h8aath955z",
+      "relation": "UsesTechnique",
+      "to": "el_smsxt1x2mt"
+    },
+    {
+      "from": "el_2pq61w7q2y",
+      "id": "cn_sbbth52nsr",
+      "relation": "UsesTechnique",
+      "to": "el_gf6s5m2krf"
+    },
+    {
+      "from": "el_g173n7rjrm",
+      "id": "cn_qz5s1wk78k",
+      "relation": "HasRisk",
+      "to": "el_vnmh5c1kf0"
+    },
+    {
+      "from": "el_3dxyytn3jp",
+      "id": "cn_3et97whf89",
+      "relation": "HasRisk",
+      "to": "el_b6rqw65a1k"
+    },
+    {
+      "from": "el_56xaszhfxw",
+      "id": "cn_knca7k9m65",
+      "relation": "HasRisk",
+      "to": "el_ps2e12byz7"
+    },
+    {
+      "from": "el_56xaszhfxw",
+      "id": "cn_akcw1hdane",
+      "relation": "HasRisk",
+      "to": "el_qd6twcznq1"
+    },
+    {
+      "from": "el_g173n7rjrm",
+      "id": "cn_37fc869gap",
+      "relation": "HasRisk",
+      "to": "el_qd6twcznq1"
+    },
+    {
+      "from": "el_2pq61w7q2y",
+      "id": "cn_w78v00f8sd",
+      "relation": "HasRisk",
+      "to": "el_jgfqm08wmf"
+    }
+  ],
+  "elements": [
+    {
+      "attributes": {
+        "Description": "Answer customers sooner, in every channel.",
+        "Horizon": "This year",
+        "Name": "Faster customer response"
+      },
+      "class": "Objective",
+      "h": 60,
+      "id": "el_6nm6v4ya72",
+      "w": 120,
+      "x": 40,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "Description": "Spend less effort on routine contacts and paperwork.",
+        "Horizon": "This year",
+        "Name": "Lower cost to serve"
+      },
+      "class": "Objective",
+      "h": 60,
+      "id": "el_mv3gawvr33",
+      "w": 120,
+      "x": 560,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "Description": "Fewer customers leave at the end of their contract.",
+        "Horizon": "Next year",
+        "Name": "Keep more customers"
+      },
+      "class": "Objective",
+      "h": 60,
+      "id": "el_8ech71czrq",
+      "w": 120,
+      "x": 1080,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "Current": 6,
+        "Direction": "Lower is better",
+        "Name": "First response time",
+        "Target": 4,
+        "Unit": "hours"
+      },
+      "class": "KPI",
+      "h": 60,
+      "id": "el_1jbdfm7n63",
+      "w": 120,
+      "x": 240,
+      "y": 20
+    },
+    {
+      "attributes": {
+        "Current": 7.5,
+        "Direction": "Lower is better",
+        "Name": "Average handling time",
+        "Target": 6,
+        "Unit": "minutes"
+      },
+      "class": "KPI",
+      "h": 60,
+      "id": "el_hfw3pses0g",
+      "w": 120,
+      "x": 760,
+      "y": 20
+    },
+    {
+      "attributes": {
+        "Current": 72,
+        "Direction": "Higher is better",
+        "Name": "Invoices processed without touch",
+        "Target": 70,
+        "Unit": "%"
+      },
+      "class": "KPI",
+      "h": 60,
+      "id": "el_k6rsy6aktt",
+      "w": 120,
+      "x": 900,
+      "y": 20
+    },
+    {
+      "attributes": {
+        "Current": 89,
+        "Direction": "Higher is better",
+        "Name": "Customer retention",
+        "Target": 92,
+        "Unit": "%"
+      },
+      "class": "KPI",
+      "h": 60,
+      "id": "el_e60cqgwa69",
+      "w": 120,
+      "x": 1280,
+      "y": 20
+    },
+    {
+      "attributes": {
+        "DataReadiness": 4,
+        "Description": "Sort incoming emails by topic and urgency and route them.",
+        "Effort": 6,
+        "EstimatedAnnualValue": 180000,
+        "Feasibility": 5,
+        "Name": "Email triage",
+        "Problem": "Emails wait in one shared inbox until someone reads them.",
+        "RiskLevel": "Low",
+        "Status": "Live",
+        "Value": 4
+      },
+      "class": "UseCase",
+      "h": 60,
+      "id": "el_v3bztvswzm",
+      "w": 120,
+      "x": 40,
+      "y": 240
+    },
+    {
+      "attributes": {
+        "DataReadiness": 3,
+        "Description": "Write a summary of each call into the customer record.",
+        "Effort": 10,
+        "EstimatedAnnualValue": 250000,
+        "Feasibility": 4,
+        "Name": "Call summarisation",
+        "Problem": "Agents spend minutes after each call writing notes.",
+        "RiskLevel": "Medium",
+        "Status": "In delivery",
+        "Value": 4
+      },
+      "class": "UseCase",
+      "h": 60,
+      "id": "el_3dxyytn3jp",
+      "w": 120,
+      "x": 300,
+      "y": 240
+    },
+    {
+      "attributes": {
+        "DataReadiness": 3,
+        "Description": "Score each customer on how likely they are to leave.",
+        "Effort": 16,
+        "EstimatedAnnualValue": 400000,
+        "Feasibility": 2,
+        "Name": "Churn prediction",
+        "Problem": "Retention offers reach customers after they have decided.",
+        "RiskLevel": "Medium",
+        "Status": "Assessed",
+        "Value": 5
+      },
+      "class": "UseCase",
+      "h": 60,
+      "id": "el_t8bfhxwgd9",
+      "w": 120,
+      "x": 560,
+      "y": 240
+    },
+    {
+      "attributes": {
+        "DataReadiness": 2,
+        "Description": "Suggest the best offer or step for the customer in contact.",
+        "Effort": 24,
+        "EstimatedAnnualValue": 350000,
+        "Feasibility": 2,
+        "Mitigation": "Test offers for fair treatment across customer groups before launch; agents can always override.",
+        "Name": "Next-best-action",
+        "Problem": "Offers are the same for everyone and rarely fit.",
+        "RiskLevel": "High",
+        "Status": "Idea",
+        "Value": 4
+      },
+      "class": "UseCase",
+      "h": 60,
+      "id": "el_g173n7rjrm",
+      "w": 120,
+      "x": 820,
+      "y": 240
+    },
+    {
+      "attributes": {
+        "DataReadiness": 4,
+        "Description": "Read supplier invoices and fill in the booking fields.",
+        "Effort": 8,
+        "EstimatedAnnualValue": 120000,
+        "Feasibility": 4,
+        "Name": "Invoice document extraction",
+        "Problem": "Invoice details are typed in by hand.",
+        "RiskLevel": "Low",
+        "Status": "Approved",
+        "Value": 3
+      },
+      "class": "UseCase",
+      "h": 60,
+      "id": "el_y943g0f1zz",
+      "w": 120,
+      "x": 1080,
+      "y": 240
+    },
+    {
+      "attributes": {
+        "DataReadiness": 3,
+        "Description": "Answer agent questions from the knowledge articles, with sources.",
+        "Effort": 8,
+        "EstimatedAnnualValue": 90000,
+        "Feasibility": 4,
+        "Mitigation": "Every answer shows its sources; a weekly review samples answers for accuracy.",
+        "Name": "Knowledge assistant for agents",
+        "Problem": "Agents search several places for the right answer.",
+        "RiskLevel": "High",
+        "Status": "Assessed",
+        "Value": 2
+      },
+      "class": "UseCase",
+      "h": 60,
+      "id": "el_56xaszhfxw",
+      "w": 120,
+      "x": 40,
+      "y": 420
+    },
+    {
+      "attributes": {
+        "DataReadiness": 2,
+        "Description": "Forecast contact volumes per hour to plan shifts.",
+        "Effort": 6,
+        "EstimatedAnnualValue": 60000,
+        "Feasibility": 3,
+        "Name": "Demand forecasting for staffing",
+        "Problem": "Shifts are planned from last year and miss peaks.",
+        "RiskLevel": "Low",
+        "Status": "Idea",
+        "Value": 2
+      },
+      "class": "UseCase",
+      "h": 60,
+      "id": "el_9zsxhdfxh7",
+      "w": 120,
+      "x": 300,
+      "y": 420
+    },
+    {
+      "attributes": {
+        "DataReadiness": 2,
+        "Description": "Flag suspicious refund and account change requests.",
+        "Effort": 20,
+        "EstimatedAnnualValue": 40000,
+        "Feasibility": 2,
+        "Mitigation": "Stopped: too few cases to train on. Revisit when the volume grows.",
+        "Name": "Fraud detection",
+        "Problem": "Fraud in customer operations is rare, so manual checks find little.",
+        "RiskLevel": "High",
+        "Status": "Stopped",
+        "Value": 2
+      },
+      "class": "UseCase",
+      "h": 60,
+      "id": "el_2pq61w7q2y",
+      "w": 120,
+      "x": 560,
+      "y": 420
+    },
+    {
+      "attributes": {
+        "Influence": "High",
+        "Interest": "High",
+        "Name": "Head of customer service",
+        "Role": "Sponsor"
+      },
+      "class": "Stakeholder",
+      "h": 60,
+      "id": "el_a79ctbs5ap",
+      "w": 120,
+      "x": -200,
+      "y": 240
+    },
+    {
+      "attributes": {
+        "Influence": "Medium",
+        "Interest": "High",
+        "Name": "Finance operations lead",
+        "Role": "Sponsor"
+      },
+      "class": "Stakeholder",
+      "h": 60,
+      "id": "el_nhd915janw",
+      "w": 120,
+      "x": 1340,
+      "y": 240
+    },
+    {
+      "attributes": {
+        "Influence": "High",
+        "Interest": "Medium",
+        "Name": "Data protection officer",
+        "Role": "Reviewer"
+      },
+      "class": "Stakeholder",
+      "h": 60,
+      "id": "el_c6at1p0wbb",
+      "w": 120,
+      "x": -200,
+      "y": 420
+    },
+    {
+      "attributes": {
+        "Influence": "Low",
+        "Interest": "High",
+        "Name": "Contact centre team lead",
+        "Role": "User representative"
+      },
+      "class": "Stakeholder",
+      "h": 60,
+      "id": "el_mawweyf7zx",
+      "w": 120,
+      "x": -200,
+      "y": 600
+    },
+    {
+      "attributes": {
+        "Classification": "Confidential",
+        "Name": "Customer emails",
+        "Owner": "Customer service",
+        "Readiness": 4
+      },
+      "class": "DataAsset",
+      "h": 60,
+      "id": "el_082fj20vsh",
+      "w": 120,
+      "x": 40,
+      "y": 620
+    },
+    {
+      "attributes": {
+        "Classification": "Restricted",
+        "Name": "Call recordings and transcripts",
+        "Owner": "Customer service",
+        "Readiness": 3
+      },
+      "class": "DataAsset",
+      "h": 60,
+      "id": "el_ap7z1rg79q",
+      "w": 120,
+      "x": 260,
+      "y": 620
+    },
+    {
+      "attributes": {
+        "Classification": "Confidential",
+        "Name": "Customer and contract history",
+        "Owner": "Sales operations",
+        "Readiness": 3
+      },
+      "class": "DataAsset",
+      "h": 60,
+      "id": "el_6t08qwmhe1",
+      "w": 120,
+      "x": 480,
+      "y": 620
+    },
+    {
+      "attributes": {
+        "Classification": "Internal",
+        "Name": "Supplier invoices",
+        "Owner": "Finance operations",
+        "Readiness": 4
+      },
+      "class": "DataAsset",
+      "h": 60,
+      "id": "el_34kgsnwrv0",
+      "w": 120,
+      "x": 700,
+      "y": 620
+    },
+    {
+      "attributes": {
+        "Classification": "Internal",
+        "Name": "Knowledge articles",
+        "Owner": "Customer service",
+        "Readiness": 3
+      },
+      "class": "DataAsset",
+      "h": 60,
+      "id": "el_vgwahhf4fr",
+      "w": 120,
+      "x": 920,
+      "y": 620
+    },
+    {
+      "attributes": {
+        "Classification": "Internal",
+        "Name": "Contact volume history",
+        "Owner": "Workforce planning",
+        "Readiness": 2
+      },
+      "class": "DataAsset",
+      "h": 60,
+      "id": "el_06qqc5v1e8",
+      "w": 120,
+      "x": 1140,
+      "y": 620
+    },
+    {
+      "attributes": {
+        "Kind": "Classification",
+        "Name": "Text classification"
+      },
+      "class": "AITechnique",
+      "h": 60,
+      "id": "el_fp7cg5swfq",
+      "w": 120,
+      "x": 40,
+      "y": 780
+    },
+    {
+      "attributes": {
+        "Kind": "Generative text",
+        "Name": "Summarisation"
+      },
+      "class": "AITechnique",
+      "h": 60,
+      "id": "el_rydhdqafcd",
+      "w": 120,
+      "x": 260,
+      "y": 780
+    },
+    {
+      "attributes": {
+        "Kind": "Classification",
+        "Name": "Propensity model"
+      },
+      "class": "AITechnique",
+      "h": 60,
+      "id": "el_ye6amc4zm4",
+      "w": 120,
+      "x": 480,
+      "y": 780
+    },
+    {
+      "attributes": {
+        "Kind": "Recommendation",
+        "Name": "Offer recommendation"
+      },
+      "class": "AITechnique",
+      "h": 60,
+      "id": "el_axxvd7617h",
+      "w": 120,
+      "x": 700,
+      "y": 780
+    },
+    {
+      "attributes": {
+        "Kind": "Document understanding",
+        "Name": "Invoice field extraction"
+      },
+      "class": "AITechnique",
+      "h": 60,
+      "id": "el_hjhkhywwmb",
+      "w": 120,
+      "x": 920,
+      "y": 780
+    },
+    {
+      "attributes": {
+        "Kind": "Generative text",
+        "Name": "Answers from documents",
+        "Notes": "Retrieves the relevant articles and writes an answer citing them."
+      },
+      "class": "AITechnique",
+      "h": 60,
+      "id": "el_d0jntap7yc",
+      "w": 120,
+      "x": 1140,
+      "y": 780
+    },
+    {
+      "attributes": {
+        "Kind": "Forecasting",
+        "Name": "Time series forecast"
+      },
+      "class": "AITechnique",
+      "h": 60,
+      "id": "el_smsxt1x2mt",
+      "w": 120,
+      "x": 1360,
+      "y": 780
+    },
+    {
+      "attributes": {
+        "Kind": "Other",
+        "Name": "Anomaly detection"
+      },
+      "class": "AITechnique",
+      "h": 60,
+      "id": "el_gf6s5m2krf",
+      "w": 120,
+      "x": 1360,
+      "y": 620
+    },
+    {
+      "attributes": {
+        "Description": "Some customer groups get worse offers than others.",
+        "Impact": 5,
+        "Kind": "Bias",
+        "Likelihood": 3,
+        "Name": "Unfair offers"
+      },
+      "class": "Risk",
+      "h": 60,
+      "id": "el_vnmh5c1kf0",
+      "w": 120,
+      "x": 820,
+      "y": 940
+    },
+    {
+      "attributes": {
+        "Impact": 4,
+        "Kind": "Privacy",
+        "Likelihood": 3,
+        "Name": "Personal data in transcripts"
+      },
+      "class": "Risk",
+      "h": 60,
+      "id": "el_b6rqw65a1k",
+      "w": 120,
+      "x": 260,
+      "y": 940
+    },
+    {
+      "attributes": {
+        "Impact": 3,
+        "Kind": "Accuracy",
+        "Likelihood": 3,
+        "Name": "Wrong answers to agents"
+      },
+      "class": "Risk",
+      "h": 60,
+      "id": "el_ps2e12byz7",
+      "w": 120,
+      "x": 40,
+      "y": 940
+    },
+    {
+      "attributes": {
+        "Impact": 3,
+        "Kind": "Adoption",
+        "Likelihood": 2,
+        "Name": "Agents do not trust suggestions"
+      },
+      "class": "Risk",
+      "h": 60,
+      "id": "el_qd6twcznq1",
+      "w": 120,
+      "x": 540,
+      "y": 940
+    },
+    {
+      "attributes": {
+        "Impact": 3,
+        "Kind": "Accuracy",
+        "Likelihood": 4,
+        "Name": "Too many false alerts"
+      },
+      "class": "Risk",
+      "h": 60,
+      "id": "el_jgfqm08wmf",
+      "w": 120,
+      "x": 1080,
+      "y": 940
+    }
+  ],
+  "formatVersion": 1,
+  "id": "mdl_e919mejpjz",
+  "kind": "mkmodel",
+  "modelType": "Portfolio",
+  "name": "Customer operations AI portfolio",
+  "tool": {
+    "id": "tool_aiportfolio",
+    "name": "AI use-case portfolio",
+    "version": "1.0.0"
+  }
+}

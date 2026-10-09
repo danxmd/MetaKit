@@ -2,19 +2,19 @@
 id: tutorials-index
 title: Tutorials
 category: tutorials
-summary: Step-by-step tutorials are planned for this place; this page lists the kinds that are coming and what to read until then.
+summary: The step-by-step tutorials that exist, the ones that are planned, and what to read until then.
 keywords: [step-by-step tutorials, planned tutorials, tutorial list, tutorial index, learning path]
 contexts: []
 order: 360
 ---
 
-> **Note:** There are no tutorials yet. This page is a placeholder. The list below shows what is **planned**. Nothing on it is available today.
+> **Note:** Three tutorials are written so far, one for each data and AI built-in tool: [[data-ai-architecture]], [[ai-use-case-portfolio]] and [[data-governance]]. The other tutorials in the list below are **planned** and not available today.
 
 Tutorials are guided, hands-on lessons. You follow numbered steps and end with something that works. They are different from the reference pages, which describe every control.
 
 ## What it is
 
-The Tutorials category of the Documentation area is ready and empty. When a tutorial is written, it appears under this category and in the search, and it links to the reference pages for each step.
+The Tutorials category of the Documentation area lists every tutorial that is written. Each one appears under this category and in the search, and it links to the reference pages for each step.
 
 ## Where to find it
 
@@ -22,7 +22,7 @@ Open the Documentation area from the top bar and choose **Tutorials** in the top
 
 ## How to use it
 
-Until the tutorials exist:
+Start with a written tutorial, or, until the one you need exists:
 
 1. Start with the [[quick-tour]] for a first walk through the app.
 2. Read [[concepts-modes]] to see the difference between Model mode and Build mode.
@@ -30,6 +30,14 @@ Until the tutorials exist:
 4. Use the reference topics for each page as you work. The Help side bar opens at the topic of the page you are on.
 
 ## Every option explained
+
+### Written tutorials
+
+| Tutorial | What you do | Reference pages it uses |
+| --- | --- | --- |
+| [[data-ai-architecture]] | Draw a data platform from a source system to a consumer, see the personal-data warning and list the lineage of a dataset. | [[connecting-objects]], [[problems-panel]], [[behaviour-commands]] |
+| [[ai-use-case-portfolio]] | Add the AI use-case portfolio tool, model use cases, score them, see their quadrant colours and rank them. | [[computed-values]], [[constraints]], [[menu-commands]] |
+| [[data-governance]] | Give every data product an owner, protect sensitive data with policies, and read the quality score of each data asset. | [[model-types]], [[constraints]], [[behaviour-commands]] |
 
 ### Planned tutorials
 
@@ -64,4 +72,4 @@ The Agent pipeline tool in the repository is a good example of a finished tool l
 
 ## Related
 
-[[welcome]] · [[quick-tour]] · [[docs-help]] · [[concepts-modes]] · [[glossary]]
+[[data-ai-architecture]] · [[welcome]] · [[quick-tour]] · [[docs-help]] · [[concepts-modes]] · [[glossary]]

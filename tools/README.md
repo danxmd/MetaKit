@@ -2,14 +2,17 @@
 
 Hand-written tool libraries used as fixtures for tests and CI. Each folder holds:
 
-- `tool.json`: the tool library (format 4: shapes, panel layouts, rules and scripts), in the same form the app keeps in its snapshots;
+- `tool.json`: the tool library (format 6: shapes, simple looks, panel layouts, rules and scripts; every shape of the three data and AI tools is a simple look), in the same form the app keeps in its snapshots;
 - `*.mkmodel.json`: a sample model in the editable format.
 
-| Folder           | Classes                                                                                                                      | Sample model                 |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| `bpmn-lite`      | Task, Gateway, Start event, End event, Lane; relation class Sequence flow                                                    | `order-process.mkmodel.json` |
-| `er-lite`        | Entity, Attribute, Relationship; relation classes Has, Participates in                                                       | `library.mkmodel.json`       |
-| `agent-pipeline` | Agent, Human, Task, Artifact, Gate, Stage; relation classes Performs, Hands over to, Produces, Feeds, Approves, Delegates to | `code-review.mkmodel.json`   |
+| Folder                  | Classes                                                                                                                                                                                                                                        | Sample model                       |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| `bpmn-lite`             | Task, Gateway, Start event, End event, Lane; relation class Sequence flow                                                                                                                                                                      | `order-process.mkmodel.json`       |
+| `er-lite`               | Entity, Attribute, Relationship; relation classes Has, Participates in                                                                                                                                                                         | `library.mkmodel.json`             |
+| `agent-pipeline`        | Agent, Human, Task, Artifact, Gate, Stage; relation classes Performs, Hands over to, Produces, Feeds, Approves, Delegates to                                                                                                                   | `code-review.mkmodel.json`         |
+| `data-ai-architecture`  | Zone, Source system, Ingestion, Data pipeline, Data store, Dataset, ML model, AI service, Consumer; relation classes Flows to, Serves, Trains on; script "Show lineage"                                                                        | `customer-360.mkmodel.json`        |
+| `ai-use-case-portfolio` | Use case, Objective, KPI, Stakeholder, Data asset, AI technique, Risk; relation classes Contributes to, Measured by, Sponsors, Needs data, Uses technique, Has risk                                                                            | `customer-operations.mkmodel.json` |
+| `data-governance`       | Data domain, Data product, Data asset, Person, Glossary term, Policy, Classification, Quality rule; relation classes Owns, Stewards, Custodian of, Governed by, Classified as, Defines, Checks, Consumes, Contains; command "Check governance" | `sales-finance.mkmodel.json`       |
 
 Check them with `metakit validate tools/bpmn-lite` (see `apps/cli`).
 

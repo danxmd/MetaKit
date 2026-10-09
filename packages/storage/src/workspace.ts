@@ -11,6 +11,7 @@ import {
   type ModelTypeId,
   type ToolId,
   type ToolLibrary,
+  type ToolOrigin,
   type ToolStore,
 } from '@metakit-app/core';
 import {
@@ -71,6 +72,8 @@ export interface ToolEntry {
   id: ToolId;
   name: string;
   version: string;
+  /** The tool library this one was copied from (ADR 0010). */
+  basedOn?: ToolOrigin;
   trashed?: boolean;
   trashedAt?: string;
   expired?: boolean;
@@ -323,6 +326,7 @@ export class Workspace {
           id: m.id,
           name: m.name,
           version: m.version,
+          ...(m.basedOn ? { basedOn: m.basedOn } : {}),
           ...(options.includeTrashed ? this.trashFields(trash) : {}),
         });
       } catch {

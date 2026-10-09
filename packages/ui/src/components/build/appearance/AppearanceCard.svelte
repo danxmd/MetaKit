@@ -16,6 +16,7 @@
   } from '../../../build/appearance-model';
   import type { CommandResult } from '../../../shell/controller';
   import { paintCompiled } from '../../shape-editor/paint';
+  import { useBuildUndo } from '../../../build/undo-context';
 
   let {
     tool,
@@ -34,6 +35,8 @@
     /** Further choices, shown under "More ways to set the look". */
     children?: Snippet;
   } = $props();
+
+  const offerUndo = useBuildUndo();
 
   const images = new ImageCache();
   const isClass = $derived(owner.kind === 'class');
@@ -73,7 +76,6 @@
 
   function replace() {
     if (!def) return;
-    if (!confirm('This replaces the drawing. You can undo it.')) return;
     const result =
       owner.kind === 'class' && classState?.kind === 'drawn'
         ? run(
@@ -94,7 +96,9 @@
           : null;
     if (!result) return;
     error = result.ok ? null : result.error;
-    if (result.ok) onEditAppearance(owner.id);
+    if (!result.ok) return;
+    offerUndo('Replaced the drawing with a simple look');
+    onEditAppearance(owner.id);
   }
 </script>
 

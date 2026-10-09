@@ -236,6 +236,15 @@ export interface ToolManifest {
   languages: string[];
   /** What the scripts of this tool need beyond models and dialogs (ADR 0006). */
   permissions?: ToolPermissions;
+  /** The tool library this one was copied from, shown as "Based on …" (ADR 0010). */
+  basedOn?: ToolOrigin;
+}
+
+/** Where a copied tool library came from, as it was when it was copied. */
+export interface ToolOrigin {
+  id: ToolId;
+  name: string;
+  version: string;
 }
 
 export interface ToolSettings {
@@ -261,8 +270,8 @@ export interface ToolLibrary {
   scripts: Record<ScriptId, Script>;
 }
 
-/** The format version this release writes for tool libraries (2: shapes and panels, ADR 0004; 3: rules, constraints and default formulas, ADR 0005; 4: scripts and permissions, ADR 0006; 5: simple looks of shapes, ADR 0009). */
-export const TOOL_FORMAT_VERSION = 5;
+/** The format version this release writes for tool libraries (2: shapes and panels, ADR 0004; 3: rules, constraints and default formulas, ADR 0005; 4: scripts and permissions, ADR 0006; 5: simple looks of shapes, ADR 0009; 6: `manifest.basedOn` for copies, ADR 0010). */
+export const TOOL_FORMAT_VERSION = 6;
 
 export function optionValue(option: ChoiceOption): string {
   return typeof option === 'string' ? option : option.value;

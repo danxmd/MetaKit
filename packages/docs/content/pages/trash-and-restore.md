@@ -28,12 +28,12 @@ Both sections are collapsed lists. They appear only when something is deleted.
 **Delete a model**
 
 1. Click **…** on the model's row on the Models page.
-2. Choose **Delete**. The model leaves the list at once. There is no confirmation question, because the action can be undone by restoring.
+2. Choose **Delete**. The model leaves the list at once. There is no confirmation question: the message at the bottom offers **Undo**, which restores it ([[undo-and-delete]]).
 
 **Delete a tool library**
 
 1. On the Tool libraries page click **…** on its card.
-2. Choose **Delete**.
+2. Choose **Delete**. The message at the bottom offers **Undo**, which restores it.
 
 **Restore**
 

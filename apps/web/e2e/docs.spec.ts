@@ -237,7 +237,7 @@ test.describe('Documentation area', () => {
     ).toHaveText('Tutorials');
   });
 
-  test('lists categories with counts, searches, and shows the empty Tutorials card', async ({
+  test('lists categories with counts, searches, and lists the written tutorials', async ({
     page,
   }) => {
     await prepare(page);
@@ -246,10 +246,14 @@ test.describe('Documentation area', () => {
     await expect(page.getByTestId('docs-group-start')).toContainText(
       'Getting started',
     );
-    await expect(page.getByTestId('docs-group-tutorials')).toContainText('0');
-    await expect(page.getByTestId('docs-tutorials-empty')).toContainText(
-      'Tutorials are coming here',
-    );
+    // The tutorials of the built-in data and AI tools are written, so the placeholder card is gone.
+    await expect(page.getByTestId('docs-group-tutorials')).toContainText('4');
+    await expect(page.getByTestId('docs-tutorials-empty')).toHaveCount(0);
+    await expect(
+      page
+        .getByTestId('docs-tree-topic')
+        .filter({ hasText: 'Map a data and AI platform' }),
+    ).toBeVisible();
     await page.getByTestId('docs-group-start').click();
     await expect(
       page.getByTestId('docs-tree-topic').filter({ hasText: 'Welcome' }),

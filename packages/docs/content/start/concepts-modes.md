@@ -37,7 +37,7 @@ The **Model** and **Build** buttons sit in the middle of the [[top-bar]], in a g
 
 - **Switching closes what is open.** Choosing **Build** while a model is open closes the model. Choosing **Model** while a tool library is open closes the tool library. Your changes are already saved, because MetaKit saves as you work.
 - **The list remembers where you were.** With nothing open, the area you last chose stays. "Back" from a tool library lands on the Tool libraries page, not on the models.
-- **Empty workspace.** In a new workspace the Models page says **You need a tool library first** and offers **Go to Build**, which does the same as the **Build** button.
+- **Empty workspace.** In a new workspace the Models page offers **New model**, where you can pick a built-in tool library, and **Go to Build**, which does the same as the **Build** button.
 - **Live updates.** If a tool library is changed while models are open, the models follow. Changes in Build apply to existing models at once.
 
 ## Examples
