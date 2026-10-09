@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Three ready-to-use tool libraries for data and AI project work, and a way to add any sample tool library to a workspace from inside the app.
+Three ready-to-use tool libraries for data and AI project work, shipped as built-in tool libraries.
 
 ## ADDED Requirements
 
@@ -30,13 +30,6 @@ The sample `data-governance` SHALL model domains, data products, assets, people 
 #### Scenario: Product without owner
 - **WHEN** a data product has no incoming "Owns" connector
 - **THEN** the problems list reports it
-
-### Requirement: Samples can be added from the app
-The Tool libraries page SHALL offer **From the samples…** in its Add menu. It SHALL list every sample tool library with a one-line description and add the chosen one like a file would be added.
-
-#### Scenario: Add a sample
-- **WHEN** **From the samples…** is chosen and "Data and AI architecture" is picked
-- **THEN** the tool library appears on the page and can be used for a new model
 
 ### Requirement: Samples are tested
 Each new sample SHALL be valid, every formula in it SHALL parse, its script SHALL type-check, and its sample model SHALL load without errors.

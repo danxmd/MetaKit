@@ -6,8 +6,20 @@ A method engineer who starts a tool library begins with an empty class list, and
 
 ## What Changes
 
+**Built-in and workspace tool libraries**
+- The Tool libraries page shows two clearly separate sections:
+  - **Built-in**: the tool libraries that ship with MetaKit. They are read-only and marked as such.
+  - **In this workspace**: the libraries the team owns and edits.
+- A built-in card offers **Use in this workspace**, which adds it unchanged and keeps its id and version, and **Copy and extend**.
+- The New model dialog lists built-in libraries too. Picking one adds it to the workspace first.
+
+**New tool library: start empty or from a copy**
+- **New tool library** asks for a name and **Start from**: *Empty* or *a copy of* any built-in or workspace library.
+- A copy gets a new id and name and version 1.0.0, and keeps every class, relation class, model type, shape, panel, rule and script, so it can be extended at once.
+- The copy records which library it came from, shown on its card ("Based on Data and AI architecture 1.0.0").
+
 **Class catalog in Build mode**
-- A new **Add from catalog…** button in the Classes section opens a catalog of about 60 generic classes in seven themes:
+- A new **Add from catalog…** button in the Classes section opens the catalog as a pop-up dialog, with one tab per topic. About 60 generic classes in seven tabs:
   - General
   - Business and strategy
   - Project delivery
@@ -38,25 +50,33 @@ Each has a sample model, panels, constraints, rules and, where a loop is needed,
   - A computed quality score per asset.
   - A "RACI" view.
 
-**Getting the tools into a workspace**
-- The **Add** menu on the Tool libraries page gets **From the samples…**. It lists the sample tool libraries that ship with MetaKit (the existing three and the new three) and adds the chosen one, the same way **From file…** does. The samples load lazily.
+**The built-in set**
+- The three new tools and the existing BPMN lite, ER lite and Agent pipeline are the built-in set. They load lazily, so they do not add to the start-up download.
 
 **Documentation**
 - New topics:
   - `build/class-catalog`
-  - `pages/sample-tools`
+  - `pages/built-in-tools`
   - one topic per new tool, under `tutorials/`, with a short walkthrough
-- Updated topics: classes, build-navigation, page-tool-libraries.
+- Updated topics: classes, build-navigation, page-tool-libraries, dialog-new-model.
 
 ## Capabilities
 
 ### New Capabilities
 
+- `tool-library-sources`
 - `class-catalog`
 - `ai-data-tools`
 
 ## Impact
 
-- No file format or command changes: the catalog only issues existing tool commands (`putShape`, `putClass`, `putRelation`) in one batch, and the tools use tool format 5 as it is.
+- The catalog only issues existing tool commands (`putShape`, `putClass`, `putRelation`) in one batch, and the tools use tool format 5.
+- **One format addition:** an optional `manifest.basedOn` (`{ id, name, version }`) records where a copy came from. It is optional and older readers ignore it. Following rule 8, it still gets a format version bump to 6, a migration (a no-op from 5) and a test.
 - Neutral, generic wording throughout; no company or vendor names in classes, tools, samples or docs.
-- Delivered as four PRs: catalog; samples menu with Data and AI architecture; AI use-case portfolio; Data governance.
+- Delivered as five PRs:
+  1. built-in and workspace sections, plus copy and extend
+  2. the catalog
+  3. Data and AI architecture
+  4. AI use-case portfolio
+  5. Data governance
+- The agents that build tools and models are a separate change, `agent-authoring`.

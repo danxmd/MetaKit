@@ -11,7 +11,7 @@ Build mode SHALL offer a catalog of generic classes, grouped by theme, each with
 
 #### Scenario: Browse the catalog
 - **WHEN** the Classes section is open and **Add from catalog…** is chosen
-- **THEN** a dialog lists the catalog classes by theme with a search box, and shows for the focused class its look, help text and attributes
+- **THEN** a pop-up dialog opens with one tab per topic (General, Business and strategy, Project delivery, Data, AI and machine learning, Applications and cloud, Governance and risk) and a search box across all tabs, and shows for the focused class its look, help text and attributes
 
 ### Requirement: Adding from the catalog is one step
 Adding the picked classes, their shapes and the chosen relation classes SHALL be one undo step, and SHALL NOT overwrite anything in the tool library.

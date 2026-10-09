@@ -157,8 +157,8 @@ The risk also has formulas **Score** (Likelihood × Impact) and **Rating** (Low,
 
 ## Dialog
 
-`build/CatalogDialog.svelte` is a native `<dialog>`, loaded with `import()` the first time it opens.
-- **Left:** theme list and a search box.
+`build/CatalogDialog.svelte` is a native `<dialog>`, a pop-up over Build mode, loaded with `import()` the first time it opens.
+- **Top:** one tab per topic (`role="tablist"`). A search box searches all tabs; while it has text, the results replace the tab content.
 - **Middle:** classes as rows with a checkbox and a thumbnail drawn with the existing `ShapePreview`.
 - **Right:** the focused class: help text, attributes and the relation classes it takes part in.
 - **Footer:** "Add the relation classes between them" (on by default), a count, **Cancel** and **Add**.
@@ -167,14 +167,37 @@ After it closes, the first new class is selected, and the result says "Added 5 c
 
 Test ids:
 - `catalog-open`, `catalog-dialog`, `catalog-search`
-- `catalog-theme-<id>`, `catalog-item-<key>`
+- `catalog-tab-<id>`, `catalog-item-<key>`
 - `catalog-relations`, `catalog-add`
 
-## Samples menu
+## Built-in tool libraries
 
-`packages/ui/src/build/samples.ts` lists the samples: id, name, one-line description, and a `load()` that imports `tools/<id>/tool.json` with `import()` so each is its own chunk.
-- `ToolLibrariesPage` → Add → **From the samples…** opens a small dialog with the list.
-- Choosing one calls the existing `onAddTool(text)`, so duplicates and migration behave as for files.
+`packages/ui/src/build/built-in.ts` lists the built-in set: id, name, version, one-line description, icon, and a `load()` that imports `tools/<id>/tool.json` with `import()`, so each is its own chunk.
+
+**Tool libraries page**
+- The page has two sections. **In this workspace** comes first, because it is what people work on; **Built-in** comes second.
+- Built-in cards are drawn differently: a "Built-in" badge, a lock icon and "Read-only".
+- Built-in card actions:
+  - **Use in this workspace** calls the existing `onAddTool(text)`, so duplicates and migration behave as they do for files. Once added, the card shows "In this workspace" instead.
+  - **Copy and extend** opens the New tool library dialog with this library preselected.
+  - **Preview** shows its classes and looks, using the same `ShapePreview` as the palette.
+- Workspace cards show "Based on X 1.0.0" when `manifest.basedOn` is set.
+- **Add → From file…** and **From Git…** stay.
+
+**New tool library dialog** (`NewToolDialog.svelte`, replacing the inline name form)
+- Fields: **Name** and **Start from**. Start from is a radio list: *Empty*, then the workspace's libraries, then the built-in ones.
+- **Create** calls `controller.createToolLibrary(name, { from })`:
+  - For *Empty*, it does what it does today.
+  - Otherwise it runs `cloneToolLibrary(source, name)` from core. That makes a new `tool_` id, sets the name, version 1.0.0 and `basedOn { id, name, version }`, and keeps every other id. Class ids are per library, so they cannot clash.
+- The new library opens in Build mode, as today.
+
+**Format 6**
+- `ToolManifest.basedOn?: { id: string; name: string; version: string }`.
+- `TOOL_FORMAT_VERSION` becomes 6. The `tool-document` migration from 5 to 6 changes nothing but the number. The guard checks the shape of `basedOn`. ADR 0010 records this.
+- The sample tools are written as format 6.
+
+**New model dialog**
+- Built-in libraries are listed after the workspace's own, under a "Built-in" heading. Choosing one adds it (`onAddTool`) before the model is created.
 
 ## Tools
 
