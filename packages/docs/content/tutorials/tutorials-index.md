@@ -8,7 +8,7 @@ contexts: []
 order: 360
 ---
 
-> **Note:** Two tutorials are written so far: [[data-ai-architecture]] and [[ai-use-case-portfolio]]. The other tutorials in the list below are **planned** and not available today.
+> **Note:** Three tutorials are written so far, one for each data and AI built-in tool: [[data-ai-architecture]], [[ai-use-case-portfolio]] and [[data-governance]]. The other tutorials in the list below are **planned** and not available today.
 
 Tutorials are guided, hands-on lessons. You follow numbered steps and end with something that works. They are different from the reference pages, which describe every control.
 
@@ -37,6 +37,7 @@ Start with a written tutorial, or, until the one you need exists:
 | --- | --- | --- |
 | [[data-ai-architecture]] | Draw a data platform from a source system to a consumer, see the personal-data warning and list the lineage of a dataset. | [[connecting-objects]], [[problems-panel]], [[behaviour-commands]] |
 | [[ai-use-case-portfolio]] | Add the AI use-case portfolio tool, model use cases, score them, see their quadrant colours and rank them. | [[computed-values]], [[constraints]], [[menu-commands]] |
+| [[data-governance]] | Give every data product an owner, protect sensitive data with policies, and read the quality score of each data asset. | [[model-types]], [[constraints]], [[behaviour-commands]] |
 
 ### Planned tutorials
 

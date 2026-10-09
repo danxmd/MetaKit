@@ -31,6 +31,6 @@
 
 ## 5. PR 5: Data governance and ownership (`feat/builtin-data-governance`)
 
-- [ ] 5.1 Tool, sample model.
-- [ ] 5.2 Tests, CLI validate entry, README row, built-in list entry.
-- [ ] 5.3 Docs: tutorial.
+- [x] 5.1 Tool, sample model.
+- [x] 5.2 Tests, CLI validate entry, README row, built-in list entry.
+- [x] 5.3 Docs: tutorial.

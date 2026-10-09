@@ -76,4 +76,15 @@ export const BUILT_IN_TOOLS: readonly BuiltInTool[] = [
         (m) => m.default,
       ),
   },
+  {
+    id: 'tool_datagov' as ToolId,
+    name: 'Data governance and ownership',
+    version: '1.0.0',
+    description:
+      'Data ownership and governance: domains, data products, assets, owners and stewards, policies, classifications and quality rules.',
+    load: () =>
+      import('../../../../tools/data-governance/tool.json?raw').then(
+        (m) => m.default,
+      ),
+  },
 ];

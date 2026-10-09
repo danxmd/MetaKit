@@ -24,6 +24,7 @@ A built-in tool library is part of MetaKit itself, not of your workspace folder.
 | **Agent pipeline** | Pipelines in which AI agents and people perform tasks, hand over work and approve results. |
 | **Data and AI architecture** | Data platforms: sources, pipelines, stores, datasets, ML models, AI services and consumers, with data lineage and personal-data checks. See [[data-ai-architecture]]. |
 | **AI use-case portfolio** | AI use cases scored on value, feasibility, data readiness and risk, with a priority score, quadrants and a ranking. See [[ai-use-case-portfolio]]. |
+| **Data governance and ownership** | Data ownership and governance: domains, data products, assets, owners and stewards, policies, classifications and quality rules. See [[data-governance]]. |
 
 ## Where to find it
 

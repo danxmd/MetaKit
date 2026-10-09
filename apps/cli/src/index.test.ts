@@ -9,6 +9,7 @@ const toolsDir = fileURLToPath(new URL('../../../tools', import.meta.url));
 const bpmn = join(toolsDir, 'bpmn-lite');
 const erLite = join(toolsDir, 'er-lite');
 const portfolio = join(toolsDir, 'ai-use-case-portfolio');
+const dataGovernance = join(toolsDir, 'data-governance');
 
 async function capture(args: string[]) {
   const out: string[] = [];
@@ -77,6 +78,20 @@ describe('validate', () => {
     expect(sample.code).toBe(0);
     expect(sample.out).toContain('0 errors, 1 warning');
     expect(sample.out).toContain('Event archive');
+  });
+
+  it('accepts the data governance sample and shows the two gaps it is built to have', async () => {
+    const tool = await capture(['validate', dataGovernance]);
+    expect(tool.code).toBe(0);
+    expect(tool.out).toContain('0 errors, 0 warnings');
+    const result = await capture([
+      'validate',
+      join(dataGovernance, 'sales-finance.mkmodel.json'),
+    ]);
+    expect(result.code).toBe(0);
+    expect(result.out).toContain('0 errors, 2 warnings');
+    expect(result.out).toContain('[degree-below-min]');
+    expect(result.out).toContain('needs a policy ("Governed by")');
   });
 
   it('finds the tool next to a model file and shows no warnings for the samples', async () => {
