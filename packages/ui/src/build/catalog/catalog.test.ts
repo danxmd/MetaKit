@@ -17,15 +17,24 @@ import {
   CATALOG_TOPICS,
   catalogCommands,
   catalogRelationsFor,
+  GENERIC_RELATIONS,
   catalogResultText,
 } from './catalog';
 
 const ALL = CATALOG_CLASSES.map((c) => c.key);
 const empty = () => createEmptyTool({ name: 'Catalog test' });
 
-function apply(tool: ToolLibrary, picks: string[], withRelations = true) {
+function apply(
+  tool: ToolLibrary,
+  picks: string[],
+  withRelations = true,
+  generic: string[] = [],
+) {
   const store = createToolStore(tool);
-  const result = catalogCommands(store.state, picks, { withRelations });
+  const result = catalogCommands(store.state, picks, {
+    withRelations,
+    generic,
+  });
   const run = store.execute(result.batch);
   expect(run.ok).toBe(true);
   return { store, result };
@@ -155,7 +164,12 @@ describe('class catalog entries', () => {
 
 describe('catalogCommands', () => {
   it('adds everything to an empty tool library as a valid result', () => {
-    const { store, result } = apply(empty(), ALL);
+    const { store, result } = apply(
+      empty(),
+      ALL,
+      true,
+      GENERIC_RELATIONS.map((r) => r.key),
+    );
     const tool = store.state;
     expect(errors(tool)).toEqual([]);
     expect(Object.keys(tool.classes)).toHaveLength(CATALOG_CLASSES.length);
@@ -196,7 +210,8 @@ describe('catalogCommands', () => {
     ]);
     const tool = store.state;
     const keys = result.added.relations.map((r) => r.key).sort();
-    expect(keys).toEqual(['DependsOn', 'FlowsTo', 'ReadsFrom', 'WritesTo']);
+    // Depends on connects any two classes, so it only comes when it is ticked.
+    expect(keys).toEqual(['FlowsTo', 'ReadsFrom', 'WritesTo']);
     const id = (k: string) => byKey(tool, k)!.id;
     expect(relationByKey(tool, 'WritesTo')).toMatchObject({
       from: [id('DataPipeline')],
@@ -207,7 +222,7 @@ describe('catalogCommands', () => {
       to: [id('DataStore'), id('Dataset')],
     });
     expect(catalogResultText(result)).toBe(
-      'Added 3 classes and 4 relation classes.',
+      'Added 3 classes and 3 relation classes.',
     );
   });
 
@@ -279,7 +294,32 @@ describe('catalogCommands', () => {
   it('previews the relation classes for picks', () => {
     expect(
       catalogRelationsFor(['Control', 'Risk'], empty()).map((r) => r.key),
-    ).toEqual(['DependsOn', 'Mitigates']);
+    ).toEqual(['Mitigates']);
     expect(catalogRelationsFor([], empty())).toEqual([]);
+  });
+
+  it('brings a relation class with an any-class end only with a class on its named end', () => {
+    // Owns runs from a person, team or data owner to any class.
+    expect(
+      catalogRelationsFor(['Dataset', 'Risk'], empty()).map((r) => r.key),
+    ).not.toContain('Owns');
+    expect(
+      catalogRelationsFor(['Dataset', 'Person'], empty()).map((r) => r.key),
+    ).toContain('Owns');
+  });
+
+  it('adds a generic relation class only when it is ticked, also without the other relations', () => {
+    const generic = GENERIC_RELATIONS.map((r) => r.key);
+    expect(generic).toEqual(['DependsOn']);
+    const { store, result } = apply(
+      empty(),
+      ['Task', 'Milestone'],
+      false,
+      generic,
+    );
+    expect(result.added.relations.map((r) => r.key)).toEqual(['DependsOn']);
+    const dependsOn = relationByKey(store.state, 'DependsOn')!;
+    expect(dependsOn.from).toHaveLength(2);
+    expect(errors(store.state)).toEqual([]);
   });
 });

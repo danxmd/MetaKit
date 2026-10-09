@@ -14,6 +14,7 @@
     catalogClass,
     catalogCommands,
     catalogRelationsFor,
+    GENERIC_RELATIONS,
     catalogResultText,
     relationsOfClass,
     type CatalogAddResult,
@@ -58,6 +59,8 @@
   let picks = $state<string[]>([]);
   let focused = $state<string>(CATALOG_CLASSES[0]!.key);
   let withRelations = $state(true);
+  /** Keys of the generic relation classes (any class to any class) the person ticked. */
+  let generic = $state<string[]>([]);
   let error = $state<string | null>(null);
 
   const present = $derived(
@@ -79,7 +82,12 @@
     );
   });
   const relations = $derived(
-    withRelations ? catalogRelationsFor(picks, tool) : [],
+    catalogRelationsFor(picks, tool, generic).filter(
+      (r) => withRelations || generic.includes(r.key),
+    ),
+  );
+  const taken = $derived(
+    new Set(Object.values(tool.relations).map((r) => r.key)),
   );
   const detail = $derived(catalogClass(focused));
 
@@ -111,7 +119,7 @@
   }
 
   function add() {
-    const result = catalogCommands(tool, picks, { withRelations });
+    const result = catalogCommands(tool, picks, { withRelations, generic });
     if (result.batch.commands.length === 0) {
       error = `Nothing to add. ${catalogResultText(result)}`;
       return;
@@ -282,10 +290,23 @@
       />
       Add the relation classes between them
     </label>
+    {#each GENERIC_RELATIONS.filter((r) => !taken.has(r.key)) as r (r.key)}
+      <label class="with" title={r.help}>
+        <input
+          type="checkbox"
+          checked={generic.includes(r.key)}
+          onchange={(e) =>
+            (generic = e.currentTarget.checked
+              ? [...generic, r.key]
+              : generic.filter((k) => k !== r.key))}
+          data-testid="catalog-generic-{r.key}"
+        />
+        Also add “{r.labels.en}”, between any two classes
+      </label>
+    {/each}
     <span class="count muted" data-testid="catalog-count"
       >{picks.length}
-      {picks.length === 1 ? 'class' : 'classes'}{withRelations &&
-      relations.length > 0
+      {picks.length === 1 ? 'class' : 'classes'}{relations.length > 0
         ? ` and ${relations.length} relation ${relations.length === 1 ? 'class' : 'classes'}`
         : ''} picked</span
     >

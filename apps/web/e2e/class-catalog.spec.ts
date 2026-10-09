@@ -49,6 +49,11 @@ test.describe('Class catalog', () => {
       '3 classes and',
     );
 
+    // Depends on joins any two classes, so it comes only when it is ticked.
+    await expect(
+      page.getByTestId('catalog-generic-DependsOn'),
+    ).not.toBeChecked();
+    await page.getByTestId('catalog-generic-DependsOn').check();
     await page.getByTestId('catalog-add').click();
     await expect(dialog).toHaveCount(0);
     await expect(page.getByTestId('catalog-result')).toContainText(

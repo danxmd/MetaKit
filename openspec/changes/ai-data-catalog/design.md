@@ -155,6 +155,8 @@ The risk also has formulas **Score** (Likelihood × Impact) and **Rating** (Low,
 
 "Any class" is an empty end in the catalog. The tool library format needs at least one class at each end of a relation class without a parent, so when added such an end lists every class the tool library has after the add.
 
+A relation class comes along only when a picked class sits on one of its named ends, so Owns comes with Person, Team or Data owner, not with every pick. A relation class with any class at both ends (Depends on) never comes along by itself; the dialog offers it as its own checkbox, off by default.
+
 ## Dialog
 
 `build/CatalogDialog.svelte` is a native `<dialog>`, a pop-up over Build mode, loaded with `import()` the first time it opens.
