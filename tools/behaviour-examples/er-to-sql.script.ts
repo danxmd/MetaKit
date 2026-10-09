@@ -1,5 +1,5 @@
-// For the tool "ER lite". Candidate 3 of docs/phase-7-behaviour-candidates.md: ADOxx modelling
-// kits such as Bee-Up turn an ER diagram into a relational schema. This command writes the schema
+// For the tool "ER lite". Candidate 3 of docs/phase-7-behaviour-candidates.md: data modelling
+// tools commonly turn an ER diagram into a relational schema. This command writes the schema
 // as SQL, through a save dialog. The tool declares the "files" permission for it.
 import { commands, files, model, ui } from 'metakit';
 import type { ModelObject } from 'metakit';

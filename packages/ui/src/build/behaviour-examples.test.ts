@@ -22,7 +22,7 @@ import { createLanguageServer } from '../components/build/scripts/script-languag
 import { loadTestLibs } from '../components/build/scripts/test-libs';
 
 /**
- * The three behaviours chosen from ADOxx tools (docs/phase-7-behaviour-candidates.md), rebuilt as
+ * The three behaviours chosen from established modelling tools (docs/phase-7-behaviour-candidates.md), rebuilt as
  * scripts and rules. The sources live in tools/behaviour-examples and are run here against the
  * sample tool libraries and models of tools/.
  */

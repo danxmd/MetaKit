@@ -2,7 +2,7 @@
 
 Phase 5 adds the first two levels of behaviour: formulas for computed values and checks, and no-code "When / If / Then" rules. Work package 5.1 is needed by phase 4's shape bindings, so it goes first.
 
-**Before starting:** read `docs/spikes/behaviour.md`. Plan section: "Behaviour: formulas, rules and scripts replace AdoScript".
+**Before starting:** read `docs/spikes/behaviour.md`. Plan section: "Behaviour: formulas, rules and scripts".
 
 ## 5.1 Formula engine (`packages/formula`)
 

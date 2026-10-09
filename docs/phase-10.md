@@ -8,7 +8,7 @@ Phase 10 puts MetaKit in front of real users and ends with the version 1.0 relea
 
 Deliver, with Danial choosing which tools:
 
-- three modelling tools that exist in ADOxx today, rebuilt in Build mode (notation, panels, rules, scripts);
+- three established modelling tools, rebuilt in Build mode (notation, panels, rules, scripts);
 - a list of every gap found, each turned into a fix or a rule action, or recorded as a known limit.
 
 Done when: the three tools are usable by their teams.
