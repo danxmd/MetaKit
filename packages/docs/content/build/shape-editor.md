@@ -14,7 +14,7 @@ The shape editor is a small drawing program inside Build mode. Use it when the s
 
 A shape is a stack of **parts**: rectangles, ellipses, polygons, text, images and groups. Each part has a position, a size, colours and optional formulas. The editor shows the shape on a canvas, a list of its parts (the layers), the properties of the selected part and a preview at three sizes. Every change is saved at once and shows up in open models.
 
-In the shape editor you work on a hand-drawn shape. If the class had a simple look, opening this editor turns it into a hand-drawn one after you confirm ([[appearance-editor]]).
+In the shape editor you work on a hand-drawn shape. If the class had a simple look, opening this editor turns it into a hand-drawn one after you choose **Edit as drawing** in the dialog ([[appearance-editor]]).
 
 ## Where to find it
 
