@@ -11,11 +11,11 @@
 
 ## 2. PR 2: class catalog (`feat/class-catalog`)
 
-- [ ] 2.1 Catalog data (seven topics, about 60 classes, about 20 relation classes) and `catalogCommands`.
-- [ ] 2.2 Unit tests: every entry valid; adding everything to an empty tool is valid and every formula parses; taken keys are skipped; relations connect to existing classes.
-- [ ] 2.3 `CatalogDialog` pop-up with topic tabs and search (lazy), the **Add from catalog…** button in Classes, result message.
-- [ ] 2.4 e2e: add three classes with their relations from two tabs, then one Undo removes them.
-- [ ] 2.5 Docs: `build/class-catalog`; update classes and build-navigation.
+- [x] 2.1 Catalog data (seven topics, about 60 classes, about 20 relation classes) and `catalogCommands`.
+- [x] 2.2 Unit tests: every entry valid; adding everything to an empty tool is valid and every formula parses; taken keys are skipped; relations connect to existing classes.
+- [x] 2.3 `CatalogDialog` pop-up with topic tabs and search (lazy), the **Add from catalog…** button in Classes, result message.
+- [x] 2.4 e2e: add three classes with their relations from two tabs, then one Undo removes them.
+- [x] 2.5 Docs: `build/class-catalog`; update classes and build-navigation.
 
 ## 3. PR 3: Data and AI architecture (`feat/builtin-data-ai-architecture`)
 

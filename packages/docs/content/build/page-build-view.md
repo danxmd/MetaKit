@@ -29,7 +29,7 @@ Switch to Build mode with the mode switch in the top bar, then open a tool libra
 
 1. Open a tool library in Build mode. A new tool library starts empty.
 2. Pick a section on the left. Start with **Classes** under **Metamodel**.
-3. Type a name in the **New class** box and press **Add** (or Enter). The new class opens in the editor.
+3. Type a name in the **New class** box and press **Add** (or Enter). The new class opens in the editor. Or press **Add from catalog…** to pick ready-made classes ([[class-catalog]]).
 4. Fill in the editor. See [[classes]], [[attributes]] and [[appearance-editor]].
 5. Watch the **Try it** preview on the right. Place the class and connect objects to see how the tool feels.
 6. Add relation classes and a model type so modellers can use the classes. See [[relations]] and [[model-types]].
