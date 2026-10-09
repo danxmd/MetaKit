@@ -83,15 +83,28 @@ function classKeys(tool: ToolLibrary): Map<string, ClassId> {
   );
 }
 
+/** A relation class whose two ends allow any class, such as Depends on. */
+const isGeneric = (r: CatalogRelation) =>
+  r.from.length === 0 && r.to.length === 0;
+
+/**
+ * Relation classes that connect any two classes. They never come along by themselves, because
+ * they would come with every pick; the dialog offers each one to tick.
+ */
+export const GENERIC_RELATIONS: readonly CatalogRelation[] =
+  CATALOG_RELATIONS.filter(isGeneric);
+
 /**
  * Which catalog relation classes come with these picks. An end is met when one of its classes is
  * picked or already in the tool library by key; an end that allows any class is always met. A
- * relation class needs both ends met, at least one picked class taking part, and a key the tool
- * library does not have yet.
+ * relation class needs both ends met, a picked class on one of its named ends (so Owns comes with
+ * Person, not with every class), and a key the tool library does not have yet. Generic relation
+ * classes come only when they are listed in `generic`.
  */
 export function catalogRelationsFor(
   picks: readonly string[],
   tool: ToolLibrary,
+  generic: readonly string[] = [],
 ): CatalogRelation[] {
   const present = classKeys(tool);
   const picked = new Set(
@@ -101,21 +114,20 @@ export function catalogRelationsFor(
   const taken = new Set(Object.values(tool.relations).map((r) => r.key));
   const available = (k: string) => picked.has(k) || present.has(k);
   const met = (end: string[]) => end.length === 0 || end.some(available);
-  const touches = (end: string[]) =>
-    end.length === 0 || end.some((k) => picked.has(k));
-  return CATALOG_RELATIONS.filter(
-    (r) =>
-      !taken.has(r.key) &&
-      met(r.from) &&
-      met(r.to) &&
-      (touches(r.from) || touches(r.to)),
+  const touches = (end: string[]) => end.some((k) => picked.has(k));
+  return CATALOG_RELATIONS.filter((r) =>
+    taken.has(r.key)
+      ? false
+      : isGeneric(r)
+        ? generic.includes(r.key)
+        : met(r.from) && met(r.to) && (touches(r.from) || touches(r.to)),
   );
 }
 
 export function catalogCommands(
   tool: ToolLibrary,
   picks: readonly string[],
-  options: { withRelations: boolean },
+  options: { withRelations: boolean; generic?: readonly string[] },
 ): CatalogAddResult {
   const language = languageOf(tool);
   const ids = classKeys(tool);
@@ -153,7 +165,8 @@ export function catalogCommands(
     added.classes.push({ id, key });
   }
 
-  if (options.withRelations) {
+  const generic = options.generic ?? [];
+  if (options.withRelations || generic.length > 0) {
     const newKeys = added.classes.map((c) => c.key);
     const after = new Map(ids);
     for (const c of added.classes) after.set(c.key, c.id);
@@ -167,7 +180,10 @@ export function catalogCommands(
             const id = after.get(k);
             return id ? [id] : [];
           });
-    for (const r of catalogRelationsFor(newKeys, tool)) {
+    const wanted = catalogRelationsFor(newKeys, tool, generic).filter(
+      (r) => options.withRelations || isGeneric(r),
+    );
+    for (const r of wanted) {
       const id = newId('relation');
       const shape = relationShapeFromLook(
         structuredClone(r.look),

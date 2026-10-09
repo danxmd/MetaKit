@@ -65,7 +65,7 @@ Group, Team, Organisation unit, Workstream, Data domain, Cloud platform and Envi
 
 Flows to, Reads from, Writes to, Trains on, Uses model, Owns, Stewards, Measures, Contributes to, Supports, Depends on, Mitigates, Has risk, Governed by, Delivers, Evaluates, Deployed as, Monitors and Defines.
 
-A relation class comes along when at least one of the classes you picked takes part in it and both its ends are there: picked now, or already in the tool library under the same key. **Owns** may point to any class and **Depends on** may join any two classes; the catalog fills such ends with every class the tool library has after the add. Add classes later and tick them under **From** or **To** yourself ([[relations]]).
+A relation class comes along when one of the classes you picked sits on one of its named ends, and both its ends are there: picked now, or already in the tool library under the same key. **Owns** runs from a person, team or data owner to any class, so it comes along when you pick **Person**, **Team** or **Data owner**. **Depends on** joins any two classes, so it never comes along by itself: tick **Also add “Depends on”, between any two classes** at the bottom of the dialog if you want it. Ends that allow any class are filled with every class the tool library has after the add. Add classes later and tick them under **From** or **To** yourself ([[relations]]).
 
 ### Already in this tool library
 
@@ -77,7 +77,7 @@ Everything one **Add** creates, the classes, their looks and the relation classe
 
 ## Examples
 
-In a new tool library, open the **Data** tab and tick **Dataset**, **Data pipeline** and **Data store**. With the relation classes on, **Add** creates the three classes and the relation classes Flows to, Reads from, Writes to and Depends on. Then open **Governance and risk** and add **Risk** and **Control**: **Mitigates** joins them, and **Depends on** is not added again because its key is taken.
+In a new tool library, open the **Data** tab and tick **Dataset**, **Data pipeline** and **Data store**. With the relation classes on, **Add** creates the three classes and the relation classes Flows to, Reads from and Writes to. Then open **Governance and risk** and add **Risk** and **Control**: **Mitigates** joins them.
 
 ## Good to know
 
