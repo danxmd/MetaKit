@@ -247,7 +247,7 @@ test.describe('Documentation area', () => {
       'Getting started',
     );
     // The tutorials of the built-in data and AI tools are written, so the placeholder card is gone.
-    await expect(page.getByTestId('docs-group-tutorials')).toContainText('2');
+    await expect(page.getByTestId('docs-group-tutorials')).toContainText('3');
     await expect(page.getByTestId('docs-tutorials-empty')).toHaveCount(0);
     await expect(
       page

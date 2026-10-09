@@ -65,4 +65,15 @@ export const BUILT_IN_TOOLS: readonly BuiltInTool[] = [
         (m) => m.default,
       ),
   },
+  {
+    id: 'tool_aiportfolio' as ToolId,
+    name: 'AI use-case portfolio',
+    version: '1.0.0',
+    description:
+      'AI use cases scored on value, feasibility, data readiness and risk, with a priority score, quadrants and a ranking.',
+    load: () =>
+      import('../../../../tools/ai-use-case-portfolio/tool.json?raw').then(
+        (m) => m.default,
+      ),
+  },
 ];

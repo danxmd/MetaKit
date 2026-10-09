@@ -25,9 +25,9 @@
 
 ## 4. PR 4: AI use-case portfolio (`feat/builtin-ai-portfolio`)
 
-- [ ] 4.1 Tool, sample model, Rank use cases.
-- [ ] 4.2 Tests, CLI validate entry, README row, built-in list entry.
-- [ ] 4.3 Docs: tutorial.
+- [x] 4.1 Tool, sample model, Rank use cases.
+- [x] 4.2 Tests, CLI validate entry, README row, built-in list entry.
+- [x] 4.3 Docs: tutorial.
 
 ## 5. PR 5: Data governance and ownership (`feat/builtin-data-governance`)
 
