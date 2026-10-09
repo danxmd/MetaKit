@@ -48,4 +48,4 @@ Done when: auto-layout of a 500-object model finishes in under 2 seconds without
 
 ## Out of scope
 
-ADOxx import (dropped), print page layouts.
+import from other modelling platforms (dropped), print page layouts.

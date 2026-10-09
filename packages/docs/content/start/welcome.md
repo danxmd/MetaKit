@@ -12,7 +12,7 @@ MetaKit is a tool for two kinds of people. **Method engineers** design a modelli
 
 ## What it is
 
-MetaKit is a modern rebuild of the ideas behind ADOxx, without simulation, analysis, database or user management. It has two areas:
+MetaKit is a metamodelling and modelling tool that runs in your browser, without simulation, analysis, database or user management. It has two areas:
 
 - **Build** is where a method engineer makes a [[concepts-tool-library|tool library]]: classes, relation classes, attributes, shapes, panel layouts, rules and scripts.
 - **Model** is where a modeller opens a [[concepts-model|model]], places objects from a palette, connects them and fills in their attributes.

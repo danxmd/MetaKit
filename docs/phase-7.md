@@ -2,7 +2,7 @@
 
 Phase 7 adds the third level of behaviour: TypeScript scripts for what formulas and rules can't do, such as loops over models, transformations, custom import and export, and multi-step dialogs. Scripts run sandboxed in QuickJS.
 
-**Before starting:** read `docs/spikes/behaviour.md`. Plan section: "Behaviour: formulas, rules and scripts replace AdoScript", Level 3.
+**Before starting:** read `docs/spikes/behaviour.md`. Plan section: "Behaviour: formulas, rules and scripts", Level 3.
 
 ## 7.1 Sandbox host (`packages/behaviour`)
 
@@ -41,7 +41,7 @@ Deliver:
 - Permissions declared per tool (network access, files outside the workspace); the app asks once per tool in each browser and again when a tool asks for new permissions.
 - Rule action "run script" and action attributes that run scripts.
 
-Done when: three behaviours from existing ADOxx tools, chosen with Danial, are rebuilt as rules or scripts.
+Done when: three behaviours from established modelling tools, chosen with Danial, are rebuilt as rules or scripts.
 
 ## Out of scope
 

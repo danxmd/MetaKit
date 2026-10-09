@@ -1,4 +1,4 @@
-// For the tool "BPMN lite". Candidate 1 of docs/phase-7-behaviour-candidates.md: ADOxx BPMN tools
+// For the tool "BPMN lite". Candidate 1 of docs/phase-7-behaviour-candidates.md: BPMN tools
 // check, before a model is saved, that a gateway that splits the flow says which way each flow
 // goes. MetaKit has no save step, so the check is a command in the Model menu.
 import { commands, model, ui } from 'metakit';

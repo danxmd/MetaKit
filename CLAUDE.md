@@ -1,6 +1,6 @@
 # MetaKit
 
-MetaKit is a browser-only metamodelling and modelling tool, a modern rebuild of ADOxx without simulation, analysis, database or user management. Method engineers build modelling tools in **Build mode**; modellers use them in **Model mode**. Tool libraries and models are plain JSON files in a shared folder synced by OneDrive, SharePoint, Google Drive or Dropbox. Tool libraries can also live in GitHub or GitLab (Git mode).
+MetaKit is a browser-only metamodelling and modelling tool, without simulation, analysis, database or user management. Method engineers build modelling tools in **Build mode**; modellers use them in **Model mode**. Tool libraries and models are plain JSON files in a shared folder synced by OneDrive, SharePoint, Google Drive or Dropbox. Tool libraries can also live in GitHub or GitLab (Git mode).
 
 - Full plan: `docs/implementation-plan.md`. Read only the sections a task needs.
 - Current phase brief: `docs/phase-10.md` (phases 5 to 9 are in `docs/phase-5.md` to `docs/phase-9.md`; phase 10 waits for Danial's choices).

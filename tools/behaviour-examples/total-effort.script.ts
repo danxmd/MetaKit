@@ -1,5 +1,5 @@
 // For the tool "BPMN lite". Candidate 2 of docs/phase-7-behaviour-candidates.md: the total of the
-// effort of all tasks, as ADOxx process tools show it. The rule version (total-effort.rule.json)
+// effort of all tasks, as process modelling tools commonly show it. The rule version (total-effort.rule.json)
 // gives the total; this script version also breaks it down by lane. Both only read, so neither
 // changes the model.
 import { commands, model, ui } from 'metakit';
