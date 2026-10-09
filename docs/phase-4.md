@@ -1,8 +1,8 @@
 # Phase 4: Build mode and Shapes (lane A, weeks 8 to 12)
 
-Phase 4 builds Build mode, where method engineers create modelling tools without writing code, and the Shapes system that replaces GraphRep. At the end of this phase MetaKit reaches the usable v0.5 milestone (week 12): a tool can be built, used for modelling, and shared through a synced folder.
+Phase 4 builds Build mode, where method engineers create modelling tools without writing code, and the Shapes system that describes notation as data. At the end of this phase MetaKit reaches the usable v0.5 milestone (week 12): a tool can be built, used for modelling, and shared through a synced folder.
 
-**Before starting:** plan sections "Notation: Shapes replace GraphRep", "Attribute panels replace AttrRep", "Meta-model and file formats".
+**Before starting:** plan sections "Notation: Shapes", "Attribute panels", "Meta-model and file formats".
 
 **Dependency:** shape properties bound to attributes need the formula engine from work package 5.1. Start with fixed values; add `=` bindings once 5.1 is merged.
 

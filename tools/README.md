@@ -13,7 +13,7 @@ Hand-written tool libraries used as fixtures for tests and CI. Each folder holds
 
 Check them with `metakit validate tools/bpmn-lite` (see `apps/cli`).
 
-`behaviour-examples/` holds the three behaviours rebuilt from ADOxx tools in phase 7 (see `docs/phase-7-behaviour-candidates.md`): scripts and a rule that are added to `bpmn-lite` and `er-lite`. They are not tool libraries of their own; `packages/ui/src/build/behaviour-examples.test.ts` adds each one to its tool and runs it.
+`behaviour-examples/` holds the three behaviours rebuilt from established modelling tools in phase 7 (see `docs/phase-7-behaviour-candidates.md`): scripts and a rule that are added to `bpmn-lite` and `er-lite`. They are not tool libraries of their own; `packages/ui/src/build/behaviour-examples.test.ts` adds each one to its tool and runs it.
 
 | File                                         | For         | What it does                                                |
 | -------------------------------------------- | ----------- | ----------------------------------------------------------- |

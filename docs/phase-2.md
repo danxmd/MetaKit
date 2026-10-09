@@ -2,7 +2,7 @@
 
 Phase 2 turns the canvas spike into the real canvas engine and builds Model mode: a person can open a workspace, create a model, place and connect objects, and fill in their attributes. It uses the hand-written sample tools from phase 1 and a small built-in set of shapes; the full Shapes system comes in phase 4.
 
-**Before starting:** read `docs/spikes/canvas.md` and the phase-0 gate report. Plan sections: "Canvas engine and performance", "Attribute panels replace AttrRep".
+**Before starting:** read `docs/spikes/canvas.md` and the phase-0 gate report. Plan sections: "Canvas engine and performance", "Attribute panels".
 
 Phase 2 starts in parallel with phase 1. Until the command API from 1.2 is merged, work against its interface and a stub.
 

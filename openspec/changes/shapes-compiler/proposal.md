@@ -2,7 +2,7 @@
 
 ## Why
 
-Work package 4.1 in `docs/phase-4.md`: notation in MetaKit is data. Shapes replace ADOxx GraphRep. Phase 2 draws elements with built-in rectangles; phase 4 draws whatever a tool library's shapes describe, and keeps drawing fast.
+Work package 4.1 in `docs/phase-4.md`: notation in MetaKit is data. Shapes replace a scripted notation language. Phase 2 draws elements with built-in rectangles; phase 4 draws whatever a tool library's shapes describe, and keeps drawing fast.
 
 ## What Changes
 

@@ -1,47 +1,47 @@
-# MetaKit (modern ADOxx) — Implementation Plan
+# MetaKit — Implementation Plan
 
 Owner: Danial Mohammadi Amlashi · As of 7 October 2026 · Live version: https://claude.ai/code/artifact/2f34f2bb-675b-4662-be8a-14916126ec8c
 
 ## Executive summary
 
-Build one lightweight browser app, **MetaKit**, where a method engineer builds a modelling tool and a modeller uses it, side by side, on plain files in a shared folder. It keeps the ADOxx meta-model of classes, relation classes, attributes and model types, and drops simulation, analysis, ADOxx import, the database and user management.
+Build one lightweight browser app, **MetaKit**, where a method engineer builds a modelling tool and a modeller uses it, side by side, on plain files in a shared folder. It keeps the proven meta-model of classes, relation classes, attributes and model types, and drops simulation, analysis, import from other platforms, the database and user management.
 
 Six architecture bets carry the plan:
 
 1. **A folder is the workspace.** Tool libraries and models are readable JSON files plus SVG assets, in a folder synced by OneDrive, SharePoint, Google Drive or Dropbox. Tool libraries can also live in a GitHub or GitLab repository. Whoever can open the folder or repository can work with it: no server, no database, no accounts.
 2. **Conflict-free sharing through any sync service.** Each running app writes only its own small change files and never edits them afterwards; every app merges them the same way (last writer wins per field). Sync clients therefore never see two writers on one file.
 3. **A purpose-built canvas.** A Canvas 2D renderer with a spatial index and cached shape drawings targets 60 fps while dragging, in models of 5,000 objects. The same drawing instructions export to SVG, PNG and PDF.
-4. **Shapes instead of GraphRep.** Notations are declarative shape templates made in a visual editor; any property can be bound to attribute values with a one-line formula.
-5. **Three levels of behaviour instead of AdoScript.** Formulas for computed values and checks, no-code "When / If / Then" rules, and TypeScript scripts in a sandbox. An optional AI assistant drafts all three from a plain description.
+4. **Shapes instead of a notation scripting language.** Notations are declarative shape templates made in a visual editor; any property can be bound to attribute values with a one-line formula.
+5. **Three levels of behaviour instead of one proprietary scripting language.** Formulas for computed values and checks, no-code "When / If / Then" rules, and TypeScript scripts in a sandbox. An optional AI assistant drafts all three from a plain description.
 6. **One browser app, two modes, nothing to install.** A static web app for Chrome or Edge: Build mode edits a tool library, Model mode uses it, and it keeps working offline after the first visit.
 
 Claude Code writes the code in small, spec-driven steps, and you review each one. Assuming about 6 hours a week of your time, a usable version (tool building, modelling and folder sync) lands around week 12 and version 1.0 around week 22. The Decisions section records your answers and six follow-up questions.
 
-## ADOxx today: the baseline to cover
+## Feature baseline
 
-ADOxx 1.8.0 is a closed-source Windows program (macOS and Linux only through Wine), free for research and teaching only, and it keeps everything in an SQLite or SQL Server database ([install](https://adoxx.org/documentation/01_getting_started/04_start_adoxx.html), [licence](https://adoxx.org/assets/EndUserLicenceAgreement_ADOxx.pdf)). Its meta-model is sound and stays; its languages, storage and admin layer are what we replace. The table maps each ADOxx feature to the new platform.
+Desktop metamodelling platforms are typically installed programs, often Windows-only, with restrictive licences, and they keep everything in a database. Their meta-model is sound and stays; their languages, storage and admin layer are what we replace. The table lists the capabilities such a platform typically has and what MetaKit does with each.
 
-| ADOxx feature | What it does | New platform |
+| Typical feature | What it does | New platform |
 | --- | --- | --- |
-| [Application library](https://adoxx.org/documentation/10_modelling_language/01_application_library.html) (dynamic BP + static WE library) | Holds the whole meta-model; dynamic = graph models, static = tree models such as org charts | One **tool library** per tool. The dynamic/static split is dropped: a model type simply lists its classes |
-| [Classes](https://adoxx.org/documentation/10_modelling_language/10_classes.html), single inheritance, abstract classes, predefined roots (`__D-construct__`, `__D_container__`, `__D_swimlane__`, `__D_aggregation__`) | Concepts and their behaviour | Keep classes, single inheritance, abstract classes. Predefined roots become three kinds a class picks: **node**, **container**, **swimlane** |
-| Relation classes (FROM/TO, always drawn, no inheritance) | Typed connectors | Keep, including FROM/TO lists that may name abstract classes |
-| Record classes, `RECORD` attributes | Tables inside an attribute | Keep as a **table** attribute with a column schema |
-| Attribute profiles (`PROFREF`) | Shared reusable values outside models | After 1.0, as **shared catalogs** |
-| Class vs instance [attributes](https://adoxx.org/documentation/10_modelling_language/20_attributes.html) | Configuration vs per-object values | Keep; class attributes become tool settings |
-| 17 [attribute types](https://adoxx.org/documentation/10_modelling_language/21_attribute_types.html) | INTEGER to PROGRAMCALL | Drop `DISTRIBUTION` (simulation) and `HTTP` (marked unstable). Merge `STRING`/`LONGSTRING`/`CLOB` into text with a length limit. `PROGRAMCALL` becomes an action button |
-| [Facets](https://adoxx.org/documentation/10_modelling_language/22_attribute_facets.html) (regex, numeric domain, help text, row limits) | Attribute constraints | Keep as constraints on the attribute |
-| [Special attributes](https://adoxx.org/documentation/10_modelling_language/23_special_attributes.html): cardinalities, allowed objects, model pointer | Structural rules, container rules, navigation | Keep. Cardinalities become validation warnings, never hard blocks, because two people can break them concurrently |
-| [Model types](https://adoxx.org/documentation/10_modelling_language/30_model_types.html) and modes | Which classes a model may use; switchable views | Keep; modes are called **views** |
-| `INTERREF` | Links to a model or an object in another model | Keep as a **reference** attribute, followed with Ctrl+click |
-| [GraphRep](https://adoxx.org/adoscript_reference/31_graphrep/index.html), about 60 commands, units in cm/mm, origin at the centre | Notation | Replace with **Shapes** (section on notation) |
-| [AttrRep](https://adoxx.org/adoscript_reference/30_attrrep/index.html): notebook, chapters, groups, hidden/enabled/mandatory | Attribute dialog layout | Replace with generated **attribute panels** plus optional layout |
-| [AdoScript](https://adoxx.org/adoscript_reference/01_adoscript/) and LEO: about 400 message-port calls, [73 events](https://adoxx.org/adoscript_reference/50_events/index.html), menu items, `EXPRESSION` attributes | Behaviour and automation | Replace with **formulas, rules and scripts** (section on behaviour) |
-| [Library attributes](https://adoxx.org/documentation/70_adoxx_components/20_Library_Management/Library_attributes.html): grid, layers, layout algorithm, numbering, page layouts | Tool-wide settings | Keep grid, layers, numbering as tool settings; page layouts become export templates later |
-| Formats: ABL (binary), [ALL](https://adoxx.org/documentation/75_adoxx_development_languages/6_adoxx_library_language_all.html) (text), [ADL](https://adoxx.org/documentation/75_adoxx_development_languages/5_adoxx_model_language_adl.html) (text), XML; image export incl. SVG | Exchange | Own JSON formats; ADOxx files are not imported |
-| Modelling Toolkit: graphical and tabular views, explorer with model groups, versions, find, layout algorithms, printing | Day-to-day modelling | Keep graphical view, explorer (= folders), find, auto-layout; tabular view in a later phase; named checkpoints in version 1.1 |
-| [AQL](https://adoxx.org/documentation/75_adoxx_development_languages/01_AQL.html) queries, simulation, evaluation, acquisition | Analysis components | **Dropped**, as requested. A simple search and filter remains |
-| [Development Toolkit](https://adoxx.org/documentation/70_adoxx_components/index.html): users, rights, components, DB file store | Administration | **Dropped**. Library management becomes Build mode |
+| Meta-model library, often split into a graph-model part and a tree-model part | Holds the whole meta-model; graph models plus tree models such as org charts | One **tool library** per tool. The graph/tree split is dropped: a model type simply lists its classes |
+| Classes, single inheritance, abstract classes, predefined root classes (plain object, container, swimlane, aggregation) | Concepts and their behaviour | Keep classes, single inheritance, abstract classes. Predefined roots become three kinds a class picks: **node**, **container**, **swimlane** |
+| Relation classes (FROM/TO, always drawn, often no inheritance) | Typed connectors | Keep, including FROM/TO lists that may name abstract classes |
+| Record classes, table attributes | Tables inside an attribute | Keep as a **table** attribute with a column schema |
+| Attribute profiles | Shared reusable values outside models | After 1.0, as **shared catalogs** |
+| Class vs instance attributes | Configuration vs per-object values | Keep; class attributes become tool settings |
+| Around 17 attribute types | From integer to program call | Drop distributions (simulation) and HTTP types. Merge short text, long text and large text into text with a length limit. The program call type becomes an action button |
+| Attribute constraints (regex, numeric domain, help text, row limits) | Attribute constraints | Keep as constraints on the attribute |
+| Special attributes: cardinalities, allowed objects, model pointer | Structural rules, container rules, navigation | Keep. Cardinalities become validation warnings, never hard blocks, because two people can break them concurrently |
+| Model types and modes | Which classes a model may use; switchable views | Keep; modes are called **views** |
+| Reference attribute | Links to a model or an object in another model | Keep as a **reference** attribute, followed with Ctrl+click |
+| Scripted notation language, about 60 commands, units in cm/mm, origin at the centre | Notation | Replace with **Shapes** (section on notation) |
+| Attribute dialog layout language: dialog, chapters, groups, hidden/enabled/mandatory | Attribute dialog layout | Replace with generated **attribute panels** plus optional layout |
+| Scripting language with a message-based API (hundreds of calls), dozens of events, menu items, computed attributes | Behaviour and automation | Replace with **formulas, rules and scripts** (section on behaviour) |
+| Tool-wide settings: grid, layers, layout algorithm, numbering, page layouts | Tool-wide settings | Keep grid, layers, numbering as tool settings; page layouts become export templates later |
+| Binary and text library/model exchange formats, XML; image export incl. SVG | Exchange | Own JSON formats; files from other platforms are not imported |
+| Modelling client: graphical and tabular views, explorer with folders, versions, find, layout algorithms, printing | Day-to-day modelling | Keep graphical view, explorer (= folders), find, auto-layout; tabular view in a later phase; named checkpoints in version 1.1 |
+| Query language, simulation, evaluation, acquisition | Analysis components | **Dropped**, as requested. A simple search and filter remains |
+| Administration toolkit: users, rights, components, database file store | Administration | **Dropped**. Library management becomes Build mode |
 
 ## Product scope
 
@@ -57,8 +57,8 @@ Version 1 is one browser app with two modes: **Build** for making a modelling to
 
 **Out of scope**
 
-- Simulation, AQL analysis queries, evaluation and acquisition.
-- Importing ADOxx libraries and models.
+- Simulation, analysis queries, evaluation and acquisition.
+- Importing libraries and models from other modelling platforms.
 - Any server, database, user account or rights system.
 - Keystroke-level live collaboration: changes arrive as fast as the sync service carries them, usually seconds.
 - Scripts that start programs on the user's computer, which a browser does not allow (follow-up question 21).
@@ -68,9 +68,9 @@ Version 1 is one browser app with two modes: **Build** for making a modelling to
 
 - First users are project teams building their own modelling methods.
 - Browser only. Opening a local synced folder needs Chrome, Edge or another Chromium browser on a desktop computer, because [Firefox and Safari lack the folder picker](https://developer.mozilla.org/en-US/docs/Web/API/Window/showDirectoryPicker). Those browsers can still open Git workspaces, and cloud drives once direct connectors exist.
-- Open source; tool libraries carry their own licence. Independent of OMiLAB for now.
+- Open source; tool libraries carry their own licence. Independent of other platforms and their communities for now.
 - Claude Code writes the code; you review and test it.
-- English user interface first; tool libraries can carry labels in several languages, as ADOxx's per-language `name_xx` does today.
+- English user interface first; tool libraries can carry labels in several languages.
 
 **Why not build on an existing platform?** The closest open-source option, Eclipse [Sirius Web](https://eclipse.dev/sirius/sirius-web.html), runs on a Spring Boot server with PostgreSQL and GraphQL. That is the opposite of the serverless, file-based tool you described, so we borrow its ideas (domain plus view definitions, low-code configuration) rather than its stack.
 
@@ -109,11 +109,11 @@ Six rules keep it simple and fast:
 
 A workspace is a plain folder; every tool library and every model is a subfolder holding readable JSON. Elements carry stable random IDs, so renaming a class, attribute or model never breaks a reference.
 
-**Meta-model.** It keeps ADOxx's concepts with fewer special cases:
+**Meta-model.** It keeps the established metamodelling concepts with fewer special cases:
 
 - **Tool library**: manifest (id, name, version, languages), settings (grid, layers, numbering), and the parts below.
 - **Class**: key, labels per language, kind (`node`, `container` or `swimlane`), optional parent class, abstract flag, attributes, shape, panel layout, help text.
-- **Relation class**: allowed FROM and TO classes (abstract classes allowed), attributes, line shape. Unlike ADOxx, relation classes may inherit.
+- **Relation class**: allowed FROM and TO classes (abstract classes allowed), attributes, line shape. Relation classes may inherit.
 - **Model type**: allowed classes and relation classes, views (named subsets), cardinalities, model-level attributes and a canvas background shape.
 - **Behaviour**: formulas, rules, scripts and commands, all owned by the tool library.
 
@@ -121,22 +121,22 @@ Every class and attribute has a fixed ID plus a **key** such as `Priority` that 
 
 **Attribute types**
 
-| New type | Replaces in ADOxx | Options |
+| New type | Typical type it replaces | Options |
 | --- | --- | --- |
-| text | STRING, LONGSTRING, CLOB | single or multi-line, max length, pattern, rich text later |
-| integer | INTEGER | min, max |
-| number | DOUBLE | min, max, decimals, unit |
+| text | short text, long text, large text | single or multi-line, max length, pattern, rich text later |
+| integer | integer | min, max |
+| number | floating-point number | min, max, decimals, unit |
 | boolean | yes/no enumerations | shown as a checkbox or switch |
-| date, date-time | DATE, DATETIME | stored as ISO 8601 |
-| duration | TIME | stored as ISO 8601 duration |
-| choice | ENUMERATION | options with labels per language |
-| multi-choice | ENUMERATIONLIST | as above |
-| formula | EXPRESSION | read-only, recalculated on change |
-| table | RECORD | column schema, row limit |
-| reference | INTERREF | target model types and classes, max count |
-| action | PROGRAMCALL | a button that runs a rule or script |
+| date, date-time | date, date-time | stored as ISO 8601 |
+| duration | time span | stored as ISO 8601 duration |
+| choice | enumeration | options with labels per language |
+| multi-choice | enumeration list | as above |
+| formula | computed attribute | read-only, recalculated on change |
+| table | record (table) attribute | column schema, row limit |
+| reference | reference attribute | target model types and classes, max count |
+| action | program call | a button that runs a rule or script |
 | link | new | URL or a file inside the workspace |
-| catalog reference | PROFREF / ATTRPROFREF | later phase |
+| catalog reference | attribute profile reference | later phase |
 
 **Workspace folder**
 
@@ -166,7 +166,7 @@ research-group/                      shared folder = workspace
     7f3a.json                        who is editing what, refreshed every 10 s
 ```
 
-Explorer folders (ADOxx's model groups) are a field on the model, not real directories. Renaming or moving a model therefore never moves files, which avoids the sync races that directory moves cause.
+Explorer folders are a field on the model, not real directories. Renaming or moving a model therefore never moves files, which avoids the sync races that directory moves cause.
 
 **A class as stored** (the complete definition of one class):
 
@@ -315,13 +315,13 @@ A purpose-built Canvas 2D engine keeps dragging at a constant cost: while you dr
 
 The first project phase builds a two-week prototype of the engine and measures it against these targets in Chrome and Edge on Windows and macOS before anything else depends on it.
 
-## Notation: Shapes replace GraphRep
+## Notation: Shapes
 
 A **Shape** is a list of drawing parts (rectangle, ellipse, path, text, image, group) in which any property is either a fixed value or a formula over the element's attributes. Method engineers build shapes in a visual editor; the JSON below is only what gets stored.
 
 **Design rules**
 
-- Pixels with the origin top-left, plus percentages and offsets (`"100% - 22"`), so shapes stretch without GraphRep's `TABLE` construct.
+- Pixels with the origin top-left, plus percentages and offsets (`"100% - 22"`), so shapes stretch without a separate table-layout construct.
 - A value starting with `=` is a formula, written in the same formula language used for computed attributes and rules.
 - Any part can carry `visible`, `onClick` and `tooltip`; `let` names a value once per element so parts can share it.
 - `repeat` draws a part once per table row or list value, laid out by `stack` or `grid`.
@@ -372,36 +372,36 @@ A **Shape** is a list of drawing parts (rectangle, ellipse, path, text, image, g
 - A preview strip renders the shape with sample values ("Priority = High, TaskType = Service") and at three sizes, so stretching problems show at once.
 - **Import SVG** turns artwork from Inkscape or Figma into parts or a single image; a gallery offers starter shapes (BPMN task, gateway, event, UML class, ER entity).
 
-**GraphRep to Shapes**
+**Notation-language constructs to Shapes**
 
-| GraphRep | Shapes |
+| Typical construct in a scripted notation language | Shapes |
 | --- | --- |
-| RECTANGLE, ROUNDRECT, ELLIPSE, POLYGON, POLYLINE, ARC, PIE, BEZIER, path commands, COMPOUND | `rect`, `ellipse`, `polygon` and `path` parts (SVG path syntax) |
-| PEN, FILL, GRADIENT\_RECT, SHADOW, FONT | `stroke`, `fill` (colour or gradient), `shadow`, `font` |
-| TEXT, TEXTBOX, ATTR, ATTRBOX | `text` part with a formula, wrapping and fit options |
-| AVAL, SET | `let` values and direct attribute keys in formulas |
-| IF / ELSIF / ELSE | `visible` formulas, or `variants` chosen by a formula |
-| FOR, WHILE | `repeat` over a list |
-| TABLE, STRETCH, MAP | percentages, `stack` and `grid` layouts, group `transform` |
-| CLIP\_\* | `clip` on a group |
-| BITMAP, METAFILE | `image` part (SVG, PNG, WebP) |
-| HOTSPOT, clickable ATTR | `onClick` and `tooltip` on any part |
-| Relation START / MIDDLE / END / EDGE | `line`, `startMarker`, `endMarker`, `labels` |
-| GRAPHREP sizing, layer, swimlane | `size`, `layer`, class kind `swimlane` |
-| EXECUTE | `use` to embed a shared sub-shape |
+| Rectangles, rounded rectangles, ellipses, polygons, polylines, arcs, pies, Bézier curves, path commands, compound figures | `rect`, `ellipse`, `polygon` and `path` parts (SVG path syntax) |
+| Pen, fill, gradients, shadow, font settings | `stroke`, `fill` (colour or gradient), `shadow`, `font` |
+| Text, text boxes, attribute text, attribute boxes | `text` part with a formula, wrapping and fit options |
+| Reading attribute values into variables | `let` values and direct attribute keys in formulas |
+| If / else-if / else branches | `visible` formulas, or `variants` chosen by a formula |
+| For and while loops | `repeat` over a list |
+| Table layouts, stretching, coordinate mapping | percentages, `stack` and `grid` layouts, group `transform` |
+| Clipping regions | `clip` on a group |
+| Bitmaps and metafiles | `image` part (SVG, PNG, WebP) |
+| Hotspots, clickable attribute text | `onClick` and `tooltip` on any part |
+| Relation start, middle, end and edge sections | `line`, `startMarker`, `endMarker`, `labels` |
+| Sizing, layer and swimlane settings | `size`, `layer`, class kind `swimlane` |
+| Calling a shared sub-notation | `use` to embed a shared sub-shape |
 
 **Alternatives considered.** SVG templates with bindings (Vue-style) are familiar to web developers but cannot wrap text or define a connector outline cleanly, so SVG is supported as an import instead. Shapes written as code are the most powerful but not low-code; a script-drawn custom part can be added later if the declarative parts fall short.
 
-## Behaviour: formulas, rules and scripts replace AdoScript
+## Behaviour: formulas, rules and scripts
 
-AdoScript's work splits into three levels that share one API: **formulas** for computed values and checks, **rules** for no-code "When / If / Then" automation, and **scripts** in TypeScript for everything else. A method engineer climbs only as far as a task needs, and a rule can call a script when it outgrows the form.
+The work of a traditional platform scripting language splits into three levels that share one API: **formulas** for computed values and checks, **rules** for no-code "When / If / Then" automation, and **scripts** in TypeScript for everything else. A method engineer climbs only as far as a task needs, and a rule can call a script when it outgrows the form.
 
 **Level 1: Formulas**
 
-- Used for formula attributes (ADOxx `EXPRESSION`), shape properties, default values, constraints with a message, panel visibility and rule conditions.
+- Used for formula (computed) attributes, shape properties, default values, constraints with a message, panel visibility and rule conditions.
 - Syntax is a safe subset of JavaScript expressions: no assignments or loops, plus helpers such as `count(objects("Task"))`, `sum(...)`, `incoming("SequenceFlow")`, `parent`, `children()`, `today()`. Excel-style aliases (`IF`, `SUM`, `AND`) also work.
 - Our own parser and evaluator (about 1,000 lines) keep formulas synchronous, fast and side-effect free. Dependencies are tracked like a spreadsheet, so only affected formulas recalculate.
-- LEO functions map directly: `aval` becomes the attribute key, `asum` is `sum`, `rcount` counts table rows, `allobjs` is `objects()`, `cond` is `? :`.
+- Common functions of older modelling formula languages map directly: an attribute-value lookup becomes the attribute key, an attribute sum is `sum`, a row count counts table rows, an all-objects query is `objects()`, and a conditional function is `? :`.
 
 **Level 2: Rules (no code)**
 
@@ -424,7 +424,7 @@ A rule is a trigger, a condition and a list of actions, edited as a form: *When*
 
 - For loops over models, model-to-model transformations, custom import and export formats, and multi-step dialogs.
 - Edited in [CodeMirror 6](https://codemirror.net) with TypeScript autocomplete. Types are generated from the tool's own meta-model, so `task.attrs.Priority` autocompletes to `"Low" | "Medium" | "High"`.
-- The API replaces ADOxx's message ports with a handful of modules: `model` (query, create, connect, delete), `tool` (meta-model), `ui` (message, confirm, prompt, choose, form, progress), `files` (inside the workspace, plus save-as), `http`, `commands` and `on` for events.
+- The API is a handful of modules instead of a large message-based call interface: `model` (query, create, connect, delete), `tool` (meta-model), `ui` (message, confirm, prompt, choose, form, progress), `files` (inside the workspace, plus save-as), `http`, `commands` and `on` for events.
 - Scripts run in [QuickJS compiled to WebAssembly](https://github.com/justjake/quickjs-emscripten) (about 500 KB), with a time limit and a memory limit. It runs synchronously, so a "before" handler can cancel an action. Its README says it has not been audited and is still below version 1.0, so we pin a version and wrap it.
 - **Permissions:** a tool declares whether its scripts need network access or files outside the workspace. The app asks once per tool in each browser; without permission a script can only touch models and show dialogs. In a browser, scripts can call only web services that accept browser requests, reach other files only through open and save dialogs, and never start programs on the computer (follow-up question 21).
 
@@ -454,23 +454,23 @@ commands.register({
 });
 ```
 
-**Events.** ADOxx's [73 events](https://adoxx.org/adoscript_reference/50_events/index.html) collapse to 24; simulation, database, user and window-management events are dropped.
+**Events.** The dozens of events a traditional platform offers collapse to 24; simulation, database, user and window-management events are dropped.
 
-| New event | ADOxx events it covers | Can cancel |
+| New event | Typical events it covers | Can cancel |
 | --- | --- | --- |
-| `app.started`, `app.closing` | AppInitialized, AppExit | no |
-| `model.creating`, `model.created` | BeforeCreateModel, CreateModel | first one |
-| `model.opened`, `model.deleting`, `model.deleted` | OpenModel, BeforeDeleteModel, DeleteModel | `model.deleting` |
-| `object.creating`, `object.created` | CreateInstance, AfterCreateModelingNode | first one |
-| `object.deleting`, `object.deleted` | BeforeDeleteInstance, DeleteInstance | first one |
-| `object.moved`, `object.resized`, `object.renamed` | RenameInstance; moves are new | no |
-| `connector.creating`, `connector.created`, `connector.reconnected` | BeforeCreateRelationInstance, CreateRelationInstance, AfterCreateModelingConnector, ChangeRelationInstanceFrom/ToEndpoint | first one |
-| `attribute.changing`, `attribute.changed` | SetAttributeValue, AfterEditAttributeValue | first one |
-| `table.rowAdded`, `table.rowRemoved` | AfterCreateRecordRow, AfterDeleteRecordRow | no |
-| `view.changing`, `view.changed` | BeforeExtSetVariant, AfterExtSetVariant | first one |
-| `selection.changed` | UpdateActions | no |
+| `app.started`, `app.closing` | application start and exit | no |
+| `model.creating`, `model.created` | before and after a model is created | first one |
+| `model.opened`, `model.deleting`, `model.deleted` | model opened; before and after a model is deleted | `model.deleting` |
+| `object.creating`, `object.created` | before and after an object is created | first one |
+| `object.deleting`, `object.deleted` | before and after an object is deleted | first one |
+| `object.moved`, `object.resized`, `object.renamed` | object renamed; moves are new | no |
+| `connector.creating`, `connector.created`, `connector.reconnected` | before and after a connector is created; a connector end moved to another object | first one |
+| `attribute.changing`, `attribute.changed` | before and after an attribute value is edited | first one |
+| `table.rowAdded`, `table.rowRemoved` | table row added or removed | no |
+| `view.changing`, `view.changed` | before and after the view (mode) changes | first one |
+| `selection.changed` | selection or available actions updated | no |
 
-There is no save step, since every change is written at once; checks that ADOxx ran in BeforeSaveModel become validation rules.
+There is no save step, since every change is written at once; checks that other platforms run before saving a model become validation rules.
 
 **One rule for collaboration:** rules and scripts run only in the browser where a change was made. Changes merged in from others never re-trigger them, otherwise every open instance would repeat the same automation.
 
@@ -478,9 +478,9 @@ There is no save step, since every change is written at once; checks that ADOxx 
 
 **Assistant (optional).** Off by default. Given a plain description ("high-priority tasks need an owner"), it drafts a rule, script, shape or class and shows it as a change you accept or discard. It uses your own API key, kept only in that browser and never written to the shared folder or repository, and it sends tool definitions but never models. Claude is the first provider: Anthropic's TypeScript SDK supports calls straight from a browser through its [`dangerouslyAllowBrowser` option](https://platform.claude.com/docs/en/cli-sdks-libraries/sdks/typescript), which suits a bring-your-own-key app. Other providers can be added behind the same interface.
 
-## Attribute panels replace AttrRep
+## Attribute panels
 
-The attribute panel is generated from the attribute definitions, so a new class gets a working panel with no configuration. An optional layout adds tabs, groups, order and conditions, which covers everything AttrRep does today.
+The attribute panel is generated from the attribute definitions, so a new class gets a working panel with no configuration. An optional layout adds tabs, groups, order and conditions, which covers everything a traditional attribute dialog layout language does.
 
 **Default controls by type:** text field or text area; number field with unit; switch for booleans; date and duration pickers; dropdown for choices (a segmented control for up to four options); chips for multi-choice; read-only value with its formula on hover; inline grid for tables, with paste from Excel; searchable cross-model picker for references, with an open link; button for actions; URL or file picker for links.
 
@@ -518,20 +518,20 @@ The attribute panel is generated from the attribute definitions, so a new class 
 }
 ```
 
-| AttrRep | New panel layout |
+| Typical attribute dialog layout construct | New panel layout |
 | --- | --- |
-| NOTEBOOK, `with-relations` | the panel, `showRelations` |
-| CHAPTER | `tabs` |
-| GROUP / ENDGROUP | `group` |
-| ATTR `hidden`, `enabled`, `mandatory`, `write-protected` | `visible`, `readOnly`, `required` (fixed or formula) |
-| `ctrltype`, `dialog` | `control` and the built-in pickers |
-| `lines`, `width` | `height`, column widths |
+| the attribute dialog, showing relations | the panel, `showRelations` |
+| chapters | `tabs` |
+| groups | `group` |
+| hidden, enabled, mandatory and write-protected flags on an attribute | `visible`, `readOnly`, `required` (fixed or formula) |
+| control type, custom dialogs | `control` and the built-in pickers |
+| line count, width | `height`, column widths |
 
-Beyond AttrRep: editing one attribute across many selected objects at once (mixed values show as a dash), constraint messages shown inline as you type, help text on hover, and double-click editing of text attributes directly on the canvas. The later tabular view reuses the same definitions, so a table of all tasks needs no extra setup.
+Beyond a traditional attribute dialog: editing one attribute across many selected objects at once (mixed values show as a dash), constraint messages shown inline as you type, help text on hover, and double-click editing of text attributes directly on the canvas. The later tabular view reuses the same definitions, so a table of all tasks needs no extra setup.
 
 ## Import and export
 
-There are three everyday exchange formats: tool packages, editable model files and images. Everything except images can be re-imported without loss; ADOxx files are not imported, as decided.
+There are three everyday exchange formats: tool packages, editable model files and images. Everything except images can be re-imported without loss; files from other modelling platforms are not imported, as decided.
 
 | What | Format | Behaviour |
 | --- | --- | --- |
@@ -653,7 +653,7 @@ Lane A owns everything drawn on screen, lane B everything stored and executed; t
 | 4 Build mode and Shapes | Class, relation, model type and view editors; shape compiler and shape editor; panel layouts; containers and swimlanes; hot reload | A non-programmer builds a small ER tool in under an hour |
 | 5 Formulas and rules | Formula engine with dependency tracking, constraints, rule editor, the 24 events, command registration | The rule examples in this plan run unchanged |
 | 6 Exports and packages | SVG, PNG, PDF; tool packages, model files and bundles; CSV; auto-layout; find; validation list | Screenshot tests show exports identical to the screen |
-| 7 Scripts and sandbox | QuickJS host, script API, generated types, editor with autocomplete, permissions, console | Three behaviours from existing ADOxx tools are rebuilt as rules or scripts |
+| 7 Scripts and sandbox | QuickJS host, script API, generated types, editor with autocomplete, permissions, console | Three behaviours from existing modelling tools are rebuilt as rules or scripts |
 | 8 Git mode | One-file-per-part layout, GitHub and GitLab adapters, commit and push, pull with field-level merge | A tool library round-trips through GitHub and GitLab, with a change merged from each side |
 | 9 AI assistant | Drafts of rules, scripts, shapes and classes; accept or discard; key handling | The examples in this plan can be drafted from one-sentence descriptions |
 | 10 Beta with project teams | Two or three teams use it on real projects; documentation, tutorials, fixes | A project team completes a project with it |
@@ -676,7 +676,7 @@ The two risks that could change the architecture, sync behaviour across real syn
 | Claude Code drifts from the architecture | Shortcuts that break speed, file formats or package boundaries | Rules in `CLAUDE.md`, specs approved before coding, CI budgets that fail the build, your review of every pull request |
 | Rules too weak | Tool builders fall back to scripts for common jobs | Rebuild three real tools in the beta and add rule actions for every gap found |
 | QuickJS wrapper changes | Breaking API changes before its 1.0 | Pin the version behind our own interface; SES compartments as fallback |
-| Scope creep toward full ADOxx | Analysis or simulation requests delay version 1 | The out-of-scope list is explicit; add extension points later rather than features now |
+| Scope creep toward a full desktop metamodelling platform | Analysis or simulation requests delay version 1 | The out-of-scope list is explicit; add extension points later rather than features now |
 
 ## Decisions and follow-up questions
 
@@ -692,17 +692,17 @@ You answered all 20 questions on 7 October, and the sections above now follow yo
 | 6 | Which sync services must work (for example your university's OneDrive or Nextcloud)? | Test OneDrive, Dropbox, Nextcloud, Syncthing and Git | oneDrive, Sharepoint, google docs, anything similar. |
 | 7 | Svelte or React for the panels? | Svelte 5 (lighter); React if contributors are more likely to know it | what ever you say |
 | 8 | Formula syntax: JavaScript-style (`a ? b : c`) or Excel-style (`IF(a, b, c)`) as the main form? | JavaScript-style with Excel aliases accepted | JavaScript-style with Excel aliases accepted |
-| 9 | Product name? "MetaKit" is a placeholder | A name without "ADOxx", which belongs to OMiLAB and BOC | yeah i like metakit |
-| 10 | Is ADOxx import a must-have, and which libraries matter most? Can you share sample ABL, ALL, ADL or XML files? | After the core, as phase 6 | no i dont want to import the current adoxx libraries |
-| 11 | Relationship with OMiLAB: collaborate, or stay independent? | Ask them early; it affects naming and publishing importers | i will ask them. for now keep it seperate |
-| 12 | Keep ADOxx's separate static (tree) models? | No: tree models become ordinary models using containers | no |
+| 9 | Product name? "MetaKit" is a placeholder | A name that does not reuse another platform's trademark | yeah i like metakit |
+| 10 | Is importing files from other modelling platforms a must-have, and which libraries matter most? Can you share sample library or model exchange files? | After the core, as phase 6 | no, no import from other platforms |
+| 11 | Relationship with existing platform communities: collaborate, or stay independent? | Ask them early; it affects naming and publishing importers | i will ask them. for now keep it seperate |
+| 12 | Keep separate static (tree) models alongside graph models? | No: tree models become ordinary models using containers | no |
 | 13 | Relation classes with inheritance? Relations with more than two ends? | Inheritance yes; more than two ends no | Inheritance yes; more than two ends no |
-| 14 | Shared catalogs (ADOxx attribute profiles) in version 1? | Later | later |
+| 14 | Shared catalogs (attribute profiles) in version 1? | Later | later |
 | 15 | Model versions: named versions inside the app, or snapshots and Git? | Named checkpoints in version 1.1 | Named checkpoints in version 1.1 |
 | 16 | Tabular view of models in version 1? | Version 1.1 | later |
 | 17 | Is last-writer-wins acceptable for long texts, or do descriptions and scripts need character-level merging? | Last writer wins; character-level merging for scripts only if beta users hit it | Last writer wins; character-level merging for scripts only if beta users hit it |
 | 18 | A Git mode for tool libraries, storing one readable file per class and shape? | Not in version 1; export covers Git use | i like the idea of git mode. It should work with gitlab and github |
-| 19 | May scripts call external programs and the network, as AdoScript can? | Yes on desktop, behind a permission prompt | yes |
+| 19 | May scripts call external programs and the network, as desktop platform scripts can? | Yes on desktop, behind a permission prompt | yes |
 | 20 | An AI assistant that drafts rules, scripts and shapes from a description, using your own API key? | Optional, off by default, sends tool definitions but never models | yeah this |
 
 **Follow-up questions**
@@ -722,17 +722,6 @@ Your answers raised six new questions. Only 24 and 25 are needed before phase 0 
 
 Pages opened for this plan, as of 7 October 2026.
 
-**ADOxx**
-
-- [ADOxx home and 1.8.0 download](https://www.adoxx.org/)
-- [Starting ADOxx and its database](https://adoxx.org/documentation/01_getting_started/04_start_adoxx.html) · [Installing on macOS via Wine](https://adoxx.org/documentation/01_getting_started/02_install_mac.html) · [End user licence agreement](https://adoxx.org/assets/EndUserLicenceAgreement_ADOxx.pdf)
-- Modelling language: [application library](https://adoxx.org/documentation/10_modelling_language/01_application_library.html), [classes](https://adoxx.org/documentation/10_modelling_language/10_classes.html), [attributes](https://adoxx.org/documentation/10_modelling_language/20_attributes.html), [attribute types](https://adoxx.org/documentation/10_modelling_language/21_attribute_types.html), [facets](https://adoxx.org/documentation/10_modelling_language/22_attribute_facets.html), [special attributes](https://adoxx.org/documentation/10_modelling_language/23_special_attributes.html), [model types](https://adoxx.org/documentation/10_modelling_language/30_model_types.html)
-- [Library attributes](https://adoxx.org/documentation/70_adoxx_components/20_Library_Management/Library_attributes.html) · [ADOxx components](https://adoxx.org/documentation/70_adoxx_components/index.html)
-- [GraphRep reference](https://adoxx.org/adoscript_reference/31_graphrep/index.html) · [AttrRep reference](https://adoxx.org/adoscript_reference/30_attrrep/index.html)
-- [AdoScript reference](https://adoxx.org/adoscript_reference/01_adoscript/) · [Message ports](https://adoxx.org/adoscript_reference/20_message_ports/index.html) · [Events](https://adoxx.org/adoscript_reference/50_events/index.html) · [Expressions](https://adoxx.org/documentation/20_mechanisms_and_algorithms/3_external_coupling_of_functionality/5_expression_adoscript.html)
-- [ALL library language](https://adoxx.org/documentation/75_adoxx_development_languages/6_adoxx_library_language_all.html) · [ADL model language](https://adoxx.org/documentation/75_adoxx_development_languages/5_adoxx_model_language_adl.html) · [AQL](https://adoxx.org/documentation/75_adoxx_development_languages/01_AQL.html)
-- [ADOxx starter libraries](https://adoxx.org/documentation/80_special_cases/adoxx_libraries.html) · [Bee-Up](https://bee-up.omilab.org/activities/bee-up/)
-
 **Technology**
 
 - [FileSystemObserver: intent to ship in Chrome 133](https://groups.google.com/a/chromium.org/g/blink-dev/c/6oOaFmia2dc/m/gx0KgpQqBQAJ)
@@ -749,4 +738,4 @@ Pages opened for this plan, as of 7 October 2026.
 - GitLab: [OAuth 2 with PKCE](https://docs.gitlab.com/api/oauth2) · [Commits API](https://docs.gitlab.com/ee/api/commits.html) · [isomorphic-git and the CORS proxy](https://isomorphic-git.org/docs/en/quickstart)
 - [Anthropic TypeScript SDK, browser use](https://platform.claude.com/docs/en/cli-sdks-libraries/sdks/typescript) · [OpenSpec](https://github.com/Fission-AI/OpenSpec) · [Metakit on Wikipedia](https://en.wikipedia.org/wiki/Metakit)
 
-Not verified: the ADOxx 1.8.0 release date, a published XML schema for ADOxx exports, what OMiLAB's OLIVE framework offers, Graph `delta` on a single SharePoint folder, whether Google's `drive.file` scope reaches files inside a picked folder, and GitLab REST calls with a token from a browser. Phase 0 tests the last three.
+Not verified: Graph `delta` on a single SharePoint folder, whether Google's `drive.file` scope reaches files inside a picked folder, and GitLab REST calls with a token from a browser. Phase 0 tests the last three.

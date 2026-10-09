@@ -1,20 +1,20 @@
-# Phase 7: behaviours to rebuild from ADOxx tools (candidates for Danial)
+# Phase 7: behaviours to rebuild from established modelling tools (candidates for Danial)
 
-Phase 7 is done when three behaviours from existing ADOxx tools are rebuilt as rules or scripts. The plan says to choose them with Danial, so these are proposals. Each one is already built as an example and tested, so choosing means keeping it, or swapping it for another one from the list at the end.
+Phase 7 is done when three behaviours from established modelling tools are rebuilt as rules or scripts. The plan says to choose them with Danial, so these are proposals. Each one is already built as an example and tested, so choosing means keeping it, or swapping it for another one from the list at the end.
 
 The examples live in `tools/behaviour-examples/`. They are add-ons for the sample tool libraries in `tools/`, not tool libraries of their own: a test (`packages/ui/src/build/behaviour-examples.test.ts`) adds each one to its tool, loads the sample model and runs it. Every script is also type-checked against the declarations generated from its tool.
 
-| #   | Behaviour                                   | Tool       | Where ADOxx has it                                                                                        | Built as                                                                 | Files                                                                      |
+| #   | Behaviour                                   | Tool       | Where tools have it                                                                                       | Built as                                                                 | Files                                                                      |
 | --- | ------------------------------------------- | ---------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
-| 1   | Check that gateways say where each flow goes | BPMN lite  | The BPMN 2.0 modelling kit checks gateways when a model is saved (AdoScript `BeforeSaveModel`)             | Script (it loops over gateways and flows)                                | `gateway-check.script.ts`                                                  |
+| 1   | Check that gateways say where each flow goes | BPMN lite  | BPMN 2.0 modelling tools check gateways when a model is saved                                             | Script (it loops over gateways and flows)                                | `gateway-check.script.ts`                                                  |
 | 2   | Total effort of all tasks, by lane          | BPMN lite  | Process tools show effort and cost totals on the model (attribute expressions that sum over a class)      | Rule (the total) and script (the breakdown by lane)                      | `total-effort.rule.json`, `total-effort.script.ts`                         |
-| 3   | Export an ER diagram as a SQL schema        | ER lite    | Modelling kits such as Bee-Up map an ER model to a relational schema and export it                        | Script, with the "files" permission (it uses the save dialog)            | `er-to-sql.script.ts`                                                      |
+| 3   | Export an ER diagram as a SQL schema        | ER lite    | Data modelling tools map an ER model to a relational schema and export it                                 | Script, with the "files" permission (it uses the save dialog)            | `er-to-sql.script.ts`                                                      |
 
 ## 1. Check gateways
 
 **What it does.** A command "Check gateways" in the Model menu. For every gateway it says when nothing follows it, and, for an exclusive gateway with more than one way out, which flows have no condition. One message lists everything it found, or says that all gateways are fine.
 
-**Why this one.** ADOxx ran this kind of check in `BeforeSaveModel`. MetaKit has no save step (every change is written at once), so the plan turns such checks into validation rules or commands. It needs a loop over objects and their connectors, which a rule cannot do, so it shows what scripts are for.
+**Why this one.** Desktop tools run this kind of check when a model is saved. MetaKit has no save step (every change is written at once), so the plan turns such checks into validation rules or commands. It needs a loop over objects and their connectors, which a rule cannot do, so it shows what scripts are for.
 
 **What it tests.** The sample "Order process" passes. After one condition is removed and a gateway without a flow is added, the message names both.
 
@@ -44,4 +44,4 @@ The examples live in `tools/behaviour-examples/`. They are add-ons for the sampl
 ## What I need from you
 
 1. Keep these three or pick others from the list.
-2. If you have an ADOxx tool whose behaviour you know better, name it; the scripts here are written from the public descriptions of those tools, not from their source.
+2. If you have a modelling tool whose behaviour you know better, name it; the scripts here are written from the public descriptions of those tools, not from their source.
