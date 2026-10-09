@@ -19,6 +19,7 @@ export const DOC_CONTEXTS = [
   'build.panel-layout',
   'build.appearance',
   'build.shape-editor',
+  'build.catalog',
   'dialog.new-model',
   'dialog.tool-import',
   'dialog.export',

@@ -153,7 +153,7 @@ The risk also has formulas **Score** (Likelihood × Impact) and **Rating** (Low,
 | Monitors | Monitor | Model deployment, Data pipeline |
 | Defines | Glossary term | Data entity, Dataset |
 
-"Any class" uses an empty `from` or `to`, which already means "any" for relation classes.
+"Any class" is an empty end in the catalog. The tool library format needs at least one class at each end of a relation class without a parent, so when added such an end lists every class the tool library has after the add.
 
 ## Dialog
 

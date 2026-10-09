@@ -21,7 +21,7 @@ It is the left part of every Build view screen. Screen readers announce the list
 ## How to use it
 
 1. Click a section, for example **Relation classes**. The section stays selected until you pick another one.
-2. To add something, type a name in the box at the top of the item list and press **Add** or Enter.
+2. To add something, type a name in the box at the top of the item list and press **Add** or Enter. In **Classes** you can also press **Add from catalog…** to pick ready-made classes ([[class-catalog]]).
 3. Click an item to edit it. The selected item is highlighted. Each section remembers its own selected item while you move around.
 4. To delete an item, point at it and click the **✕** button that appears on the right of the row (it is also reachable with the keyboard).
 5. For shapes, rules, scripts and settings there is no item list. Their editor fills the main area.
@@ -49,6 +49,10 @@ The label changes with the section: **New class**, **New relation class** or **N
 - If the box is empty, **Add** shows "Type a name first."
 - The text you type becomes the label in your first language. The key is made from it by removing every character that is not a letter, digit or underscore. "Assigned to" becomes the key `Assignedto`. If the key starts with a digit, an underscore is put in front. If the key is already taken, a number is added: `Task`, `Task2`, `Task3`. You can change the key later; see [[keys-and-renaming]].
 - Adding a class also creates its look (a shape named like `Task look`), so the new class already has a form on the canvas. Adding a relation class creates a line look the same way.
+
+### Add from catalog
+
+In the **Classes** section only, an **Add from catalog…** button sits under the add box. It opens a pop-up with ready-made classes in seven topics, a search box across all of them, and a choice to add the relation classes between the picked classes. One **Add** is one undo step. See [[class-catalog]].
 
 ### The item row
 
@@ -81,4 +85,4 @@ In the Agent pipeline tool, select **Relation classes**. You see six items: Appr
 
 ## Related
 
-[[page-build-view]], [[classes]], [[relations]], [[model-types]], [[keys-and-renaming]], [[tool-validation]]
+[[page-build-view]], [[classes]], [[class-catalog]], [[relations]], [[model-types]], [[keys-and-renaming]], [[tool-validation]]
