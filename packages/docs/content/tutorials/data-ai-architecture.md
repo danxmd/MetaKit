@@ -1,6 +1,6 @@
 ---
 id: data-ai-architecture
-title: "Tutorial: Data and AI architecture"
+title: Map a data and AI platform
 category: tutorials
 summary: Draw a data platform from source to consumer with the Data and AI architecture tool library, see the personal-data warning, and list the lineage of a dataset.
 keywords: [data architecture tutorial, ai architecture, data lineage, show lineage, personal data warning, data flow, lakehouse, ml model, ai service, customer 360]
