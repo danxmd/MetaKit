@@ -30,11 +30,11 @@ The relation classes are **Flows to** (with Frequency, Format and Contains perso
 
 ## Where to find it
 
-Add the tool library on the **Tool libraries** page ([[page-tool-libraries]]): choose **Add**, then **From file…**, and pick `tool.json` from `tools/data-ai-architecture`. The finished example of this tutorial is the sample model `customer-360.mkmodel.json` in the same folder, "Customer 360 and churn model".
+The tool library is built in ([[built-in-tools]]). On the **Tool libraries** page ([[page-tool-libraries]]) its card is in the **Built-in** section. The finished example of this tutorial is the sample model `customer-360.mkmodel.json` in the same folder, "Customer 360 and churn model".
 
 ## How to use it
 
-1. **Add the tool library** as described above. A card **Data and AI architecture** with **Version 1.0.0** appears.
+1. **Add the tool library.** On the **Data and AI architecture** card under **Built-in**, choose **Use in this workspace**. A card with **Version 1.0.0** appears under **In this workspace**. (Choose **Copy and extend…** instead if you want to change it for your team.)
 2. **Make a model.** Choose **Model** in the top bar, then **New model** ([[dialog-new-model]]). Pick the tool library "Data and AI architecture (1.0.0)", the model type "Architecture", name it `My data platform` and choose **Create**.
 3. **Place a zone.** In the palette, click **Zone** and click on the canvas. In the attribute panel set **Name** to `Raw zone` and **Layer** to "Raw" ([[containers-swimlanes]]).
 4. **Draw the chain.** Place one object of each kind, from left to right ([[placing-objects]]):

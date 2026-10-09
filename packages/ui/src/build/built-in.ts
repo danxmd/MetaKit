@@ -54,4 +54,15 @@ export const BUILT_IN_TOOLS: readonly BuiltInTool[] = [
         (m) => m.default,
       ),
   },
+  {
+    id: 'tool_dataaiarch' as ToolId,
+    name: 'Data and AI architecture',
+    version: '1.0.0',
+    description:
+      'Data platforms: sources, pipelines, stores, datasets, ML models, AI services and consumers, with data lineage and personal-data checks.',
+    load: () =>
+      import('../../../../tools/data-ai-architecture/tool.json?raw').then(
+        (m) => m.default,
+      ),
+  },
 ];
