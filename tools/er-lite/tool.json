@@ -1,5 +1,5 @@
 {
-  "formatVersion": 5,
+  "formatVersion": 6,
   "manifest": {
     "id": "tool_erlite",
     "name": "ER lite",

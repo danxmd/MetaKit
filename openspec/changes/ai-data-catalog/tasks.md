@@ -2,12 +2,12 @@
 
 ## 1. PR 1: built-in and workspace tool libraries, copy and extend (`feat/tool-library-sources`)
 
-- [ ] 1.1 Format 6: `manifest.basedOn`, guard, migration 5→6, test; ADR 0010.
-- [ ] 1.2 `cloneToolLibrary` in core, with tests (new id, keeps content, valid result).
-- [ ] 1.3 `built-in.ts` (the existing three samples for now), Tool libraries page with two sections and built-in card actions.
-- [ ] 1.4 `NewToolDialog` with Start from; New model dialog lists built-in libraries.
-- [ ] 1.5 e2e: use a built-in; copy and extend; model from a built-in.
-- [ ] 1.6 Docs: page-tool-libraries, dialog-new-model, new `pages/built-in-tools`.
+- [x] 1.1 Format 6: `manifest.basedOn`, guard, migration 5→6, test; ADR 0010.
+- [x] 1.2 `cloneToolLibrary` in core, with tests (new id, keeps content, valid result).
+- [x] 1.3 `built-in.ts` (the existing three samples for now), Tool libraries page with two sections and built-in card actions.
+- [x] 1.4 `NewToolDialog` with Start from; New model dialog lists built-in libraries.
+- [x] 1.5 e2e: use a built-in; copy and extend; model from a built-in.
+- [x] 1.6 Docs: page-tool-libraries, dialog-new-model, new `pages/built-in-tools`.
 
 ## 2. PR 2: class catalog (`feat/class-catalog`)
 

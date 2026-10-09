@@ -572,11 +572,24 @@ export function validateToolLibrary(value: unknown): Issue[] {
   const manifest = c.object(
     root.manifest,
     'manifest',
-    ['id', 'name', 'version', 'languages', 'permissions'],
+    ['id', 'name', 'version', 'languages', 'permissions', 'basedOn'],
     'The manifest',
   );
   if (manifest) {
     checkPermissions(c, manifest.permissions);
+    if (manifest.basedOn !== undefined) {
+      const origin = c.object(
+        manifest.basedOn,
+        'manifest.basedOn',
+        ['id', 'name', 'version'],
+        'The library this one is based on',
+      );
+      if (origin) {
+        c.id('tool', origin.id, 'manifest.basedOn.id', 'Its id');
+        c.string(origin.name, 'manifest.basedOn.name', 'Its name');
+        c.string(origin.version, 'manifest.basedOn.version', 'Its version');
+      }
+    }
     c.id('tool', manifest.id, 'manifest.id', 'The tool id');
     c.string(manifest.name, 'manifest.name', 'The tool name');
     if (

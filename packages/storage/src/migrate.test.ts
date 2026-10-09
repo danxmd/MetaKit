@@ -152,10 +152,10 @@ describe('tool library formats 2, 3 and 4', () => {
       modelTypes: {},
     };
     const { value, from, to } = migrate('tool-document', v1);
-    expect([from, to]).toEqual([1, 5]);
+    expect([from, to]).toEqual([1, 6]);
     expect(value).toEqual({
       ...v1,
-      formatVersion: 5,
+      formatVersion: 6,
       shapes: {},
       panels: {},
       rules: {},
@@ -170,10 +170,10 @@ describe('tool library formats 2, 3 and 4', () => {
       panels: {},
     };
     const { value, from, to } = migrate('tool-document', v2);
-    expect([from, to]).toEqual([2, 5]);
+    expect([from, to]).toEqual([2, 6]);
     expect(value).toEqual({
       ...v2,
-      formatVersion: 5,
+      formatVersion: 6,
       rules: {},
       scripts: {},
     });
@@ -187,8 +187,8 @@ describe('tool library formats 2, 3 and 4', () => {
       rules: { rule_a: { id: 'rule_a' } },
     };
     const { value, from, to } = migrate('tool-document', v3);
-    expect([from, to]).toEqual([3, 5]);
-    expect(value).toEqual({ ...v3, formatVersion: 5, scripts: {} });
+    expect([from, to]).toEqual([3, 6]);
+    expect(value).toEqual({ ...v3, formatVersion: 6, scripts: {} });
   });
 
   it('only raises the version of a version 4 library (format 5 adds the optional look)', () => {
@@ -199,11 +199,11 @@ describe('tool library formats 2, 3 and 4', () => {
       scripts: { scr_a: { id: 'scr_a', name: 'A', source: '' } },
     };
     const { value, from, to } = migrate('tool-document', v4);
-    expect([from, to]).toEqual([4, 5]);
-    expect(value).toEqual({ ...v4, formatVersion: 5 });
+    expect([from, to]).toEqual([4, 6]);
+    expect(value).toEqual({ ...v4, formatVersion: 6 });
   });
 
-  it('leaves a version 5 library alone, and refuses one from a newer release', () => {
+  it('only raises the version of a version 5 library (format 6 adds the optional basedOn)', () => {
     const v5 = {
       formatVersion: 5,
       shapes: {
@@ -216,8 +216,26 @@ describe('tool library formats 2, 3 and 4', () => {
       rules: {},
       scripts: {},
     };
-    expect(migrate('tool-document', v5).value).toEqual(v5);
-    expect(() => migrate('tool-document', { formatVersion: 6 })).toThrow(
+    const { value, from, to } = migrate('tool-document', v5);
+    expect([from, to]).toEqual([5, 6]);
+    expect(value).toEqual({ ...v5, formatVersion: 6 });
+  });
+
+  it('leaves a version 6 library alone, and refuses one from a newer release', () => {
+    const v6 = {
+      formatVersion: 6,
+      manifest: {
+        id: 'tool_b',
+        name: 'B',
+        version: '1.0.0',
+        languages: ['en'],
+        basedOn: { id: 'tool_a', name: 'A', version: '2.1.0' },
+      },
+      rules: {},
+      scripts: {},
+    };
+    expect(migrate('tool-document', v6).value).toEqual(v6);
+    expect(() => migrate('tool-document', { formatVersion: 7 })).toThrow(
       /newer version/,
     );
   });

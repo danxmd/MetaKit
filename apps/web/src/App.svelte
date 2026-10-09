@@ -15,7 +15,7 @@
     ReferenceIndex,
     type ReferenceServices,
   } from '@metakit-app/ui';
-  import type { ElementId } from '@metakit-app/core';
+  import type { ElementId, ToolLibrary } from '@metakit-app/core';
   import BuildView from '@metakit-app/ui/components/BuildView.svelte';
   import AssistantSettings from '@metakit-app/ui/components/assistant/AssistantSettings.svelte';
   import {
@@ -36,7 +36,13 @@
   import PermissionDialog from '@metakit-app/ui/components/build/scripts/PermissionDialog.svelte';
   import ProfileDialog from '@metakit-app/ui/components/ProfileDialog.svelte';
   import StartPage from '@metakit-app/ui/components/StartPage.svelte';
-  import { findAcrossModels, folderPaths } from '@metakit-app/ui';
+  import {
+    BUILT_IN_TOOLS,
+    findAcrossModels,
+    folderPaths,
+    type BuiltInTool,
+    type ToolStart,
+  } from '@metakit-app/ui';
   import { PROFILE_COLOURS, type Profile } from '@metakit-app/storage';
   import {
     adapterFor,
@@ -261,8 +267,41 @@
     area = 'model';
   }
 
+  /** A new tool library: empty, or a copy of a workspace or built-in one (ADR 0010). */
+  async function newTool(name: string, start: ToolStart) {
+    if (start.kind === 'empty') return controller.createToolLibrary(name);
+    if (start.kind === 'workspace')
+      return controller.copyToolLibrary(name, { slug: start.slug });
+    return controller.copyToolLibrary(name, { text: await start.tool.load() });
+  }
+
+  async function useBuiltIn(tool: BuiltInTool) {
+    await controller.addToolLibrary(await tool.load());
+  }
+
+  const builtInKey = (tool: BuiltInTool) => `built-in:${tool.id}`;
+
+  /** Model types of a workspace library, or of a built-in one that is not added yet. */
+  async function modelTypesFor(key: string) {
+    const builtIn = BUILT_IN_TOOLS.find((t) => builtInKey(t) === key);
+    if (!builtIn) return controller.modelTypesOf(key);
+    const tool = JSON.parse(await builtIn.load()) as ToolLibrary;
+    return Object.values(tool.modelTypes).sort((a, b) =>
+      a.key.localeCompare(b.key),
+    );
+  }
+
   async function create(input: Parameters<typeof controller.createModel>[0]) {
     showNew = false;
+    // A built-in library is added to the workspace first; the model then uses that copy.
+    const builtIn = BUILT_IN_TOOLS.find(
+      (t) => builtInKey(t) === input.toolSlug,
+    );
+    if (builtIn) {
+      const slug = await controller.addToolLibrary(await builtIn.load());
+      if (!slug) return;
+      input = { ...input, toolSlug: slug };
+    }
     await controller.createModel(input);
   }
 </script>
@@ -337,7 +376,9 @@
               warnings={app.warnings}
               error={app.error}
               notes={app.notes}
-              onNewTool={(name) => controller.createToolLibrary(name)}
+              builtIns={BUILT_IN_TOOLS}
+              onNewTool={newTool}
+              onUseBuiltIn={useBuiltIn}
               onAddTool={(text) => controller.addToolLibrary(text)}
               onGit={() => controller.openGitSettings(true)}
               onEditTool={(slug) => controller.openBuild(slug)}
@@ -406,7 +447,10 @@
   {#if showNew}
     <NewModelDialog
       tools={app.tools}
-      loadModelTypes={(slug) => controller.modelTypesOf(slug)}
+      builtIns={BUILT_IN_TOOLS.filter(
+        (b) => !app.tools.some((t) => t.id === b.id),
+      ).map((b) => ({ key: builtInKey(b), name: b.name, version: b.version }))}
+      loadModelTypes={modelTypesFor}
       {folders}
       initialFolder=""
       onCreate={create}

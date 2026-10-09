@@ -6,6 +6,7 @@
 
   let {
     tools,
+    builtIns = [],
     loadModelTypes,
     folders,
     initialFolder,
@@ -13,7 +14,12 @@
     onCancel,
   }: {
     tools: ToolEntry[];
-    /** Reads the model types of a tool library. */
+    /**
+     * Built-in tool libraries that are not in the workspace yet. Their `key` is passed as the
+     * tool slug; the caller adds the library before it creates the model.
+     */
+    builtIns?: { key: string; name: string; version: string }[];
+    /** Reads the model types of a tool library (a workspace slug or a built-in key). */
     loadModelTypes: (toolSlug: string) => Promise<ModelTypeDef[]>;
     folders: string[];
     initialFolder: string;
@@ -42,6 +48,7 @@
   });
 
   $effect(() => {
+    // The workspace's own library is the obvious choice, even with built-in ones listed.
     if (tools.length === 1 && toolSlug === '') toolSlug = tools[0]!.slug;
   });
 
@@ -87,7 +94,7 @@
       <h2>New model</h2>
       <p class="muted">A model is made with a tool library.</p>
     </div>
-    {#if tools.length === 0}
+    {#if tools.length === 0 && builtIns.length === 0}
       <p class="notice warning">
         This workspace has no tool library yet. Add one in Build mode, or copy a
         tool library folder into <code>tools/</code>.
@@ -97,9 +104,26 @@
         Tool library
         <select bind:value={toolSlug} data-testid="new-model-tool">
           <option value="" disabled>Choose a tool library</option>
-          {#each tools as tool (tool.slug)}
-            <option value={tool.slug}>{tool.name} ({tool.version})</option>
-          {/each}
+          {#if builtIns.length > 0 && tools.length > 0}
+            <optgroup label="In this workspace">
+              {#each tools as tool (tool.slug)}
+                <option value={tool.slug}>{tool.name} ({tool.version})</option>
+              {/each}
+            </optgroup>
+          {:else}
+            {#each tools as tool (tool.slug)}
+              <option value={tool.slug}>{tool.name} ({tool.version})</option>
+            {/each}
+          {/if}
+          {#if builtIns.length > 0}
+            <optgroup
+              label="Built-in (added to this workspace when you create)"
+            >
+              {#each builtIns as b (b.key)}
+                <option value={b.key}>{b.name} ({b.version})</option>
+              {/each}
+            </optgroup>
+          {/if}
         </select>
       </label>
       <label>
