@@ -6,6 +6,23 @@ The project is in phase 7. Build mode lets method engineers make tool libraries 
 
 Local folders need Chrome or Edge on desktop. Other browsers load the app and show a message.
 
+## Run it
+
+You need Node.js 22 or newer (see `.nvmrc`). Then start everything with one command:
+
+- **Windows:** double-click `start.cmd`.
+- **macOS or Linux:** run `./start.sh`.
+- **Anywhere:** `node scripts/start.js` (or `pnpm start`).
+
+It checks Node, installs or updates the dependencies (using [pnpm](https://pnpm.io) 10, through Corepack if pnpm is not installed), starts the web app and opens it in your browser. MetaKit has no server or database, so that is the whole system. Press Ctrl+C to stop.
+
+| Option         | What it does                                                                 |
+| -------------- | ---------------------------------------------------------------------------- |
+| `--preview`    | Build for production and serve that, as GitHub Pages would                   |
+| `--port 5200`  | Use another port (or set `PORT`); the default is 5173, 4173 with `--preview` |
+| `--no-install` | Skip the dependency check                                                    |
+| `--no-open`    | Do not open the browser                                                      |
+
 ## Development setup
 
 You need Node.js 22 or newer (see `.nvmrc`) and [pnpm](https://pnpm.io) 10 (`corepack enable` picks the pinned version).
@@ -29,7 +46,7 @@ The first `pnpm test:e2e` needs Chromium: `pnpm --filter @metakit-app/web exec p
 
 ## Using Model mode
 
-1. `pnpm dev`, then open the address it prints in Chrome or Edge.
+1. Start MetaKit (`start.cmd`, `./start.sh` or `pnpm start`); it opens in your browser. Use Chrome or Edge.
 2. **Open workspace folder** and pick a folder. In a folder without `workspace.json` you can start a new workspace.
 3. **Add tool library** (once per workspace) and pick a tool library file, then **New model**: choose the tool library, a model type and a name.
 4. Click an object in the palette and click the canvas, or drag it there. Choose a relation and drag from one object to another, or select an object and drag from its edge. Double-click an object to edit its text; the panel on the right edits every attribute. Ctrl+Z and Ctrl+Shift+Z undo and redo; Ctrl+F finds.

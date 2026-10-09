@@ -81,6 +81,7 @@ Production code starts in phase 1. Spike code may be copied into `packages/` lat
 Keep this section current whenever scripts change.
 
 - `pnpm install`
+- `pnpm start` (or `start.cmd` / `./start.sh`): one command that checks Node, installs dependencies, starts the web app and opens the browser; `--preview` serves the production build
 - `pnpm dev`: run the web app locally
 - `pnpm typecheck`: `tsc -b` for packages, `tsc` for the CLI and spikes, `svelte-check` for the web app
 - `pnpm lint`: ESLint, then a Prettier check
