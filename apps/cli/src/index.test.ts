@@ -8,6 +8,7 @@ import { getVersion, run } from './index';
 const toolsDir = fileURLToPath(new URL('../../../tools', import.meta.url));
 const bpmn = join(toolsDir, 'bpmn-lite');
 const erLite = join(toolsDir, 'er-lite');
+const portfolio = join(toolsDir, 'ai-use-case-portfolio');
 
 async function capture(args: string[]) {
   const out: string[] = [];
@@ -57,7 +58,7 @@ describe('basics', () => {
 
 describe('validate', () => {
   it('accepts the sample tool libraries', async () => {
-    for (const dir of [bpmn, erLite]) {
+    for (const dir of [bpmn, erLite, portfolio]) {
       const result = await capture(['validate', dir]);
       expect(result.code).toBe(0);
       expect(result.out).toContain('0 errors, 0 warnings');
