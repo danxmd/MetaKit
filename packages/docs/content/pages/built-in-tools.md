@@ -22,6 +22,7 @@ A built-in tool library is part of MetaKit itself, not of your workspace folder.
 | **BPMN lite** | Business processes: tasks, events, gateways and lanes connected by sequence flows. |
 | **ER lite** | Data models: entities, their attributes and the relationships between them. |
 | **Agent pipeline** | Pipelines in which AI agents and people perform tasks, hand over work and approve results. |
+| **Data and AI architecture** | Data platforms: sources, pipelines, stores, datasets, ML models, AI services and consumers, with data lineage and personal-data checks. See [[data-ai-architecture]]. |
 
 ## Where to find it
 

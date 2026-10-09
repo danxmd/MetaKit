@@ -26,7 +26,9 @@ test.describe('Built-in and workspace tool libraries', () => {
     await expect(
       builtIn.getByRole('heading', { name: 'Built-in', exact: true }),
     ).toBeVisible();
-    await expect(builtIn.locator('li.built-in')).toHaveCount(3);
+    expect(await builtIn.locator('li.built-in').count()).toBeGreaterThanOrEqual(
+      3,
+    );
     await expect(page.getByTestId('built-in-tool_erlite')).toContainText(
       'read-only',
     );

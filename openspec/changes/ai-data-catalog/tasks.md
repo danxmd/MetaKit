@@ -19,9 +19,9 @@
 
 ## 3. PR 3: Data and AI architecture (`feat/builtin-data-ai-architecture`)
 
-- [ ] 3.1 `tools/data-ai-architecture`: tool, sample model, Show lineage script.
-- [ ] 3.2 Tests, CLI validate entry, README row, built-in list entry.
-- [ ] 3.3 Docs: tutorial for the tool.
+- [x] 3.1 `tools/data-ai-architecture`: tool, sample model, Show lineage script.
+- [x] 3.2 Tests, CLI validate entry, README row, built-in list entry.
+- [x] 3.3 Docs: tutorial for the tool.
 
 ## 4. PR 4: AI use-case portfolio (`feat/builtin-ai-portfolio`)
 

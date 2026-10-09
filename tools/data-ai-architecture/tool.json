@@ -1,0 +1,2154 @@
+{
+  "formatVersion": 6,
+  "manifest": {
+    "id": "tool_dataaiarch",
+    "name": "Data and AI architecture",
+    "version": "1.0.0",
+    "languages": ["en"]
+  },
+  "settings": {
+    "grid": {
+      "size": 10,
+      "snap": true,
+      "visible": true
+    },
+    "layers": [
+      {
+        "key": "main",
+        "labels": {
+          "en": "Main"
+        },
+        "visible": true
+      }
+    ],
+    "numbering": {
+      "enabled": false,
+      "prefix": "",
+      "start": 1
+    }
+  },
+  "classes": {
+    "cls_dzone": {
+      "id": "cls_dzone",
+      "key": "Zone",
+      "kind": "container",
+      "labels": {
+        "en": "Zone"
+      },
+      "attributes": [
+        {
+          "id": "att_zonename",
+          "key": "Name",
+          "type": "text",
+          "labels": {
+            "en": "Name"
+          },
+          "required": true,
+          "maxLength": 80,
+          "default": "Zone"
+        },
+        {
+          "id": "att_zonelayer",
+          "key": "Layer",
+          "type": "choice",
+          "labels": {
+            "en": "Layer"
+          },
+          "options": ["Raw", "Curated", "Serving", "Sandbox"],
+          "default": "Raw"
+        },
+        {
+          "id": "att_zonedesc",
+          "key": "Description",
+          "type": "text",
+          "labels": {
+            "en": "Description"
+          },
+          "multiline": true
+        }
+      ],
+      "help": {
+        "en": "An area of the data platform that holds stores, datasets and pipelines at one level of refinement: raw data as it arrives, curated data that is cleaned and joined, or serving data that is ready to use."
+      },
+      "shape": "shp_dzone"
+    },
+    "cls_datanode": {
+      "id": "cls_datanode",
+      "key": "DataNode",
+      "kind": "node",
+      "labels": {
+        "en": "Data node"
+      },
+      "abstract": true,
+      "attributes": [
+        {
+          "id": "att_dnname",
+          "key": "Name",
+          "type": "text",
+          "labels": {
+            "en": "Name"
+          },
+          "required": true,
+          "maxLength": 100,
+          "default": "Unnamed"
+        },
+        {
+          "id": "att_dndesc",
+          "key": "Description",
+          "type": "text",
+          "labels": {
+            "en": "Description"
+          },
+          "multiline": true
+        },
+        {
+          "id": "att_dnowner",
+          "key": "Owner",
+          "type": "text",
+          "labels": {
+            "en": "Owner"
+          },
+          "maxLength": 80,
+          "help": {
+            "en": "The person or team accountable for it."
+          }
+        },
+        {
+          "id": "att_dnup",
+          "key": "Upstream",
+          "type": "formula",
+          "labels": {
+            "en": "Upstream"
+          },
+          "help": {
+            "en": "How many things flow directly into it."
+          },
+          "group": "Lineage",
+          "formula": "count(incoming(\"FlowsTo\"))",
+          "result": "number"
+        },
+        {
+          "id": "att_dndown",
+          "key": "Downstream",
+          "type": "formula",
+          "labels": {
+            "en": "Downstream"
+          },
+          "help": {
+            "en": "How many things it flows directly into."
+          },
+          "group": "Lineage",
+          "formula": "count(outgoing(\"FlowsTo\"))",
+          "result": "number"
+        }
+      ],
+      "help": {
+        "en": "Anything data passes through: a source, a pipeline, a store, a dataset, a model, a service or a consumer."
+      }
+    },
+    "cls_dsource": {
+      "id": "cls_dsource",
+      "key": "SourceSystem",
+      "kind": "node",
+      "labels": {
+        "en": "Source system"
+      },
+      "extends": "cls_datanode",
+      "attributes": [
+        {
+          "id": "att_srctech",
+          "key": "Technology",
+          "type": "text",
+          "labels": {
+            "en": "Technology"
+          },
+          "maxLength": 80,
+          "help": {
+            "en": "What kind of system it is, in your own words, such as \"CRM\" or \"Billing system\"."
+          }
+        },
+        {
+          "id": "att_srcloc",
+          "key": "Location",
+          "type": "choice",
+          "labels": {
+            "en": "Location"
+          },
+          "options": ["On premises", "Cloud", "Partner"],
+          "default": "Cloud"
+        }
+      ],
+      "help": {
+        "en": "A system where data starts: an operational application, a device or a partner feed."
+      },
+      "shape": "shp_dsource"
+    },
+    "cls_dingest": {
+      "id": "cls_dingest",
+      "key": "Ingestion",
+      "kind": "node",
+      "labels": {
+        "en": "Ingestion"
+      },
+      "extends": "cls_datanode",
+      "attributes": [
+        {
+          "id": "att_ingmode",
+          "key": "Mode",
+          "type": "choice",
+          "labels": {
+            "en": "Mode"
+          },
+          "options": ["Batch", "Streaming", "Change data capture"],
+          "default": "Batch"
+        },
+        {
+          "id": "att_ingsched",
+          "key": "Schedule",
+          "type": "text",
+          "labels": {
+            "en": "Schedule"
+          },
+          "maxLength": 80
+        }
+      ],
+      "help": {
+        "en": "How data is brought in from a source: a batch import, a stream of events or change data capture."
+      },
+      "shape": "shp_dingest"
+    },
+    "cls_dpipeline": {
+      "id": "cls_dpipeline",
+      "key": "DataPipeline",
+      "kind": "node",
+      "labels": {
+        "en": "Data pipeline"
+      },
+      "extends": "cls_datanode",
+      "attributes": [
+        {
+          "id": "att_pipeengine",
+          "key": "Engine",
+          "type": "text",
+          "labels": {
+            "en": "Engine"
+          },
+          "maxLength": 80,
+          "help": {
+            "en": "What runs it, such as \"SQL jobs\" or \"Scheduled scripts\"."
+          }
+        },
+        {
+          "id": "att_pipesched",
+          "key": "Schedule",
+          "type": "text",
+          "labels": {
+            "en": "Schedule"
+          },
+          "maxLength": 80
+        },
+        {
+          "id": "att_pipetrans",
+          "key": "Transformation",
+          "type": "text",
+          "labels": {
+            "en": "Transformation"
+          },
+          "multiline": true,
+          "help": {
+            "en": "What the pipeline does to the data."
+          }
+        }
+      ],
+      "help": {
+        "en": "A job that reads data, cleans, joins or reshapes it, and writes the result."
+      },
+      "shape": "shp_dpipeline"
+    },
+    "cls_dstore": {
+      "id": "cls_dstore",
+      "key": "DataStore",
+      "kind": "node",
+      "labels": {
+        "en": "Data store"
+      },
+      "extends": "cls_datanode",
+      "attributes": [
+        {
+          "id": "att_storekind",
+          "key": "Kind",
+          "type": "choice",
+          "labels": {
+            "en": "Kind"
+          },
+          "options": [
+            "Lake",
+            "Warehouse",
+            "Lakehouse",
+            "Database",
+            "Feature store",
+            "Vector store"
+          ],
+          "default": "Lakehouse"
+        },
+        {
+          "id": "att_storetech",
+          "key": "Technology",
+          "type": "text",
+          "labels": {
+            "en": "Technology"
+          },
+          "maxLength": 80
+        },
+        {
+          "id": "att_storeregion",
+          "key": "Region",
+          "type": "text",
+          "labels": {
+            "en": "Region"
+          },
+          "maxLength": 60,
+          "help": {
+            "en": "Where the data is kept, such as a country or a data centre region."
+          }
+        },
+        {
+          "id": "att_storepd",
+          "key": "ApprovedForPersonalData",
+          "type": "boolean",
+          "labels": {
+            "en": "Approved for personal data"
+          },
+          "display": "switch",
+          "default": false,
+          "group": "Governance",
+          "help": {
+            "en": "On when the store has been approved to hold personal data."
+          }
+        }
+      ],
+      "help": {
+        "en": "A place where data is kept: a lake, a warehouse, a lakehouse, a database, a feature store or a vector store."
+      },
+      "shape": "shp_dstore"
+    },
+    "cls_dataset": {
+      "id": "cls_dataset",
+      "key": "Dataset",
+      "kind": "node",
+      "labels": {
+        "en": "Dataset"
+      },
+      "extends": "cls_datanode",
+      "attributes": [
+        {
+          "id": "att_dsformat",
+          "key": "Format",
+          "type": "text",
+          "labels": {
+            "en": "Format"
+          },
+          "maxLength": 60,
+          "help": {
+            "en": "How the data is laid out, such as \"Table\" or \"Files\"."
+          }
+        },
+        {
+          "id": "att_dsrefresh",
+          "key": "Refresh",
+          "type": "choice",
+          "labels": {
+            "en": "Refresh"
+          },
+          "options": [
+            "Real time",
+            "Hourly",
+            "Daily",
+            "Weekly",
+            "Monthly",
+            "On demand"
+          ],
+          "default": "Daily"
+        },
+        {
+          "id": "att_dsclass",
+          "key": "Classification",
+          "type": "choice",
+          "labels": {
+            "en": "Classification"
+          },
+          "options": ["Public", "Internal", "Confidential", "Restricted"],
+          "default": "Internal",
+          "group": "Governance"
+        },
+        {
+          "id": "att_dspd",
+          "key": "ContainsPersonalData",
+          "type": "boolean",
+          "labels": {
+            "en": "Contains personal data"
+          },
+          "display": "switch",
+          "default": false,
+          "group": "Governance"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_ds_pd_public",
+          "formula": "!ContainsPersonalData || Classification != 'Public'",
+          "message": "A dataset that contains personal data should not be classified as Public.",
+          "severity": "warning"
+        }
+      ],
+      "help": {
+        "en": "A named, governed set of data that people and models use, such as a table of customer profiles."
+      },
+      "shape": "shp_dataset"
+    },
+    "cls_mlmodel": {
+      "id": "cls_mlmodel",
+      "key": "MLModel",
+      "kind": "node",
+      "labels": {
+        "en": "ML model"
+      },
+      "extends": "cls_datanode",
+      "attributes": [
+        {
+          "id": "att_mltask",
+          "key": "Task",
+          "type": "choice",
+          "labels": {
+            "en": "Task"
+          },
+          "options": [
+            "Classification",
+            "Regression",
+            "Forecasting",
+            "Clustering",
+            "Ranking",
+            "Generation",
+            "Other"
+          ],
+          "default": "Classification"
+        },
+        {
+          "id": "att_mlframework",
+          "key": "Framework",
+          "type": "text",
+          "labels": {
+            "en": "Framework"
+          },
+          "maxLength": 80,
+          "group": "Model"
+        },
+        {
+          "id": "att_mlversion",
+          "key": "Version",
+          "type": "text",
+          "labels": {
+            "en": "Version"
+          },
+          "maxLength": 30,
+          "group": "Model"
+        },
+        {
+          "id": "att_mlmetric",
+          "key": "Metric",
+          "type": "text",
+          "labels": {
+            "en": "Metric"
+          },
+          "maxLength": 40,
+          "group": "Model",
+          "help": {
+            "en": "How quality is measured, such as \"AUC\" or \"RMSE\"."
+          }
+        },
+        {
+          "id": "att_mlscore",
+          "key": "Score",
+          "type": "number",
+          "labels": {
+            "en": "Score"
+          },
+          "group": "Model",
+          "decimals": 3
+        }
+      ],
+      "help": {
+        "en": "A trained machine learning model, with the task it does and how well it does it."
+      },
+      "shape": "shp_mlmodel"
+    },
+    "cls_aiservice": {
+      "id": "cls_aiservice",
+      "key": "AIService",
+      "kind": "node",
+      "labels": {
+        "en": "AI service"
+      },
+      "extends": "cls_datanode",
+      "attributes": [
+        {
+          "id": "att_aikind",
+          "key": "Kind",
+          "type": "choice",
+          "labels": {
+            "en": "Kind"
+          },
+          "options": ["API", "Agent", "Chat assistant", "Batch scoring"],
+          "default": "API"
+        },
+        {
+          "id": "att_aiendpoint",
+          "key": "Endpoint",
+          "type": "text",
+          "labels": {
+            "en": "Endpoint"
+          },
+          "maxLength": 200,
+          "help": {
+            "en": "Where it is reached, such as a path or an address."
+          }
+        }
+      ],
+      "help": {
+        "en": "Something that puts AI to use for others: an API, an agent or a chat assistant."
+      },
+      "shape": "shp_aiservice"
+    },
+    "cls_consumer": {
+      "id": "cls_consumer",
+      "key": "Consumer",
+      "kind": "node",
+      "labels": {
+        "en": "Consumer"
+      },
+      "extends": "cls_datanode",
+      "attributes": [
+        {
+          "id": "att_conkind",
+          "key": "Kind",
+          "type": "choice",
+          "labels": {
+            "en": "Kind"
+          },
+          "options": [
+            "Dashboard",
+            "Application",
+            "Analyst",
+            "External partner"
+          ],
+          "default": "Dashboard"
+        },
+        {
+          "id": "att_conaud",
+          "key": "Audience",
+          "type": "choice",
+          "labels": {
+            "en": "Audience"
+          },
+          "options": ["Internal", "Public"],
+          "default": "Internal",
+          "group": "Governance",
+          "help": {
+            "en": "Public when people outside the organisation see what it shows."
+          }
+        }
+      ],
+      "help": {
+        "en": "Whoever or whatever uses the data in the end: a dashboard, an application, an analyst or an external partner."
+      },
+      "shape": "shp_consumer"
+    }
+  },
+  "relations": {
+    "rel_flowsto": {
+      "id": "rel_flowsto",
+      "key": "FlowsTo",
+      "labels": {
+        "en": "Flows to"
+      },
+      "from": [
+        "cls_dsource",
+        "cls_dingest",
+        "cls_dpipeline",
+        "cls_dstore",
+        "cls_dataset",
+        "cls_mlmodel",
+        "cls_aiservice"
+      ],
+      "to": [
+        "cls_dingest",
+        "cls_dpipeline",
+        "cls_dstore",
+        "cls_dataset",
+        "cls_mlmodel",
+        "cls_aiservice",
+        "cls_consumer"
+      ],
+      "attributes": [
+        {
+          "id": "att_flowfreq",
+          "key": "Frequency",
+          "type": "choice",
+          "labels": {
+            "en": "Frequency"
+          },
+          "options": ["Batch", "Streaming", "On demand"],
+          "default": "Batch"
+        },
+        {
+          "id": "att_flowformat",
+          "key": "Format",
+          "type": "text",
+          "labels": {
+            "en": "Format"
+          },
+          "maxLength": 60
+        },
+        {
+          "id": "att_flowpd",
+          "key": "ContainsPersonalData",
+          "type": "boolean",
+          "labels": {
+            "en": "Contains personal data"
+          },
+          "display": "switch",
+          "default": false
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_flow_pd_store",
+          "formula": "!ContainsPersonalData || to.ApprovedForPersonalData != false",
+          "message": "= 'Personal data flows into \"' + to.Name + '\", a data store that is not approved for personal data.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_flow_restricted_public",
+          "formula": "!(from.Classification == 'Restricted' && to.Audience == 'Public')",
+          "message": "= 'The restricted dataset \"' + from.Name + '\" flows to \"' + to.Name + '\", which has a public audience.'",
+          "severity": "warning"
+        }
+      ],
+      "help": {
+        "en": "Data moves from one thing to the next. Say how often, in what format, and whether it carries personal data."
+      },
+      "shape": "shp_flowsto"
+    },
+    "rel_serves": {
+      "id": "rel_serves",
+      "key": "Serves",
+      "labels": {
+        "en": "Serves"
+      },
+      "from": ["cls_mlmodel", "cls_aiservice"],
+      "to": ["cls_aiservice", "cls_consumer"],
+      "attributes": [
+        {
+          "id": "att_servechannel",
+          "key": "Channel",
+          "type": "text",
+          "labels": {
+            "en": "Channel"
+          },
+          "maxLength": 60,
+          "help": {
+            "en": "How it is delivered, such as \"API call\" or \"Nightly scores\"."
+          }
+        }
+      ],
+      "help": {
+        "en": "A model or an AI service delivers its results to a service or a consumer."
+      },
+      "shape": "shp_serves"
+    },
+    "rel_trainson": {
+      "id": "rel_trainson",
+      "key": "TrainsOn",
+      "labels": {
+        "en": "Trains on"
+      },
+      "from": ["cls_mlmodel"],
+      "to": ["cls_dataset"],
+      "attributes": [
+        {
+          "id": "att_trainsplit",
+          "key": "Split",
+          "type": "choice",
+          "labels": {
+            "en": "Used for"
+          },
+          "options": ["Training", "Validation", "Test"],
+          "default": "Training"
+        }
+      ],
+      "help": {
+        "en": "A model learns from this dataset, or is validated or tested on it."
+      },
+      "shape": "shp_trainson"
+    }
+  },
+  "modelTypes": {
+    "mt_dataarch": {
+      "id": "mt_dataarch",
+      "key": "Architecture",
+      "labels": {
+        "en": "Architecture"
+      },
+      "classes": [
+        "cls_dzone",
+        "cls_dsource",
+        "cls_dingest",
+        "cls_dpipeline",
+        "cls_dstore",
+        "cls_dataset",
+        "cls_mlmodel",
+        "cls_aiservice",
+        "cls_consumer"
+      ],
+      "relations": ["rel_flowsto", "rel_serves", "rel_trainson"],
+      "views": [
+        {
+          "id": "vw_dataflow",
+          "key": "DataFlow",
+          "labels": {
+            "en": "Data flow"
+          },
+          "classes": [
+            "cls_dzone",
+            "cls_dsource",
+            "cls_dingest",
+            "cls_dpipeline",
+            "cls_dstore",
+            "cls_dataset",
+            "cls_consumer"
+          ],
+          "relations": ["rel_flowsto"]
+        },
+        {
+          "id": "vw_ai",
+          "key": "AI",
+          "labels": {
+            "en": "AI"
+          },
+          "classes": [
+            "cls_dataset",
+            "cls_mlmodel",
+            "cls_aiservice",
+            "cls_consumer"
+          ],
+          "relations": ["rel_flowsto", "rel_serves", "rel_trainson"]
+        }
+      ],
+      "cardinalities": [],
+      "containers": {
+        "cls_dzone": [
+          "cls_dsource",
+          "cls_dingest",
+          "cls_dpipeline",
+          "cls_dstore",
+          "cls_dataset",
+          "cls_mlmodel",
+          "cls_aiservice",
+          "cls_consumer"
+        ]
+      },
+      "attributes": [
+        {
+          "id": "att_datitle",
+          "key": "Title",
+          "type": "text",
+          "labels": {
+            "en": "Title"
+          },
+          "required": true,
+          "maxLength": 100
+        },
+        {
+          "id": "att_daowner",
+          "key": "ArchitectureOwner",
+          "type": "text",
+          "labels": {
+            "en": "Owner"
+          },
+          "maxLength": 80
+        },
+        {
+          "id": "att_dapurpose",
+          "key": "Purpose",
+          "type": "text",
+          "labels": {
+            "en": "Purpose"
+          },
+          "multiline": true
+        }
+      ],
+      "help": {
+        "en": "The data platform of one product or initiative: where data comes from, how it moves and who uses it."
+      }
+    }
+  },
+  "shapes": {
+    "shp_dzone": {
+      "id": "shp_dzone",
+      "name": "Zone (container)",
+      "kind": "node",
+      "size": {
+        "width": 520,
+        "height": 300,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 6,
+          "fill": "= Layer == 'Raw' ? '#fff4e6' : Layer == 'Curated' ? '#e7f5ff' : Layer == 'Serving' ? '#ebfbee' : Layer == 'Sandbox' ? '#f8f9fa' : '#f8f9fa'",
+          "stroke": "#868e96",
+          "strokeWidth": 1.5,
+          "dash": [7, 4]
+        },
+        {
+          "type": "text",
+          "x": 12,
+          "y": 4,
+          "width": "100% - 48",
+          "height": 24,
+          "text": "= $label",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "path",
+          "d": "M5 21V3 M5 4h12l-2 4 2 4H5",
+          "viewBox": [0, 0, 24, 24],
+          "x": "100% - 30",
+          "y": 6,
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#868e96",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "container",
+        "fill": {
+          "by": "Layer",
+          "values": {
+            "Raw": "#fff4e6",
+            "Curated": "#e7f5ff",
+            "Serving": "#ebfbee",
+            "Sandbox": "#f8f9fa"
+          },
+          "fallback": "#f8f9fa"
+        },
+        "border": "#868e96",
+        "borderWidth": 1.5,
+        "borderStyle": "dashed",
+        "title": {
+          "attribute": null
+        },
+        "size": {
+          "width": 520,
+          "height": 300,
+          "resizable": true
+        },
+        "icon": {
+          "name": "flag",
+          "colour": "#868e96"
+        }
+      }
+    },
+    "shp_dsource": {
+      "id": "shp_dsource",
+      "name": "Source system (box)",
+      "kind": "node",
+      "size": {
+        "width": 160,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 0,
+          "fill": "#e9ecef",
+          "stroke": "#495057",
+          "strokeWidth": 2
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= $label",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {}
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= Technology",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M7 18a4 4 0 0 1-.5-8A5.5 5.5 0 0 1 17 8.5 4.5 4.5 0 0 1 17.5 18z",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "box",
+        "fill": "#e9ecef",
+        "border": "#495057",
+        "borderWidth": 2,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": null
+        },
+        "size": {
+          "width": 160,
+          "height": 70,
+          "resizable": true
+        },
+        "icon": {
+          "name": "cloud"
+        },
+        "subtitle": {
+          "attribute": "Technology"
+        }
+      }
+    },
+    "shp_dingest": {
+      "id": "shp_dingest",
+      "name": "Ingestion (pill)",
+      "kind": "node",
+      "size": {
+        "width": 150,
+        "height": 50,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 999,
+          "fill": "#fff3bf",
+          "stroke": "#f08c00",
+          "strokeWidth": 2
+        },
+        {
+          "type": "text",
+          "x": 42,
+          "y": 4,
+          "width": "100% - 58",
+          "height": "100% - 28",
+          "text": "= $label",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {}
+        },
+        {
+          "type": "text",
+          "x": 42,
+          "y": "100% - 22",
+          "width": "100% - 58",
+          "height": 18,
+          "text": "= Mode",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M13 2L4 14h7l-1 8 9-12h-7z",
+          "viewBox": [0, 0, 24, 24],
+          "x": 14,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#e67700",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "pill",
+        "fill": "#fff3bf",
+        "border": "#f08c00",
+        "borderWidth": 2,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": null
+        },
+        "size": {
+          "width": 150,
+          "height": 50,
+          "resizable": true
+        },
+        "icon": {
+          "name": "bolt",
+          "colour": "#e67700"
+        },
+        "subtitle": {
+          "attribute": "Mode"
+        }
+      }
+    },
+    "shp_dpipeline": {
+      "id": "shp_dpipeline",
+      "name": "Data pipeline (gear)",
+      "kind": "node",
+      "size": {
+        "width": 160,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "#e5dbff",
+          "stroke": "#7048e8",
+          "strokeWidth": 2
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= $label",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {}
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= Schedule",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M19 12l2-1-1-3-2 .5-1.5-1.5.5-2-3-1-1 2h-2l-1-2-3 1 .5 2L6 8.5 4 8l-1 3 2 1v2l-2 1 1 3 2-.5L7.5 19l-.5 2 3 1 1-2h2l1 2 3-1-.5-2 1.5-1.5 2 .5 1-3-2-1z",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#5f3dc4",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": "#e5dbff",
+        "border": "#7048e8",
+        "borderWidth": 2,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": null
+        },
+        "size": {
+          "width": 160,
+          "height": 70,
+          "resizable": true
+        },
+        "icon": {
+          "name": "gear",
+          "colour": "#5f3dc4"
+        },
+        "subtitle": {
+          "attribute": "Schedule"
+        }
+      }
+    },
+    "shp_dstore": {
+      "id": "shp_dstore",
+      "name": "Data store (database)",
+      "kind": "node",
+      "size": {
+        "width": 160,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "#d0ebff",
+          "stroke": "= ApprovedForPersonalData == true ? '#2f9e44' : ApprovedForPersonalData == false ? '#1971c2' : '#1971c2'",
+          "strokeWidth": 2
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= $label",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {}
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= Kind",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6 M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1864ab",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": "#d0ebff",
+        "border": {
+          "by": "ApprovedForPersonalData",
+          "values": {
+            "true": "#2f9e44",
+            "false": "#1971c2"
+          },
+          "fallback": "#1971c2"
+        },
+        "borderWidth": 2,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": null
+        },
+        "size": {
+          "width": 160,
+          "height": 70,
+          "resizable": true
+        },
+        "icon": {
+          "name": "database",
+          "colour": "#1864ab"
+        },
+        "subtitle": {
+          "attribute": "Kind"
+        }
+      }
+    },
+    "shp_dataset": {
+      "id": "shp_dataset",
+      "name": "Dataset (document, by classification)",
+      "kind": "node",
+      "size": {
+        "width": 140,
+        "height": 90,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          [0, 0],
+          ["100% - 18", 0],
+          ["100%", 18],
+          ["100%", "100%"],
+          [0, "100%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            [0, 0],
+            ["100% - 18", 0],
+            ["100%", 18],
+            ["100%", "100%"],
+            [0, "100%"]
+          ],
+          "fill": "= Classification == 'Public' ? '#ebfbee' : Classification == 'Internal' ? '#e7f5ff' : Classification == 'Confidential' ? '#fff3bf' : Classification == 'Restricted' ? '#ffe3e3' : '#f8f9fa'",
+          "stroke": "#495057",
+          "strokeWidth": 2
+        },
+        {
+          "type": "polygon",
+          "points": [
+            ["100% - 18", 0],
+            ["100% - 18", 18],
+            ["100%", 18]
+          ],
+          "fill": "#00000022",
+          "stroke": "#495057",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 20,
+          "width": "100% - 16",
+          "height": "100% - 46",
+          "text": "= $label",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {}
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 24",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= Classification",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "rect",
+          "x": "100% - 34",
+          "y": -6,
+          "width": 30,
+          "height": 16,
+          "radius": 8,
+          "fill": "#e03131",
+          "visible": "= Classification == 'Restricted'"
+        },
+        {
+          "type": "text",
+          "x": "100% - 34",
+          "y": -6,
+          "width": 30,
+          "height": 16,
+          "text": "R",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#ffffff",
+          "font": {
+            "size": 10,
+            "weight": 600
+          },
+          "visible": "= Classification == 'Restricted'"
+        }
+      ],
+      "look": {
+        "base": "document",
+        "fill": {
+          "by": "Classification",
+          "values": {
+            "Public": "#ebfbee",
+            "Internal": "#e7f5ff",
+            "Confidential": "#fff3bf",
+            "Restricted": "#ffe3e3"
+          },
+          "fallback": "#f8f9fa"
+        },
+        "border": "#495057",
+        "borderWidth": 2,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": null
+        },
+        "size": {
+          "width": 140,
+          "height": 90,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Classification"
+        },
+        "badge": {
+          "attribute": "Classification",
+          "equals": "Restricted",
+          "text": "R",
+          "colour": "#e03131"
+        }
+      }
+    },
+    "shp_mlmodel": {
+      "id": "shp_mlmodel",
+      "name": "ML model (bot)",
+      "kind": "node",
+      "size": {
+        "width": 160,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 16,
+          "fill": "#f3d9fa",
+          "stroke": "#ae3ec9",
+          "strokeWidth": 2
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= $label",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {}
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= Task",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 2v3 M5 7h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z M8.5 12.5h.01 M15.5 12.5h.01 M9 16h6",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#862e9c",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": "#f3d9fa",
+        "border": "#ae3ec9",
+        "borderWidth": 2,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": null
+        },
+        "size": {
+          "width": 160,
+          "height": 70,
+          "resizable": true
+        },
+        "corner": 16,
+        "icon": {
+          "name": "bot",
+          "colour": "#862e9c"
+        },
+        "subtitle": {
+          "attribute": "Task"
+        }
+      }
+    },
+    "shp_aiservice": {
+      "id": "shp_aiservice",
+      "name": "AI service (hexagon)",
+      "kind": "node",
+      "size": {
+        "width": 160,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          ["15%", 0],
+          ["85%", 0],
+          ["100%", "50%"],
+          ["85%", "100%"],
+          ["15%", "100%"],
+          [0, "50%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            ["15%", 0],
+            ["85%", 0],
+            ["100%", "50%"],
+            ["85%", "100%"],
+            ["15%", "100%"],
+            [0, "50%"]
+          ],
+          "fill": "#ffdeeb",
+          "stroke": "#d6336c",
+          "strokeWidth": 2
+        },
+        {
+          "type": "text",
+          "x": "18% + 26",
+          "y": 4,
+          "width": "64% - 26",
+          "height": "100% - 28",
+          "text": "= $label",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {}
+        },
+        {
+          "type": "text",
+          "x": "18% + 26",
+          "y": "100% - 22",
+          "width": "64% - 26",
+          "height": 18,
+          "text": "= Kind",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 2v3 M5 7h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z M8.5 12.5h.01 M15.5 12.5h.01 M9 16h6",
+          "viewBox": [0, 0, 24, 24],
+          "x": "18% + 4",
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#a61e4d",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "hexagon",
+        "fill": "#ffdeeb",
+        "border": "#d6336c",
+        "borderWidth": 2,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": null
+        },
+        "size": {
+          "width": 160,
+          "height": 70,
+          "resizable": true
+        },
+        "icon": {
+          "name": "bot",
+          "colour": "#a61e4d"
+        },
+        "subtitle": {
+          "attribute": "Kind"
+        }
+      }
+    },
+    "shp_consumer": {
+      "id": "shp_consumer",
+      "name": "Consumer (person)",
+      "kind": "node",
+      "size": {
+        "width": 160,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "#d3f9d8",
+          "stroke": "= Audience == 'Internal' ? '#2f9e44' : Audience == 'Public' ? '#e8590c' : '#2f9e44'",
+          "strokeWidth": 2
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= $label",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {}
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= Kind",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#2b8a3e",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": "#d3f9d8",
+        "border": {
+          "by": "Audience",
+          "values": {
+            "Internal": "#2f9e44",
+            "Public": "#e8590c"
+          },
+          "fallback": "#2f9e44"
+        },
+        "borderWidth": 2,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": null
+        },
+        "size": {
+          "width": 160,
+          "height": 70,
+          "resizable": true
+        },
+        "icon": {
+          "name": "person",
+          "colour": "#2b8a3e"
+        },
+        "subtitle": {
+          "attribute": "Kind"
+        }
+      }
+    },
+    "shp_flowsto": {
+      "id": "shp_flowsto",
+      "name": "Flows to (red when it carries personal data)",
+      "kind": "relation",
+      "line": {
+        "stroke": "= ContainsPersonalData == true ? '#e03131' : ContainsPersonalData == false ? '#495057' : '#495057'",
+        "strokeWidth": 2,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "labels": [
+        {
+          "at": "middle",
+          "text": "= Format",
+          "font": {
+            "size": 11
+          },
+          "background": "#ffffff",
+          "visible": "= Format != null"
+        }
+      ],
+      "look": {
+        "colour": {
+          "by": "ContainsPersonalData",
+          "values": {
+            "true": "#e03131",
+            "false": "#495057"
+          },
+          "fallback": "#495057"
+        },
+        "width": 2,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": {
+          "attribute": "Format"
+        }
+      }
+    },
+    "shp_serves": {
+      "id": "shp_serves",
+      "name": "Serves (dashed)",
+      "kind": "relation",
+      "line": {
+        "stroke": "#d6336c",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "open-arrow"
+      },
+      "labels": [
+        {
+          "at": "middle",
+          "text": "= Channel",
+          "font": {
+            "size": 11
+          },
+          "background": "#ffffff",
+          "visible": "= Channel != null"
+        }
+      ],
+      "look": {
+        "colour": "#d6336c",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "open-arrow",
+        "label": {
+          "attribute": "Channel"
+        }
+      }
+    },
+    "shp_trainson": {
+      "id": "shp_trainson",
+      "name": "Trains on (dotted)",
+      "kind": "relation",
+      "line": {
+        "stroke": "#ae3ec9",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [2, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "labels": [
+        {
+          "at": "middle",
+          "text": "= Split",
+          "font": {
+            "size": 11
+          },
+          "background": "#ffffff",
+          "visible": "= Split != null"
+        }
+      ],
+      "look": {
+        "colour": "#ae3ec9",
+        "width": 1.5,
+        "style": "dotted",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": {
+          "attribute": "Split"
+        }
+      }
+    }
+  },
+  "panels": {
+    "cls_dstore": {
+      "class": "cls_dstore",
+      "tabs": [
+        {
+          "label": "Overview",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Kind",
+              "control": "select"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            },
+            {
+              "attribute": "Owner"
+            }
+          ]
+        },
+        {
+          "label": "Data",
+          "items": [
+            {
+              "attribute": "Technology"
+            },
+            {
+              "attribute": "Region"
+            },
+            {
+              "attribute": "Upstream"
+            },
+            {
+              "attribute": "Downstream"
+            }
+          ]
+        },
+        {
+          "label": "Governance",
+          "items": [
+            {
+              "attribute": "ApprovedForPersonalData",
+              "control": "switch"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_dataset": {
+      "class": "cls_dataset",
+      "tabs": [
+        {
+          "label": "Overview",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            },
+            {
+              "attribute": "Owner"
+            }
+          ]
+        },
+        {
+          "label": "Data",
+          "items": [
+            {
+              "attribute": "Format"
+            },
+            {
+              "attribute": "Refresh",
+              "control": "select"
+            },
+            {
+              "attribute": "Upstream"
+            },
+            {
+              "attribute": "Downstream"
+            }
+          ]
+        },
+        {
+          "label": "Governance",
+          "items": [
+            {
+              "attribute": "Classification",
+              "control": "segmented"
+            },
+            {
+              "attribute": "ContainsPersonalData",
+              "control": "switch"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_dpipeline": {
+      "class": "cls_dpipeline",
+      "tabs": [
+        {
+          "label": "Overview",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            },
+            {
+              "attribute": "Owner"
+            }
+          ]
+        },
+        {
+          "label": "Run",
+          "items": [
+            {
+              "attribute": "Engine"
+            },
+            {
+              "attribute": "Schedule"
+            },
+            {
+              "attribute": "Transformation",
+              "control": "textarea"
+            }
+          ]
+        },
+        {
+          "label": "Lineage",
+          "items": [
+            {
+              "attribute": "Upstream"
+            },
+            {
+              "attribute": "Downstream"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_mlmodel": {
+      "class": "cls_mlmodel",
+      "tabs": [
+        {
+          "label": "Overview",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Task",
+              "control": "select"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            },
+            {
+              "attribute": "Owner"
+            }
+          ]
+        },
+        {
+          "label": "Model",
+          "items": [
+            {
+              "attribute": "Framework"
+            },
+            {
+              "attribute": "Version"
+            },
+            {
+              "attribute": "Metric"
+            },
+            {
+              "attribute": "Score"
+            }
+          ]
+        },
+        {
+          "label": "Lineage",
+          "items": [
+            {
+              "attribute": "Upstream"
+            },
+            {
+              "attribute": "Downstream"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_aiservice": {
+      "class": "cls_aiservice",
+      "tabs": [
+        {
+          "label": "Overview",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Kind",
+              "control": "segmented"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            },
+            {
+              "attribute": "Owner"
+            }
+          ]
+        },
+        {
+          "label": "Access",
+          "items": [
+            {
+              "attribute": "Endpoint"
+            }
+          ]
+        },
+        {
+          "label": "Lineage",
+          "items": [
+            {
+              "attribute": "Upstream"
+            },
+            {
+              "attribute": "Downstream"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_consumer": {
+      "class": "cls_consumer",
+      "tabs": [
+        {
+          "label": "Overview",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Kind",
+              "control": "select"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            },
+            {
+              "attribute": "Owner"
+            }
+          ]
+        },
+        {
+          "label": "Governance",
+          "items": [
+            {
+              "attribute": "Audience",
+              "control": "segmented"
+            }
+          ]
+        },
+        {
+          "label": "Lineage",
+          "items": [
+            {
+              "attribute": "Upstream"
+            },
+            {
+              "attribute": "Downstream"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "rel_flowsto": {
+      "class": "rel_flowsto",
+      "tabs": [
+        {
+          "label": "Flow",
+          "items": [
+            {
+              "attribute": "Frequency",
+              "control": "segmented"
+            },
+            {
+              "attribute": "Format"
+            },
+            {
+              "attribute": "ContainsPersonalData",
+              "control": "switch"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "rules": {
+    "rule_approvepd": {
+      "id": "rule_approvepd",
+      "label": "Mark as approved for personal data",
+      "when": {
+        "event": "command"
+      },
+      "if": "= self != null && self.class == 'cls_dstore'",
+      "then": [
+        {
+          "action": "setAttribute",
+          "attribute": "ApprovedForPersonalData",
+          "value": true,
+          "target": "self"
+        }
+      ],
+      "command": {
+        "label": "Mark as approved for personal data",
+        "place": "context"
+      }
+    },
+    "rule_restrict": {
+      "id": "rule_restrict",
+      "label": "Classify as restricted",
+      "when": {
+        "event": "command"
+      },
+      "if": "= self != null && self.class == 'cls_dataset'",
+      "then": [
+        {
+          "action": "setAttribute",
+          "attribute": "Classification",
+          "value": "Restricted",
+          "target": "self"
+        }
+      ],
+      "command": {
+        "label": "Classify as restricted",
+        "place": "context"
+      }
+    }
+  },
+  "scripts": {
+    "scr_lineage": {
+      "id": "scr_lineage",
+      "name": "Show lineage",
+      "source": "// For the tool \"Data and AI architecture\". The command \"Show lineage\" lists everything upstream\n// and downstream of the selected object, grouped by how many steps away it is. It follows\n// \"Flows to\", and also counts the datasets a model trains on and what a model or service serves,\n// so the lineage of a dataset reaches the consumers of the model built from it.\nimport { commands, model, tool, ui } from 'metakit';\n\ntype Item = ReturnType<typeof model.objects>[number];\n\nconst describe = (o: Item) =>\n  `${o.attrs.Name || 'unnamed'} (${tool.class(o.class).labels['en'] ?? o.class})`;\n\nconst downstreamOf = (o: Item): Item[] => [\n  ...o.outgoing('FlowsTo'),\n  ...o.incoming('TrainsOn'),\n  ...o.outgoing('Serves'),\n];\nconst upstreamOf = (o: Item): Item[] => [\n  ...o.incoming('FlowsTo'),\n  ...o.outgoing('TrainsOn'),\n  ...o.incoming('Serves'),\n];\n\n/** Breadth first: the first list holds the objects one step away, the next two steps, and so on. */\nfunction walk(start: Item, step: (o: Item) => Item[]): Item[][] {\n  const seen = new Set<string>([start.id]);\n  const levels: Item[][] = [];\n  let frontier = [start];\n  while (frontier.length > 0) {\n    const level: Item[] = [];\n    for (const o of frontier)\n      for (const n of step(o)) {\n        if (seen.has(n.id)) continue;\n        seen.add(n.id);\n        level.push(n);\n      }\n    if (level.length > 0) levels.push(level);\n    frontier = level;\n  }\n  return levels;\n}\n\nconst total = (levels: Item[][]) =>\n  levels.reduce((sum, level) => sum + level.length, 0);\nconst steps = (n: number) => (n === 1 ? '1 step' : `${n} steps`);\n\ncommands.register({\n  id: 'show-lineage',\n  label: 'Show lineage',\n  menu: 'Model',\n  context: true,\n  run: (target) => {\n    const picked = target ?? model.selection()[0] ?? null;\n    if (picked === null) {\n      ui.message('Select an object first to see its lineage.');\n      return;\n    }\n    if ('relation' in picked) {\n      ui.message('Select an object, not a connector, to see its lineage.');\n      return;\n    }\n    const up = walk(picked, upstreamOf);\n    const down = walk(picked, downstreamOf);\n    const lines = [`Lineage of ${describe(picked)}:`];\n    if (up.length === 0) lines.push('Upstream: nothing flows into it.');\n    else {\n      lines.push(`Upstream, in flow order (${total(up)}):`);\n      // Flow order starts at the far end, so the furthest level comes first.\n      for (let i = up.length - 1; i >= 0; i--)\n        lines.push(\n          `  ${steps(i + 1)} back: ${up[i]!.map(describe).join(', ')}`,\n        );\n    }\n    if (down.length === 0) lines.push('Downstream: it flows nowhere.');\n    else {\n      lines.push(`Downstream, in flow order (${total(down)}):`);\n      down.forEach((level, i) =>\n        lines.push(`  ${steps(i + 1)} on: ${level.map(describe).join(', ')}`),\n      );\n    }\n    ui.message(lines.join('\\n'));\n  },\n});\n"
+    }
+  }
+}
