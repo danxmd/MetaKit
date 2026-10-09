@@ -62,7 +62,7 @@ The **Appearance** block shows a small picture of the current look and what it i
 | Control | What it does |
 | --- | --- |
 | **Edit appearance** | Opens the Appearance editor ([[appearance-editor]]). Shown for a simple look or when the class has none. |
-| **Edit as drawing** | Opens the advanced drawing editor ([[shape-editor]]). For a hand-drawn look it is shown at once; for a simple look it asks first: "Editing as a drawing turns this into a hand-drawn look. The simple controls will no longer work for it. Continue?" |
+| **Edit as drawing** | Opens the advanced drawing editor ([[shape-editor]]). For a hand-drawn look it is shown at once; for a simple look it asks first in a dialog: "This turns the look into a hand-drawn one. The simple controls will no longer work for it." Choose **Edit as drawing** or **Cancel**. |
 | **Replace with a simple look** | For a hand-drawn look only. Asks "This replaces the drawing. You can undo it." and builds a simple look of the same size and a similar form. |
 
 Under **More ways to set the look**:

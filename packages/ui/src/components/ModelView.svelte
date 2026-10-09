@@ -41,6 +41,7 @@
   } from '../shell/download';
   import { findInModel, type FindHit } from '../shell/find';
   import { canvasTheme } from '../shell/canvas-theme';
+  import { toasts } from '../shell/feedback';
   import { labelOf, paletteFor } from '../shell/palette';
   import { pageTheme } from '../theme/theme';
   import type { ReferenceServices } from '../shell/references';
@@ -111,8 +112,6 @@
   let activeTool = $state<EditorTool>({ type: 'select' });
   let viewId = $state<string>('');
   let issues = $state<ValidationIssue[]>([]);
-  let message = $state('');
-  let messageTimer: ReturnType<typeof setTimeout> | undefined;
   let validateTimer: ReturnType<typeof setTimeout> | undefined;
   let canUndo = $state(false);
   let canRedo = $state(false);
@@ -602,9 +601,7 @@
   }
 
   function say(text: string) {
-    message = text;
-    clearTimeout(messageTimer);
-    messageTimer = setTimeout(() => (message = ''), 6000);
+    toasts.show(text);
   }
 
   function scheduleValidation() {
@@ -699,7 +696,6 @@
 
   onDestroy(() => {
     window.removeEventListener('keydown', globalKeys);
-    clearTimeout(messageTimer);
     clearTimeout(validateTimer);
     stopStore();
     stopTheme();
@@ -1083,9 +1079,6 @@
           {/each}
         </ul>
       {/if}
-      {#if message}
-        <p class="toast" role="status" data-testid="message">{message}</p>
-      {/if}
       {#if app.messages.length > 0}
         <ul
           class="behaviour-messages"
@@ -1359,20 +1352,5 @@
   .behaviour-messages li span,
   .notices li span {
     flex: 1;
-  }
-  .toast {
-    position: absolute;
-    z-index: 12;
-    left: 50%;
-    bottom: var(--gap-4);
-    transform: translateX(-50%);
-    /* Inverts with the theme: light text on a dark chip, or the other way round. */
-    background: var(--text-strong);
-    color: var(--surface);
-    padding: var(--gap-2) var(--gap-4);
-    border-radius: var(--radius);
-    max-width: 80%;
-    margin: 0;
-    box-shadow: var(--shadow);
   }
 </style>

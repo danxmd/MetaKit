@@ -10,6 +10,7 @@
   import { asOneStep } from '@metakit-app/assistant';
   import type { AssistantPort } from '../../../assistant/assistant-service';
   import DraftWithAssistant from '../../assistant/DraftWithAssistant.svelte';
+  import { useBuildUndo } from '../../../build/undo-context';
 
   let {
     tool,
@@ -31,7 +32,7 @@
     ),
   );
   let selected = $state<string | null>(null);
-  let confirming = $state<string | null>(null);
+  const offerUndo = useBuildUndo();
   let error = $state<string | null>(null);
   const current = $derived(
     selected ? tool.rules?.[selected as Rule['id']] : undefined,
@@ -48,9 +49,10 @@
     if (exec({ type: 'putRule', rule })) selected = rule.id;
   }
 
-  function remove(id: string) {
-    confirming = null;
-    if (exec({ type: 'removeRule', id }) && selected === id) selected = null;
+  function remove(rule: Rule) {
+    if (!exec({ type: 'removeRule', id: rule.id })) return;
+    if (selected === rule.id) selected = null;
+    offerUndo(`Deleted rule ${rule.label}`);
   }
 </script>
 
@@ -93,25 +95,11 @@
           <button
             type="button"
             class="ghost danger"
-            onclick={() => (confirming = r.id)}
+            onclick={() => remove(r)}
             aria-label="Delete {r.label}"
             data-testid="rule-delete-{r.id}">Delete</button
           >
         </div>
-        {#if confirming === r.id}
-          <div class="confirm" role="alert">
-            Delete the rule "{r.label}"?
-            <button
-              type="button"
-              class="danger"
-              onclick={() => remove(r.id)}
-              data-testid="rule-delete-confirm">Delete</button
-            >
-            <button type="button" onclick={() => (confirming = null)}
-              >Keep</button
-            >
-          </div>
-        {/if}
       </li>
     {/each}
   </ul>
@@ -198,12 +186,6 @@
   }
   .ghost.danger {
     border-color: transparent;
-  }
-  .confirm {
-    padding: 0.4rem 0.6rem;
-    background: var(--warning-soft);
-    border-radius: 6px;
-    margin: 0.2rem 0;
   }
   .danger,
   .problem {

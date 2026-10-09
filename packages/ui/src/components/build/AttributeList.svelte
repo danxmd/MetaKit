@@ -14,6 +14,7 @@
   } from '../../build/attributes';
   import type { CommandResult } from '../../shell/controller';
   import AttributeForm from './AttributeForm.svelte';
+  import { useBuildUndo } from '../../build/undo-context';
 
   let {
     owner,
@@ -37,7 +38,7 @@
   let open = $state<string | null>(null);
   let newType = $state<AttributeType>('text');
   let error = $state<string | null>(null);
-  let confirming = $state<string | null>(null);
+  const offerUndo = useBuildUndo();
 
   const exec = (command: Record<string, unknown>): string | null => {
     const r = run(command as never);
@@ -58,10 +59,16 @@
     exec({ type: 'moveAttribute', owner, id, to });
   }
 
-  function remove(id: string) {
-    confirming = null;
-    exec({ type: 'removeAttribute', owner, id });
-    if (open === id) open = null;
+  /** Deletes at once and offers Undo; values in models are kept as unknown attributes. */
+  function remove(a: AttributeDef) {
+    const usedIn = usages(a.id);
+    if (exec({ type: 'removeAttribute', owner, id: a.id }) !== null) return;
+    if (open === a.id) open = null;
+    offerUndo(
+      usedIn.length > 0
+        ? `Deleted attribute ${a.key}. It was used in ${usedIn.join(', ')}.`
+        : `Deleted attribute ${a.key}`,
+    );
   }
 </script>
 
@@ -112,28 +119,11 @@
           <button
             type="button"
             class="ghost danger"
-            onclick={() => (confirming = a.id)}
+            onclick={() => remove(a)}
+            title="Delete {a.key}. Values in models are kept."
             aria-label="Delete {a.key}">Delete</button
           >
         </div>
-        {#if confirming === a.id}
-          <div class="notice warning confirm" role="alert">
-            Delete "{a.key}"? Values stored in models are kept and shown as
-            unknown attributes.
-            {#if usages(a.id).length > 0}
-              It is used in {usages(a.id).join(', ')}.
-            {/if}
-            <button
-              type="button"
-              class="danger"
-              onclick={() => remove(a.id)}
-              data-testid="attr-confirm-delete">Delete</button
-            >
-            <button type="button" onclick={() => (confirming = null)}
-              >Keep</button
-            >
-          </div>
-        {/if}
         {#if open === a.id}
           <AttributeForm
             def={a}
@@ -227,8 +217,5 @@
   }
   .ghost.danger {
     border-color: transparent;
-  }
-  .confirm {
-    margin: 0 var(--gap-1);
   }
 </style>

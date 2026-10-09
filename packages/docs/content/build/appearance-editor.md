@@ -76,7 +76,7 @@ Explained in [[appearance-forms]] and [[appearance-data-rules]].
 
 ### Switching between a simple look and a drawing
 
-- In the **Appearance** block of a class with a hand-drawn shape you see **Drawn by hand**, **Edit as drawing** and **Replace with a simple look**. Replacing asks first ("This replaces the drawing. You can undo it.") and builds a look of the same size and a similar form.
+- In the **Appearance** block of a class with a hand-drawn shape you see **Drawn by hand**, **Edit as drawing** and **Replace with a simple look**. Replacing happens at once, with **Undo** in the message at the bottom, and builds a look of the same size and a similar form.
 - If you press **Edit as drawing** on a class that has a simple look, MetaKit asks: "Editing as a drawing turns this into a hand-drawn look. The simple controls will no longer work for it. Continue?" After that the shape is hand-drawn.
 
 ## Examples

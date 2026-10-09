@@ -15,6 +15,10 @@
   } from '@metakit-app/core';
   import { uniqueKey } from '../build/attributes';
   import type { AppState, BuildPort } from '../shell/controller';
+  import { menuBehaviour } from '../shell/menu-action';
+  import Icon from './Icon.svelte';
+  import { confirmAction } from '../shell/feedback';
+  import { provideBuildUndo, useBuildUndo } from '../build/undo-context';
   import type { AssistantPort } from '../assistant/assistant-service';
   import CommitDialog from './git/CommitDialog.svelte';
   import ConflictDialog from './git/ConflictDialog.svelte';
@@ -51,6 +55,9 @@
     /** The optional assistant; the "Draft with assistant" buttons appear only when it is on. */
     assistant?: AssistantPort;
   } = $props();
+
+  provideBuildUndo(() => controller.buildUndoSource());
+  const offerUndo = useBuildUndo();
 
   type Section =
     | 'classes'
@@ -161,10 +168,6 @@
   let showPreview = $state(true);
   let committing = $state(false);
   const git = $derived(app.git);
-  let sourceMenu = $state<HTMLDetailsElement>();
-  const closeMenu = () => {
-    if (sourceMenu) sourceMenu.open = false;
-  };
 
   function openCommit() {
     controller.gitRefreshPending();
@@ -309,7 +312,20 @@
     if (result?.ok) newName = '';
   }
 
-  function remove(id: string) {
+  const KIND_NAMES = {
+    classes: 'class',
+    relations: 'relation class',
+    modelTypes: 'model type',
+  } as const;
+
+  /** Deletes at once; the toast offers Undo (ui-coherence: no confirm for undoable steps). */
+  function remove(id: string, key: string) {
+    if (
+      section !== 'classes' &&
+      section !== 'relations' &&
+      section !== 'modelTypes'
+    )
+      return;
     const command =
       section === 'classes'
         ? { type: 'removeClass', id }
@@ -317,8 +333,10 @@
           ? { type: 'removeRelation', id }
           : { type: 'removeModelType', id };
     const result = run(command as never);
-    if (result.ok && selected[section] === id)
+    if (!result.ok) return;
+    if (selected[section] === id)
       selected = { ...selected, [section]: undefined };
+    offerUndo(`Deleted ${KIND_NAMES[section]} ${key}`);
   }
 
   const usagesFor = (owner: KeyOwner) => (attributeId: string) =>
@@ -342,14 +360,17 @@
    * Opens the advanced drawing editor. A shape made from a simple look becomes a hand-drawn one
    * once it is edited as a drawing, so that is confirmed first.
    */
-  function editShape(id: string) {
+  async function editShape(id: string) {
     const shape = tool.shapes[id as keyof typeof tool.shapes];
     if (!shape) return;
     if (
       shape.look &&
-      !confirm(
-        'Editing as a drawing turns this into a hand-drawn look. The simple controls will no longer work for it. Continue?',
-      )
+      !(await confirmAction({
+        title: 'Edit as a drawing?',
+        message:
+          'This turns the look into a hand-drawn one. The simple controls will no longer work for it.',
+        action: 'Edit as drawing',
+      }))
     )
       return;
     if (shape.kind === 'relation') {
@@ -408,24 +429,24 @@
     <span class="spacer"></span>
     <button
       type="button"
-      class="icon"
+      class="icon ghost"
       disabled={!build.canUndo}
       onclick={() => controller.undoBuild()}
       title="Undo"
       aria-label="Undo"
-      data-testid="build-undo">↶</button
+      data-testid="build-undo"><Icon name="undo" /></button
     >
     <button
       type="button"
-      class="icon"
+      class="icon ghost"
       disabled={!build.canRedo}
       onclick={() => controller.redoBuild()}
       title="Redo"
       aria-label="Redo"
-      data-testid="build-redo">↷</button
+      data-testid="build-redo"><Icon name="redo" /></button
     >
     {#if git.link}
-      <details class="menu" bind:this={sourceMenu} data-testid="git-menu">
+      <details class="menu" use:menuBehaviour data-testid="git-menu">
         <summary data-testid="git-menu-summary">Source control</summary>
         <div class="menu-list right">
           <div class="menu-heading">Linked repository</div>
@@ -440,10 +461,7 @@
           <div class="menu-sep"></div>
           <button
             type="button"
-            onclick={() => {
-              closeMenu();
-              openCommit();
-            }}
+            onclick={() => openCommit()}
             data-testid="git-commit"
             >Commit and push{git.pending.length > 0
               ? ` (${git.pending.length})`
@@ -452,19 +470,13 @@
           <button
             type="button"
             disabled={git.busy}
-            onclick={() => {
-              closeMenu();
-              controller.gitPull();
-            }}
+            onclick={() => controller.gitPull()}
             data-testid="git-pull">Pull</button
           >
           <button
             type="button"
             disabled={git.busy}
-            onclick={() => {
-              closeMenu();
-              controller.gitLoadReleases();
-            }}
+            onclick={() => controller.gitLoadReleases()}
             data-testid="git-releases">Releases</button
           >
         </div>
@@ -627,7 +639,7 @@
                 <button
                   type="button"
                   class="ghost icon delete"
-                  onclick={() => remove(item.id)}
+                  onclick={() => remove(item.id, item.key)}
                   title="Delete {item.key}"
                   aria-label="Delete {item.key}"
                   data-testid="build-delete-{item.key}">✕</button
