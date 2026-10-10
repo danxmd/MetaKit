@@ -31,7 +31,7 @@ A modal dialog titled **New model** with the line "A model is made with a Kit." 
 
 | Field or button | What it does |
 | --- | --- |
-| **Kit** | The Kits of the workspace, each shown as "name (version)", for example "Agent pipeline (1.0.0)". Below them, under **Built-in (added to this workspace when you create)**, the built-in Kits the workspace does not have yet. Choosing one adds it to the workspace when you choose **Create**. The first entry, "Choose a Kit", cannot be picked. |
+| **Kit** | The Kits of the workspace, each shown as "name (version)", for example "Agent pipeline (1.0.0)". Below them, under **Built-in (added to this workspace when you create)**, the built-in Kits the workspace does not have yet, in the order of the Kits page (by domain). Choosing one adds it to the workspace when you choose **Create**. The first entry, "Choose a Kit", cannot be picked. |
 | **Model type** | The kinds of model the chosen Kit offers, sorted by name, for example **ArtifactLineage** and **Pipeline**. Disabled until you choose a Kit. The label shown is the English label of the model type. The first entry, "Choose a model type", cannot be picked. |
 | **Name** | The name of the model. Leading and trailing spaces are ignored. Required. |
 | **Folder (optional)** | A path such as `Sales/2026`. Parts are separated by `/`. As you type, the box suggests folders already in use. Leave it empty for the top level. |
