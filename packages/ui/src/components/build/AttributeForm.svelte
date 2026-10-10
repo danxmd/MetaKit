@@ -4,7 +4,7 @@
     type ClassId,
     type ModelTypeId,
     type TableColumn,
-    type ToolLibrary,
+    type Kit,
   } from '@metakit-app/core';
   import {
     ATTRIBUTE_TYPE_LABELS,
@@ -18,18 +18,18 @@
 
   let {
     def,
-    tool,
+    kit,
     onPut,
     onRename,
   }: {
     def: AttributeDef;
-    tool: ToolLibrary;
+    kit: Kit;
     /** Saves the changed definition; returns an error text when it is refused. */
     onPut: (def: AttributeDef) => string | null;
     onRename: (key: string) => string | null;
   } = $props();
 
-  const languages = $derived(tool.manifest.languages);
+  const languages = $derived(kit.manifest.languages);
   const lang = $derived(languages[0] ?? 'en');
   let problem = $state<string | null>(null);
 
@@ -44,10 +44,10 @@
     text.trim() === '' || Number.isNaN(Number(text)) ? undefined : Number(text);
 
   const classes = $derived(
-    Object.values(tool.classes).sort((a, b) => a.key.localeCompare(b.key)),
+    Object.values(kit.classes).sort((a, b) => a.key.localeCompare(b.key)),
   );
   const modelTypes = $derived(
-    Object.values(tool.modelTypes).sort((a, b) => a.key.localeCompare(b.key)),
+    Object.values(kit.modelTypes).sort((a, b) => a.key.localeCompare(b.key)),
   );
 
   const toggle = toggled;

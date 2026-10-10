@@ -118,11 +118,15 @@
       class="ghost back"
       onclick={onBack}
       data-testid="back-to-explorer"
+      data-tour="model-back"
       title="Back to all models">← Models</button
     >
     <h2 class="name" data-testid="model-name">{name}</h2>
-    <span class="status" class:bad={saveBad} data-testid="save-status"
-      >{saveText}</span
+    <span
+      class="status"
+      class:bad={saveBad}
+      data-testid="save-status"
+      data-tour="model-save">{saveText}</span
     >
     <span
       class="status sync"
@@ -130,7 +134,12 @@
       data-testid="sync-status"
       title={syncText}>{syncText}</span
     >
-    <ul class="people" aria-label="People in this model" data-testid="people">
+    <ul
+      class="people"
+      aria-label="People in this model"
+      data-testid="people"
+      data-tour="model-people"
+    >
       <li
         class="avatar me"
         style="background:{me.colour}"
@@ -154,7 +163,12 @@
     {@render trailing?.()}
   </div>
 
-  <div class="tools" role="toolbar" aria-label="Model tools">
+  <div
+    class="tools"
+    role="toolbar"
+    aria-label="Model tools"
+    data-tour="model-menus"
+  >
     <details class="menu" use:menuBehaviour>
       <summary>File</summary>
       <div class="menu-list">
@@ -260,7 +274,7 @@
     </details>
 
     <details class="menu" use:menuBehaviour>
-      <summary
+      <summary data-tour="model-check"
         >Check{#if issueCount > 0}<span class="badge count">{issueCount}</span
           >{/if}</summary
       >
@@ -305,6 +319,7 @@
       disabled={!canUndo}
       aria-label="Undo"
       title="Undo (Ctrl+Z)"
+      data-tour="model-undo"
     >
       <Icon name="undo" />
     </button>

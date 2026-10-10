@@ -4,23 +4,19 @@ import {
   scriptedProvider,
   asOneStep,
 } from '@metakit-app/assistant';
-import {
-  createToolStore,
-  validateToolLibrary,
-  type ToolLibrary,
-} from '@metakit-app/core';
-import { SAMPLE, sampleTool } from '@metakit-app/core/testing';
+import { createKitStore, validateKit, type Kit } from '@metakit-app/core';
+import { SAMPLE, sampleKit } from '@metakit-app/core/testing';
 import { AssistantService } from './assistant-service';
 import { DraftDialogModel } from './draft-dialog-model';
-import { sampleOutgoing, sampleToolForNotice } from './notice';
+import { sampleOutgoing, sampleKitForNotice } from './notice';
 import { typeCheckWithServer } from './type-check';
 import { createLanguageServer } from '../components/build/scripts/script-language';
 import { loadTestLibs } from '../components/build/scripts/test-libs';
 
 const FAKE_KEY = 'sk-ant-fake-not-a-real-key-0004';
 
-const tool = (): ToolLibrary => {
-  const t = sampleTool();
+const kit = (): Kit => {
+  const t = sampleKit();
   t.classes[SAMPLE.task]!.attributes.push(
     { id: 'att_owner', key: 'Owner', type: 'text' },
     { id: 'att_number', key: 'Number', type: 'integer' },
@@ -117,11 +113,9 @@ describe('AssistantService', () => {
 
   it('refuses to draft when it is off or has no key', async () => {
     const off = await service([RULE], { on: false });
-    await expect(off.s.draft('rule', tool(), 'x')).rejects.toThrow(
-      'turned off',
-    );
+    await expect(off.s.draft('rule', kit(), 'x')).rejects.toThrow('turned off');
     const noKey = await service([RULE], { key: false });
-    await expect(noKey.s.draft('rule', tool(), 'x')).rejects.toThrow(
+    await expect(noKey.s.draft('rule', kit(), 'x')).rejects.toThrow(
       'Add a key',
     );
     expect(off.provider.requests).toHaveLength(0);
@@ -142,7 +136,7 @@ describe('AssistantService', () => {
 
 describe('DraftDialogModel', () => {
   it('drafts, describes in plain English, and accepts as one undo step', async () => {
-    const t = tool();
+    const t = kit();
     const { s } = await service([RULE]);
     const model = new DraftDialogModel('rule', t, s);
     const seen: string[] = [];
@@ -162,7 +156,7 @@ describe('DraftDialogModel', () => {
     expect(v.rawLabel).toBe('JSON');
     expect(JSON.parse(v.raw).label).toBe('High-priority tasks need an owner');
 
-    const store = createToolStore(t);
+    const store = createKitStore(t);
     const before = structuredClone(store.state);
     const commands = model.accept(store.state)!;
     expect(store.execute(asOneStep(commands)).ok).toBe(true);
@@ -174,7 +168,7 @@ describe('DraftDialogModel', () => {
   it('cannot accept a draft that still has problems, but shows them', async () => {
     const bad = RULE.replace('Priority == ', 'Priority = = ');
     const { s } = await service([bad, bad]);
-    const model = new DraftDialogModel('rule', tool(), s);
+    const model = new DraftDialogModel('rule', kit(), s);
     model.sentence = 'x';
     await model.start();
     expect(model.view.canAccept).toBe(false);
@@ -185,7 +179,7 @@ describe('DraftDialogModel', () => {
 
   it('shows a service problem as an error and keeps no draft', async () => {
     const { s } = await service([], { key: false });
-    const model = new DraftDialogModel('rule', tool(), s);
+    const model = new DraftDialogModel('rule', kit(), s);
     model.sentence = 'x';
     await model.start();
     expect(model.view.error).toContain('Add a key');
@@ -194,7 +188,7 @@ describe('DraftDialogModel', () => {
 
   it('ignores an answer that arrives after a discard', async () => {
     const { s } = await service([RULE]);
-    const model = new DraftDialogModel('rule', tool(), s);
+    const model = new DraftDialogModel('rule', kit(), s);
     model.sentence = 'x';
     const started = model.start();
     model.discard();
@@ -208,7 +202,7 @@ describe('type check of drafted scripts', () => {
   it('finds a wrong class name that compiling cannot', async () => {
     const server = createLanguageServer(loadTestLibs());
     const check = typeCheckWithServer(server);
-    const t = tool();
+    const t = kit();
     const { generateDeclarations } = await import('@metakit-app/behaviour');
     const declarations = generateDeclarations({ ...t, scripts: {}, rules: {} });
     expect(
@@ -226,7 +220,7 @@ describe('type check of drafted scripts', () => {
   });
 
   it('is part of the retry: a script with a wrong class is redrafted', async () => {
-    const t = tool();
+    const t = kit();
     const { s, provider } = await service([script('Taks'), script('Task')]);
     const model = new DraftDialogModel('script', t, s);
     model.sentence = 'Renumber tasks by position';
@@ -235,18 +229,18 @@ describe('type check of drafted scripts', () => {
     expect(model.view.problems).toEqual([]);
     expect(provider.requests[1]!.messages[2]!.content).toMatch(/line 3/);
     expect(model.view.rawLabel).toBe('TypeScript');
-    const store = createToolStore(t);
+    const store = createKitStore(t);
     expect(store.execute(asOneStep(model.accept(store.state)!)).ok).toBe(true);
-    expect(validateToolLibrary(store.state)).toEqual([]);
+    expect(validateKit(store.state)).toEqual([]);
     expect(Object.values(store.state.scripts)[0]!.name).toBe('Renumber tasks');
   });
 });
 
 describe('the notice', () => {
-  it('shows a sample request that holds the tool and never a model', () => {
+  it('shows a sample request that holds the Kit and never a model', () => {
     const text = sampleOutgoing();
     expect(text).toContain('Priority (choice: Low | Medium | High)');
     expect(text).toContain('High-priority tasks need an owner');
-    expect(sampleToolForNotice().classes).not.toEqual({});
+    expect(sampleKitForNotice().classes).not.toEqual({});
   });
 });

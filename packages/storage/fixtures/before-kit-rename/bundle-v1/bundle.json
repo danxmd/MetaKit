@@ -1,0 +1,19 @@
+{
+  "created": "2026-06-01T09:00:00.000Z",
+  "formatVersion": 1,
+  "includesTool": true,
+  "kind": "mkbundle",
+  "models": [
+    {
+      "file": "models/library.mkmodel.json",
+      "folder": "Samples",
+      "name": "Library"
+    }
+  ],
+  "name": "Library",
+  "tool": {
+    "id": "tool_erlite",
+    "name": "ER lite",
+    "version": "1.0.0"
+  }
+}

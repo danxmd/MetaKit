@@ -4,7 +4,7 @@ import {
   type ConnectorId,
   type ElementId,
   type Model,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 import type { Clash } from '@metakit-app/sync';
 
@@ -18,7 +18,7 @@ export interface ClashNotice {
  * Only the field's name and the object's name are shown, never paths or ids.
  */
 export function describeClash(
-  tool: ToolLibrary,
+  kit: Kit,
   model: Model,
   clash: Clash,
   who: string,
@@ -36,7 +36,7 @@ export function describeClash(
     else if (root === 'elements' && id) {
       const element = model.elements[id as ElementId];
       if (rest[0] === 'attrs' && rest[1] && element) {
-        const attr = effectiveAttributes(tool, element.class).find(
+        const attr = effectiveAttributes(kit, element.class).find(
           (a) => a.id === rest[1],
         );
         if (attr)
@@ -44,13 +44,13 @@ export function describeClash(
       } else if (rest[0] === 'x' || rest[0] === 'y') field = 'the position';
       else if (rest[0] === 'w' || rest[0] === 'h') field = 'the size';
       if (element) {
-        const name = nameOf(tool, element.class, element.attrs);
+        const name = nameOf(kit, element.class, element.attrs);
         if (name) on = ` of "${name}"`;
       }
     } else if (root === 'connectors' && id) {
       const connector = model.connectors[id as ConnectorId];
       if (rest[0] === 'attrs' && rest[1] && connector) {
-        const attr = effectiveRelationAttributes(tool, connector.relation).find(
+        const attr = effectiveRelationAttributes(kit, connector.relation).find(
           (a) => a.id === rest[1],
         );
         if (attr)
@@ -64,11 +64,11 @@ export function describeClash(
 }
 
 function nameOf(
-  tool: ToolLibrary,
+  kit: Kit,
   classId: string,
   attrs: Record<string, unknown>,
 ): string | null {
-  const defs = effectiveAttributes(tool, classId as never);
+  const defs = effectiveAttributes(kit, classId as never);
   for (const d of defs) {
     const v = attrs[d.id];
     if (d.type === 'text' && typeof v === 'string' && v !== '') return v;

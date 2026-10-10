@@ -1,0 +1,391 @@
+{
+  "attributes": {
+    "Owner": "Head of online sales",
+    "Period": "2027",
+    "Title": "Online store growth"
+  },
+  "connectors": [
+    {
+      "from": "el_revenue",
+      "id": "cn_001",
+      "relation": "Measures",
+      "to": "el_goal"
+    },
+    {
+      "from": "el_satisfaction",
+      "id": "cn_002",
+      "relation": "Measures",
+      "to": "el_goal"
+    },
+    {
+      "attributes": {
+        "Effect": "Raises",
+        "Weight": 40
+      },
+      "from": "el_conversion",
+      "id": "cn_003",
+      "relation": "Drives",
+      "to": "el_revenue"
+    },
+    {
+      "attributes": {
+        "Effect": "Raises",
+        "Weight": 35
+      },
+      "from": "el_ordervalue",
+      "id": "cn_004",
+      "relation": "Drives",
+      "to": "el_revenue"
+    },
+    {
+      "attributes": {
+        "Effect": "Raises",
+        "Weight": 25
+      },
+      "from": "el_returning",
+      "id": "cn_005",
+      "relation": "Drives",
+      "to": "el_revenue"
+    },
+    {
+      "attributes": {
+        "Effect": "Raises",
+        "Weight": 50
+      },
+      "from": "el_ontime",
+      "id": "cn_006",
+      "relation": "Drives",
+      "to": "el_satisfaction"
+    },
+    {
+      "attributes": {
+        "Effect": "Lowers",
+        "Weight": 50
+      },
+      "from": "el_response",
+      "id": "cn_007",
+      "relation": "Drives",
+      "to": "el_satisfaction"
+    },
+    {
+      "attributes": {
+        "Effect": "Lowers",
+        "Weight": 50
+      },
+      "from": "el_loadtime",
+      "id": "cn_008",
+      "relation": "Drives",
+      "to": "el_conversion"
+    },
+    {
+      "attributes": {
+        "Effect": "Raises",
+        "Weight": 30
+      },
+      "from": "el_stock",
+      "id": "cn_009",
+      "relation": "Drives",
+      "to": "el_conversion"
+    },
+    {
+      "attributes": {
+        "Effect": "Lowers",
+        "Weight": 20
+      },
+      "from": "el_abandonment",
+      "id": "cn_010",
+      "relation": "Drives",
+      "to": "el_conversion"
+    },
+    {
+      "attributes": {
+        "Effect": "Raises",
+        "Weight": 40
+      },
+      "from": "el_emails",
+      "id": "cn_011",
+      "relation": "Drives",
+      "to": "el_returning"
+    },
+    {
+      "attributes": {
+        "Effect": "Raises",
+        "Weight": 70
+      },
+      "from": "el_picked",
+      "id": "cn_012",
+      "relation": "Drives",
+      "to": "el_ontime"
+    },
+    {
+      "attributes": {
+        "Effect": "Raises",
+        "Weight": 60
+      },
+      "from": "el_tickets",
+      "id": "cn_013",
+      "relation": "Drives",
+      "to": "el_response"
+    }
+  ],
+  "elements": [
+    {
+      "attributes": {
+        "Horizon": "Medium term",
+        "Measure": "Online revenue",
+        "Name": "Grow profitable online sales"
+      },
+      "class": "Goal",
+      "h": 80,
+      "id": "el_goal",
+      "w": 200,
+      "x": 600,
+      "y": 20
+    },
+    {
+      "attributes": {
+        "Baseline": 40,
+        "Current": 43.5,
+        "Direction": "Higher is better",
+        "Frequency": "Monthly",
+        "Name": "Online revenue",
+        "Owner": "Head of online sales",
+        "TargetChange": 15,
+        "Unit": "million"
+      },
+      "class": "OutcomeKPI",
+      "h": 90,
+      "id": "el_revenue",
+      "w": 200,
+      "x": 330,
+      "y": 160
+    },
+    {
+      "attributes": {
+        "Current": 47,
+        "Direction": "Higher is better",
+        "Frequency": "Quarterly",
+        "Name": "Customer satisfaction",
+        "Owner": "Head of customer service",
+        "Target": 45,
+        "Unit": "points"
+      },
+      "class": "OutcomeKPI",
+      "h": 90,
+      "id": "el_satisfaction",
+      "w": 200,
+      "x": 870,
+      "y": 160
+    },
+    {
+      "attributes": {
+        "Current": 2.9,
+        "Direction": "Higher is better",
+        "Frequency": "Weekly",
+        "Name": "Conversion rate",
+        "Target": 3.2,
+        "Unit": "%"
+      },
+      "class": "DriverMetric",
+      "h": 70,
+      "id": "el_conversion",
+      "w": 180,
+      "x": 40,
+      "y": 320
+    },
+    {
+      "attributes": {
+        "Current": 70,
+        "Direction": "Higher is better",
+        "Frequency": "Weekly",
+        "Name": "Average order value",
+        "Target": 68,
+        "Unit": "per order"
+      },
+      "class": "DriverMetric",
+      "h": 70,
+      "id": "el_ordervalue",
+      "w": 180,
+      "x": 250,
+      "y": 320
+    },
+    {
+      "attributes": {
+        "Current": 36,
+        "Direction": "Higher is better",
+        "Frequency": "Monthly",
+        "Name": "Returning customers",
+        "Target": 35,
+        "Unit": "%"
+      },
+      "class": "DriverMetric",
+      "h": 70,
+      "id": "el_returning",
+      "w": 180,
+      "x": 460,
+      "y": 320
+    },
+    {
+      "attributes": {
+        "Current": 92,
+        "Direction": "Higher is better",
+        "Frequency": "Weekly",
+        "Name": "Deliveries on time",
+        "Target": 95,
+        "Unit": "%"
+      },
+      "class": "DriverMetric",
+      "h": 70,
+      "id": "el_ontime",
+      "w": 180,
+      "x": 780,
+      "y": 320
+    },
+    {
+      "attributes": {
+        "Current": 3.5,
+        "Direction": "Lower is better",
+        "Frequency": "Weekly",
+        "Name": "Support response time",
+        "Target": 4,
+        "Unit": "hours"
+      },
+      "class": "DriverMetric",
+      "h": 70,
+      "id": "el_response",
+      "w": 180,
+      "x": 990,
+      "y": 320
+    },
+    {
+      "attributes": {
+        "Current": 2.6,
+        "Direction": "Lower is better",
+        "Frequency": "Daily",
+        "Name": "Checkout page load time",
+        "Owner": "Web team",
+        "Target": 2,
+        "Unit": "seconds"
+      },
+      "class": "OperationalMetric",
+      "h": 54,
+      "id": "el_loadtime",
+      "w": 180,
+      "x": 20,
+      "y": 480
+    },
+    {
+      "attributes": {
+        "Current": 98.1,
+        "Direction": "Higher is better",
+        "Frequency": "Daily",
+        "Name": "Stock availability",
+        "Owner": "Buying team",
+        "Target": 97,
+        "Unit": "%"
+      },
+      "class": "OperationalMetric",
+      "h": 54,
+      "id": "el_stock",
+      "w": 180,
+      "x": 220,
+      "y": 480
+    },
+    {
+      "attributes": {
+        "Current": 70,
+        "Direction": "Lower is better",
+        "Frequency": "Weekly",
+        "Name": "Cart abandonment",
+        "Owner": "Web team",
+        "Target": 65,
+        "Unit": "%"
+      },
+      "class": "OperationalMetric",
+      "h": 54,
+      "id": "el_abandonment",
+      "w": 180,
+      "x": 420,
+      "y": 480
+    },
+    {
+      "attributes": {
+        "Current": 8,
+        "Direction": "Higher is better",
+        "Frequency": "Monthly",
+        "Name": "Email campaigns sent",
+        "Owner": "Marketing team",
+        "Target": 8,
+        "Unit": "per month"
+      },
+      "class": "OperationalMetric",
+      "h": 54,
+      "id": "el_emails",
+      "w": 180,
+      "x": 620,
+      "y": 480
+    },
+    {
+      "attributes": {
+        "Baseline": 80,
+        "Current": 84,
+        "Direction": "Higher is better",
+        "Frequency": "Daily",
+        "Name": "Orders picked the same day",
+        "Owner": "Warehouse team",
+        "TargetChange": 12.5,
+        "Unit": "%"
+      },
+      "class": "OperationalMetric",
+      "h": 54,
+      "id": "el_picked",
+      "w": 180,
+      "x": 820,
+      "y": 480
+    },
+    {
+      "attributes": {
+        "Current": 26,
+        "Direction": "Lower is better",
+        "Frequency": "Daily",
+        "Name": "Tickets per agent",
+        "Owner": "Customer service",
+        "Target": 30,
+        "Unit": "per day"
+      },
+      "class": "OperationalMetric",
+      "h": 54,
+      "id": "el_tickets",
+      "w": 180,
+      "x": 1020,
+      "y": 480
+    },
+    {
+      "attributes": {
+        "Current": 131,
+        "Direction": "Higher is better",
+        "Frequency": "Monthly",
+        "Name": "Social media followers",
+        "Owner": "Marketing team",
+        "Target": 120,
+        "Unit": "thousand"
+      },
+      "class": "OperationalMetric",
+      "h": 54,
+      "id": "el_followers",
+      "w": 180,
+      "x": 1220,
+      "y": 480
+    }
+  ],
+  "formatVersion": 2,
+  "id": "mdl_onlinestore",
+  "kind": "mkmodel",
+  "kit": {
+    "id": "kit_kpitree",
+    "name": "KPI and metric tree",
+    "version": "1.0.0"
+  },
+  "modelType": "MetricTree",
+  "name": "Online store growth"
+}

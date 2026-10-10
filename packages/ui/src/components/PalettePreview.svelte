@@ -1,18 +1,18 @@
 <script lang="ts">
   import type { PreviewTarget } from '@metakit-app/canvas';
-  import type { ToolLibrary } from '@metakit-app/core';
+  import type { Kit } from '@metakit-app/core';
   import type { PreviewInfo } from '../shell/palette-preview';
   import ShapePreview from './ShapePreview.svelte';
 
   let {
-    tool,
+    kit,
     target,
     info,
     id,
     left,
     top,
   }: {
-    tool: ToolLibrary;
+    kit: Kit;
     target: PreviewTarget;
     info: PreviewInfo;
     /** The id the palette entry points to with aria-describedby. */
@@ -34,7 +34,7 @@
 >
   <div class="drawing">
     <ShapePreview
-      {tool}
+      {kit}
       {target}
       width={204}
       height={info.kind === 'relation' ? 56 : 100}

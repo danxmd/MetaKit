@@ -1,0 +1,464 @@
+{
+  "attributes": {
+    "Organisation": "A city bike service",
+    "Title": "Bike repair subscription",
+    "Version": "Spring 2027"
+  },
+  "connectors": [
+    {
+      "from": "el_v_fixed",
+      "id": "cn_001",
+      "relation": "Links",
+      "to": "el_s_commuters"
+    },
+    {
+      "from": "el_v_price",
+      "id": "cn_002",
+      "relation": "Links",
+      "to": "el_s_commuters"
+    },
+    {
+      "attributes": {
+        "Label": "needs a contract"
+      },
+      "from": "el_v_fleet",
+      "id": "cn_003",
+      "relation": "Links",
+      "to": "el_s_companies"
+    },
+    {
+      "from": "el_rel_named",
+      "id": "cn_004",
+      "relation": "Links",
+      "to": "el_s_companies"
+    },
+    {
+      "from": "el_ch_schemes",
+      "id": "cn_005",
+      "relation": "Links",
+      "to": "el_p_employers"
+    }
+  ],
+  "elements": [
+    {
+      "attributes": {
+        "Block": "Key partners",
+        "Name": "Key partners"
+      },
+      "class": "CanvasBlock",
+      "h": 480,
+      "id": "el_b_partners",
+      "w": 240,
+      "x": 40,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "Block": "Key activities",
+        "Name": "Key activities"
+      },
+      "class": "CanvasBlock",
+      "h": 235,
+      "id": "el_b_activities",
+      "w": 240,
+      "x": 290,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "Block": "Key resources",
+        "Name": "Key resources"
+      },
+      "class": "CanvasBlock",
+      "h": 235,
+      "id": "el_b_resources",
+      "w": 240,
+      "x": 290,
+      "y": 285
+    },
+    {
+      "attributes": {
+        "Block": "Value propositions",
+        "Name": "Value propositions"
+      },
+      "class": "CanvasBlock",
+      "h": 480,
+      "id": "el_b_values",
+      "w": 240,
+      "x": 540,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "Block": "Customer relationships",
+        "Name": "Customer relationships"
+      },
+      "class": "CanvasBlock",
+      "h": 235,
+      "id": "el_b_relationships",
+      "w": 240,
+      "x": 790,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "Block": "Channels",
+        "Name": "Channels"
+      },
+      "class": "CanvasBlock",
+      "h": 235,
+      "id": "el_b_channels",
+      "w": 240,
+      "x": 790,
+      "y": 285
+    },
+    {
+      "attributes": {
+        "Block": "Customer segments",
+        "Name": "Customer segments"
+      },
+      "class": "CanvasBlock",
+      "h": 480,
+      "id": "el_b_segments",
+      "w": 240,
+      "x": 1040,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "Block": "Cost structure",
+        "Name": "Cost structure"
+      },
+      "class": "CanvasBlock",
+      "h": 150,
+      "id": "el_b_cost",
+      "w": 615,
+      "x": 40,
+      "y": 540
+    },
+    {
+      "attributes": {
+        "Block": "Revenue streams",
+        "Name": "Revenue streams"
+      },
+      "class": "CanvasBlock",
+      "h": 150,
+      "id": "el_b_revenue",
+      "w": 615,
+      "x": 665,
+      "y": 540
+    },
+    {
+      "attributes": {
+        "Evidence": "Proven",
+        "Name": "Parts wholesaler"
+      },
+      "class": "CanvasItem",
+      "h": 56,
+      "id": "el_p_parts",
+      "parent": "el_b_partners",
+      "w": 150,
+      "x": 85,
+      "y": 84
+    },
+    {
+      "attributes": {
+        "Evidence": "Tested",
+        "Name": "Large employers"
+      },
+      "class": "CanvasItem",
+      "h": 56,
+      "id": "el_p_employers",
+      "parent": "el_b_partners",
+      "w": 150,
+      "x": 85,
+      "y": 152
+    },
+    {
+      "attributes": {
+        "Evidence": "Assumption",
+        "Name": "Bike insurers"
+      },
+      "class": "CanvasItem",
+      "h": 56,
+      "id": "el_p_insurers",
+      "parent": "el_b_partners",
+      "w": 150,
+      "x": 85,
+      "y": 220
+    },
+    {
+      "attributes": {
+        "Evidence": "Proven",
+        "Name": "Repairs at the bike"
+      },
+      "class": "CanvasItem",
+      "h": 56,
+      "id": "el_a_repair",
+      "parent": "el_b_activities",
+      "w": 150,
+      "x": 335,
+      "y": 84
+    },
+    {
+      "attributes": {
+        "Evidence": "Tested",
+        "Name": "Planning van routes"
+      },
+      "class": "CanvasItem",
+      "h": 56,
+      "id": "el_a_routes",
+      "parent": "el_b_activities",
+      "w": 150,
+      "x": 335,
+      "y": 152
+    },
+    {
+      "attributes": {
+        "Evidence": "Proven",
+        "Name": "Repair vans"
+      },
+      "class": "CanvasItem",
+      "h": 56,
+      "id": "el_r_vans",
+      "parent": "el_b_resources",
+      "w": 150,
+      "x": 335,
+      "y": 329
+    },
+    {
+      "attributes": {
+        "Evidence": "Proven",
+        "Name": "Trained mechanics"
+      },
+      "class": "CanvasItem",
+      "h": 56,
+      "id": "el_r_mechanics",
+      "parent": "el_b_resources",
+      "w": 150,
+      "x": 335,
+      "y": 397
+    },
+    {
+      "attributes": {
+        "Evidence": "Proven",
+        "Name": "Bike fixed where it is parked"
+      },
+      "class": "CanvasItem",
+      "h": 56,
+      "id": "el_v_fixed",
+      "parent": "el_b_values",
+      "w": 150,
+      "x": 585,
+      "y": 84
+    },
+    {
+      "attributes": {
+        "Evidence": "Tested",
+        "Name": "One price a month"
+      },
+      "class": "CanvasItem",
+      "h": 56,
+      "id": "el_v_price",
+      "parent": "el_b_values",
+      "w": 150,
+      "x": 585,
+      "y": 152
+    },
+    {
+      "attributes": {
+        "Evidence": "Assumption",
+        "Name": "Fleet always ready"
+      },
+      "class": "CanvasItem",
+      "h": 56,
+      "id": "el_v_fleet",
+      "parent": "el_b_values",
+      "w": 150,
+      "x": 585,
+      "y": 220
+    },
+    {
+      "attributes": {
+        "Evidence": "Proven",
+        "Name": "Booking in the app"
+      },
+      "class": "CanvasItem",
+      "h": 56,
+      "id": "el_rel_self",
+      "parent": "el_b_relationships",
+      "w": 150,
+      "x": 835,
+      "y": 84
+    },
+    {
+      "attributes": {
+        "Evidence": "Assumption",
+        "Name": "Named mechanic for companies"
+      },
+      "class": "CanvasItem",
+      "h": 56,
+      "id": "el_rel_named",
+      "parent": "el_b_relationships",
+      "w": 150,
+      "x": 835,
+      "y": 152
+    },
+    {
+      "attributes": {
+        "Evidence": "Proven",
+        "Name": "App and website"
+      },
+      "class": "CanvasItem",
+      "h": 56,
+      "id": "el_ch_app",
+      "parent": "el_b_channels",
+      "w": 150,
+      "x": 835,
+      "y": 329
+    },
+    {
+      "attributes": {
+        "Evidence": "Tested",
+        "Name": "Company bike schemes"
+      },
+      "class": "CanvasItem",
+      "h": 56,
+      "id": "el_ch_schemes",
+      "parent": "el_b_channels",
+      "w": 150,
+      "x": 835,
+      "y": 397
+    },
+    {
+      "attributes": {
+        "Evidence": "Proven",
+        "Name": "Daily commuters"
+      },
+      "class": "CanvasItem",
+      "h": 56,
+      "id": "el_s_commuters",
+      "parent": "el_b_segments",
+      "w": 150,
+      "x": 1085,
+      "y": 84
+    },
+    {
+      "attributes": {
+        "Evidence": "Tested",
+        "Name": "Companies with fleets"
+      },
+      "class": "CanvasItem",
+      "h": 56,
+      "id": "el_s_companies",
+      "parent": "el_b_segments",
+      "w": 150,
+      "x": 1085,
+      "y": 152
+    },
+    {
+      "attributes": {
+        "Evidence": "Assumption",
+        "Name": "Students"
+      },
+      "class": "CanvasItem",
+      "h": 56,
+      "id": "el_s_students",
+      "parent": "el_b_segments",
+      "w": 150,
+      "x": 1085,
+      "y": 220
+    },
+    {
+      "attributes": {
+        "AnnualAmount": 420000,
+        "Name": "Mechanics"
+      },
+      "class": "CanvasItem",
+      "h": 56,
+      "id": "el_c_wages",
+      "parent": "el_b_cost",
+      "w": 150,
+      "x": 60,
+      "y": 590
+    },
+    {
+      "attributes": {
+        "AnnualAmount": 120000,
+        "Name": "Vans and fuel"
+      },
+      "class": "CanvasItem",
+      "h": 56,
+      "id": "el_c_vans",
+      "parent": "el_b_cost",
+      "w": 150,
+      "x": 220,
+      "y": 590
+    },
+    {
+      "attributes": {
+        "AnnualAmount": 90000,
+        "Name": "Parts"
+      },
+      "class": "CanvasItem",
+      "h": 56,
+      "id": "el_c_parts",
+      "parent": "el_b_cost",
+      "w": 150,
+      "x": 380,
+      "y": 590
+    },
+    {
+      "attributes": {
+        "AnnualAmount": 600000,
+        "Evidence": "Proven",
+        "Name": "Monthly subscriptions"
+      },
+      "class": "CanvasItem",
+      "h": 56,
+      "id": "el_rev_subs",
+      "parent": "el_b_revenue",
+      "w": 150,
+      "x": 685,
+      "y": 590
+    },
+    {
+      "attributes": {
+        "AnnualAmount": 180000,
+        "Evidence": "Tested",
+        "Name": "Company contracts"
+      },
+      "class": "CanvasItem",
+      "h": 56,
+      "id": "el_rev_contracts",
+      "parent": "el_b_revenue",
+      "w": 150,
+      "x": 845,
+      "y": 590
+    },
+    {
+      "attributes": {
+        "AnnualAmount": 40000,
+        "Evidence": "Proven",
+        "Name": "Parts sold"
+      },
+      "class": "CanvasItem",
+      "h": 56,
+      "id": "el_rev_parts",
+      "parent": "el_b_revenue",
+      "w": 150,
+      "x": 1005,
+      "y": 590
+    }
+  ],
+  "formatVersion": 2,
+  "id": "mdl_bikerepair",
+  "kind": "mkmodel",
+  "kit": {
+    "id": "kit_bmcanvas",
+    "name": "Business model canvas",
+    "version": "1.0.0"
+  },
+  "modelType": "Canvas",
+  "name": "Bike repair subscription"
+}

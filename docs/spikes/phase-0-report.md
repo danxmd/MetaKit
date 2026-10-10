@@ -75,7 +75,7 @@ GitLab accepts `Authorization` from any origin, exposes the pagination and `last
 | Interval p95 cannot be read below one frame | canvas | Benchmarks flip between 16.7 and 33.3 ms on a single dropped frame | Phase 2 CI budget should use draw work p95 plus the share of frames over 20 ms, not interval p95 alone |
 | One instance ID per browser profile, not per tab | sync | Two tabs of one profile act as one instance and could write the same change file name | Phase 3 decides: per-tab instance ID, or a lock between tabs |
 | GitLab stale checks are per file | git | Pull and merge need each file's last commit id | Store per-file ids at pull time (phase 8) |
-| Big GitLab repositories page slowly (87,831 entries in 879 requests for gitlab-foss) | git | Slow Git mode on large repos | Tool libraries are small; read by folder or use keyset pagination |
+| Big GitLab repositories page slowly (87,831 entries in 879 requests for gitlab-foss) | git | Slow Git mode on large repos | Kits are small; read by folder or use keyset pagination |
 | GitHub CORS unverified | git | Git mode for GitHub would need a proxy | Your run; ADR if blocked |
 | quickjs-emscripten is pre-1.0 | behaviour | Breaking changes | Pinned behind our own `Sandbox` interface; SES compartments are the fallback |
 | Headless numbers do not represent real machines | canvas | Wrong conclusion in either direction | Real runs in Chrome and Edge, on Windows and macOS |
@@ -100,7 +100,7 @@ GitLab accepts `Authorization` from any origin, exposes the pagination and `last
 - Add a test that corrupts or truncates change files, snapshots and presence files and checks that readers recover.
 
 **Later phases, noted now**
-- Phase 5: use the formula engine as is. Phase 7: one WebAssembly instance per sandbox with a memory cap, shared per tool library, not per script; the host API must be fast because the time limit cannot interrupt it; decide what a failing before-handler means.
+- Phase 5: use the formula engine as is. Phase 7: one WebAssembly instance per sandbox with a memory cap, shared per Kit, not per script; the host API must be fast because the time limit cannot interrupt it; decide what a failing before-handler means.
 - Phase 8: per-file `last_commit_id` for GitLab; GitHub one commit through blobs, tree, commit, ref.
 
 ## What I still need from you

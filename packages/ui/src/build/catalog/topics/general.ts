@@ -1,0 +1,143 @@
+import type { CatalogClass, CatalogRelation } from '../types';
+import {
+  choice,
+  cls,
+  date,
+  formula,
+  int,
+  link,
+  long,
+  look,
+  scale,
+  text,
+} from '../helpers';
+
+export const GENERAL_CLASSES: readonly CatalogClass[] = [
+  cls(
+    'general',
+    'Note',
+    'Note',
+    'A free note on a diagram, for comments and explanations.',
+    look('general', 'document', { fill: '#ffec99', border: '#f2c200' }),
+    [long('Text')],
+  ),
+  cls(
+    'general',
+    'Group',
+    'Group',
+    'A box that gathers related objects. It has no meaning of its own beyond its purpose.',
+    look('general', 'container'),
+    [text('Purpose')],
+  ),
+  cls(
+    'general',
+    'Location',
+    'Location',
+    'A place where people work or where systems run.',
+    look('general', 'pill', { icon: 'flag', subtitle: 'City' }),
+    [text('Country'), text('City')],
+  ),
+  cls(
+    'general',
+    'Document',
+    'Document',
+    'A written document, with a link to where it is kept.',
+    look('general', 'document', { subtitle: 'Status' }),
+    [
+      link('Link'),
+      text('Version'),
+      choice('Status', ['Draft', 'In review', 'Approved', 'Retired']),
+    ],
+  ),
+  cls(
+    'general',
+    'GlossaryTerm',
+    'Glossary term',
+    'A word with an agreed meaning, so that everyone uses it the same way.',
+    look('general', 'pill', { subtitle: 'Status' }),
+    [
+      long('Definition'),
+      text('Synonyms'),
+      choice('Status', ['Proposed', 'Approved', 'Deprecated']),
+    ],
+  ),
+  cls(
+    'general',
+    'Category',
+    'Category',
+    'A heading that sorts objects into kinds. Place the objects of the category inside it.',
+    look('general', 'container', { subtitle: 'Code' }),
+    [text('Code')],
+  ),
+  cls(
+    'general',
+    'Event',
+    'Event',
+    'Something that happens at a point in time, such as a launch, an audit or a deadline.',
+    look('general', 'circle', { icon: 'clock', subtitle: 'Date' }),
+    [date('Date'), choice('Type', ['Planned', 'Unplanned'])],
+  ),
+  cls(
+    'general',
+    'Idea',
+    'Idea',
+    'A suggestion worth looking at, rated by how much it would help and how hard it is.',
+    look('general', 'rounded', { icon: 'star', subtitle: 'Status' }),
+    [
+      text('SuggestedBy'),
+      scale('Value'),
+      scale('Effort'),
+      choice('Status', ['New', 'Under review', 'Accepted', 'Rejected']),
+      formula(
+        'Priority',
+        'Value == null || Effort == null ? null : Value * (6 - Effort)',
+        'number',
+        'Value times ease: high value and low effort give the highest number, up to 25.',
+      ),
+    ],
+  ),
+  cls(
+    'general',
+    'Question',
+    'Question',
+    'An open question that needs an answer, with who should answer it and by when.',
+    look('general', 'diamond', { subtitle: 'Status' }),
+    [
+      text('AskedBy'),
+      text('AnswerFrom'),
+      date('Due'),
+      long('Answer'),
+      choice('Status', ['Open', 'Answered', 'Dropped']),
+    ],
+  ),
+  cls(
+    'general',
+    'Reference',
+    'Reference',
+    'A link to a source outside the model, such as a web page, a standard or a book.',
+    look('general', 'document', { icon: 'document', subtitle: 'Source' }),
+    [link('Link'), text('Source'), date('Accessed')],
+  ),
+  cls(
+    'general',
+    'Checklist',
+    'Checklist',
+    'A list of items to tick off. Progress is the share of items done.',
+    look('general', 'header-box', {
+      icon: 'check',
+      fields: ['ItemsDone', 'ItemsTotal', 'Progress'],
+    }),
+    [
+      int('ItemsTotal', { min: 0 }),
+      int('ItemsDone', { min: 0 }),
+      formula(
+        'Progress',
+        'ItemsTotal == null || ItemsTotal == 0 || ItemsDone == null ? null : round(ItemsDone / ItemsTotal * 100)',
+        'number',
+        'The share of items done, in per cent.',
+      ),
+    ],
+  ),
+];
+
+export const GENERAL_RELATIONS: readonly CatalogRelation[] = [];

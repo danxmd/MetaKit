@@ -7,7 +7,7 @@ import { chooseFromMenu, openMenu } from './menus';
 
 const pipeline = (path: string) =>
   fileURLToPath(
-    new URL(`../../../tools/agent-pipeline/${path}`, import.meta.url),
+    new URL(`../../../kits/agent-pipeline/${path}`, import.meta.url),
   );
 
 /** Opens the sample code review pipeline, which has commands, help texts and several relations. */
@@ -17,7 +17,7 @@ async function openPipeline(page: Page) {
   await page.evaluate(
     (json) =>
       (window as unknown as { __seed(t: string): Promise<void> }).__seed(json),
-    readFileSync(pipeline('tool.json'), 'utf8'),
+    readFileSync(pipeline('kit.json'), 'utf8'),
   );
   await page.reload();
   await page.getByTestId('open-folder').click();
@@ -166,7 +166,7 @@ test.describe('the palette preview', () => {
     await expect(page.getByTestId('palette-class-Gate')).toHaveClass(/\bon\b/);
   });
 
-  test('works with the BPMN lite tool and gives every entry a thumbnail', async ({
+  test('works with the BPMN lite Kit and gives every entry a thumbnail', async ({
     page,
   }) => {
     await prepare(page);

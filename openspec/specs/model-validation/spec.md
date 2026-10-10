@@ -103,7 +103,7 @@ Model types MAY limit how many elements of a class a model holds and how many co
 - **THEN** a `degree-above-max` warning names that element
 
 ### Requirement: Stale definitions are information
-Values for attributes that the tool no longer defines, and elements or connectors of classes or relation classes the tool no longer has, SHALL be reported as information and SHALL be kept.
+Values for attributes that the Kit no longer defines, and elements or connectors of classes or relation classes the Kit no longer has, SHALL be reported as information and SHALL be kept.
 
 #### Scenario: Removed attribute
 - **WHEN** an element has a value for an attribute id that its class does not have

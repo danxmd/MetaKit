@@ -115,7 +115,7 @@ A condition row shows the name, a checkbox and the word **Yes**, **No** or **Def
 
 ## Examples
 
-The Task class of the Agent pipeline tool has three tabs. **Overview** holds Name, Description (control `textarea`), Status (`select`) and Priority (`segmented`). **Effort** holds Effort, ActualEffort, Variance (a formula, always read-only) and EstimatedCost. **Quality** holds Criteria (`textarea`) and Checks (`table`, height 180).
+The Task class of the Agent pipeline Kit has three tabs. **Overview** holds Name, Description (control `textarea`), Status (`select`) and Priority (`segmented`). **Effort** holds Effort, ActualEffort, Variance (a formula, always read-only) and EstimatedCost. **Quality** holds Criteria (`textarea`) and Checks (`table`, height 180).
 
 The Agent class hides a field by a condition: ModelName has **Visible** set to the formula `= AgentKind == 'LLM agent'`. The field is shown only for LLM agents.
 

@@ -29,7 +29,7 @@ Header of the [[page-model-view|model view]], second row, the fifth menu.
 | Item | What it does |
 | --- | --- |
 | **Problems** | Shows or hides the problems panel under the canvas. The number beside it is the count of all problems: errors, warnings and notes together. See [[problems-panel]]. |
-| **Script console** | Shows or hides the console where the tool's scripts write their output. This item appears only after a script has written something, or while the console is open. See [[script-console]]. |
+| **Script console** | Shows or hides the console where the Kit's scripts write their output. This item appears only after a script has written something, or while the console is open. See [[script-console]]. |
 
 ## Examples
 
@@ -43,4 +43,4 @@ In the Code review pipeline, set the status of the task **Merge** to **Done** wi
 
 ## Related
 
-[[problems-panel]], [[script-console]], [[constraints]], [[tool-validation]], [[model-toolbar]]
+[[problems-panel]], [[script-console]], [[constraints]], [[kit-validation]], [[model-toolbar]]

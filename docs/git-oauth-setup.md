@@ -9,18 +9,18 @@ MetaKit talks to GitHub and GitLab straight from the browser. A token is the key
 Use one token per person and per repository, as narrow as possible.
 
 1. Open GitHub, then Settings, Developer settings, Personal access tokens, **Fine-grained tokens**, **Generate new token**.
-2. Token name: `MetaKit tool library`. Resource owner: the account or organisation that owns the repository. Expiration: 30 to 90 days.
-3. Repository access: **Only select repositories**, and pick the one repository that holds the tool library.
+2. Token name: `MetaKit Git mode`. Resource owner: the account or organisation that owns the repository. Expiration: 30 to 90 days.
+3. Repository access: **Only select repositories**, and pick the one repository that holds the Kit.
 4. Permissions, Repository permissions: **Contents: Read and write**. (**Metadata: Read** is added automatically.) Leave everything else on "No access".
 5. Generate the token and copy it once.
-6. In MetaKit, open Git settings, choose service **GitHub**, paste the token, give it a name and save. Then enter `owner/name`, the folder of the tool library (empty for the root) and press **Test the token**. The page should say `owner/name, can write`.
+6. In MetaKit, open Git settings, choose service **GitHub**, paste the token, give it a name and save. Then enter `owner/name`, the folder of the Kit (empty for the root) and press **Test the token**. The page should say `owner/name, can write`.
 
 The repository needs at least one commit (create it with a README). If the organisation requires approval for fine-grained tokens, an owner has to approve it before it works.
 
 ## 2. GitLab: a personal access token (works today)
 
 1. GitLab, your avatar, **Preferences**, **Access tokens**, **Add new token**.
-2. Name `MetaKit tool library`, expiry within 90 days, scope **api** (GitLab has no narrower scope that can commit). The role on the project must be Developer or higher.
+2. Name `MetaKit Git mode`, expiry within 90 days, scope **api** (GitLab has no narrower scope that can commit). The role on the project must be Developer or higher.
 3. Paste it into Git settings with service **GitLab**. For a self-managed GitLab, change the address of the service.
 
 ## 3. GitLab: sign in with OAuth (PKCE)
