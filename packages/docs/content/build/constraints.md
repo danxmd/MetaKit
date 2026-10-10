@@ -59,11 +59,11 @@ Attribute keys are written exactly as in the Key box. If you rename an attribute
 
 - **Error** appears in the Problems list with an error mark. **Warning** appears with a warning mark.
 - If the formula names exactly one attribute, the message is also shown under that field in the attribute panel ([[attribute-panel]]).
-- If the formula itself cannot be calculated (for example it divides by something that is not a number), a separate warning says: The constraint "..." cannot be checked. with the reason. That points to a mistake in the tool library, not in the model.
+- If the formula itself cannot be calculated (for example it divides by something that is not a number), a separate warning says: The constraint "..." cannot be checked. with the reason. That points to a mistake in the Kit, not in the model.
 
 ## Examples
 
-These constraints are in the Agent pipeline tool. All four have the severity **Warning**.
+These constraints are in the Agent pipeline Kit. All four have the severity **Warning**.
 
 - On **Task**: formula `Status != 'Done' || ActualEffort != null`, message "A finished task should say how much effort it took."
 - On **Task**: formula `Status != 'Failed' || Description != null`, message "Say in the description why the task failed."
@@ -80,7 +80,7 @@ A constraint on a relation class can use both ends. The names `from` and `to` ho
 - Empty values are `null`. Compare with `!= null` or `== null`.
 - Constraints on a parent class are checked for all children. Define a rule once and it applies everywhere.
 - Constraints do not run in the Build view; they run when a model is validated.
-- A half-written constraint is never saved, so a tool library is never left with a broken one.
+- A half-written constraint is never saved, so a Kit is never left with a broken one.
 
 > **Tip**
 > Start with **Warning**. Switch to **Error** only for rules that exports or later steps depend on.
@@ -90,4 +90,4 @@ A constraint on a relation class can use both ends. The names `from` and `to` ho
 
 ## Related
 
-[[attributes]], [[formula-reference]], [[problems-panel]], [[rules]], [[computed-values]], [[classes]], [[model-types]], [[tool-validation]]
+[[attributes]], [[formula-reference]], [[problems-panel]], [[rules]], [[computed-values]], [[classes]], [[model-types]], [[kit-validation]]

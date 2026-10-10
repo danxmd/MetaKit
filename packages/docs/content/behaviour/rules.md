@@ -2,7 +2,7 @@
 id: rules
 title: Rules
 category: behaviour
-summary: Rules are no-code reactions that a tool library runs in a model, written as When, If and Then.
+summary: Rules are no-code reactions that a Kit runs in a model, written as When, If and Then.
 keywords: [rules, no-code rules, rule editor, rule engine, when if then]
 contexts: [build.rules]
 order: 10
@@ -18,7 +18,7 @@ A rule has three parts.
 - **If** is an optional condition. It is a formula that must be true for the rule to go on. See [[formula-reference]].
 - **Then** is a list of actions that run in order, for example "Set an attribute" or "Show a message". See [[rule-actions]].
 
-A rule belongs to the tool library, not to a model. Every model made with that tool library gets the rule. Rules are stored in the `rules` table of the tool library (tool format 3 and later, see [[format-versions]]), each with an id that starts with `rule_`.
+A rule belongs to the Kit, not to a model. Every model made with that Kit gets the rule. Rules are stored in the `rules` table of the Kit (Kit format 3 and later, see [[format-versions]]), each with an id that starts with `rule_`.
 
 The engine is careful. A rule that has a problem never crashes the app. It shows a warning such as `Rule "Needs an owner": the condition: ...` and stops. Everything a rule changes joins the step that woke it, so one **Undo** takes back both the change and what the rule did.
 
@@ -26,7 +26,7 @@ The engine is careful. A rule that has a problem never crashes the app. It shows
 
 ## Where to find it
 
-1. Open a tool library in Build mode (see [[page-build-view]]).
+1. Open a Kit in Build mode (see [[page-build-view]]).
 2. Choose **Rules** in the section list on the left. The sections are Classes, Relation classes, Model types, Shapes, **Rules**, [[scripts|Scripts]] and Settings.
 
 The page shows the text "A rule reacts when something happens in a model: when it, if the condition is true, then its actions." Below it is the list of rules, sorted by name. An empty list says "No rules yet."
@@ -73,7 +73,7 @@ If you change the event, filters that no longer apply are dropped. If you choose
 
 ### Messages under the form
 
-The form checks the rule with the same checks as the tool library check. A message is either an **error** (the rule is not saved) or a **hint** (advice only).
+The form checks the rule with the same checks as the Kit check. A message is either an **error** (the rule is not saved) or a **hint** (advice only).
 
 - Errors name the part: `When`, `If`, `Action 1`, `Command`, `Name` or `Rule`.
 - Formulas are parsed. The message says why and where: `... (at character 12 of the formula)`.
@@ -95,7 +95,7 @@ The form checks the rule with the same checks as the tool library check. A messa
 = 'Total effort: ' + sum(objects('Task').Effort) + ' h in ' + count(objects('Task')) + ' tasks.'
 ```
 
-**Status buttons.** The Agent pipeline tool has command rules such as "Mark ready". Each one sets `Status` to a fixed value on the selected task. Its condition `= Priority != null` is there because a command rule cannot be limited to one class. See [[rule-examples]] for more.
+**Status buttons.** The Agent pipeline Kit has command rules such as "Mark ready". Each one sets `Status` to a fixed value on the selected task. Its condition `= Priority != null` is there because a command rule cannot be limited to one class. See [[rule-examples]] for more.
 
 ## Good to know
 
@@ -110,4 +110,4 @@ The form checks the rule with the same checks as the tool library check. A messa
 
 ## Related
 
-[[rule-triggers]] · [[rule-actions]] · [[rule-examples]] · [[scripts]] · [[behaviour-commands]] · [[formula-reference]] · [[tool-validation]] · [[troubleshooting]]
+[[rule-triggers]] · [[rule-actions]] · [[rule-examples]] · [[scripts]] · [[behaviour-commands]] · [[formula-reference]] · [[kit-validation]] · [[troubleshooting]]

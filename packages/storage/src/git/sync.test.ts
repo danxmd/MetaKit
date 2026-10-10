@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import * as fc from 'fast-check';
-import { createToolStore, type ToolLibrary } from '@metakit-app/core';
-import { sampleTool, sampleWithBehaviour } from './sample-tools';
+import { createKitStore, type Kit } from '@metakit-app/core';
+import { sampleKit, sampleWithBehaviour } from './sample-kits';
 import { fromLayout, toLayout } from './layout';
 import { createGitLinkStore, type GitLink } from './link';
 import { applyResolutions, conflictKey, mergeLayouts } from './merge';
@@ -9,7 +9,7 @@ import { MemoryRemote } from './memory-remote';
 import { NonFastForwardError } from './remote';
 import {
   commitPending,
-  diffToolCommands,
+  diffKitCommands,
   finishPull,
   linkFromSnapshot,
   listReleases,
@@ -20,7 +20,7 @@ import {
 } from './sync';
 
 const where = {
-  toolSlug: 'bpmn-lite',
+  kitSlug: 'bpmn-lite',
   service: 'github' as const,
   host: 'github.com',
   repo: 'me/tools',
@@ -30,24 +30,24 @@ const where = {
 
 const clone = <T>(x: T): T => structuredClone(x);
 
-const taskOf = (tool: ToolLibrary) =>
-  Object.values(tool.classes).find((c) => c.key === 'Task')!;
+const taskOf = (kit: Kit) =>
+  Object.values(kit.classes).find((c) => c.key === 'Task')!;
 
 function editTask(
-  tool: ToolLibrary,
+  kit: Kit,
   fn: (task: ReturnType<typeof taskOf>) => void,
-): ToolLibrary {
-  const next = clone(tool);
+): Kit {
+  const next = clone(kit);
   fn(taskOf(next));
   return next;
 }
 
 async function open(
   remote: MemoryRemote,
-): Promise<{ tool: ToolLibrary; link: GitLink }> {
+): Promise<{ kit: Kit; link: GitLink }> {
   const snapshot = await remote.read('main');
   const loaded = fromLayout(snapshot.files);
-  return { tool: loaded.tool!, link: linkFromSnapshot(where, snapshot) };
+  return { kit: loaded.kit!, link: linkFromSnapshot(where, snapshot) };
 }
 
 function seeded(): MemoryRemote {
@@ -100,10 +100,10 @@ describe('MemoryRemote', () => {
 describe('commit and pull through a remote', () => {
   it('lists pending changes in plain English and commits them as one commit', async () => {
     const remote = seeded();
-    const { tool, link } = await open(remote);
-    expect(pendingChanges(link, tool)).toEqual([]);
+    const { kit, link } = await open(remote);
+    expect(pendingChanges(link, kit)).toEqual([]);
 
-    const edited = editTask(tool, (t) => {
+    const edited = editTask(kit, (t) => {
       t.labels = { en: 'Work item' };
     });
     const shape = Object.values(edited.shapes)[0]!;
@@ -119,7 +119,7 @@ describe('commit and pull through a remote', () => {
     const done = await commitPending({
       remote,
       link,
-      tool: edited,
+      kit: edited,
       message: 'Rename Task',
       links,
     });
@@ -129,17 +129,17 @@ describe('commit and pull through a remote', () => {
     expect(pendingChanges(done.link, edited)).toEqual([]);
 
     const again = await open(remote);
-    expect(again.tool).toEqual(edited);
+    expect(again.kit).toEqual(edited);
   });
 
   it('refuses an empty message and an empty commit', async () => {
     const remote = seeded();
-    const { tool, link } = await open(remote);
+    const { kit, link } = await open(remote);
     await expect(
-      commitPending({ remote, link, tool, message: '  ' }),
+      commitPending({ remote, link, kit, message: '  ' }),
     ).rejects.toThrow(/message/);
     await expect(
-      commitPending({ remote, link, tool, message: 'x' }),
+      commitPending({ remote, link, kit, message: 'x' }),
     ).rejects.toThrow(/nothing to commit/);
   });
 
@@ -149,36 +149,36 @@ describe('commit and pull through a remote', () => {
     const b = await open(remote);
 
     // A renames a class (file name changes) and adds a class; B changes an attribute of the same class and a shape.
-    const aTool = editTask(a.tool, (t) => {
+    const aKit = editTask(a.kit, (t) => {
       t.key = 'Job';
       t.labels = { en: 'Job' };
     });
-    const bTool = editTask(b.tool, (t) => {
+    const bKit = editTask(b.kit, (t) => {
       t.attributes[0] = { ...t.attributes[0]!, labels: { en: 'B label' } };
     });
-    const shapeId = Object.keys(bTool.shapes)[0]!;
-    bTool.shapes[shapeId as never] = {
-      ...bTool.shapes[shapeId as never]!,
+    const shapeId = Object.keys(bKit.shapes)[0]!;
+    bKit.shapes[shapeId as never] = {
+      ...bKit.shapes[shapeId as never]!,
       name: 'B shape',
     };
 
     const aDone = await commitPending({
       remote,
       link: a.link,
-      tool: aTool,
+      kit: aKit,
       message: 'A',
     });
     await expect(
-      commitPending({ remote, link: b.link, tool: bTool, message: 'B' }),
+      commitPending({ remote, link: b.link, kit: bKit, message: 'B' }),
     ).rejects.toBeInstanceOf(NonFastForwardError);
 
-    const pulled = await pull({ remote, link: b.link, tool: bTool });
+    const pulled = await pull({ remote, link: b.link, kit: bKit });
     if (pulled.status !== 'merged') throw new Error('expected a merge');
     expect(pulled.conflicts).toEqual([]);
-    const mergedTask = pulled.tool.classes[taskOf(a.tool).id]!;
+    const mergedTask = pulled.kit.classes[taskOf(a.kit).id]!;
     expect(mergedTask.key).toBe('Job');
     expect(mergedTask.attributes[0]?.labels).toEqual({ en: 'B label' });
-    expect(pulled.tool.shapes[shapeId as never]?.name).toBe('B shape');
+    expect(pulled.kit.shapes[shapeId as never]?.name).toBe('B shape');
     expect(pulled.merge.files.some((f) => f.path === 'classes/job.json')).toBe(
       true,
     );
@@ -189,16 +189,16 @@ describe('commit and pull through a remote', () => {
     const bDone = await commitPending({
       remote,
       link: pulled.link,
-      tool: pulled.tool,
+      kit: pulled.kit,
       message: 'B after pull',
     });
-    const aPulled = await pull({ remote, link: aDone.link, tool: aTool });
+    const aPulled = await pull({ remote, link: aDone.link, kit: aKit });
     if (aPulled.status !== 'merged') throw new Error('expected a merge');
     expect(aPulled.conflicts).toEqual([]);
-    expect(aPulled.tool).toEqual(pulled.tool);
+    expect(aPulled.kit).toEqual(pulled.kit);
     expect(aPulled.link.baseCommit).toBe(bDone.commit);
     expect(
-      await pull({ remote, link: aPulled.link, tool: aPulled.tool }),
+      await pull({ remote, link: aPulled.link, kit: aPulled.kit }),
     ).toEqual({ status: 'up-to-date' });
   });
 
@@ -206,16 +206,16 @@ describe('commit and pull through a remote', () => {
     const remote = seeded();
     const a = await open(remote);
     const b = await open(remote);
-    const label = (tool: ToolLibrary, text: string, effort?: string) =>
-      editTask(tool, (t) => {
+    const label = (kit: Kit, text: string, effort?: string) =>
+      editTask(kit, (t) => {
         t.attributes[0] = { ...t.attributes[0]!, labels: { en: text } };
         if (effort) t.help = { en: effort };
       });
-    const aTool = label(a.tool, 'From A', 'help from A');
-    const bTool = label(b.tool, 'From B');
-    await commitPending({ remote, link: a.link, tool: aTool, message: 'A' });
+    const aKit = label(a.kit, 'From A', 'help from A');
+    const bKit = label(b.kit, 'From B');
+    await commitPending({ remote, link: a.link, kit: aKit, message: 'A' });
 
-    const pulled = await pull({ remote, link: b.link, tool: bTool });
+    const pulled = await pull({ remote, link: b.link, kit: bKit });
     if (pulled.status !== 'merged') throw new Error('expected a merge');
     expect(pulled.conflicts).toHaveLength(1);
     const [clash] = pulled.conflicts;
@@ -226,22 +226,22 @@ describe('commit and pull through a remote', () => {
       theirs: 'From A',
     });
     expect(clash!.field).toBe(
-      `attributes > ${a.tool.classes[Object.keys(a.tool.classes).find((k) => a.tool.classes[k as never]!.key === 'Task') as never]!.attributes[0]!.id} > labels > en`,
+      `attributes > ${a.kit.classes[Object.keys(a.kit.classes).find((k) => a.kit.classes[k as never]!.key === 'Task') as never]!.attributes[0]!.id} > labels > en`,
     );
     // The non-clashing change of A came through, and our side is the default.
-    expect(taskOf(pulled.tool).help).toEqual({ en: 'help from A' });
-    expect(taskOf(pulled.tool).attributes[0]?.labels).toEqual({ en: 'From B' });
+    expect(taskOf(pulled.kit).help).toEqual({ en: 'help from A' });
+    expect(taskOf(pulled.kit).attributes[0]?.labels).toEqual({ en: 'From B' });
 
     const theirs = finishPull(pulled, { [conflictKey(clash!)]: 'theirs' });
-    expect(taskOf(theirs.tool).attributes[0]?.labels).toEqual({ en: 'From A' });
-    expect(taskOf(theirs.tool).help).toEqual({ en: 'help from A' });
+    expect(taskOf(theirs.kit).attributes[0]?.labels).toEqual({ en: 'From A' });
+    expect(taskOf(theirs.kit).help).toEqual({ en: 'help from A' });
     const mine = finishPull(pulled, { [conflictKey(clash!)]: 'ours' });
-    expect(taskOf(mine.tool).attributes[0]?.labels).toEqual({ en: 'From B' });
+    expect(taskOf(mine.kit).attributes[0]?.labels).toEqual({ en: 'From B' });
     expect(theirs.link.baseCommit).toBe(pulled.link.baseCommit);
   });
 
   it('handles a part removed on one side and edited on the other as a clash', () => {
-    const base = toLayout(sampleTool('er-lite'));
+    const base = toLayout(sampleKit('er-lite'));
     const edited = base.map((f) =>
       f.path === 'classes/entity.json'
         ? { ...f, content: f.content.replace('"Entity"', '"Thing"') }
@@ -295,11 +295,11 @@ describe('commit and pull through a remote', () => {
   });
 
   it('keeps attributes added by both sides, and removals', () => {
-    const tool = sampleTool('bpmn-lite');
-    const base = toLayout(tool);
+    const kit = sampleKit('bpmn-lite');
+    const base = toLayout(kit);
     const withAttr = (id: string) =>
       toLayout(
-        editTask(tool, (t) => {
+        editTask(kit, (t) => {
           t.attributes = [
             ...t.attributes,
             { id: id as never, key: id.replace('att_', 'K'), type: 'text' },
@@ -307,12 +307,12 @@ describe('commit and pull through a remote', () => {
         }),
       );
     const removeFirst = toLayout(
-      editTask(tool, (t) => {
+      editTask(kit, (t) => {
         t.attributes = t.attributes.slice(1);
       }),
     );
     const merge = mergeLayouts(base, withAttr('att_one'), withAttr('att_two'));
-    const task = fromLayout(merge.files).tool!;
+    const task = fromLayout(merge.files).kit!;
     expect(
       taskOf(task)
         .attributes.map((a) => a.id)
@@ -320,16 +320,16 @@ describe('commit and pull through a remote', () => {
     ).toEqual(['att_one', 'att_two']);
     const both = mergeLayouts(base, removeFirst, withAttr('att_two'));
     expect(both.conflicts).toEqual([]);
-    const t2 = taskOf(fromLayout(both.files).tool!);
-    expect(t2.attributes.length).toBe(taskOf(tool).attributes.length);
+    const t2 = taskOf(fromLayout(both.files).kit!);
+    expect(t2.attributes.length).toBe(taskOf(kit).attributes.length);
     expect(t2.attributes.at(-1)?.id).toBe('att_two');
   });
 });
 
 describe('a pull is applied as commands in one undo step', () => {
-  it('changes three parts and one undo restores the tool library', () => {
-    const tool = sampleTool('bpmn-lite');
-    const merged = clone(tool);
+  it('changes three parts and one undo restores the Kit', () => {
+    const kit = sampleKit('bpmn-lite');
+    const merged = clone(kit);
     const task = taskOf(merged);
     task.labels = { en: 'Renamed' };
     const sh = Object.keys(merged.shapes)[0]!;
@@ -357,59 +357,59 @@ describe('a pull is applied as commands in one undo step', () => {
     }
     delete merged.panels[gone.id];
 
-    const store = createToolStore(tool);
-    const batch = pullBatch(tool, merged)!;
+    const store = createKitStore(kit);
+    const batch = pullBatch(kit, merged)!;
     expect(batch.commands.length).toBeGreaterThanOrEqual(3);
     expect(store.execute(batch).ok).toBe(true);
     expect(store.state).toEqual(merged);
     expect(store.undo()).toBe(true);
-    expect(store.state).toEqual(tool);
+    expect(store.state).toEqual(kit);
     expect(store.undo()).toBe(false);
     expect(store.redo()).toBe(true);
     expect(store.state).toEqual(merged);
   });
 
   it('gives no commands when nothing differs, and adds before it removes', () => {
-    const tool = sampleTool('er-lite');
-    expect(diffToolCommands(tool, clone(tool))).toEqual([]);
-    expect(pullBatch(tool, clone(tool))).toBeNull();
-    const merged = clone(tool);
+    const kit = sampleKit('er-lite');
+    expect(diffKitCommands(kit, clone(kit))).toEqual([]);
+    expect(pullBatch(kit, clone(kit))).toBeNull();
+    const merged = clone(kit);
     const first = Object.values(merged.classes)[0]!;
     merged.classes['cls_new' as never] = {
       ...clone(first),
       id: 'cls_new',
       key: 'Fresh',
     };
-    const types = diffToolCommands(tool, merged).map((c) => c.type);
+    const types = diffKitCommands(kit, merged).map((c) => c.type);
     expect(types).toEqual(['putClass']);
   });
 
-  it('applies a whole pulled tool through the store, whatever the differences', async () => {
+  it('applies a whole pulled Kit through the store, whatever the differences', async () => {
     const remote = seeded();
     const a = await open(remote);
-    const edited = clone(a.tool);
+    const edited = clone(a.kit);
     delete edited.rules['rule_total_effort' as never];
     delete edited.scripts['scr_gateway_check' as never];
     edited.manifest.version = '2.0.0';
     edited.settings.grid.size = 40;
-    const store = createToolStore(a.tool);
-    expect(store.execute(pullBatch(a.tool, edited)!).ok).toBe(true);
+    const store = createKitStore(a.kit);
+    expect(store.execute(pullBatch(a.kit, edited)!).ok).toBe(true);
     expect(store.state).toEqual(edited);
   });
 });
 
 describe('releases', () => {
-  it('lists tags and opens one as the tool library it was', async () => {
+  it('lists tags and opens one as the Kit it was', async () => {
     const remote = seeded();
     const first = await open(remote);
     remote.tag('v1.0.0');
-    const edited = editTask(first.tool, (t) => {
+    const edited = editTask(first.kit, (t) => {
       t.labels = { en: 'Later' };
     });
     await commitPending({
       remote,
       link: first.link,
-      tool: edited,
+      kit: edited,
       message: 'later',
     });
     remote.tag('v1.1.0');
@@ -418,9 +418,9 @@ describe('releases', () => {
       'v1.0.0',
     ]);
     const old = await openRelease(remote, 'v1.0.0');
-    expect(old.tool).toEqual(first.tool);
+    expect(old.kit).toEqual(first.kit);
     expect(old.issues).toEqual([]);
-    expect((await openRelease(remote, 'v1.1.0')).tool).toEqual(edited);
+    expect((await openRelease(remote, 'v1.1.0')).kit).toEqual(edited);
     await expect(
       openRelease(
         new MemoryRemote([{ path: 'README.md', content: 'x' }]),
@@ -431,29 +431,47 @@ describe('releases', () => {
 });
 
 describe('link store', () => {
-  it('keeps links by tool and drops damaged records', async () => {
+  it('reads a link saved before the Kit rename (toolSlug) and writes it back as kitSlug', async () => {
+    const kv = memoryKv();
+    const remote = seeded();
+    const { kitSlug, ...rest } = linkFromSnapshot(
+      where,
+      await remote.read('main'),
+    );
+    await kv.set('gitLinks', { [kitSlug]: { ...rest, toolSlug: kitSlug } });
+    const store = createGitLinkStore(kv);
+    const found = await store.get('bpmn-lite');
+    expect(found?.kitSlug).toBe('bpmn-lite');
+    expect(found && 'toolSlug' in found).toBe(false);
+    const stored =
+      (await kv.get<Record<string, Record<string, unknown>>>('gitLinks'))!;
+    expect(stored['bpmn-lite']!['kitSlug']).toBe('bpmn-lite');
+    expect('toolSlug' in stored['bpmn-lite']!).toBe(false);
+  });
+
+  it('keeps links by Kit and drops damaged records', async () => {
     const kv = memoryKv();
     const store = createGitLinkStore(kv);
     const remote = seeded();
     const link = linkFromSnapshot(where, await remote.read('main'));
     await store.put(link);
-    await store.put({ ...link, toolSlug: 'other' });
-    expect((await store.list()).map((l) => l.toolSlug).sort()).toEqual([
+    await store.put({ ...link, kitSlug: 'other' });
+    expect((await store.list()).map((l) => l.kitSlug).sort()).toEqual([
       'bpmn-lite',
       'other',
     ]);
     await store.remove('other');
     expect(await store.get('other')).toBeUndefined();
     expect((await store.get('bpmn-lite'))?.baseCommit).toBe(link.baseCommit);
-    await kv.set('gitLinks', { x: { toolSlug: 'x' } });
+    await kv.set('gitLinks', { x: { kitSlug: 'x' } });
     expect(await store.list()).toEqual([]);
     expect(JSON.stringify(link)).not.toMatch(/token/i);
   });
 });
 
 describe('merge properties', () => {
-  const tool = sampleWithBehaviour();
-  const baseFiles = toLayout(tool);
+  const kit = sampleWithBehaviour();
+  const baseFiles = toLayout(kit);
   const edits = fc.array(
     fc.oneof(
       fc.record({
@@ -486,7 +504,7 @@ describe('merge properties', () => {
   );
   type Unwrap<A> = A extends fc.Arbitrary<infer T> ? T : never;
   const apply = (list: Unwrap<typeof edits>) => {
-    const next = clone(tool);
+    const next = clone(kit);
     for (const e of list) {
       const task = taskOf(next);
       if (e.kind === 'label') task.labels = { en: e.text };
@@ -542,11 +560,11 @@ describe('merge properties', () => {
         fc.integer({ min: 0, max: 9 }),
         (text, n) => {
           const a = toLayout(
-            editTask(tool, (t) => void (t.help = { en: text || 'x' })),
+            editTask(kit, (t) => void (t.help = { en: text || 'x' })),
           );
           const b = toLayout({
-            ...clone(tool),
-            manifest: { ...tool.manifest, version: `2.0.${n}` },
+            ...clone(kit),
+            manifest: { ...kit.manifest, version: `2.0.${n}` },
           });
           const one = mergeLayouts(baseFiles, a, b);
           const two = mergeLayouts(baseFiles, b, a);

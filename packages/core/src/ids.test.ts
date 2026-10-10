@@ -27,6 +27,17 @@ describe('ids', () => {
     expect(isId('class', 42)).toBe(false);
   });
 
+  it('makes new Kit ids with kit_ and still accepts the older tool_ ids', () => {
+    expect(newId('kit')).toMatch(/^kit_/);
+    expect(isId('kit', 'kit_abc')).toBe(true);
+    expect(isId('kit', 'tool_bpmnlite')).toBe(true);
+    expect(idKind('tool_bpmnlite')).toBe('kit');
+    expect(idKind('kit_abc')).toBe('kit');
+    expect(isId('kit', 'tool_')).toBe(false);
+    expect(isId('kit', 'cls_abc')).toBe(false);
+    expect(isId('class', 'tool_abc')).toBe(false);
+  });
+
   it('uses the random source it is given', () => {
     const zeros = { getRandomValues: (a: Uint8Array) => a.fill(0) };
     expect(newId('element', zeros)).toBe('el_0000000000');

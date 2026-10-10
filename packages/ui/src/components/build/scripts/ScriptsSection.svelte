@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { generateDeclarations } from '@metakit-app/behaviour';
-  import type { Script, ScriptId, ToolLibrary } from '@metakit-app/core';
+  import type { Script, ScriptId, Kit } from '@metakit-app/core';
   import type { CommandResult } from '../../../shell/controller';
   import {
     createScript,
@@ -27,14 +27,14 @@
   import type { LanguageClient } from './script-language-client';
 
   let {
-    tool,
+    kit,
     run,
     api = null,
     target = () => null,
     createClient,
     assistant,
   }: {
-    tool: ToolLibrary;
+    kit: Kit;
     run: (command: never) => CommandResult;
     /** The running scripts of the open model; null when none are running (no model is open). */
     api?: ScriptsApi | null;
@@ -59,13 +59,13 @@
     return r.ok;
   };
 
-  const scripts = $derived(sortedScripts(tool));
+  const scripts = $derived(sortedScripts(kit));
   const selected = $derived(
     scripts.find((s) => s.id === selectedId) ?? scripts[0] ?? null,
   );
   // The same text when only a script changed, so the editor is not told again on every keystroke.
   const declarations = $derived(
-    generateDeclarations({ ...tool, scripts: {}, rules: {} }),
+    generateDeclarations({ ...kit, scripts: {}, rules: {} }),
   );
   const lines = $derived.by(() => {
     void version;
@@ -79,7 +79,7 @@
   });
 
   function add() {
-    const script = createScript(tool);
+    const script = createScript(kit);
     if (exec(putScript(script))) selectedId = script.id;
   }
 
@@ -88,7 +88,7 @@
     renameText = script.name;
   }
   function finishRename(script: Script) {
-    const problem = nameProblem(tool, renameText, script.id);
+    const problem = nameProblem(kit, renameText, script.id);
     if (problem) {
       error = problem;
       return;
@@ -113,7 +113,7 @@
     if (!pending) return;
     const { id, source } = pending;
     pending = null;
-    const script = tool.scripts[id];
+    const script = kit.scripts[id];
     if (script && script.source !== source) exec(setSource(script, source));
   }
   function edited(id: ScriptId, source: string) {
@@ -128,7 +128,7 @@
   }
   onDestroy(flush);
 
-  const permissions = $derived(tool.manifest.permissions ?? {});
+  const permissions = $derived(kit.manifest.permissions ?? {});
 </script>
 
 <div class="section" data-testid="scripts-section">
@@ -206,7 +206,7 @@
         >
         <DraftWithAssistant
           kind="script"
-          {tool}
+          {kit}
           {assistant}
           onAccept={(commands) => {
             const first = commands[0];
@@ -252,7 +252,7 @@
   </div>
 
   <fieldset>
-    <legend>What the scripts of this tool may do</legend>
+    <legend>What the scripts of this Kit may do</legend>
     <p class="muted">
       Scripts can always change models and show dialogs. Say here what else they
       need. Each person is asked once, in their own browser, and again if you
@@ -265,7 +265,7 @@
         onchange={(e) =>
           exec(
             setPermission(
-              tool,
+              kit,
               'network',
               (e.currentTarget as HTMLInputElement).checked,
             ),
@@ -281,7 +281,7 @@
         onchange={(e) =>
           exec(
             setPermission(
-              tool,
+              kit,
               'files',
               (e.currentTarget as HTMLInputElement).checked,
             ),

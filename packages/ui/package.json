@@ -6,6 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./components/*": "./src/components/*",
+    "./catalog": "./src/build/catalog/catalog.ts",
     "./theme.css": "./src/theme/theme.css",
     "./theme": "./src/theme/theme.ts",
     "./feedback": "./src/shell/feedback.ts",

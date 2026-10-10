@@ -1,9 +1,9 @@
 ---
 id: import-export
-title: Import and export of models, bundles, CSV and tool packages
+title: Import and export of models, bundles, CSV and Kit packages
 category: pages
-summary: How to bring model files, bundles and tool packages into a workspace and take models, bundles, CSV files and tool packages out of it.
-keywords: [import file, export model, mkmodel.json, mkbundle, mktool, csv export, bundle, tool package, model file]
+summary: How to bring model files, bundles and Kit packages into a workspace and take models, bundles, CSV files and Kit packages out of it.
+keywords: [import file, export model, mkmodel.json, mkbundle, mkkit, mktool, csv export, bundle, kit package, model file]
 contexts: []
 order: 110
 ---
@@ -15,34 +15,34 @@ Import and export move work between workspaces and into other programs. MetaKit 
 | Kind | File name ends with | What it holds | Made by |
 | --- | --- | --- | --- |
 | **Model file** | `.mkmodel.json` | One model as readable, editable JSON. Classes, relations and attributes are written by their keys, not their internal ids. | **Export > Model file** |
-| **Bundle** | `.mkbundle` | One model plus its tool library, packed in a zip file. | **Export > Bundle (model and tool library)** |
+| **Bundle** | `.mkbundle` | One model plus its Kit, packed in a zip file. | **Export > Bundle (model and Kit)** |
 | **CSV files** | `.csv.zip` | One spreadsheet table per class and per relation class, zipped. For reports and Excel. Export only. | **Export > CSV files** |
-| **Tool package** | `.mktool` | One tool library with its scripts and assets, packed in a zip file. | **… > Export package** on the Tool libraries page |
+| **Kit package** | `.mkkit` | One Kit with its scripts and assets, packed in a zip file. | **… > Export package** on the Kits page |
 
 ## Where to find it
 
 - **Import / Export** at the top right of the [[page-models|Models page]] holds import and the first three exports.
-- **… > Export package** on a card of the [[page-tool-libraries|Tool libraries page]] exports a tool library.
+- **… > Export package** on a card of the [[page-kits|Kits page]] exports a Kit.
 - Pictures and PDF are a different export, made inside a model: [[export-image]].
 
 ## How to use it
 
 **Import**
 
-1. Choose **Import / Export**, then **Import file(s)…**. The file chooser accepts `.mkmodel.json`, `.mkbundle` and `.mktool`. Pick one or several files.
-2. MetaKit reads the files one by one. Tool packages and bundles are processed before model files, so a bundle's library is there when a model file that needs it follows.
-3. A green message per file says what happened. A `.mktool` file first opens the review dialog ([[dialog-tool-import]]).
+1. Choose **Import / Export**, then **Import file(s)…**. The file chooser accepts `.mkmodel.json`, `.mkbundle` and `.mkkit`, and also `.mktool`, the Kit package of releases before the Kit rename. Pick one or several files.
+2. MetaKit reads the files one by one. Kit packages and bundles are processed before model files, so a bundle's Kit is there when a model file that needs it follows.
+3. A green message per file says what happened. A `.mkkit` or `.mktool` file first opens the review dialog ([[dialog-kit-import]]).
 
 **Export a model**
 
 1. Choose **Import / Export**.
 2. Under **Export**, pick the **Model** in the box (it starts with the first model of the list).
-3. Click **Model file**, **Bundle (model and tool library)** or **CSV files**. The file is saved by your browser, usually in the Downloads folder.
+3. Click **Model file**, **Bundle (model and Kit)** or **CSV files**. The file is saved by your browser, usually in the Downloads folder.
 
-**Export a tool library**
+**Export a Kit**
 
 1. Choose **Build**, then **…** on the card, then **Export package**.
-2. The file is called `name-version.mktool`, for example `agent-pipeline-1.0.0.mktool`.
+2. The file is called `name-version.mkkit`, for example `agent-pipeline-1.0.0.mkkit`.
 
 ## Every option explained
 
@@ -50,32 +50,32 @@ Import and export move work between workspaces and into other programs. MetaKit 
 
 | Item | What it does |
 | --- | --- |
-| **Import file(s)…** | Opens the file chooser. Hover text: "Open a .mkmodel.json, .mkbundle or .mktool file". |
+| **Import file(s)…** | Opens the file chooser. Hover text: "Open a .mkmodel.json, .mkbundle or .mkkit file". |
 | **Model** (drop-down) | Chooses which model the three export items use. Disabled with no models. |
 | **Model file** | Saves `name.mkmodel.json`. "Save the model as an editable .mkmodel.json file." |
-| **Bundle (model and tool library)** | Saves `name.mkbundle`. |
+| **Bundle (model and Kit)** | Saves `name.mkbundle`. |
 | **CSV files** | Saves `model-folder-name.csv.zip`. "Save the model as CSV files for a spreadsheet." |
 
 The three export items are disabled when there is no model.
 
 **What an import does**
 
-- **Model file.** Needs the tool library to be in the workspace already. It is found by its id. The model is added to the list. If the workspace already has a model with the same id, the imported model gets a new id. Messages: `Read with the tool library "Agent pipeline" (version 1.0.0).` Then, when relevant: a note that the file was written with another tool library version; a count of values that belong to attributes the library no longer has ("kept and shown under "Unknown attributes""); and a note about the new id.
-- **Bundle.** Adds the bundle's tool library when the workspace does not have it, otherwise uses the one you have (and tells you if the versions differ). Then adds every model with a new id. Messages end with "Added n model(s)" and, if some failed, "and skipped n", followed by one line per skipped model with the reason. A model that cannot be read does not stop the others.
-- **Tool package.** Shows the review dialog; **Add** or **Update** applies it. Afterwards: `Added the tool library "Name".` or `Updated the tool library "Name".`
-- **Unknown file.** "name" is not a file MetaKit can import. Choose a .mkmodel.json, .mkbundle or .mktool file.
-- **Other failures** are reported per file in plain English, for example "The model file is not valid JSON: ..." or "The model file was made with the tool library "X" (id), which is not in this workspace. Import the tool package or the bundle first."
+- **Model file.** Needs the Kit to be in the workspace already. It is found by its id. The model is added to the list. If the workspace already has a model with the same id, the imported model gets a new id. Messages: `Read with the Kit "Agent pipeline" (version 1.0.0).` Then, when relevant: a note that the file was written with another Kit version; a count of values that belong to attributes the Kit no longer has ("kept and shown under "Unknown attributes""); and a note about the new id.
+- **Bundle.** Adds the bundle's Kit when the workspace does not have it, otherwise uses the one you have (and tells you if the versions differ). Then adds every model with a new id. Messages end with "Added n model(s)" and, if some failed, "and skipped n", followed by one line per skipped model with the reason. A model that cannot be read does not stop the others.
+- **Kit package.** Shows the review dialog; **Add** or **Update** applies it. Afterwards: `Added the Kit "Name".` or `Updated the Kit "Name".`
+- **Unknown file.** "name" is not a file MetaKit can import. Choose a .mkmodel.json, .mkbundle or .mkkit file.
+- **Other failures** are reported per file in plain English, for example "The model file is not valid JSON: ..." or "The model file was made with the Kit "X" (id), which is not in this workspace. Import the Kit package or the bundle first."
 
 **What the exports contain**
 
-- **Model file:** the model name, folder, tool library id and version, model type, model attributes, every object with position and size, and every connector with its bend points. Inside a model file you may edit values by hand and import it again.
-- **Bundle:** `bundle.json` (names, versions, folders), `tool/tool.json` and `models/*.mkmodel.json`. The model's folder label is kept.
+- **Model file:** the model name, folder, Kit id and version, model type, model attributes, every object with position and size, and every connector with its bend points. Inside a model file you may edit values by hand and import it again.
+- **Bundle:** `bundle.json` (names, versions, folders), `kit/kit.json` and `models/*.mkmodel.json`. The model's folder label is kept. A bundle from before the Kit rename has `tool/tool.json`, which is read the same way.
 - **CSV:** one file per class that has objects (`Task.csv`) and one per relation class that has connectors (`Performs.csv`). Object files begin with `id`, `x`, `y`, `w`, `h`, `parent_id`, then the class attributes. Relation files begin with `id`, `from_id`, `to_id`. Multiple choices are joined with `;`, tables are stored as JSON in one cell, and references are written as the id of the target. The files start with a byte order mark, so Excel reads accents correctly.
-- **Tool package:** `package.json`, `tool.json`, and folders `scripts/` and `assets/`.
+- **Kit package:** `package.json`, `kit.json`, and folders `scripts/` and `assets/`. A `.mktool` from before the Kit rename has `tool.json` instead, which is read the same way.
 
 ## Examples
 
-Anna exports "Code review pipeline" as a **Bundle**, mails it to Ben, who has an empty workspace. Ben chooses **Import file(s)…**. The messages read `Added the tool library "Agent pipeline" (version 1.0.0).` and `Added 1 model.` His Models page now lists the model and his Tool libraries page lists the library. For the project manager, Anna exports **CSV files** and opens `Task.csv`, which has a column per Task attribute such as Status and Estimated effort.
+Anna exports "Code review pipeline" as a **Bundle**, mails it to Ben, who has an empty workspace. Ben chooses **Import file(s)…**. The messages read `Added the Kit "Agent pipeline" (version 1.0.0).` and `Added 1 model.` His Models page now lists the model and his Kits page lists the Kit. For the project manager, Anna exports **CSV files** and opens `Task.csv`, which has a column per Task attribute such as Status and Estimated effort.
 
 ## Good to know
 
@@ -89,7 +89,7 @@ Anna exports "Code review pipeline" as a **Bundle**, mails it to Ben, who has an
 ## Related
 
 - [[page-models]]
-- [[page-tool-libraries]]
-- [[dialog-tool-import]]
+- [[page-kits]]
+- [[dialog-kit-import]]
 - [[export-image]]
 - [[file-formats]]

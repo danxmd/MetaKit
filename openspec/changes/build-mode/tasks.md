@@ -7,7 +7,7 @@
 
 ## 2. Build mode UI
 
-- [x] 2.1 Shell: tool library open as a document, tool list, create, rename, version, delete and restore.
+- [x] 2.1 Shell: Kit open as a document, Kit list, create, rename, version, delete and restore.
 - [x] 2.2 Class, relation class and model type editors with view-model tests.
 - [x] 2.3 Hot reload and unknown attributes group; e2e test.
-- [x] 2.4 Recreate samples test; Build mode e2e building a small tool.
+- [x] 2.4 Recreate samples test; Build mode e2e building a small Kit.

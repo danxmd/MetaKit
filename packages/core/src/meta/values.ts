@@ -92,7 +92,7 @@ export function checkAttributeValue(
         try {
           matches = new RegExp(def.pattern).test(value);
         } catch {
-          // An invalid pattern is reported when the tool library is checked, not for every value.
+          // An invalid pattern is reported when the Kit is checked, not for every value.
         }
         if (!matches)
           out.push({

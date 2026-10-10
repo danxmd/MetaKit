@@ -2,7 +2,7 @@
 id: clipboard
 title: Copy, paste, duplicate and delete
 category: model
-summary: Copy, cut and paste objects with Ctrl+C, Ctrl+X and Ctrl+V, also into another model of the same tool, and delete with Delete or Backspace.
+summary: Copy, cut and paste objects with Ctrl+C, Ctrl+X and Ctrl+V, also into another model of the same Kit, and delete with Delete or Backspace.
 keywords: [copy and paste, clipboard, cut and paste, paste into another model, delete objects]
 contexts: []
 order: 200
@@ -61,8 +61,8 @@ Cut and delete:
 
 ### How paste decides what to do
 
-- In the same tool library, objects keep their class.
-- In another tool library, classes and relations are matched by name (their key). Attribute values are matched by attribute key.
+- In the same Kit, objects keep their class.
+- In another Kit, classes and relations are matched by name (their key). Attribute values are matched by attribute key.
 - Items whose class or relation the target model type does not allow are left out. A message says `3 items could not be pasted because this model type does not allow them.`
 - The first paste is moved 20 units right and down, the second 40, and so on, so copies do not hide the originals.
 - The copy is kept as text in your system clipboard (and in memory for this page), so you can also paste in another window of MetaKit.
