@@ -12,14 +12,14 @@ Some attributes do the maths for you. You see the answer, you never type it.
 
 ## What it is
 
-A *calculated attribute* (the tool builder calls it a formula attribute) has a formula instead of a stored value. The formula reads other attributes of the same object, or of other objects, and gives a result. See [[formula-reference]] for the language and [[attribute-types]] for how it is defined.
+A *calculated attribute* (the method engineer calls it a formula attribute) has a formula instead of a stored value. The formula reads other attributes of the same object, or of other objects, and gives a result. See [[formula-reference]] for the language and [[attribute-types]] for how it is defined.
 
 Computed values are *derived*. They are not stored in the model file. Every copy of MetaKit works them out again from the real data, so everybody sees the same numbers, including after a colleague's change arrives.
 
 ## Where to find it
 
 - In the [[attribute-panel]] as a read-only value. Hover it to see the formula as a tooltip, written `= formula`.
-- In shapes, when the tool shows a calculated value in the label or uses it for colour.
+- In shapes, when the Kit shows a calculated value in the label or uses it for colour.
 - In the [[problems-panel]], when a constraint uses it.
 - In messages that rules show, and in exports (the picture shows what the screen shows).
 
@@ -47,7 +47,7 @@ Changing any attribute the formula reads, adding or deleting objects that the fo
 
 ### When a formula fails
 
-The panel shows the reason under the value. The Problems list gets a warning such as `Task "Implement": the formula of Variance cannot be calculated. ...`. Fixing it is a job for the person who builds the tool (see [[tool-validation]]).
+The panel shows the reason under the value. The Problems list gets a warning such as `Task "Implement": the formula of Variance cannot be calculated. ...`. Fixing it is a job for the person who builds the Kit (see [[kit-validation]]).
 
 ## Examples
 
@@ -59,7 +59,7 @@ In the Agent pipeline, a **Task** has **Variance**, defined as actual effort min
 
 Type 2 into **Actual effort** of **Implement** and **Variance** changes to 1 as soon as you leave the field.
 
-Some tools also check values with *constraints*. In the same tool a task that is **Done** without an actual effort gets the warning "A finished task should say how much effort it took."
+Some Kits also check values with *constraints*. In the same Kit a task that is **Done** without an actual effort gets the warning "A finished task should say how much effort it took."
 
 The command **Total effort and cost** in the **Commands** menu adds up the efforts of all tasks with a formula and shows the result in a message. See [[menu-commands]].
 

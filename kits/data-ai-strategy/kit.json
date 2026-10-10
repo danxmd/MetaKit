@@ -1,0 +1,2242 @@
+{
+  "formatVersion": 7,
+  "manifest": {
+    "id": "kit_dataaistrategy",
+    "name": "Data and AI strategy",
+    "version": "1.0.0",
+    "languages": ["en"]
+  },
+  "settings": {
+    "grid": {
+      "size": 10,
+      "snap": true,
+      "visible": true
+    },
+    "layers": [],
+    "numbering": {
+      "enabled": false,
+      "prefix": "",
+      "start": 1
+    }
+  },
+  "classes": {
+    "cls_goal": {
+      "id": "cls_goal",
+      "key": "Goal",
+      "kind": "node",
+      "labels": {
+        "en": "Goal"
+      },
+      "help": {
+        "en": "Something the organisation wants to achieve, with a time horizon and a way to measure it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Goal",
+          "id": "att_goal_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_goal_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Horizon",
+          "options": ["Short term", "Medium term", "Long term"],
+          "id": "att_goal_horizon",
+          "labels": {
+            "en": "Horizon"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Measure",
+          "id": "att_goal_measure",
+          "labels": {
+            "en": "Measure"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Support",
+          "formula": "count(incoming('Refines')) + count(incoming('Drives')) + count(incoming('ContributesTo'))",
+          "result": "number",
+          "id": "att_goal_support",
+          "labels": {
+            "en": "Supported by"
+          },
+          "help": {
+            "en": "How many objectives, value drivers, initiatives, use cases and benefits point to this goal."
+          }
+        }
+      ],
+      "shape": "shp_goal",
+      "constraints": [
+        {
+          "id": "k_goal_support",
+          "formula": "Support > 0",
+          "message": "= 'Nothing supports the goal \"' + Name + '\" yet: no objective, value driver, initiative, use case or benefit points to it.'",
+          "severity": "warning"
+        }
+      ]
+    },
+    "cls_aiusecase": {
+      "id": "cls_aiusecase",
+      "key": "AIUseCase",
+      "kind": "node",
+      "labels": {
+        "en": "AI use case"
+      },
+      "help": {
+        "en": "A way to use AI for a business purpose, rated by the value it brings and how feasible it is."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "AI use case",
+          "id": "att_aiusecase_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_aiusecase_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "Value",
+          "min": 1,
+          "max": 5,
+          "id": "att_aiusecase_value",
+          "labels": {
+            "en": "Value (1 to 5)"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "Feasibility",
+          "min": 1,
+          "max": 5,
+          "id": "att_aiusecase_feasibility",
+          "labels": {
+            "en": "Feasibility (1 to 5)"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Status",
+          "options": ["Idea", "Assessed", "Pilot", "In production", "Stopped"],
+          "id": "att_aiusecase_status",
+          "labels": {
+            "en": "Status"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Score",
+          "formula": "Value == null || Feasibility == null ? null : Value * Feasibility",
+          "result": "number",
+          "id": "att_aiusecase_score",
+          "labels": {
+            "en": "Score"
+          },
+          "help": {
+            "en": "Value times feasibility, from 1 to 25."
+          }
+        }
+      ],
+      "shape": "shp_aiusecase"
+    },
+    "cls_initiative": {
+      "id": "cls_initiative",
+      "key": "Initiative",
+      "kind": "node",
+      "labels": {
+        "en": "Initiative"
+      },
+      "help": {
+        "en": "A project or programme with a sponsor, a budget and dates."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Initiative",
+          "id": "att_initiative_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_initiative_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Sponsor",
+          "id": "att_initiative_sponsor",
+          "labels": {
+            "en": "Sponsor"
+          }
+        },
+        {
+          "type": "number",
+          "key": "Budget",
+          "min": 0,
+          "id": "att_initiative_budget",
+          "labels": {
+            "en": "Budget"
+          }
+        },
+        {
+          "type": "date",
+          "key": "Start",
+          "id": "att_initiative_start",
+          "labels": {
+            "en": "Start"
+          }
+        },
+        {
+          "type": "date",
+          "key": "End",
+          "id": "att_initiative_end",
+          "labels": {
+            "en": "End"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Status",
+          "options": ["Proposed", "Approved", "In progress", "Done", "Stopped"],
+          "id": "att_initiative_status",
+          "labels": {
+            "en": "Status"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Quarter",
+          "pattern": "^[0-9]{4} Q[1-4]$",
+          "id": "att_initiative_quarter",
+          "labels": {
+            "en": "Delivery quarter"
+          },
+          "help": {
+            "en": "The quarter in which it delivers, such as \"2027 Q3\"."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Phase",
+          "formula": "parent ? parent.Name : null",
+          "result": "text",
+          "id": "att_initiative_phase",
+          "labels": {
+            "en": "Phase"
+          },
+          "help": {
+            "en": "The roadmap phase it sits in."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "ExpectedBenefit",
+          "formula": "sum(outgoing('Realises').RiskAdjustedValue)",
+          "result": "number",
+          "id": "att_initiative_expectedbenefit",
+          "labels": {
+            "en": "Expected benefit"
+          },
+          "help": {
+            "en": "The risk-adjusted value of the benefits it realises."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "BenefitToCost",
+          "formula": "Budget == null || Budget == 0 ? null : round(ExpectedBenefit / Budget, 2)",
+          "result": "number",
+          "id": "att_initiative_benefittocost",
+          "labels": {
+            "en": "Benefit to cost"
+          },
+          "help": {
+            "en": "Expected benefit divided by budget. Above 1 the initiative pays for itself."
+          }
+        }
+      ],
+      "shape": "shp_initiative",
+      "constraints": [
+        {
+          "id": "k_initiative_strategy",
+          "formula": "count(outgoing('ContributesTo')) > 0 || count(outgoing('Implements')) > 0",
+          "message": "= 'Initiative \"' + Name + '\" is not linked to the strategy: connect it to a goal or objective with \"Contributes to\", or to the AI use case it implements.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_initiative_dates",
+          "formula": "Start == null || End == null || Start <= End",
+          "message": "= 'Initiative \"' + Name + '\" ends before it starts.'",
+          "severity": "warning"
+        }
+      ]
+    },
+    "cls_benefit": {
+      "id": "cls_benefit",
+      "key": "Benefit",
+      "kind": "node",
+      "labels": {
+        "en": "Benefit"
+      },
+      "help": {
+        "en": "A measurable gain that a change is expected to bring, and what it has brought so far."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Benefit",
+          "id": "att_benefit_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_benefit_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Type",
+          "options": ["Cost", "Revenue", "Risk", "Experience"],
+          "id": "att_benefit_type",
+          "labels": {
+            "en": "Type"
+          }
+        },
+        {
+          "type": "number",
+          "key": "EstimatedValue",
+          "id": "att_benefit_estimatedvalue",
+          "labels": {
+            "en": "Estimated value"
+          },
+          "help": {
+            "en": "The value per year once the change is in place, in your currency."
+          }
+        },
+        {
+          "type": "number",
+          "key": "RealisedValue",
+          "id": "att_benefit_realisedvalue",
+          "labels": {
+            "en": "Realised value"
+          },
+          "help": {
+            "en": "The value reached so far, per year."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Confidence",
+          "options": ["Low", "Medium", "High"],
+          "id": "att_benefit_confidence",
+          "labels": {
+            "en": "Confidence"
+          },
+          "help": {
+            "en": "How sure the estimate is. Low counts 30%, Medium 60% and High 90% of it."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "RiskAdjustedValue",
+          "formula": "EstimatedValue == null ? null : round(EstimatedValue * (Confidence == 'High' ? 0.9 : Confidence == 'Medium' ? 0.6 : 0.3), 0)",
+          "result": "number",
+          "id": "att_benefit_riskadjustedvalue",
+          "labels": {
+            "en": "Risk adjusted value"
+          },
+          "help": {
+            "en": "The estimated value weighted by the confidence."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "RealisedShare",
+          "formula": "EstimatedValue == null || RealisedValue == null || EstimatedValue == 0 ? null : round(RealisedValue / EstimatedValue * 100, 1)",
+          "result": "number",
+          "id": "att_benefit_realisedshare",
+          "labels": {
+            "en": "Realised (%)"
+          },
+          "help": {
+            "en": "The realised value as a percentage of the estimate."
+          }
+        }
+      ],
+      "shape": "shp_benefit"
+    },
+    "cls_vision": {
+      "id": "cls_vision",
+      "key": "Vision",
+      "kind": "node",
+      "labels": {
+        "en": "Vision"
+      },
+      "help": {
+        "en": "Where the organisation wants to be with data and AI, in one or two sentences."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Vision",
+          "id": "att_vision_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Statement",
+          "multiline": true,
+          "id": "att_vision_statement",
+          "labels": {
+            "en": "Statement"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Horizon",
+          "id": "att_vision_horizon",
+          "labels": {
+            "en": "Horizon"
+          },
+          "help": {
+            "en": "The year the vision aims at, such as 2030."
+          }
+        }
+      ],
+      "shape": "shp_vision"
+    },
+    "cls_objective": {
+      "id": "cls_objective",
+      "key": "Objective",
+      "kind": "node",
+      "labels": {
+        "en": "Objective"
+      },
+      "help": {
+        "en": "A measurable step towards a goal, with a target date and an owner."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Objective",
+          "id": "att_objective_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_objective_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Measure",
+          "id": "att_objective_measure",
+          "labels": {
+            "en": "Measure"
+          },
+          "help": {
+            "en": "How progress is measured."
+          }
+        },
+        {
+          "type": "date",
+          "key": "TargetDate",
+          "id": "att_objective_targetdate",
+          "labels": {
+            "en": "Target date"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_objective_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_objective_goal",
+          "formula": "count(outgoing('Refines')) > 0",
+          "message": "= 'Objective \"' + Name + '\" refines no goal.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_objective"
+    },
+    "cls_valuedriver": {
+      "id": "cls_valuedriver",
+      "key": "ValueDriver",
+      "kind": "node",
+      "labels": {
+        "en": "Value driver"
+      },
+      "help": {
+        "en": "A way data and AI create value, such as revenue growth or lower cost. Benefits count towards it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Value driver",
+          "id": "att_valuedriver_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_valuedriver_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Category",
+          "options": [
+            "Revenue growth",
+            "Cost reduction",
+            "Risk reduction",
+            "Customer experience",
+            "Productivity"
+          ],
+          "id": "att_valuedriver_category",
+          "labels": {
+            "en": "Category"
+          }
+        }
+      ],
+      "shape": "shp_valuedriver"
+    },
+    "cls_dataaicapability": {
+      "id": "cls_dataaicapability",
+      "key": "DataAICapability",
+      "kind": "node",
+      "labels": {
+        "en": "Data and AI capability"
+      },
+      "help": {
+        "en": "Something the organisation must be able to do with data or AI, with its maturity now and the maturity it needs."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Data and AI capability",
+          "id": "att_dataaicapability_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_dataaicapability_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Category",
+          "options": [
+            "Data management",
+            "Data platform",
+            "Analytics",
+            "AI and machine learning",
+            "Governance",
+            "People and skills"
+          ],
+          "id": "att_dataaicapability_category",
+          "labels": {
+            "en": "Category"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "CurrentMaturity",
+          "min": 1,
+          "max": 5,
+          "id": "att_dataaicapability_currentmaturity",
+          "labels": {
+            "en": "Current maturity (1 to 5)"
+          },
+          "help": {
+            "en": "1 initial, 2 repeatable, 3 defined, 4 managed, 5 optimised."
+          }
+        },
+        {
+          "type": "integer",
+          "key": "TargetMaturity",
+          "min": 1,
+          "max": 5,
+          "id": "att_dataaicapability_targetmaturity",
+          "labels": {
+            "en": "Target maturity (1 to 5)"
+          },
+          "help": {
+            "en": "The maturity the strategy needs."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Gap",
+          "formula": "CurrentMaturity == null || TargetMaturity == null ? null : TargetMaturity - CurrentMaturity",
+          "result": "number",
+          "id": "att_dataaicapability_gap",
+          "labels": {
+            "en": "Gap"
+          },
+          "help": {
+            "en": "Target maturity minus current maturity."
+          }
+        }
+      ],
+      "shape": "shp_dataaicapability"
+    },
+    "cls_roadmapphase": {
+      "id": "cls_roadmapphase",
+      "key": "RoadmapPhase",
+      "kind": "container",
+      "labels": {
+        "en": "Roadmap phase"
+      },
+      "help": {
+        "en": "A stretch of time on the roadmap, such as a year. Place the initiatives of that phase inside it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Roadmap phase",
+          "id": "att_roadmapphase_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Period",
+          "id": "att_roadmapphase_period",
+          "labels": {
+            "en": "Period"
+          },
+          "help": {
+            "en": "Such as \"2027\" or \"2027 Q1 to Q2\"."
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_roadmapphase_description",
+          "labels": {
+            "en": "Description"
+          }
+        }
+      ],
+      "shape": "shp_roadmapphase"
+    }
+  },
+  "relations": {
+    "rel_contributesto": {
+      "id": "rel_contributesto",
+      "key": "ContributesTo",
+      "labels": {
+        "en": "Contributes to"
+      },
+      "help": {
+        "en": "Something helps to reach a goal or to move a KPI."
+      },
+      "from": ["cls_aiusecase", "cls_initiative", "cls_benefit"],
+      "to": ["cls_goal", "cls_objective", "cls_valuedriver"],
+      "attributes": [],
+      "shape": "shp_rel_contributesto"
+    },
+    "rel_refines": {
+      "id": "rel_refines",
+      "key": "Refines",
+      "labels": {
+        "en": "Refines"
+      },
+      "help": {
+        "en": "An objective makes a goal concrete, or a goal works towards the vision."
+      },
+      "from": ["cls_objective", "cls_goal"],
+      "to": ["cls_goal", "cls_vision"],
+      "attributes": [],
+      "shape": "shp_rel_refines"
+    },
+    "rel_drives": {
+      "id": "rel_drives",
+      "key": "Drives",
+      "labels": {
+        "en": "Drives"
+      },
+      "help": {
+        "en": "The value driver is a reason for the goal or objective."
+      },
+      "from": ["cls_valuedriver"],
+      "to": ["cls_goal", "cls_objective"],
+      "attributes": [],
+      "shape": "shp_rel_drives"
+    },
+    "rel_realises": {
+      "id": "rel_realises",
+      "key": "Realises",
+      "labels": {
+        "en": "Realises"
+      },
+      "help": {
+        "en": "The initiative or use case brings the benefit."
+      },
+      "from": ["cls_initiative", "cls_aiusecase"],
+      "to": ["cls_benefit"],
+      "attributes": [],
+      "shape": "shp_rel_realises"
+    },
+    "rel_implements": {
+      "id": "rel_implements",
+      "key": "Implements",
+      "labels": {
+        "en": "Implements"
+      },
+      "help": {
+        "en": "The initiative builds and runs the AI use case."
+      },
+      "from": ["cls_initiative"],
+      "to": ["cls_aiusecase"],
+      "attributes": [],
+      "shape": "shp_rel_implements"
+    },
+    "rel_builds": {
+      "id": "rel_builds",
+      "key": "Builds",
+      "labels": {
+        "en": "Builds"
+      },
+      "help": {
+        "en": "The initiative raises the maturity of the capability."
+      },
+      "from": ["cls_initiative"],
+      "to": ["cls_dataaicapability"],
+      "attributes": [],
+      "shape": "shp_rel_builds"
+    },
+    "rel_needs": {
+      "id": "rel_needs",
+      "key": "Needs",
+      "labels": {
+        "en": "Needs"
+      },
+      "help": {
+        "en": "The use case cannot work without the capability."
+      },
+      "from": ["cls_aiusecase"],
+      "to": ["cls_dataaicapability"],
+      "attributes": [],
+      "shape": "shp_rel_needs"
+    },
+    "rel_dependson": {
+      "id": "rel_dependson",
+      "key": "DependsOn",
+      "labels": {
+        "en": "Depends on"
+      },
+      "help": {
+        "en": "The initiative can start or finish only after the other initiative, or once the capability is in place."
+      },
+      "from": ["cls_initiative"],
+      "to": ["cls_initiative", "cls_dataaicapability"],
+      "attributes": [],
+      "shape": "shp_rel_dependson"
+    }
+  },
+  "modelTypes": {
+    "mt_strategy": {
+      "id": "mt_strategy",
+      "key": "Strategy",
+      "labels": {
+        "en": "Data and AI strategy"
+      },
+      "classes": [
+        "cls_goal",
+        "cls_aiusecase",
+        "cls_initiative",
+        "cls_benefit",
+        "cls_vision",
+        "cls_objective",
+        "cls_valuedriver",
+        "cls_dataaicapability",
+        "cls_roadmapphase"
+      ],
+      "relations": [
+        "rel_contributesto",
+        "rel_refines",
+        "rel_drives",
+        "rel_realises",
+        "rel_implements",
+        "rel_builds",
+        "rel_needs",
+        "rel_dependson"
+      ],
+      "views": [
+        {
+          "id": "vw_roadmap",
+          "key": "Roadmap",
+          "labels": {
+            "en": "Roadmap"
+          },
+          "classes": [
+            "cls_roadmapphase",
+            "cls_initiative",
+            "cls_dataaicapability"
+          ],
+          "relations": ["rel_dependson", "rel_builds"]
+        },
+        {
+          "id": "vw_value",
+          "key": "Value",
+          "labels": {
+            "en": "Value"
+          },
+          "classes": [
+            "cls_vision",
+            "cls_goal",
+            "cls_objective",
+            "cls_valuedriver",
+            "cls_benefit",
+            "cls_initiative",
+            "cls_aiusecase"
+          ],
+          "relations": [
+            "rel_refines",
+            "rel_drives",
+            "rel_contributesto",
+            "rel_realises",
+            "rel_implements"
+          ]
+        }
+      ],
+      "cardinalities": [
+        {
+          "kind": "count",
+          "class": "cls_vision",
+          "max": 1
+        }
+      ],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Title",
+          "required": true,
+          "maxLength": 100,
+          "id": "att_mtstrategy_title",
+          "labels": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Organisation",
+          "id": "att_mtstrategy_organisation",
+          "labels": {
+            "en": "Organisation"
+          }
+        },
+        {
+          "type": "text",
+          "key": "StrategyOwner",
+          "id": "att_mtstrategy_strategyowner",
+          "labels": {
+            "en": "Strategy owner"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "TotalBudget",
+          "formula": "sum(objects('Initiative').Budget)",
+          "result": "number",
+          "id": "att_mtstrategy_totalbudget",
+          "labels": {
+            "en": "Total budget"
+          },
+          "help": {
+            "en": "The budget of all initiatives."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "TotalExpectedBenefit",
+          "formula": "sum(objects('Benefit').RiskAdjustedValue)",
+          "result": "number",
+          "id": "att_mtstrategy_totalexpectedbenefit",
+          "labels": {
+            "en": "Total expected benefit"
+          },
+          "help": {
+            "en": "The risk-adjusted value of all benefits, per year."
+          }
+        }
+      ],
+      "help": {
+        "en": "A vision with goals and objectives, value drivers, AI use cases, data and AI capabilities, initiatives on a roadmap and their benefits."
+      },
+      "containers": {
+        "cls_roadmapphase": ["cls_initiative"]
+      }
+    }
+  },
+  "shapes": {
+    "shp_goal": {
+      "id": "shp_goal",
+      "name": "Goal look",
+      "kind": "node",
+      "size": {
+        "width": 120,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          ["15%", 0],
+          ["85%", 0],
+          ["100%", "50%"],
+          ["85%", "100%"],
+          ["15%", "100%"],
+          [0, "50%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            ["15%", 0],
+            ["85%", 0],
+            ["100%", "50%"],
+            ["85%", "100%"],
+            ["15%", "100%"],
+            [0, "50%"]
+          ],
+          "fill": "#b2f2bb",
+          "stroke": "#2f9e44",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": "18% + 26",
+          "y": 4,
+          "width": "64% - 26",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": "18% + 26",
+          "y": "100% - 22",
+          "width": "64% - 26",
+          "height": 18,
+          "text": "= Horizon",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z",
+          "viewBox": [0, 0, 24, 24],
+          "x": "18% + 4",
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "hexagon",
+        "fill": "#b2f2bb",
+        "border": "#2f9e44",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 120,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Horizon"
+        },
+        "icon": {
+          "name": "star"
+        }
+      }
+    },
+    "shp_aiusecase": {
+      "id": "shp_aiusecase",
+      "name": "AIUseCase look",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 126,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 4,
+          "fill": "#ffffff",
+          "stroke": "#9c36b5",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": 28,
+          "radius": 4,
+          "fill": "#eebefa",
+          "stroke": "#9c36b5"
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 2,
+          "width": "100% - 36",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 34,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Value: ' + Value",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 50,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Feasibility: ' + Feasibility",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 66,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Score: ' + Score",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 82,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Status: ' + Status",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 2v3 M5 7h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z M8.5 12.5h.01 M15.5 12.5h.01 M9 16h6",
+          "viewBox": [0, 0, 24, 24],
+          "x": "100% - 26",
+          "y": 4,
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "header-box",
+        "fill": "#eebefa",
+        "border": "#9c36b5",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 170,
+          "height": 126,
+          "resizable": true
+        },
+        "icon": {
+          "name": "bot"
+        },
+        "fields": ["Value", "Feasibility", "Score", "Status"]
+      }
+    },
+    "shp_initiative": {
+      "id": "shp_initiative",
+      "name": "Initiative look",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 4,
+          "fill": "#ffffff",
+          "stroke": "#f08c00",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": 28,
+          "radius": 4,
+          "fill": "= Status == 'Proposed' ? '#fff4e6' : Status == 'Approved' ? '#ffe8cc' : Status == 'In progress' ? '#ffd8a8' : Status == 'Done' ? '#d3f9d8' : Status == 'Stopped' ? '#e9ecef' : '#fff4e6'",
+          "stroke": "#f08c00"
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 2,
+          "width": "100% - 36",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 34,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Quarter: ' + Quarter",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 50,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Status: ' + Status",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 66,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'ExpectedBenefit: ' + ExpectedBenefit",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "header-box",
+        "fill": {
+          "by": "Status",
+          "values": {
+            "Proposed": "#fff4e6",
+            "Approved": "#ffe8cc",
+            "In progress": "#ffd8a8",
+            "Done": "#d3f9d8",
+            "Stopped": "#e9ecef"
+          },
+          "fallback": "#fff4e6"
+        },
+        "border": "#f08c00",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 170,
+          "height": 110,
+          "resizable": true
+        },
+        "fields": ["Quarter", "Status", "ExpectedBenefit"]
+      }
+    },
+    "shp_benefit": {
+      "id": "shp_benefit",
+      "name": "Benefit look",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 4,
+          "fill": "#ffffff",
+          "stroke": "#2f9e44",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": 28,
+          "radius": 4,
+          "fill": "#b2f2bb",
+          "stroke": "#2f9e44"
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 2,
+          "width": "100% - 36",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 34,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Type: ' + Type",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 50,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'EstimatedValue: ' + EstimatedValue",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 66,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'RiskAdjustedValue: ' + RiskAdjustedValue",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z",
+          "viewBox": [0, 0, 24, 24],
+          "x": "100% - 26",
+          "y": 4,
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "header-box",
+        "fill": "#b2f2bb",
+        "border": "#2f9e44",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 170,
+          "height": 110,
+          "resizable": true
+        },
+        "icon": {
+          "name": "star"
+        },
+        "fields": ["Type", "EstimatedValue", "RiskAdjustedValue"]
+      }
+    },
+    "shp_rel_contributesto": {
+      "id": "shp_rel_contributesto",
+      "name": "ContributesTo look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#2f9e44",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#2f9e44",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_vision": {
+      "id": "shp_vision",
+      "name": "Vision look",
+      "kind": "node",
+      "size": {
+        "width": 260,
+        "height": 80,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "#e5dbff",
+          "stroke": "#6741d9",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= Horizon",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": "#e5dbff",
+        "border": "#6741d9",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 260,
+          "height": 80,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Horizon"
+        },
+        "icon": {
+          "name": "star"
+        }
+      }
+    },
+    "shp_objective": {
+      "id": "shp_objective",
+      "name": "Objective look",
+      "kind": "node",
+      "size": {
+        "width": 150,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "#d3f9d8",
+          "stroke": "#2f9e44",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 4,
+          "width": "100% - 16",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 22",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= TargetDate",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": "#d3f9d8",
+        "border": "#2f9e44",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 150,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "TargetDate"
+        }
+      }
+    },
+    "shp_valuedriver": {
+      "id": "shp_valuedriver",
+      "name": "ValueDriver look",
+      "kind": "node",
+      "size": {
+        "width": 160,
+        "height": 44,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 999,
+          "fill": "#fff3bf",
+          "stroke": "#f08c00",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 42,
+          "y": 4,
+          "width": "100% - 58",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 42,
+          "y": "100% - 22",
+          "width": "100% - 58",
+          "height": 18,
+          "text": "= Category",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M13 2L4 14h7l-1 8 9-12h-7z",
+          "viewBox": [0, 0, 24, 24],
+          "x": 14,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "pill",
+        "fill": "#fff3bf",
+        "border": "#f08c00",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 160,
+          "height": 44,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Category"
+        },
+        "icon": {
+          "name": "bolt"
+        }
+      }
+    },
+    "shp_dataaicapability": {
+      "id": "shp_dataaicapability",
+      "name": "DataAICapability look",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 126,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 4,
+          "fill": "#ffffff",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": 28,
+          "radius": 4,
+          "fill": "#d0ebff",
+          "stroke": "#1c7ed6"
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 2,
+          "width": "100% - 36",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 34,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Category: ' + Category",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 50,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'CurrentMaturity: ' + CurrentMaturity",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 66,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'TargetMaturity: ' + TargetMaturity",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 82,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Gap: ' + Gap",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6 M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3",
+          "viewBox": [0, 0, 24, 24],
+          "x": "100% - 26",
+          "y": 4,
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "header-box",
+        "fill": "#d0ebff",
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 170,
+          "height": 126,
+          "resizable": true
+        },
+        "icon": {
+          "name": "database"
+        },
+        "fields": ["Category", "CurrentMaturity", "TargetMaturity", "Gap"]
+      }
+    },
+    "shp_roadmapphase": {
+      "id": "shp_roadmapphase",
+      "name": "RoadmapPhase look",
+      "kind": "node",
+      "size": {
+        "width": 400,
+        "height": 180,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 6,
+          "fill": "#f8f9fa",
+          "stroke": "#495057",
+          "strokeWidth": 1.5,
+          "dash": [7, 4]
+        },
+        {
+          "type": "text",
+          "x": 12,
+          "y": 4,
+          "width": "100% - 48",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "container",
+        "fill": "#f8f9fa",
+        "border": "#495057",
+        "borderWidth": 1.5,
+        "borderStyle": "dashed",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 400,
+          "height": 180,
+          "resizable": true
+        }
+      }
+    },
+    "shp_rel_refines": {
+      "id": "shp_rel_refines",
+      "name": "Refines look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#2f9e44",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "triangle"
+      },
+      "look": {
+        "colour": "#2f9e44",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "triangle",
+        "label": null
+      }
+    },
+    "shp_rel_drives": {
+      "id": "shp_rel_drives",
+      "name": "Drives look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#f08c00",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#f08c00",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_realises": {
+      "id": "shp_rel_realises",
+      "name": "Realises look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#2f9e44",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#2f9e44",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_implements": {
+      "id": "shp_rel_implements",
+      "name": "Implements look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#9c36b5",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#9c36b5",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_builds": {
+      "id": "shp_rel_builds",
+      "name": "Builds look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#1c7ed6",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#1c7ed6",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_needs": {
+      "id": "shp_rel_needs",
+      "name": "Needs look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#1c7ed6",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [2, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#1c7ed6",
+        "width": 1.5,
+        "style": "dotted",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_dependson": {
+      "id": "shp_rel_dependson",
+      "name": "DependsOn look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#495057",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "open-arrow"
+      },
+      "look": {
+        "colour": "#495057",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "open-arrow",
+        "label": null
+      }
+    }
+  },
+  "panels": {
+    "cls_initiative": {
+      "class": "cls_initiative",
+      "tabs": [
+        {
+          "label": "Initiative",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Status",
+              "control": "select"
+            },
+            {
+              "attribute": "Sponsor"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            },
+            {
+              "attribute": "Phase"
+            },
+            {
+              "attribute": "Quarter"
+            }
+          ]
+        },
+        {
+          "label": "Money and dates",
+          "items": [
+            {
+              "attribute": "Budget"
+            },
+            {
+              "attribute": "ExpectedBenefit"
+            },
+            {
+              "attribute": "BenefitToCost"
+            },
+            {
+              "attribute": "Start"
+            },
+            {
+              "attribute": "End"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_benefit": {
+      "class": "cls_benefit",
+      "tabs": [
+        {
+          "label": "Benefit",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Type",
+              "control": "segmented"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            }
+          ]
+        },
+        {
+          "label": "Value",
+          "items": [
+            {
+              "attribute": "EstimatedValue"
+            },
+            {
+              "attribute": "Confidence",
+              "control": "segmented"
+            },
+            {
+              "attribute": "RiskAdjustedValue"
+            },
+            {
+              "attribute": "RealisedValue"
+            },
+            {
+              "attribute": "RealisedShare"
+            }
+          ]
+        }
+      ]
+    },
+    "cls_dataaicapability": {
+      "class": "cls_dataaicapability",
+      "tabs": [
+        {
+          "label": "Capability",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Category",
+              "control": "select"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            },
+            {
+              "attribute": "CurrentMaturity"
+            },
+            {
+              "attribute": "TargetMaturity"
+            },
+            {
+              "attribute": "Gap"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    }
+  },
+  "rules": {},
+  "scripts": {}
+}

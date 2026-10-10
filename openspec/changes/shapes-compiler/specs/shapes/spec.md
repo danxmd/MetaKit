@@ -60,14 +60,14 @@ A compiled list SHALL be reused while the shape, the size and every attribute va
 The package SHALL provide starter shapes written in the shape format for BPMN task, gateway and event, UML class, ER entity, container and swimlane, and a generic shape; a class without a shape SHALL use the starter chosen from its kind and key.
 
 #### Scenario: Class without a shape
-- **WHEN** a tool library from phase 1 is opened
+- **WHEN** a Kit from phase 1 is opened
 - **THEN** its classes are drawn with starter shapes and the models look as before
 
-### Requirement: Tool format 2
-Tool libraries SHALL store `shapes` and `panels`; version 1 files SHALL be migrated with both tables empty.
+### Requirement: Kit format 2
+Kits SHALL store `shapes` and `panels`; version 1 files SHALL be migrated with both tables empty.
 
 #### Scenario: Old file
-- **WHEN** a version 1 tool library is loaded
+- **WHEN** a version 1 Kit is loaded
 - **THEN** it is migrated to version 2 and keeps all classes, relations and model types
 
 ### Requirement: Same-draw guarantee on the canvas

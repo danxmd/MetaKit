@@ -1,0 +1,80 @@
+{
+  "formatVersion": 2,
+  "kind": "mkmodel",
+  "name": "Library",
+  "kit": { "id": "tool_erlite", "version": "1.0.0" },
+  "modelType": "ERDiagram",
+  "attributes": { "Title": "A small library", "Author": "Ben" },
+  "elements": [
+    {
+      "id": "book",
+      "class": "Entity",
+      "x": 100,
+      "y": 200,
+      "attributes": {
+        "Name": "Book",
+        "Description": "A title the library owns."
+      }
+    },
+    {
+      "id": "author",
+      "class": "Entity",
+      "x": 500,
+      "y": 200,
+      "attributes": { "Name": "Author" }
+    },
+    {
+      "id": "writes",
+      "class": "Relationship",
+      "x": 320,
+      "y": 200,
+      "w": 100,
+      "h": 60,
+      "attributes": { "Name": "writes" }
+    },
+    {
+      "id": "isbn",
+      "class": "Attribute",
+      "x": 40,
+      "y": 60,
+      "w": 100,
+      "h": 40,
+      "attributes": { "Name": "ISBN", "IsKey": true }
+    },
+    {
+      "id": "title",
+      "class": "Attribute",
+      "x": 160,
+      "y": 60,
+      "w": 100,
+      "h": 40,
+      "attributes": { "Name": "Title" }
+    },
+    {
+      "id": "born",
+      "class": "Attribute",
+      "x": 520,
+      "y": 60,
+      "w": 100,
+      "h": 40,
+      "attributes": { "Name": "Born", "DataType": "date" }
+    }
+  ],
+  "connectors": [
+    { "relation": "Has", "from": "book", "to": "isbn" },
+    { "relation": "Has", "from": "book", "to": "title" },
+    { "relation": "Has", "from": "author", "to": "born" },
+    {
+      "relation": "Participates",
+      "from": "book",
+      "to": "writes",
+      "attributes": { "Cardinality": "N" }
+    },
+    {
+      "relation": "Participates",
+      "from": "author",
+      "to": "writes",
+      "attributes": { "Cardinality": "1" }
+    }
+  ]
+}

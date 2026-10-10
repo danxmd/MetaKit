@@ -1,6 +1,6 @@
 # Phase 2: canvas and modelling editor (lane A, weeks 3 to 7)
 
-Phase 2 turns the canvas spike into the real canvas engine and builds Model mode: a person can open a workspace, create a model, place and connect objects, and fill in their attributes. It uses the hand-written sample tools from phase 1 and a small built-in set of shapes; the full Shapes system comes in phase 4.
+Phase 2 turns the canvas spike into the real canvas engine and builds Model mode: a person can open a workspace, create a model, place and connect objects, and fill in their attributes. It uses the hand-written sample Kits from phase 1 and a small built-in set of shapes; the full Shapes system comes in phase 4.
 
 **Before starting:** read `docs/spikes/canvas.md` and the phase-0 gate report. Plan sections: "Canvas engine and performance", "Attribute panels".
 
@@ -40,7 +40,7 @@ Deliver:
 
 - Start page: pick a workspace folder, or reopen a remembered one (permission prompt as needed). Firefox and Safari show the "use Chrome or Edge" message.
 - Explorer: models grouped by their folder field; new, rename, move to folder, delete (to trash).
-- New model dialog: choose tool library and model type.
+- New model dialog: choose Kit and model type.
 - Palette filtered by model type and the active view; view switcher.
 - Find: by name and attribute value, jumping to the element.
 

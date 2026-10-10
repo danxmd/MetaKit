@@ -34,7 +34,7 @@ With the keyboard, **Tab** to an entry. The card opens at once and closes when f
 | Title | The name of the class or relation. |
 | Badge | **Object**, **Container**, **Swimlane** or **Relation**. |
 | Sentence (relations only) | For example "Performs: from Actor to Task". "any object" is used when an end is not limited. |
-| Help text | The help the tool builder wrote. If the class has none, the help of the nearest parent class is used. |
+| Help text | The help the method engineer wrote. If the class has none, the help of the nearest parent class is used. |
 | **Attributes** | The first 8 attributes with their kind in plain words: text, whole number, number, yes / no, date, date and time, duration, choice, several choices, calculated, table, reference, button, link. An asterisk marks required ones. Inherited attributes are included. |
 | "and N more" | Shown when there are more than 8 attributes. |
 | "No attributes." | Shown when there are none. |
@@ -47,7 +47,7 @@ Hover **Gate** in the Agent pipeline palette. The card says **Object**, shows "A
 
 - While the card is open and **Interaction hints** are on, the hint line repeats the connection sentence. See [[interaction-hints]].
 - Starting a drag from the palette closes the card.
-- The card is drawn from the tool library, so it changes at once when the tool is edited in Build mode.
+- The card is drawn from the Kit, so it changes at once when the Kit is edited in Build mode.
 
 ## Related
 

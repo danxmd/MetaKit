@@ -1,11 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import {
-  validateToolLibrary,
-  type ToolCommand,
-  type ToolLibrary,
-} from '@metakit-app/core';
+import { validateKit, type KitCommand, type Kit } from '@metakit-app/core';
 import { MemoryAdapter, Workspace } from '@metakit-app/storage';
 import { AppController } from './controller';
 
@@ -13,34 +9,34 @@ const load = (name: string) =>
   JSON.parse(
     readFileSync(
       fileURLToPath(
-        new URL(`../../../../tools/${name}/tool.json`, import.meta.url),
+        new URL(`../../../../kits/${name}/kit.json`, import.meta.url),
       ),
       'utf8',
     ),
-  ) as ToolLibrary;
+  ) as Kit;
 
 /**
- * The commands that build a tool library from nothing, one class, relation class and model type at
+ * The commands that build a Kit from nothing, one class, relation class and model type at
  * a time, the way the Build mode editors issue them.
  */
-export function commandsToBuild(tool: ToolLibrary): ToolCommand[] {
-  const out: ToolCommand[] = [
+export function commandsToBuild(kit: Kit): KitCommand[] {
+  const out: KitCommand[] = [
     {
       type: 'updateManifest',
-      name: tool.manifest.name,
-      version: tool.manifest.version,
-      languages: tool.manifest.languages,
+      name: kit.manifest.name,
+      version: kit.manifest.version,
+      languages: kit.manifest.languages,
     },
     {
       type: 'updateSettings',
-      grid: tool.settings.grid,
-      layers: tool.settings.layers,
-      numbering: tool.settings.numbering,
+      grid: kit.settings.grid,
+      layers: kit.settings.layers,
+      numbering: kit.settings.numbering,
     },
   ];
-  for (const shape of Object.values(tool.shapes))
+  for (const shape of Object.values(kit.shapes))
     out.push({ type: 'putShape', def: shape });
-  for (const cls of Object.values(tool.classes)) {
+  for (const cls of Object.values(kit.classes)) {
     out.push({ type: 'putClass', def: { ...cls, attributes: [] } });
     for (const attr of cls.attributes)
       out.push({
@@ -49,7 +45,7 @@ export function commandsToBuild(tool: ToolLibrary): ToolCommand[] {
         def: attr,
       });
   }
-  for (const rel of Object.values(tool.relations)) {
+  for (const rel of Object.values(kit.relations)) {
     out.push({ type: 'putRelation', def: { ...rel, attributes: [] } });
     for (const attr of rel.attributes)
       out.push({
@@ -58,7 +54,7 @@ export function commandsToBuild(tool: ToolLibrary): ToolCommand[] {
         def: attr,
       });
   }
-  for (const mt of Object.values(tool.modelTypes)) {
+  for (const mt of Object.values(kit.modelTypes)) {
     out.push({ type: 'putModelType', def: { ...mt, attributes: [] } });
     for (const attr of mt.attributes)
       out.push({
@@ -67,7 +63,7 @@ export function commandsToBuild(tool: ToolLibrary): ToolCommand[] {
         def: attr,
       });
   }
-  for (const panel of Object.values(tool.panels))
+  for (const panel of Object.values(kit.panels))
     out.push({ type: 'putPanel', layout: panel });
   return out;
 }
@@ -81,10 +77,10 @@ async function openBlank() {
 }
 
 describe('Build mode controller', () => {
-  it('makes a tool library, edits it, and keeps the edits after closing and reopening', async () => {
+  it('makes a Kit, edits it, and keeps the edits after closing and reopening', async () => {
     const { app } = await openBlank();
-    const slug = (await app.createToolLibrary('Research'))!;
-    expect(app.state.tools.map((t) => t.name)).toEqual(['Research']);
+    const slug = (await app.createKit('Research'))!;
+    expect(app.state.kits.map((t) => t.name)).toEqual(['Research']);
     expect(await app.openBuild(slug)).toBe(true);
     expect(app.state.phase).toBe('build');
     const put = app.runBuild({
@@ -107,9 +103,9 @@ describe('Build mode controller', () => {
     expect(app.state.build!.issues).toEqual([]);
   });
 
-  it('says why a command was refused and leaves the tool alone', async () => {
+  it('says why a command was refused and leaves the Kit alone', async () => {
     const { app } = await openBlank();
-    const slug = (await app.createToolLibrary('T'))!;
+    const slug = (await app.createKit('T'))!;
     await app.openBuild(slug);
     app.runBuild({
       type: 'putClass',
@@ -129,16 +125,16 @@ describe('Build mode controller', () => {
     expect(refused.ok).toBe(false);
     expect(!refused.ok && refused.error).toMatch(/letter/);
     expect(app.state.build!.store.state.classes.cls_a!.key).toBe('A');
-    expect(await app.createToolLibrary('   ')).toBeUndefined();
+    expect(await app.createKit('   ')).toBeUndefined();
     expect(app.state.error).toMatch(/name/);
   });
 
   it.each(['bpmn-lite', 'er-lite'])(
-    "rebuilds the sample tool %s with the editors' commands alone",
+    "rebuilds the sample Kit %s with the editors' commands alone",
     async (name) => {
       const sample = load(name);
       const { app } = await openBlank();
-      const slug = (await app.createToolLibrary('Blank'))!;
+      const slug = (await app.createKit('Blank'))!;
       await app.openBuild(slug);
       const base = app.state.build!.store.state;
       for (const command of commandsToBuild(sample)) {
@@ -148,7 +144,7 @@ describe('Build mode controller', () => {
         });
       }
       const built = app.state.build!.store.state;
-      expect(validateToolLibrary(built)).toEqual([]);
+      expect(validateKit(built)).toEqual([]);
       // Same content; the id of the library itself is the new one.
       expect({
         ...built,
@@ -158,28 +154,28 @@ describe('Build mode controller', () => {
     },
   );
 
-  it('shows a model its tool library changes, which arrive from another instance', async () => {
+  it('shows a model its Kit changes, which arrive from another instance', async () => {
     const a = new MemoryAdapter('aaaa0001');
     const b = a.asInstance('bbbb0002');
     const ws = await Workspace.create(a, { name: 'Team' });
     const sample = load('bpmn-lite');
-    const toolSlug = await ws.createTool(sample);
+    const kitSlug = await ws.createKit(sample);
     const opts = { flushMs: 5, presence: false, health: false };
     const anna = new AppController(opts);
     const ben = new AppController(opts);
     await anna.openWorkspace(a);
     await ben.openWorkspace(b);
     const modelType = Object.values(sample.modelTypes)[0]!.id;
-    const slug = (await ben.createModel({ toolSlug, modelType, name: 'M' }))!;
+    const slug = (await ben.createModel({ kitSlug, modelType, name: 'M' }))!;
     expect(ben.state.open!.slug).toBe(slug);
-    await anna.openBuild(toolSlug);
+    await anna.openBuild(kitSlug);
     const result = anna.runBuild({
       type: 'putClass',
       def: { ...sample.classes.cls_task!, labels: { en: 'Job' } },
     });
     expect(result.ok).toBe(true);
     await anna.flushBuild();
-    await ben.state.open!.toolSession.rescan();
-    expect(ben.state.open!.tool.classes.cls_task!.labels.en).toBe('Job');
+    await ben.state.open!.kitSession.rescan();
+    expect(ben.state.open!.kit.classes.cls_task!.labels.en).toBe('Job');
   });
 });

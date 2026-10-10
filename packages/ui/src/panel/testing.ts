@@ -1,4 +1,4 @@
-// Test helpers; not exported from the package. They read the hand-written sample tools in tools/.
+// Test helpers; not exported from the package. They read the hand-written sample Kits in kits/.
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import {
@@ -7,23 +7,23 @@ import {
   type ElementId,
   type Model,
   type ModelStore,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 
-export function loadTool(name: 'bpmn-lite' | 'er-lite'): ToolLibrary {
-  const url = new URL(`../../../../tools/${name}/tool.json`, import.meta.url);
-  return JSON.parse(readFileSync(fileURLToPath(url), 'utf8')) as ToolLibrary;
+export function loadKit(name: 'bpmn-lite' | 'er-lite'): Kit {
+  const url = new URL(`../../../../kits/${name}/kit.json`, import.meta.url);
+  return JSON.parse(readFileSync(fileURLToPath(url), 'utf8')) as Kit;
 }
 
-export function emptyModel(tool: ToolLibrary): Model {
-  const modelType = Object.values(tool.modelTypes)[0]!;
+export function emptyModel(kit: Kit): Model {
+  const modelType = Object.values(kit.modelTypes)[0]!;
   return {
     formatVersion: MODEL_FORMAT_VERSION,
     manifest: {
       id: 'mdl_testmodel1',
       name: 'Test',
-      tool: tool.manifest.id,
-      toolVersion: tool.manifest.version,
+      kit: kit.manifest.id,
+      kitVersion: kit.manifest.version,
       modelType: modelType.id,
     },
     attrs: {},
@@ -33,12 +33,12 @@ export function emptyModel(tool: ToolLibrary): Model {
 }
 
 export function makeStore(name: 'bpmn-lite' | 'er-lite'): {
-  tool: ToolLibrary;
+  kit: Kit;
   store: ModelStore;
   create: (cls: string, attrs?: Record<string, never>) => ElementId;
 } {
-  const tool = loadTool(name);
-  const store = createModelStore(emptyModel(tool), { tool });
+  const kit = loadKit(name);
+  const store = createModelStore(emptyModel(kit), { kit });
   const create = (cls: string, attrs: Record<string, never> = {}) => {
     const result = store.execute({
       type: 'createElement',
@@ -50,5 +50,5 @@ export function makeStore(name: 'bpmn-lite' | 'er-lite'): {
     if (!result.ok) throw new Error('cancelled');
     return result.value as ElementId;
   };
-  return { tool, store, create };
+  return { kit, store, create };
 }

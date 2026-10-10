@@ -7,13 +7,13 @@ import {
   createModelStore,
   effectiveAttributes,
   validateModel,
-  validateToolLibrary,
+  validateKit,
   type ClassId,
   type ElementId,
   type Model,
   type ModelStore,
   type RelationId,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 import {
   exportMkModel,
@@ -35,17 +35,17 @@ import { createLanguageServer } from '../components/build/scripts/script-languag
 import { loadTestLibs } from '../components/build/scripts/test-libs';
 
 /**
- * The "Agent pipeline" tool (openspec/changes/agent-pipeline-tool): a language for pipelines in
+ * The "Agent pipeline" Kit (openspec/changes/agent-pipeline-tool): a language for pipelines in
  * which agents and humans perform tasks and create artifacts. The sample model is a code review
- * pipeline; set WRITE_SAMPLE=1 to write it again after the tool library changes.
+ * pipeline; set WRITE_SAMPLE=1 to write it again after the Kit changes.
  */
 
 const here = (path: string) =>
   fileURLToPath(
-    new URL(`../../../../tools/agent-pipeline/${path}`, import.meta.url),
+    new URL(`../../../../kits/agent-pipeline/${path}`, import.meta.url),
   );
-const toolJson = () => readFileSync(here('tool.json'), 'utf8');
-const loadTool = () => JSON.parse(toolJson()) as ToolLibrary;
+const kitJson = () => readFileSync(here('kit.json'), 'utf8');
+const loadKit = () => JSON.parse(kitJson()) as Kit;
 
 const byKey = <T extends { key: string; id: string }>(
   table: Record<string, T>,
@@ -57,10 +57,10 @@ const byKey = <T extends { key: string; id: string }>(
 };
 
 /** Builds models through commands, naming classes, relations and attributes by their keys. */
-function builder(tool: ToolLibrary, model: Model) {
-  const store = createModelStore(model, { tool });
+function builder(kit: Kit, model: Model) {
+  const store = createModelStore(model, { kit });
   const attrs = (cls: ClassId, values: Record<string, unknown>) => {
-    const defs = effectiveAttributes(tool, cls);
+    const defs = effectiveAttributes(kit, cls);
     return Object.fromEntries(
       Object.entries(values).map(([k, v]) => {
         const def = defs.find((d) => d.key === k);
@@ -76,7 +76,7 @@ function builder(tool: ToolLibrary, model: Model) {
     y: number,
     parent?: ElementId,
   ): ElementId => {
-    const cls = byKey(tool.classes, key).id as ClassId;
+    const cls = byKey(kit.classes, key).id as ClassId;
     const r = store.execute({
       type: 'createElement',
       class: cls,
@@ -93,7 +93,7 @@ function builder(tool: ToolLibrary, model: Model) {
     to: ElementId,
     values: Record<string, unknown> = {},
   ) => {
-    const rel = byKey(tool.relations, key);
+    const rel = byKey(kit.relations, key);
     const defs = rel.attributes;
     store.execute({
       type: 'createConnector',
@@ -112,15 +112,15 @@ function builder(tool: ToolLibrary, model: Model) {
 }
 
 /** The code review pipeline: a plan stage and a build stage with a human gate. */
-function codeReviewPipeline(tool: ToolLibrary): Model {
+function codeReviewPipeline(kit: Kit): Model {
   const model = createEmptyModel(
-    tool,
-    byKey(tool.modelTypes, 'Pipeline').id as never,
+    kit,
+    byKey(kit.modelTypes, 'Pipeline').id as never,
     {
       name: 'Code review pipeline',
     },
   );
-  const b = builder(tool, model);
+  const b = builder(kit, model);
   b.store.execute({
     type: 'setAttribute',
     target: 'model',
@@ -253,13 +253,13 @@ function codeReviewPipeline(tool: ToolLibrary): Model {
 
 const SAMPLE = 'code-review.mkmodel.json';
 
-describe('the tool library', () => {
+describe('the Kit', () => {
   it('is valid', () => {
-    expect(validateToolLibrary(loadTool())).toEqual([]);
+    expect(validateKit(loadKit())).toEqual([]);
   });
 
   it('has formulas that all parse', () => {
-    // The tool-level check does not read constraint formulas, so this walks every formula in the file.
+    // The Kit-level check does not read constraint formulas, so this walks every formula in the file.
     const bad: string[] = [];
     const FORMULA_KEYS = new Set(['formula', 'defaultFormula', 'if', 'when']);
     const walk = (value: unknown, path: string, key = ''): void => {
@@ -278,30 +278,30 @@ describe('the tool library', () => {
       else if (value && typeof value === 'object')
         for (const [k, v] of Object.entries(value)) walk(v, `${path}.${k}`, k);
     };
-    walk(loadTool(), 'tool');
+    walk(loadKit(), 'kit');
     expect(bad).toEqual([]);
   });
 
-  it('has the script that the tool carries equal to its source file', () => {
-    const tool = loadTool();
-    expect(tool.scripts['scr_check' as never]!.source).toBe(
+  it('has the script that the Kit carries equal to its source file', () => {
+    const kit = loadKit();
+    expect(kit.scripts['scr_check' as never]!.source).toBe(
       readFileSync(here('check-pipeline.script.ts'), 'utf8'),
     );
   });
 
   it('round trips through the Git layout without a change', () => {
-    const tool = loadTool();
-    const layout = toLayout(tool);
+    const kit = loadKit();
+    const layout = toLayout(kit);
     const back = fromLayout(layout);
     expect(back.issues).toEqual([]);
-    expect(back.tool).toEqual(tool);
-    expect(toLayout(back.tool!)).toEqual(layout);
+    expect(back.kit).toEqual(kit);
+    expect(toLayout(back.kit!)).toEqual(layout);
   });
 
-  it('has a script that type-checks against the declarations of the tool', () => {
-    const tool = loadTool();
+  it('has a script that type-checks against the declarations of the Kit', () => {
+    const kit = loadKit();
     const server = createLanguageServer(loadTestLibs());
-    server.setDeclarations(generateDeclarations(tool));
+    server.setDeclarations(generateDeclarations(kit));
     const source = readFileSync(here('check-pipeline.script.ts'), 'utf8');
     expect(server.diagnostics(source).map((d) => d.message)).toEqual([]);
   });
@@ -309,38 +309,35 @@ describe('the tool library', () => {
 
 describe('the sample pipeline', () => {
   it('has no formula or constraint problems when the formulas run', () => {
-    const tool = loadTool();
-    const model = importMkModel(tool, readFileSync(here(SAMPLE), 'utf8'));
-    const calculator = new ModelCalculator(tool, () => model);
-    const issues = validateModel(tool, model, calculator).map((i) => i.message);
+    const kit = loadKit();
+    const model = importMkModel(kit, readFileSync(here(SAMPLE), 'utf8'));
+    const calculator = new ModelCalculator(kit, () => model);
+    const issues = validateModel(kit, model, calculator).map((i) => i.message);
     expect(issues).toEqual([]);
   });
 
   if (process.env['WRITE_SAMPLE'] === '1' || !existsSync(here(SAMPLE))) {
     it('writes the sample model', () => {
-      const tool = loadTool();
-      writeFileSync(
-        here(SAMPLE),
-        exportMkModel(tool, codeReviewPipeline(tool)),
-      );
+      const kit = loadKit();
+      writeFileSync(here(SAMPLE), exportMkModel(kit, codeReviewPipeline(kit)));
     });
   }
 
   it('matches the model built by the test and has no problems', () => {
-    const tool = loadTool();
-    const stored = importMkModel(tool, readFileSync(here(SAMPLE), 'utf8'));
-    const issues = validateModel(tool, stored).filter(
+    const kit = loadKit();
+    const stored = importMkModel(kit, readFileSync(here(SAMPLE), 'utf8'));
+    const issues = validateModel(kit, stored).filter(
       (i) => i.severity === 'error',
     );
     expect(issues).toEqual([]);
     expect(Object.keys(stored.elements)).toHaveLength(
-      Object.keys(codeReviewPipeline(tool).elements).length,
+      Object.keys(codeReviewPipeline(kit).elements).length,
     );
   });
 });
 
 interface Rig {
-  tool: ToolLibrary;
+  kit: Kit;
   store: ModelStore;
   behaviour: Behaviour;
   handle: ScriptsHandle;
@@ -359,35 +356,35 @@ async function start(
     ids: Record<string, ElementId>,
   ) => void,
 ): Promise<Rig> {
-  const tool = loadTool();
-  const model = importMkModel(tool, readFileSync(here(SAMPLE), 'utf8'));
-  const store = createModelStore(model, { tool });
+  const kit = loadKit();
+  const model = importMkModel(kit, readFileSync(here(SAMPLE), 'utf8'));
+  const store = createModelStore(model, { kit });
   const messages: { kind: string; text: string }[] = [];
   const behaviour = createBehaviour({
     store,
-    tool: () => tool,
+    kit: () => kit,
     host: silentHost({
       message: (kind, text) => messages.push({ kind, text }),
     }),
   });
-  attachRules(behaviour, { store, tool: () => tool });
+  attachRules(behaviour, { store, kit: () => kit });
   const handle = await attachScripts(behaviour, {
     store,
-    tool: () => tool,
+    kit: () => kit,
     permissions: {
       granted: () => ({ network: false, files: false }),
       request: () => Promise.resolve(true),
       forget: () => Promise.resolve(),
     },
   });
-  const rig = { tool, store, behaviour, handle, messages };
+  const rig = { kit, store, behaviour, handle, messages };
   rigs.push(rig);
   if (edit) {
     const ids = Object.fromEntries(
       Object.values(store.state.elements).map((e) => [
         String(
           e.attrs[
-            Object.values(tool.classes)
+            Object.values(kit.classes)
               .flatMap((c) => c.attributes)
               .find((a) => a.key === 'Name' || a.key === 'StageName')!
               .id as never
@@ -426,9 +423,9 @@ describe('Check pipeline', () => {
       Object.values(model.elements).find((e) =>
         Object.values(e.attrs).includes(name as never),
       )!.id;
-    const performs = byKey(r.tool.relations, 'Performs').id;
-    const handover = byKey(r.tool.relations, 'HandsOverTo').id;
-    const approves = byKey(r.tool.relations, 'Approves').id;
+    const performs = byKey(r.kit.relations, 'Performs').id;
+    const handover = byKey(r.kit.relations, 'HandsOverTo').id;
+    const approves = byKey(r.kit.relations, 'Approves').id;
     // Nobody performs "Merge" any more.
     for (const c of Object.values(model.connectors))
       if (c.relation === performs && c.to === idOf('Merge'))
@@ -461,7 +458,7 @@ describe('status commands', () => {
     )!;
     const status = byKey(
       Object.fromEntries(
-        r.tool.classes['cls_task' as never]!.attributes.map((a) => [a.id, a]),
+        r.kit.classes['cls_task' as never]!.attributes.map((a) => [a.id, a]),
       ),
       'Status',
     );

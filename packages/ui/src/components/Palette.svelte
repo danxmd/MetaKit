@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import type { EditorTool, PreviewTarget } from '@metakit-app/canvas';
-  import type { ClassId, RelationId, ToolLibrary } from '@metakit-app/core';
+  import type { ClassId, RelationId, Kit } from '@metakit-app/core';
   import { labelOf, type Palette } from '../shell/palette';
   import {
     previewOfClass,
@@ -12,7 +12,7 @@
   import ShapePreview from './ShapePreview.svelte';
 
   let {
-    tool,
+    kit,
     palette,
     activeTool,
     onSelect,
@@ -22,7 +22,7 @@
     onHover,
     language = 'en',
   }: {
-    tool: ToolLibrary;
+    kit: Kit;
     palette: Palette;
     activeTool: EditorTool;
     onSelect: () => void;
@@ -83,7 +83,7 @@
       event,
       cls.id,
       { class: cls.id },
-      () => previewOfClass(tool, cls, language),
+      () => previewOfClass(kit, cls, language),
       delay,
     );
   const forRelation = (
@@ -95,7 +95,7 @@
       event,
       rel.id,
       { relation: rel.id },
-      () => previewOfRelation(tool, rel, language),
+      () => previewOfRelation(kit, rel, language),
       delay,
     );
 
@@ -135,7 +135,7 @@
     >
       <span class="thumb">
         <ShapePreview
-          {tool}
+          {kit}
           target={{ class: cls.id }}
           width={34}
           height={22}
@@ -161,7 +161,7 @@
     >
       <span class="thumb">
         <ShapePreview
-          {tool}
+          {kit}
           target={{ relation: rel.id }}
           width={34}
           height={22}
@@ -180,7 +180,7 @@
 
 {#if shown}
   <PalettePreview
-    {tool}
+    {kit}
     target={shown.target}
     info={shown.info}
     id={CARD_ID}
