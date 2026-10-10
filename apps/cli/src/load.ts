@@ -1,12 +1,13 @@
 import { readFile, stat } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import {
-  validateToolLibrary,
+  validateKit,
   type Issue,
   type Json,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 import {
+  KIT_IDENTITY_FILE,
   MkModelError,
   migrate,
   importMkModel,
@@ -40,15 +41,33 @@ export async function readJsonFileAt(path: string): Promise<unknown> {
   }
 }
 
-export interface ToolFile {
-  tool: ToolLibrary;
+/**
+ * The file names of a Kit in a folder, in the order they are looked for: `kit.json`, the name of
+ * the repository's samples, then the name a workspace and earlier releases use.
+ */
+export const KIT_FILE_NAMES = ['kit.json', KIT_IDENTITY_FILE] as const;
+
+/** The Kit file in a folder, or null when the folder has none. */
+export async function kitFileIn(folder: string): Promise<string | null> {
+  for (const name of KIT_FILE_NAMES) {
+    const path = join(folder, name);
+    if ((await exists(path)) === 'file') return path;
+  }
+  return null;
+}
+
+export interface KitFile {
+  kit: Kit;
   issues: Issue[];
 }
 
-/** Reads a tool library in the form the app stores it (`tool.json` or any file with that content). */
-export async function readToolFile(path: string): Promise<ToolFile> {
+/** Reads a Kit in the form the app stores it (a folder with `kit.json` or `tool.json`, or any file with that content). */
+export async function readKitFile(path: string): Promise<KitFile> {
   const found = await exists(path);
-  const file = found === 'directory' ? join(path, 'tool.json') : path;
+  const file =
+    found === 'directory'
+      ? ((await kitFileIn(path)) ?? join(path, KIT_FILE_NAMES[0]))
+      : path;
   const raw = await readJsonFileAt(file);
   let value: unknown;
   try {
@@ -56,19 +75,19 @@ export async function readToolFile(path: string): Promise<ToolFile> {
   } catch (error) {
     throw new CliError(`${file}: ${(error as Error).message}`);
   }
-  return { tool: value as ToolLibrary, issues: validateToolLibrary(value) };
+  return { kit: value as Kit, issues: validateKit(value) };
 }
 
-/** Finds the tool for a model file: the one given with --tool, or `tool.json` next to the model. */
-export async function findToolFor(
+/** Finds the Kit for a model file: the one given with --tool, or `kit.json` (or `tool.json`) next to the model. */
+export async function findKitFor(
   modelPath: string,
-  toolOption: string | undefined,
+  kitOption: string | undefined,
 ): Promise<string> {
-  if (toolOption) return toolOption;
-  const sibling = join(dirname(modelPath), 'tool.json');
-  if ((await exists(sibling)) === 'file') return sibling;
+  if (kitOption) return kitOption;
+  const sibling = await kitFileIn(dirname(modelPath));
+  if (sibling) return sibling;
   throw new CliError(
-    `Cannot find the tool library for "${modelPath}": there is no tool.json next to it. Give one with --tool <path>.`,
+    `Cannot find the Kit for "${modelPath}": there is no kit.json or tool.json next to it. Give one with --tool <path>.`,
   );
 }
 

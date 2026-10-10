@@ -8,18 +8,18 @@ import {
 import {
   SAMPLE,
   emptySampleModel,
-  sampleTool,
+  sampleKit,
   clone,
-} from '../testing/sample-tool';
+} from '../testing/sample-kit';
 import { hasErrors, issuesFor, validateModel } from './validate';
 
-const tool = sampleTool();
+const kit = sampleKit();
 const codes = (store: ModelStore) =>
-  validateModel(tool, store.state).map((i) => i.code);
+  validateModel(kit, store.state).map((i) => i.code);
 
 /** A correct little process: Start -> Task -> End, with the model title set. */
 function goodProcess(): ModelStore {
-  const store = createModelStore(emptySampleModel(), { tool });
+  const store = createModelStore(emptySampleModel(), { kit });
   store.execute({
     type: 'batch',
     commands: [
@@ -77,7 +77,7 @@ const run = (store: ModelStore, ...commands: ModelCommand[]) =>
 
 describe('a correct model', () => {
   it('has no issues', () => {
-    expect(validateModel(tool, goodProcess().state)).toEqual([]);
+    expect(validateModel(kit, goodProcess().state)).toEqual([]);
   });
 
   it('gives the same list twice', () => {
@@ -88,8 +88,8 @@ describe('a correct model', () => {
       attr: SAMPLE.attName,
       value: '',
     });
-    expect(validateModel(tool, store.state)).toEqual(
-      validateModel(tool, store.state),
+    expect(validateModel(kit, store.state)).toEqual(
+      validateModel(kit, store.state),
     );
   });
 
@@ -97,7 +97,7 @@ describe('a correct model', () => {
     const store = goodProcess();
     const before = store.state;
     const history = store.history();
-    validateModel(tool, before);
+    validateModel(kit, before);
     expect(store.state).toBe(before);
     expect(store.history()).toEqual(history);
   });
@@ -112,7 +112,7 @@ describe('issues carry their location', () => {
       attr: SAMPLE.attName,
       value: '',
     });
-    const [issue] = validateModel(tool, store.state);
+    const [issue] = validateModel(kit, store.state);
     expect(issue).toEqual({
       id: 'el_task',
       severity: 'warning',
@@ -130,7 +130,7 @@ describe('issues carry their location', () => {
       attr: SAMPLE.attEffort,
       value: -3,
     });
-    const issue = validateModel(tool, store.state).find(
+    const issue = validateModel(kit, store.state).find(
       (i) => i.code === 'min',
     )!;
     expect(issue.message).toBe(
@@ -163,7 +163,7 @@ describe('validation never blocks', () => {
         to: 'el_start',
       },
     );
-    expect(validateModel(tool, store.state).length).toBeGreaterThan(2);
+    expect(validateModel(kit, store.state).length).toBeGreaterThan(2);
     expect(
       store.execute({ type: 'move', id: 'el_task' as ElementId, x: 1, y: 1 })
         .ok,
@@ -214,7 +214,7 @@ describe('required attributes', () => {
       attr: SAMPLE.attTitle,
       value: '',
     });
-    const issues = validateModel(tool, store.state);
+    const issues = validateModel(kit, store.state);
     expect(issues).toHaveLength(1);
     expect(issues[0]).toMatchObject({
       id: 'model',
@@ -225,7 +225,7 @@ describe('required attributes', () => {
 
   it('counts zero as a value', () => {
     const store = goodProcess();
-    const t = clone(tool);
+    const t = clone(kit);
     (
       t.classes[SAMPLE.task]!.attributes.find(
         (a) => a.id === SAMPLE.attEffort,
@@ -256,7 +256,7 @@ describe('attribute constraints', () => {
     set('el_task', SAMPLE.attEffort, 1.25);
     set('el_task', SAMPLE.attPriority, 'Urgent');
     set('model', SAMPLE.attVersion, 2.5);
-    const found = validateModel(tool, store.state).map(
+    const found = validateModel(kit, store.state).map(
       (i) => `${i.id}:${i.code}`,
     );
     expect(found).toEqual(
@@ -285,7 +285,7 @@ describe('attribute constraints', () => {
   it('ignores formula attributes', () => {
     const store = goodProcess();
     expect(
-      validateModel(tool, store.state).some((i) => i.attr === SAMPLE.attCost),
+      validateModel(kit, store.state).some((i) => i.attr === SAMPLE.attCost),
     ).toBe(false);
   });
 });
@@ -311,7 +311,7 @@ describe('connections', () => {
         id: 'cn_bad',
       },
     );
-    const issues = validateModel(tool, store.state);
+    const issues = validateModel(kit, store.state);
     expect(issues.map((i) => i.code)).toEqual(['from-not-allowed']);
     expect(issues[0]).toMatchObject({ id: 'cn_bad', severity: 'warning' });
     expect(issues[0]!.message).toBe(
@@ -339,13 +339,13 @@ describe('connections', () => {
         id: 'cn_bad',
       },
     );
-    expect(validateModel(tool, store.state).map((i) => i.code)).toEqual([
+    expect(validateModel(kit, store.state).map((i) => i.code)).toEqual([
       'to-not-allowed',
     ]);
   });
 
   it('accepts a subclass where an abstract class is allowed', () => {
-    expect(validateModel(tool, goodProcess().state)).toEqual([]);
+    expect(validateModel(kit, goodProcess().state)).toEqual([]);
   });
 
   it('reports a missing end as an error, once per end', () => {
@@ -353,7 +353,7 @@ describe('connections', () => {
       typeof emptySampleModel
     >;
     delete (model.elements as Record<string, unknown>).el_end;
-    const issues = validateModel(tool, model);
+    const issues = validateModel(kit, model);
     expect(
       issues
         .filter((i) => i.code === 'dangling-end')
@@ -371,7 +371,7 @@ describe('connections', () => {
     >;
     (model.elements as Record<string, { parent?: string }>).el_task!.parent =
       'el_ghost';
-    expect(validateModel(tool, model).map((i) => i.code)).toEqual([
+    expect(validateModel(kit, model).map((i) => i.code)).toEqual([
       'dangling-parent',
     ]);
   });
@@ -380,7 +380,7 @@ describe('connections', () => {
 describe('what the model type allows', () => {
   it('reports a class that is not allowed', () => {
     const store = goodProcess();
-    const t = clone(tool);
+    const t = clone(kit);
     t.modelTypes[SAMPLE.process]!.classes = t.modelTypes[
       SAMPLE.process
     ]!.classes.filter((c) => c !== SAMPLE.lane);
@@ -397,14 +397,14 @@ describe('what the model type allows', () => {
 
   it('allows a subclass of a listed class', () => {
     const store = goodProcess();
-    const t = clone(tool);
+    const t = clone(kit);
     t.modelTypes[SAMPLE.process]!.classes = [SAMPLE.flowNode, SAMPLE.lane];
     expect(validateModel(t, store.state)).toEqual([]);
   });
 
   it('reports a relation that is not allowed', () => {
     const store = goodProcess();
-    const t = clone(tool);
+    const t = clone(kit);
     t.modelTypes[SAMPLE.process]!.relations = [];
     t.modelTypes[SAMPLE.process]!.views = [];
     expect(validateModel(t, store.state).map((i) => i.code)).toEqual([
@@ -418,7 +418,7 @@ describe('what the model type allows', () => {
       typeof emptySampleModel
     >;
     model.manifest.modelType = 'mt_gone' as never;
-    const issues = validateModel(tool, model);
+    const issues = validateModel(kit, model);
     expect(issues[0]).toMatchObject({
       id: 'model',
       severity: 'error',
@@ -437,7 +437,7 @@ describe('cardinalities', () => {
       y: 200,
       attrs: { [SAMPLE.attName]: 'Second' },
     });
-    const issues = validateModel(tool, store.state);
+    const issues = validateModel(kit, store.state);
     expect(issues.map((i) => [i.id, i.code])).toEqual([
       ['model', 'count-above-max'],
     ]);
@@ -449,7 +449,7 @@ describe('cardinalities', () => {
   it('reports a missing start event', () => {
     const store = goodProcess();
     run(store, { type: 'delete', id: 'el_start' });
-    const issues = validateModel(tool, store.state);
+    const issues = validateModel(kit, store.state);
     expect(issues.map((i) => i.code)).toEqual(['count-below-min']);
     expect(issues[0]!.message).toBe(
       'The model has 0 Start event elements, but at least 1 is needed.',
@@ -458,7 +458,7 @@ describe('cardinalities', () => {
 
   it('counts subclasses towards a limit on their parent class', () => {
     const store = goodProcess();
-    const t = clone(tool);
+    const t = clone(kit);
     t.modelTypes[SAMPLE.process]!.cardinalities = [
       { kind: 'count', class: SAMPLE.flowNode, max: 2 },
     ];
@@ -475,7 +475,7 @@ describe('cardinalities', () => {
       from: 'el_task',
       to: 'el_start',
     });
-    const issues = validateModel(tool, store.state);
+    const issues = validateModel(kit, store.state);
     expect(issues.map((i) => [i.id, i.code])).toEqual([
       ['el_start', 'degree-above-max'],
     ]);
@@ -486,7 +486,7 @@ describe('cardinalities', () => {
 
   it('reports a degree below the minimum', () => {
     const store = goodProcess();
-    const t = clone(tool);
+    const t = clone(kit);
     t.modelTypes[SAMPLE.process]!.cardinalities = [
       {
         kind: 'degree',
@@ -512,7 +512,7 @@ describe('stale definitions', () => {
       y: 300,
       attrs: { [SAMPLE.attName]: 'Old', att_removed: 'legacy' },
     });
-    const issues = validateModel(tool, store.state);
+    const issues = validateModel(kit, store.state);
     expect(issues.map((i) => [i.code, i.severity, i.attr])).toEqual([
       ['unknown-attribute', 'info', 'att_removed'],
     ]);
@@ -528,7 +528,7 @@ describe('stale definitions', () => {
     >;
     (model.elements as Record<string, { class: string }>).el_task!.class =
       'cls_removed';
-    const issues = validateModel(tool, model);
+    const issues = validateModel(kit, model);
     expect(issues.map((i) => [i.id, i.code, i.severity])).toEqual([
       ['el_task', 'unknown-class', 'info'],
     ]);
@@ -541,18 +541,18 @@ describe('stale definitions', () => {
     (model.connectors as Record<string, { relation: string }>).cn_a!.relation =
       'rel_removed';
     expect(
-      validateModel(tool, model)
+      validateModel(kit, model)
         .filter((i) => i.id === 'cn_a')
         .map((i) => [i.code, i.severity]),
     ).toEqual([['unknown-relation', 'info']]);
   });
 
-  it('reports a model made with another tool', () => {
+  it('reports a model made with another Kit', () => {
     const model = clone(goodProcess().state) as ReturnType<
       typeof emptySampleModel
     >;
     model.manifest.tool = 'tool_other' as never;
-    expect(validateModel(tool, model)[0]).toMatchObject({
+    expect(validateModel(kit, model)[0]).toMatchObject({
       id: 'model',
       code: 'tool-mismatch',
     });
@@ -564,7 +564,7 @@ describe('stale definitions', () => {
     >;
     (model.elements as Record<string, { class: string }>).el_task!.class =
       SAMPLE.flowNode;
-    expect(validateModel(tool, model).map((i) => i.code)).toContain(
+    expect(validateModel(kit, model).map((i) => i.code)).toContain(
       'abstract-class',
     );
   });
@@ -606,7 +606,7 @@ describe('order', () => {
         value: 7,
       },
     );
-    expect(validateModel(tool, store.state).map((i) => i.id)).toEqual([
+    expect(validateModel(kit, store.state).map((i) => i.id)).toEqual([
       'model',
       'el_start',
       'el_end',
@@ -614,7 +614,7 @@ describe('order', () => {
       'cn_b',
     ]);
     run(store, { type: 'reorder', id: 'el_end', to: 'back' });
-    expect(validateModel(tool, store.state).map((i) => i.id)).toEqual([
+    expect(validateModel(kit, store.state).map((i) => i.id)).toEqual([
       'model',
       'el_end',
       'el_start',
@@ -646,7 +646,7 @@ describe('order', () => {
         value: -1,
       },
     );
-    expect(validateModel(tool, store.state).map((i) => i.attr)).toEqual([
+    expect(validateModel(kit, store.state).map((i) => i.attr)).toEqual([
       SAMPLE.attName,
       SAMPLE.attCode,
       SAMPLE.attEffort,

@@ -8,7 +8,7 @@ describe('importKindOf', () => {
   it('tells the formats apart by the end of the name, ignoring case', () => {
     expect(importKindOf('order.mkmodel.json')).toBe('model');
     expect(importKindOf('Case.MKBUNDLE')).toBe('bundle');
-    expect(importKindOf('bpmn-1.0.0.mktool')).toBe('tool');
+    expect(importKindOf('bpmn-1.0.0.mktool')).toBe('kit');
     expect(importKindOf('notes.json')).toBeNull();
     expect(importKindOf('mkbundle')).toBeNull();
   });
@@ -36,19 +36,19 @@ describe('importFiles', () => {
           calls.push(`bundle ${name} ${bytes.length}`);
           return 7;
         },
-        tool: async (bytes, name) => {
-          calls.push(`tool ${name} ${[...bytes].join(',')}`);
+        kit: async (bytes, name) => {
+          calls.push(`kit ${name} ${[...bytes].join(',')}`);
           return true;
         },
       },
     );
     expect(calls).toEqual([
-      'tool a.mktool 1,2',
+      'kit a.mktool 1,2',
       'model b.mkmodel.json {"a":1}',
       'bundle c.mkbundle 1',
     ]);
     expect(results).toEqual([
-      { fileName: 'a.mktool', kind: 'tool', ok: true, value: true },
+      { fileName: 'a.mktool', kind: 'kit', ok: true, value: true },
       { fileName: 'b.mkmodel.json', kind: 'model', ok: true, value: 'm' },
       { fileName: 'c.mkbundle', kind: 'bundle', ok: true, value: 7 },
     ]);
@@ -62,7 +62,7 @@ describe('importFiles', () => {
         bundle: async () => {
           throw new Error('This is not a valid zip file.');
         },
-        tool: async () => null,
+        kit: async () => null,
       },
     );
     expect(results[0]).toMatchObject({ ok: false, kind: null });

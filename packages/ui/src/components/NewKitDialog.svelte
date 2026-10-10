@@ -1,22 +1,22 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import type { ToolEntry } from '@metakit-app/storage';
-  import type { BuiltInTool, ToolStart } from '../build/built-in';
+  import type { KitEntry } from '@metakit-app/storage';
+  import type { BuiltInKit, KitStart } from '../build/built-in';
 
   let {
-    tools,
+    kits,
     builtIns,
     initial = { kind: 'empty' },
     onCreate,
     onCancel,
   }: {
-    /** The workspace's own tool libraries. */
-    tools: ToolEntry[];
-    builtIns: readonly BuiltInTool[];
+    /** The workspace's own Kits. */
+    kits: KitEntry[];
+    builtIns: readonly BuiltInKit[];
     /** What is chosen when the dialog opens, for "Copy and extend" on a card. */
-    initial?: ToolStart;
+    initial?: KitStart;
     /** Resolves when the library is made; the dialog then closes. */
-    onCreate: (name: string, start: ToolStart) => Promise<boolean>;
+    onCreate: (name: string, start: KitStart) => Promise<boolean>;
     onCancel: () => void;
   } = $props();
 
@@ -25,32 +25,32 @@
   let choice = $state('empty');
   let busy = $state(false);
 
-  const keyOf = (start: ToolStart) =>
+  const keyOf = (start: KitStart) =>
     start.kind === 'empty'
       ? 'empty'
       : start.kind === 'workspace'
         ? `workspace:${start.slug}`
-        : `built-in:${start.tool.id}`;
+        : `built-in:${start.kit.id}`;
 
-  function startOf(key: string): ToolStart {
+  function startOf(key: string): KitStart {
     if (key.startsWith('workspace:'))
       return { kind: 'workspace', slug: key.slice('workspace:'.length) };
-    const tool = builtIns.find((t) => `built-in:${t.id}` === key);
-    return tool ? { kind: 'built-in', tool } : { kind: 'empty' };
+    const kit = builtIns.find((t) => `built-in:${t.id}` === key);
+    return kit ? { kind: 'built-in', kit } : { kind: 'empty' };
   }
 
   const sourceName = $derived.by(() => {
     const start = startOf(choice);
     if (start.kind === 'workspace')
-      return tools.find((t) => t.slug === start.slug)?.name;
-    if (start.kind === 'built-in') return start.tool.name;
+      return kits.find((t) => t.slug === start.slug)?.name;
+    if (start.kind === 'built-in') return start.kit.name;
     return undefined;
   });
 
   // Set once, so a refresh of the lists while the dialog is open does not reset the choice.
   onMount(() => {
     choice = keyOf(initial);
-    if (initial.kind === 'built-in') name = `${initial.tool.name} (ours)`;
+    if (initial.kind === 'built-in') name = `${initial.kit.name} (ours)`;
     dialog?.showModal();
   });
 
@@ -69,12 +69,12 @@
 <dialog
   bind:this={dialog}
   onclose={onCancel}
-  aria-labelledby="new-tool-title"
-  data-testid="new-tool-dialog"
+  aria-labelledby="new-kit-title"
+  data-testid="new-kit-dialog"
 >
   <form onsubmit={submit}>
     <div class="head">
-      <h2 id="new-tool-title">New tool library</h2>
+      <h2 id="new-kit-title">New Kit</h2>
       <p class="muted">
         Start with an empty one, or copy an existing one and extend it. A copy
         is yours: the original does not change.
@@ -87,7 +87,7 @@
         bind:value={name}
         autofocus
         placeholder="For example: Order process"
-        data-testid="new-tool-name"
+        data-testid="new-kit-name"
       />
     </label>
     <fieldset>
@@ -106,47 +106,45 @@
             ></span
           >
         </label>
-        {#if tools.length > 0}
-          <p class="group">A copy of a tool library in this workspace</p>
-          {#each tools as tool (tool.slug)}
+        {#if kits.length > 0}
+          <p class="group">A copy of a Kit in this workspace</p>
+          {#each kits as kit (kit.slug)}
             <label class="option">
               <input
                 type="radio"
                 name="start"
-                value="workspace:{tool.slug}"
+                value="workspace:{kit.slug}"
                 bind:group={choice}
-                data-testid="start-workspace-{tool.slug}"
+                data-testid="start-workspace-{kit.slug}"
               />
               <span
-                ><strong>{tool.name}</strong><small
-                  >Version {tool.version}</small
+                ><strong>{kit.name}</strong><small>Version {kit.version}</small
                 ></span
               >
             </label>
           {/each}
         {/if}
-        <p class="group">A copy of a built-in tool library</p>
-        {#each builtIns as tool (tool.id)}
+        <p class="group">A copy of a built-in Kit</p>
+        {#each builtIns as kit (kit.id)}
           <label class="option">
             <input
               type="radio"
               name="start"
-              value="built-in:{tool.id}"
+              value="built-in:{kit.id}"
               bind:group={choice}
-              data-testid="start-built-in-{tool.id}"
+              data-testid="start-built-in-{kit.id}"
             />
             <span
-              ><strong>{tool.name}</strong><small>{tool.description}</small
-              ></span
+              ><strong>{kit.name}</strong><small>{kit.description}</small></span
             >
           </label>
         {/each}
       </div>
     </fieldset>
     {#if sourceName}
-      <p class="muted note" data-testid="new-tool-note">
-        The new library starts with everything in {sourceName}, at version
-        1.0.0, and shows “Based on {sourceName}”.
+      <p class="muted note" data-testid="new-kit-note">
+        The new Kit starts with everything in {sourceName}, at version 1.0.0,
+        and shows “Based on {sourceName}”.
       </p>
     {/if}
     <div class="actions">
@@ -155,7 +153,7 @@
         class="primary"
         type="submit"
         disabled={name.trim() === '' || busy}
-        data-testid="new-tool-create">Create and edit</button
+        data-testid="new-kit-create">Create and edit</button
       >
     </div>
   </form>

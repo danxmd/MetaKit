@@ -28,7 +28,7 @@ type Rec = Record<string, unknown>;
 
 /**
  * Checks the shape of a model document: types, ids and position keys. Whether elements may
- * connect, or whether a class exists in the tool, is a question for validation, not for this.
+ * connect, or whether a class exists in the Kit, is a question for validation, not for this.
  */
 export function validateModelDocument(value: unknown): Issue[] {
   const c = new Checker();
@@ -50,8 +50,8 @@ export function validateModelDocument(value: unknown): Issue[] {
   if (m) {
     c.id('model', m.id, 'manifest.id', 'The model id');
     c.string(m.name, 'manifest.name', 'The model name');
-    c.id('tool', m.tool, 'manifest.tool', 'The tool id');
-    c.string(m.toolVersion, 'manifest.toolVersion', 'The tool version');
+    c.id('tool', m.tool, 'manifest.tool', 'The Kit id');
+    c.string(m.toolVersion, 'manifest.toolVersion', 'The Kit version');
     c.id('modelType', m.modelType, 'manifest.modelType', 'The model type id');
     if (m.folder !== undefined)
       c.string(m.folder, 'manifest.folder', 'The folder', { empty: true });

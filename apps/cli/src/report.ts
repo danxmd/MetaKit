@@ -39,7 +39,7 @@ export function formatText(reports: readonly DocumentReport[]): string {
   const lines: string[] = [];
   for (const report of reports) {
     lines.push(
-      `${report.path} (${report.kind})${report.issues.length === 0 ? ': ok' : ''}`,
+      `${report.path} (${report.kind === 'tool' ? 'Kit' : report.kind})${report.issues.length === 0 ? ': ok' : ''}`,
     );
     for (const issue of report.issues) {
       lines.push(

@@ -1,21 +1,21 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import type { Rule, Script, ToolLibrary } from '@metakit-app/core';
+import type { Rule, Script, Kit } from '@metakit-app/core';
 
-/** Test helper: the sample tool libraries of tools/. */
+/** Test helper: the sample Kits of kits/. */
 const read = (path: string): string =>
   readFileSync(
-    fileURLToPath(new URL(`../../../../tools/${path}`, import.meta.url)),
+    fileURLToPath(new URL(`../../../../kits/${path}`, import.meta.url)),
     'utf8',
   );
 
-export function sampleTool(name: 'bpmn-lite' | 'er-lite'): ToolLibrary {
-  return JSON.parse(read(`${name}/tool.json`)) as ToolLibrary;
+export function sampleKit(name: 'bpmn-lite' | 'er-lite'): Kit {
+  return JSON.parse(read(`${name}/kit.json`)) as Kit;
 }
 
 /** A sample with the behaviour examples added, so that rules and scripts are in the layout. */
-export function sampleWithBehaviour(): ToolLibrary {
-  const tool = sampleTool('bpmn-lite');
+export function sampleWithBehaviour(): Kit {
+  const kit = sampleKit('bpmn-lite');
   const rule = JSON.parse(
     read('behaviour-examples/total-effort.rule.json'),
   ) as Rule;
@@ -31,8 +31,8 @@ export function sampleWithBehaviour(): ToolLibrary {
     enabled: false,
   };
   return {
-    ...tool,
-    rules: { ...tool.rules, [rule.id]: rule },
-    scripts: { ...tool.scripts, [script.id]: script, [second.id]: second },
+    ...kit,
+    rules: { ...kit.rules, [rule.id]: rule },
+    scripts: { ...kit.scripts, [script.id]: script, [second.id]: second },
   };
 }

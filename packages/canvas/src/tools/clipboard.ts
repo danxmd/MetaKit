@@ -13,22 +13,22 @@ import {
   type ModelTypeDef,
   type Point,
   type RandomSource,
-  type ToolId,
-  type ToolLibrary,
+  type KitId,
+  type Kit,
 } from '@metakit-app/core';
 
 export const CLIPBOARD_KIND = 'metakit-clipboard';
 
 export interface ClipboardElement {
   key: ElementId;
-  /** The class by id and by key, so that a paste into another tool library can match by key. */
+  /** The class by id and by key, so that a paste into another Kit can match by key. */
   class: string;
   classKey: string;
   x: number;
   y: number;
   w: number;
   h: number;
-  /** Attribute values by attribute key (not id), so that they can follow a class to another tool. */
+  /** Attribute values by attribute key (not id), so that they can follow a class to another Kit. */
   attrs: Record<string, Json>;
 }
 
@@ -44,7 +44,7 @@ export interface ClipboardConnector {
 export interface ClipboardData {
   kind: typeof CLIPBOARD_KIND;
   formatVersion: 1;
-  tool: ToolId;
+  tool: KitId;
   elements: ClipboardElement[];
   connectors: ClipboardConnector[];
 }
@@ -60,7 +60,7 @@ function keyed(
 
 /** The selected elements and the connectors that join two selected elements. */
 export function copySelection(
-  tool: ToolLibrary,
+  kit: Kit,
   model: Model,
   elementIds: Iterable<ElementId>,
 ): ClipboardData {
@@ -68,7 +68,7 @@ export function copySelection(
   const elements: ClipboardElement[] = [];
   for (const id of chosen) {
     const e = model.elements[id];
-    const cls = tool.classes[e?.class as never];
+    const cls = kit.classes[e?.class as never];
     if (!e || !cls) continue;
     elements.push({
       key: id,
@@ -78,13 +78,13 @@ export function copySelection(
       y: e.y,
       w: e.w,
       h: e.h,
-      attrs: keyed(safeAttributes(tool, e.class), e.attrs),
+      attrs: keyed(safeAttributes(kit, e.class), e.attrs),
     });
   }
   const connectors: ClipboardConnector[] = [];
   for (const c of Object.values(model.connectors)) {
     if (!chosen.has(c.from) || !chosen.has(c.to)) continue;
-    const rel = tool.relations[c.relation];
+    const rel = kit.relations[c.relation];
     if (!rel) continue;
     connectors.push({
       relation: c.relation,
@@ -92,29 +92,29 @@ export function copySelection(
       from: c.from,
       to: c.to,
       bends: c.bends.map((b) => ({ ...b })),
-      attrs: keyed(safeRelationAttributes(tool, c.relation), c.attrs),
+      attrs: keyed(safeRelationAttributes(kit, c.relation), c.attrs),
     });
   }
   return {
     kind: CLIPBOARD_KIND,
     formatVersion: 1,
-    tool: tool.manifest.id,
+    tool: kit.manifest.id,
     elements,
     connectors,
   };
 }
 
-function safeRelationAttributes(tool: ToolLibrary, relationId: string) {
+function safeRelationAttributes(kit: Kit, relationId: string) {
   try {
-    return effectiveRelationAttributes(tool, relationId as never);
+    return effectiveRelationAttributes(kit, relationId as never);
   } catch {
     return [];
   }
 }
 
-function safeAttributes(tool: ToolLibrary, classId: string) {
+function safeAttributes(kit: Kit, classId: string) {
   try {
-    return effectiveAttributes(tool, classId as never);
+    return effectiveAttributes(kit, classId as never);
   } catch {
     return [];
   }
@@ -153,10 +153,10 @@ export interface PastePlan {
 
 /**
  * Turns clipboard data into commands for a model: new ids, attribute values matched by key, classes
- * matched by id in the same tool library and by key otherwise, everything moved by `offset`.
+ * matched by id in the same Kit and by key otherwise, everything moved by `offset`.
  */
 export function planPaste(
-  tool: ToolLibrary,
+  kit: Kit,
   modelType: ModelTypeDef,
   data: ClipboardData,
   offset: Point,
@@ -165,21 +165,17 @@ export function planPaste(
   const commands: ModelCommand[] = [];
   const newIds = new Map<ElementId, ElementId>();
   const skipped = { elements: 0, connectors: 0 };
-  const sameTool = data.tool === tool.manifest.id;
+  const sameKit = data.tool === kit.manifest.id;
 
   for (const e of data.elements) {
     const cls =
-      (sameTool ? tool.classes[e.class as never] : undefined) ??
-      Object.values(tool.classes).find((c) => c.key === e.classKey);
-    if (
-      !cls ||
-      cls.abstract ||
-      !modelTypeAllowsClass(tool, modelType, cls.id)
-    ) {
+      (sameKit ? kit.classes[e.class as never] : undefined) ??
+      Object.values(kit.classes).find((c) => c.key === e.classKey);
+    if (!cls || cls.abstract || !modelTypeAllowsClass(kit, modelType, cls.id)) {
       skipped.elements += 1;
       continue;
     }
-    const defs = safeAttributes(tool, cls.id);
+    const defs = safeAttributes(kit, cls.id);
     const attrs: Record<AttributeId, Json> = {};
     for (const def of defs)
       if (def.key in e.attrs) attrs[def.id] = e.attrs[def.key]!;
@@ -201,20 +197,20 @@ export function planPaste(
     const from = newIds.get(c.from);
     const to = newIds.get(c.to);
     const rel =
-      (sameTool ? tool.relations[c.relation as never] : undefined) ??
-      Object.values(tool.relations).find((r) => r.key === c.relationKey);
+      (sameKit ? kit.relations[c.relation as never] : undefined) ??
+      Object.values(kit.relations).find((r) => r.key === c.relationKey);
     if (
       !from ||
       !to ||
       !rel ||
       rel.abstract ||
-      !modelTypeAllowsRelation(tool, modelType, rel.id)
+      !modelTypeAllowsRelation(kit, modelType, rel.id)
     ) {
       skipped.connectors += 1;
       continue;
     }
     const attrs: Record<AttributeId, Json> = {};
-    for (const def of safeRelationAttributes(tool, rel.id))
+    for (const def of safeRelationAttributes(kit, rel.id))
       if (def.key in c.attrs) attrs[def.id] = c.attrs[def.key]!;
     const id = newId('connector', random);
     connectors.push(id);

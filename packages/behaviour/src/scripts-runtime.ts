@@ -1,4 +1,4 @@
-import type { ModelStore, ScriptId, ToolLibrary } from '@metakit-app/core';
+import type { ModelStore, ScriptId, Kit } from '@metakit-app/core';
 import type { Behaviour } from './runtime';
 import { NO_PERMISSIONS, type PermissionStore } from './permissions';
 import type { ConsoleLine, ScriptEngine, ScriptStatus } from './scripts';
@@ -7,8 +7,8 @@ import type { SandboxLimits } from './sandbox/sandbox';
 
 export interface AttachScriptsOptions {
   store: ModelStore;
-  /** The tool library as it is now. */
-  tool: () => ToolLibrary;
+  /** The Kit as it is now. */
+  kit: () => Kit;
   files?: ScriptFiles;
   http?: ScriptHttp;
   /** What this browser allowed; without it scripts have no files and no network. */
@@ -22,16 +22,16 @@ export interface AttachScriptsOptions {
 
 /**
  * What the app holds on to for the scripts of the open model. The engine behind it exists only
- * while the tool has scripts: until then nothing of QuickJS, the compiler or the script API has
+ * while the Kit has scripts: until then nothing of QuickJS, the compiler or the script API has
  * been downloaded.
  */
 export interface ScriptsHandle {
-  /** The engine, or null while the tool has no enabled script. */
+  /** The engine, or null while the Kit has no enabled script. */
   readonly engine: ScriptEngine | null;
   /** Run a script by hand: a rule action, an action attribute or the Run button. */
   runScript(id: ScriptId | string, target: string | null): Promise<void>;
-  /** Call after Build mode (or a remote change) changed the tool library. Reloads only if scripts or permissions changed. */
-  setTool(tool: ToolLibrary): Promise<void>;
+  /** Call after Build mode (or a remote change) changed the Kit. Reloads only if scripts or permissions changed. */
+  setKit(kit: Kit): Promise<void>;
   /** Load the scripts again; `force` also retries scripts that were stopped by a limit. */
   reload(options?: { force?: boolean }): Promise<void>;
   readonly log: readonly ConsoleLine[];
@@ -42,25 +42,25 @@ export interface ScriptsHandle {
   dispose(): void;
 }
 
-const hasScripts = (tool: ToolLibrary): boolean =>
-  Object.values(tool.scripts ?? {}).some((s) => s.enabled !== false);
+const hasScripts = (kit: Kit): boolean =>
+  Object.values(kit.scripts ?? {}).some((s) => s.enabled !== false);
 
-const fingerprint = (tool: ToolLibrary): string =>
-  JSON.stringify([tool.scripts ?? {}, tool.manifest.permissions ?? {}]);
+const fingerprint = (kit: Kit): string =>
+  JSON.stringify([kit.scripts ?? {}, kit.manifest.permissions ?? {}]);
 
 /**
- * Starts the scripts of a tool for an open model. `await` it before showing the model if scripts
- * should be in place for the first change; it resolves at once for a tool without scripts.
+ * Starts the scripts of a Kit for an open model. `await` it before showing the model if scripts
+ * should be in place for the first change; it resolves at once for a Kit without scripts.
  *
  * Wiring: pass `handle.runScript` as the `runScript` of the behaviour host, keep calling
- * `handle.setTool` when the tool changes, and `handle.dispose()` with the behaviour.
+ * `handle.setKit` when the Kit changes, and `handle.dispose()` with the behaviour.
  */
 export async function attachScripts(
   behaviour: Behaviour,
   options: AttachScriptsOptions,
 ): Promise<ScriptsHandle> {
   let engine: ScriptEngine | null = null;
-  let current = fingerprint(options.tool());
+  let current = fingerprint(options.kit());
   let disposed = false;
   const logListeners = new Set<() => void>();
   const statusListeners = new Set<() => void>();
@@ -78,13 +78,13 @@ export async function attachScripts(
       store: options.store,
       bus: behaviour.bus,
       calculator: behaviour.calculator,
-      tool: options.tool,
+      kit: options.kit,
       host: behaviour.host,
       commands: behaviour.commands,
       ...(options.files ? { files: options.files } : {}),
       ...(options.http ? { http: options.http } : {}),
       permissions: () =>
-        options.permissions?.granted(options.tool().manifest.id) ??
+        options.permissions?.granted(options.kit().manifest.id) ??
         NO_PERMISSIONS,
       ...(options.selection ? { selection: options.selection } : {}),
       ...(options.limits ? { limits: options.limits } : {}),
@@ -99,7 +99,7 @@ export async function attachScripts(
 
   async function sync(force = false): Promise<void> {
     if (disposed) return;
-    if (hasScripts(options.tool())) {
+    if (hasScripts(options.kit())) {
       engine ??= await start();
       await engine.reload(force ? { force } : {});
     } else if (engine) {
@@ -117,8 +117,8 @@ export async function attachScripts(
       if (!engine) engine = await start();
       await engine.runScript(id, target);
     },
-    async setTool(tool) {
-      const next = fingerprint(tool);
+    async setKit(kit) {
+      const next = fingerprint(kit);
       if (next === current) return;
       current = next;
       await sync();

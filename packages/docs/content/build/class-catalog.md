@@ -2,13 +2,13 @@
 id: class-catalog
 title: Class catalog
 category: build
-summary: Add ready-made classes such as Dataset, Risk or AI use case to a tool library, with their attributes, looks and the relation classes between them, in one step.
+summary: Add ready-made classes such as Dataset, Risk or AI use case to a Kit, with their attributes, looks and the relation classes between them, in one step.
 keywords: [class catalog, add from catalog, ready-made classes, generic classes, catalog dialog, data classes, AI classes, governance classes]
 contexts: [build.catalog]
 order: 35
 ---
 
-The class catalog holds about sixty generic classes and about twenty relation classes that many modelling tools need: people and documents, goals and KPIs, tasks and risks, datasets, pipelines, models and agents. Instead of typing a class, its attributes and its look yourself, you pick it from the catalog and adjust it afterwards.
+The class catalog holds about sixty generic classes and about twenty relation classes that many Kits need: people and documents, goals and KPIs, tasks and risks, datasets, pipelines, models and agents. Instead of typing a class, its attributes and its look yourself, you pick it from the catalog and adjust it afterwards.
 
 ## What it is
 
@@ -65,11 +65,11 @@ Group, Team, Organisation unit, Workstream, Data domain, Cloud platform and Envi
 
 Flows to, Reads from, Writes to, Trains on, Uses model, Owns, Stewards, Measures, Contributes to, Supports, Depends on, Mitigates, Has risk, Governed by, Delivers, Evaluates, Deployed as, Monitors and Defines.
 
-A relation class comes along when one of the classes you picked sits on one of its named ends, and both its ends are there: picked now, or already in the tool library under the same key. **Owns** runs from a person, team or data owner to any class, so it comes along when you pick **Person**, **Team** or **Data owner**. **Depends on** joins any two classes, so it never comes along by itself: tick **Also add “Depends on”, between any two classes** at the bottom of the dialog if you want it. Ends that allow any class are filled with every class the tool library has after the add. Add classes later and tick them under **From** or **To** yourself ([[relations]]).
+A relation class comes along when one of the classes you picked sits on one of its named ends, and both its ends are there: picked now, or already in the Kit under the same key. **Owns** runs from a person, team or data owner to any class, so it comes along when you pick **Person**, **Team** or **Data owner**. **Depends on** joins any two classes, so it never comes along by itself: tick **Also add “Depends on”, between any two classes** at the bottom of the dialog if you want it. Ends that allow any class are filled with every class the Kit has after the add. Add classes later and tick them under **From** or **To** yourself ([[relations]]).
 
-### Already in this tool library
+### Already in this Kit
 
-A catalog class whose key the tool library already has is shown ticked and greyed out with "Already in this tool library". It is never added again and nothing of yours is overwritten. Relation classes that need it connect to your existing class. A relation class whose key is taken is not added either.
+A catalog class whose key the Kit already has is shown ticked and greyed out with "Already in this Kit". It is never added again and nothing of yours is overwritten. Relation classes that need it connect to your existing class. A relation class whose key is taken is not added either.
 
 ### Undo
 
@@ -77,12 +77,12 @@ Everything one **Add** creates, the classes, their looks and the relation classe
 
 ## Examples
 
-In a new tool library, open the **Data** tab and tick **Dataset**, **Data pipeline** and **Data store**. With the relation classes on, **Add** creates the three classes and the relation classes Flows to, Reads from and Writes to. Then open **Governance and risk** and add **Risk** and **Control**: **Mitigates** joins them.
+In a new Kit, open the **Data** tab and tick **Dataset**, **Data pipeline** and **Data store**. With the relation classes on, **Add** creates the three classes and the relation classes Flows to, Reads from and Writes to. Then open **Governance and risk** and add **Risk** and **Control**: **Mitigates** joins them.
 
 ## Good to know
 
 - Everything added is ordinary: rename keys, change labels, remove attributes or edit the look as for any class ([[classes]]).
-- The catalog text is English. In a tool library without English, it is put under the first language so you can translate it ([[tool-settings]]).
+- The catalog text is English. In a Kit without English, it is put under the first language so you can translate it ([[kit-settings]]).
 - The catalog loads the first time you open it, so it does not slow down starting the app.
 
 ## Related

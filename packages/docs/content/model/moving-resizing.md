@@ -48,7 +48,7 @@ Nudge with the keyboard:
 | Drag a corner handle | Resizes in both directions. |
 | Drag a side handle | Resizes in one direction. |
 | Resize with **Alt** held | Resizes without snapping to the grid. |
-| Arrow key | Moves the selection by one grid step. The step is the grid size of the tool (10 by default). |
+| Arrow key | Moves the selection by one grid step. The step is the grid size of the Kit (10 by default). |
 | **Shift** + arrow key | Moves five grid steps. |
 | Drop an object over a container | Puts it into that container. See [[containers-swimlanes]]. |
 

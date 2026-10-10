@@ -1,11 +1,11 @@
 <script lang="ts">
   import { DocsLayer, pushDocsContext } from '../docs/context';
   import { onMount } from 'svelte';
-  import type { ToolEntry } from '@metakit-app/storage';
+  import type { KitEntry } from '@metakit-app/storage';
   import type { ModelTypeDef, ModelTypeId } from '@metakit-app/core';
 
   let {
-    tools,
+    kits,
     builtIns = [],
     loadModelTypes,
     folders,
@@ -13,18 +13,18 @@
     onCreate,
     onCancel,
   }: {
-    tools: ToolEntry[];
+    kits: KitEntry[];
     /**
-     * Built-in tool libraries that are not in the workspace yet. Their `key` is passed as the
-     * tool slug; the caller adds the library before it creates the model.
+     * Built-in Kits that are not in the workspace yet. Their `key` is passed as the
+     * kit slug; the caller adds the library before it creates the model.
      */
     builtIns?: { key: string; name: string; version: string }[];
-    /** Reads the model types of a tool library (a workspace slug or a built-in key). */
-    loadModelTypes: (toolSlug: string) => Promise<ModelTypeDef[]>;
+    /** Reads the model types of a Kit (a workspace slug or a built-in key). */
+    loadModelTypes: (kitSlug: string) => Promise<ModelTypeDef[]>;
     folders: string[];
     initialFolder: string;
     onCreate: (input: {
-      toolSlug: string;
+      kitSlug: string;
       modelType: ModelTypeId;
       name: string;
       folder: string;
@@ -32,7 +32,7 @@
     onCancel: () => void;
   } = $props();
 
-  let toolSlug = $state('');
+  let kitSlug = $state('');
   let types = $state<ModelTypeDef[]>([]);
   let modelType = $state('');
   let name = $state('');
@@ -40,7 +40,7 @@
   let problem = $state('');
   let dialog: HTMLDialogElement | undefined = $state();
 
-  // Set once. An effect that read `initialFolder` and `tools` would run again whenever the
+  // Set once. An effect that read `initialFolder` and `kits` would run again whenever the
   // explorer refreshed its lists, and wipe what the user had already typed.
   onMount(() => {
     folder = initialFolder;
@@ -49,11 +49,11 @@
 
   $effect(() => {
     // The workspace's own library is the obvious choice, even with built-in ones listed.
-    if (tools.length === 1 && toolSlug === '') toolSlug = tools[0]!.slug;
+    if (kits.length === 1 && kitSlug === '') kitSlug = kits[0]!.slug;
   });
 
   $effect(() => {
-    const slug = toolSlug;
+    const slug = kitSlug;
     if (!slug) {
       types = [];
       return;
@@ -75,13 +75,13 @@
   });
 
   const ready = $derived(
-    toolSlug !== '' && modelType !== '' && name.trim() !== '',
+    kitSlug !== '' && modelType !== '' && name.trim() !== '',
   );
 
   function submit(event: Event) {
     event.preventDefault();
     if (!ready) return;
-    onCreate({ toolSlug, modelType: modelType as ModelTypeId, name, folder });
+    onCreate({ kitSlug, modelType: modelType as ModelTypeId, name, folder });
   }
 
   // Tells Help which dialog is open.
@@ -92,27 +92,27 @@
   <form onsubmit={submit}>
     <div class="head">
       <h2>New model</h2>
-      <p class="muted">A model is made with a tool library.</p>
+      <p class="muted">A model is made with a Kit.</p>
     </div>
-    {#if tools.length === 0 && builtIns.length === 0}
+    {#if kits.length === 0 && builtIns.length === 0}
       <p class="notice warning">
-        This workspace has no tool library yet. Add one in Build mode, or copy a
-        tool library folder into <code>tools/</code>.
+        This workspace has no Kit yet. Add one in Build mode, or copy a Kit
+        folder into <code>tools/</code>.
       </p>
     {:else}
       <label>
-        Tool library
-        <select bind:value={toolSlug} data-testid="new-model-tool">
-          <option value="" disabled>Choose a tool library</option>
-          {#if builtIns.length > 0 && tools.length > 0}
+        Kit
+        <select bind:value={kitSlug} data-testid="new-model-kit">
+          <option value="" disabled>Choose a Kit</option>
+          {#if builtIns.length > 0 && kits.length > 0}
             <optgroup label="In this workspace">
-              {#each tools as tool (tool.slug)}
-                <option value={tool.slug}>{tool.name} ({tool.version})</option>
+              {#each kits as kit (kit.slug)}
+                <option value={kit.slug}>{kit.name} ({kit.version})</option>
               {/each}
             </optgroup>
           {:else}
-            {#each tools as tool (tool.slug)}
-              <option value={tool.slug}>{tool.name} ({tool.version})</option>
+            {#each kits as kit (kit.slug)}
+              <option value={kit.slug}>{kit.name} ({kit.version})</option>
             {/each}
           {/if}
           {#if builtIns.length > 0}

@@ -15,7 +15,7 @@ Inheritance lets one class build on another. A **child** class has everything it
 When class B extends class A:
 
 - B has all attributes of A first, then its own. Modellers see them in that order.
-- B counts as an A wherever the tool asks for an A. A relation class that allows A at one end also allows B. A model type that allows A also allows B. A reference attribute that may point to A may point to B.
+- B counts as an A wherever the Kit asks for an A. A relation class that allows A at one end also allows B. A model type that allows A also allows B. A reference attribute that may point to A may point to B.
 - B can add attributes, constraints and a look of its own.
 
 Relation classes can extend each other in the same way ([[relations]]).
@@ -61,7 +61,7 @@ In the **Identity** block of a class: the **Extends** list and the **Abstract (o
 
 ## Examples
 
-In the Agent pipeline tool, **Actor** is abstract and owns **Name** (required, default "New actor"), **Role** and **Notes**. **Agent** extends Actor and adds the group Agent: AgentKind, Autonomy, ModelName, CostLimit and Capabilities. **Human** extends Actor and adds Team and Availability. The relation class **Performs** allows only **Actor** at From, so Agent and Human can both perform a Task, and **DelegatesTo** goes from Actor to Actor.
+In the Agent pipeline Kit, **Actor** is abstract and owns **Name** (required, default "New actor"), **Role** and **Notes**. **Agent** extends Actor and adds the group Agent: AgentKind, Autonomy, ModelName, CostLimit and Capabilities. **Human** extends Actor and adds Team and Availability. The relation class **Performs** allows only **Actor** at From, so Agent and Human can both perform a Task, and **DelegatesTo** goes from Actor to Actor.
 
 ## Good to know
 
@@ -75,4 +75,4 @@ In the Agent pipeline tool, **Actor** is abstract and owns **Name** (required, d
 
 ## Related
 
-[[classes]], [[relations]], [[attributes]], [[model-types]], [[keys-and-renaming]], [[tool-validation]]
+[[classes]], [[relations]], [[attributes]], [[model-types]], [[keys-and-renaming]], [[kit-validation]]

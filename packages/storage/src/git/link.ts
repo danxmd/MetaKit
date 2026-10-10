@@ -2,13 +2,13 @@ import { kvGet, kvSet, type KeyValue } from '../browser-state';
 import type { GitFile } from './remote';
 
 /**
- * The link between a tool library of the workspace and a folder of a repository (ADR 0007). It
+ * The link between a Kit of the workspace and a folder of a repository (ADR 0007). It
  * lives in IndexedDB of this browser profile only. It holds no token: those are kept elsewhere
  * (rule 9). `baseFiles` is the layout at the last pull or push, so what differs from it is the
  * pending change.
  */
 export interface GitLink {
-  /** The tool library in the workspace. */
+  /** The Kit in the workspace. */
   toolSlug: string;
   service: 'github' | 'gitlab';
   /** The host, such as `github.com` or `gitlab.example.org`. */
@@ -24,9 +24,9 @@ export interface GitLink {
 }
 
 export interface GitLinkStore {
-  get(toolSlug: string): Promise<GitLink | undefined>;
+  get(kitSlug: string): Promise<GitLink | undefined>;
   put(link: GitLink): Promise<void>;
-  remove(toolSlug: string): Promise<void>;
+  remove(kitSlug: string): Promise<void>;
   list(): Promise<GitLink[]>;
 }
 

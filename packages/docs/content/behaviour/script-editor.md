@@ -2,13 +2,13 @@
 id: script-editor
 title: Script editor
 category: behaviour
-summary: The code editor for scripts, with completion, error marks and hover help that know your tool library.
+summary: The code editor for scripts, with completion, error marks and hover help that know your Kit.
 keywords: [script editor, code editor, typescript language service, code completion, error marks, script source]
 contexts: []
 order: 60
 ---
 
-The script editor is where you write the TypeScript of a [[scripts|script]]. It checks your code as you type and offers the class, relation and attribute names of the tool library you are editing.
+The script editor is where you write the TypeScript of a [[scripts|script]]. It checks your code as you type and offers the class, relation and attribute names of the Kit you are editing.
 
 ## What it is
 
@@ -16,7 +16,7 @@ The editor is built on CodeMirror 6. The checking is done by the TypeScript lang
 
 Both parts download only when you open a script editor. A person who never edits scripts never loads them. Opening a model with scripts does not load them either, because running a script needs only the small compiler and the sandbox. See [[performance-limits]].
 
-The editor knows a custom module called `metakit`. MetaKit writes its description from your tool library each time the library changes. If you add a class `Risk` in Build mode, `model.objects("Risk")` is suggested at once and a misspelt `"Rsik"` gets a red mark.
+The editor knows a custom module called `metakit`. MetaKit writes its description from your Kit each time the Kit changes. If you add a class `Risk` in Build mode, `model.objects("Risk")` is suggested at once and a misspelt `"Rsik"` gets a red mark.
 
 ## Where to find it
 
@@ -48,7 +48,7 @@ In Build mode choose **Scripts**, then pick a script in the list (see [[scripts]
 ### What the checker knows
 
 - The whole `metakit` module, see [[script-api]].
-- Your tool library: class, relation class, model type and attribute names, and the type of each attribute. `task.attrs.Priority` is typed as the union of its choices, plus `null`.
+- Your Kit: class, relation class, model type and attribute names, and the type of each attribute. `task.attrs.Priority` is typed as the union of its choices, plus `null`.
 - The language library for ES2022, and `console`.
 - Nothing else. There are no timers, no `window`, no `fetch`.
 
@@ -62,7 +62,7 @@ If the worker cannot start (for example the download was blocked), the editor st
 
 ## Examples
 
-- Type `model.objects("` and the list shows the class names of your tool library.
+- Type `model.objects("` and the list shows the class names of your Kit.
 - Type `task.attrs.` and the list shows the attributes of a Task. Hover over `Priority` to see `"Low" | "Medium" | "High" | null`.
 - Write `task.attrs.Priority = "Urgent"` and a red mark appears: `"Urgent"` is not one of the choices.
 - Write `ui.form(...)` and the checker knows its fields, even though the web app does not show forms yet. See [[script-api]].

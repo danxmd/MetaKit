@@ -5,11 +5,7 @@ import {
   type Model,
   type ModelStore,
 } from '@metakit-app/core';
-import {
-  SAMPLE,
-  emptySampleModel,
-  sampleTool,
-} from '@metakit-app/core/testing';
+import { SAMPLE, emptySampleModel, sampleKit } from '@metakit-app/core/testing';
 import { MemoryFolder, planted } from './memory-adapter';
 import { formatSnapshot, snapshotPath } from './files';
 import { loadDocument } from './scanner';
@@ -22,11 +18,11 @@ import {
 import { materialize, stateFromDocument } from './state';
 import { encode } from './adapter';
 
-const tool = sampleTool();
+const kit = sampleKit();
 const FOLDER = 'models/m1';
 
 const makeStore = (doc: Record<string, Json>): ModelStore =>
-  createModelStore(doc as unknown as Model, { tool });
+  createModelStore(doc as unknown as Model, { kit });
 
 /** A manual clock and timers, so that delays are exact. */
 function fakeTime() {

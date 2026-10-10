@@ -67,14 +67,14 @@ Rules:
 - Each object appears once, for its best match.
 - At most 200 results are shown. Narrow your word if you reach it.
 - Within a model the strongest matches come first.
-- Only objects are searched. Connectors, model names and tool library definitions are not.
+- Only objects are searched. Connectors, model names and Kit definitions are not.
 
 **Messages**
 
 - **Searching…** while the search runs.
 - "Nothing found for “word”." when there are no matches.
 - "The search failed. Try again." when the search itself fails.
-- A model whose tool library is missing, or that cannot be read, is skipped silently. Opening it from the list shows the reason.
+- A model whose Kit is missing, or that cannot be read, is skipped silently. Opening it from the list shows the reason.
 
 ## Examples
 

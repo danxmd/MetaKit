@@ -1,16 +1,16 @@
 import {
   createModelStore,
   validateModel,
-  TOOL_FORMAT_VERSION,
+  KIT_FORMAT_VERSION,
   type ClassId,
   type Model,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 import {
   SAMPLE,
   clone,
   emptySampleModel,
-  sampleTool,
+  sampleKit,
 } from '@metakit-app/core/testing';
 import { strToU8, zipSync } from 'fflate';
 import { describe, expect, it } from 'vitest';
@@ -18,21 +18,21 @@ import { FormatError, NewerFormatError } from './errors';
 import { newWorkspace, withoutPos } from './exchange-fixtures';
 import { exportMkModel, importModelFile } from './mkmodel';
 import {
-  applyToolUpdate,
-  exportToolPackage,
-  exportToolPackageFrom,
-  planToolUpdate,
-  prepareToolImport,
-  readToolPackage,
+  applyKitUpdate,
+  exportKitPackage,
+  exportKitPackageFrom,
+  planKitUpdate,
+  prepareKitImport,
+  readKitPackage,
   modelUsage,
-} from './toolpackage';
+} from './kit-package';
 import { unzipFiles } from './zip';
 
-const tool = sampleTool();
+const kit = sampleKit();
 const fixedNow = () => new Date('2026-10-07T09:00:00.000Z');
 
 function aModel(): Model {
-  const store = createModelStore(emptySampleModel(), { tool });
+  const store = createModelStore(emptySampleModel(), { kit });
   store.execute({
     type: 'batch',
     commands: [
@@ -64,9 +64,9 @@ function aModel(): Model {
   return store.state as Model;
 }
 
-/** The sample tool in a later version: Priority is gone, Owner is new, a class and a rule too. */
-function updated(): ToolLibrary {
-  const t = clone(tool);
+/** The sample Kit in a later version: Priority is gone, Owner is new, a class and a rule too. */
+function updated(): Kit {
+  const t = clone(kit);
   t.manifest.version = '1.1.0';
   const task = t.classes[SAMPLE.task as ClassId]!;
   task.attributes = [
@@ -85,7 +85,7 @@ function updated(): ToolLibrary {
 
 describe('the package', () => {
   it('holds package.json, tool.json and the reserved folders', () => {
-    const { bytes, fileName } = exportToolPackage(tool, {
+    const { bytes, fileName } = exportKitPackage(kit, {
       scripts: { 'helper.ts': 'export const a = 1;\n' },
       assets: { 'icon.png': new Uint8Array([1, 2, 3]) },
       now: fixedNow,
@@ -102,36 +102,36 @@ describe('the package', () => {
     expect(info).toEqual({
       formatVersion: 1,
       kind: 'mktool',
-      tool: { id: SAMPLE.tool, name: 'Sample', version: '1.0.0' },
+      tool: { id: SAMPLE.kit, name: 'Sample', version: '1.0.0' },
       created: '2026-10-07T09:00:00.000Z',
       contents: ['assets/icon.png', 'scripts/helper.ts', 'tool.json'],
     });
-    const read = readToolPackage(bytes);
+    const read = readKitPackage(bytes);
     expect(read.issues).toEqual([]);
-    expect(read.tool).toEqual(tool);
+    expect(read.kit).toEqual(kit);
     expect(read.scripts['helper.ts']).toBe('export const a = 1;\n');
     expect([...read.assets['icon.png']!]).toEqual([1, 2, 3]);
   });
 
-  it('carries a scripts field of the tool library', () => {
+  it('carries a scripts field of the Kit', () => {
     const withScripts = {
-      ...tool,
+      ...kit,
       scripts: { s1: { source: 'x' } },
-    } as unknown as ToolLibrary;
-    const read = readToolPackage(exportToolPackage(withScripts).bytes);
-    expect((read.tool as unknown as { scripts: unknown }).scripts).toEqual({
+    } as unknown as Kit;
+    const read = readKitPackage(exportKitPackage(withScripts).bytes);
+    expect((read.kit as unknown as { scripts: unknown }).scripts).toEqual({
       s1: { source: 'x' },
     });
   });
 
   it('is reproducible', () => {
-    const a = exportToolPackage(tool, { now: fixedNow }).bytes;
-    const b = exportToolPackage(tool, { now: fixedNow }).bytes;
+    const a = exportKitPackage(kit, { now: fixedNow }).bytes;
+    const b = exportKitPackage(kit, { now: fixedNow }).bytes;
     expect([...a]).toEqual([...b]);
   });
 
   it('brings a package from an older release up to date', () => {
-    const old = clone(tool) as unknown as Record<string, unknown>;
+    const old = clone(kit) as unknown as Record<string, unknown>;
     old.formatVersion = 1;
     delete old.shapes;
     delete old.panels;
@@ -141,17 +141,17 @@ describe('the package', () => {
         JSON.stringify({
           formatVersion: 1,
           kind: 'mktool',
-          tool: { id: SAMPLE.tool, name: 'Sample', version: '1.0.0' },
+          tool: { id: SAMPLE.kit, name: 'Sample', version: '1.0.0' },
           created: 'x',
           contents: [],
         }),
       ),
       'tool.json': strToU8(JSON.stringify(old)),
     });
-    const read = readToolPackage(bytes);
+    const read = readKitPackage(bytes);
     expect(read.issues).toEqual([]);
-    expect(read.tool.formatVersion).toBe(TOOL_FORMAT_VERSION);
-    expect(read.tool.rules).toEqual({});
+    expect(read.kit.formatVersion).toBe(KIT_FORMAT_VERSION);
+    expect(read.kit.rules).toEqual({});
   });
 
   it('refuses a package from a newer release', () => {
@@ -159,35 +159,35 @@ describe('the package', () => {
       'package.json': strToU8(
         JSON.stringify({ formatVersion: 1, kind: 'mktool', tool: { id: 'x' } }),
       ),
-      'tool.json': strToU8(JSON.stringify({ ...tool, formatVersion: 99 })),
+      'tool.json': strToU8(JSON.stringify({ ...kit, formatVersion: 99 })),
     });
-    expect(() => readToolPackage(bytes)).toThrow(NewerFormatError);
-    expect(() => readToolPackage(bytes)).toThrow(/newer version of MetaKit/);
+    expect(() => readKitPackage(bytes)).toThrow(NewerFormatError);
+    expect(() => readKitPackage(bytes)).toThrow(/newer version of MetaKit/);
     const newerPackage = zipSync({
       'package.json': strToU8(
         JSON.stringify({ formatVersion: 9, kind: 'mktool' }),
       ),
       'tool.json': strToU8('{}'),
     });
-    expect(() => readToolPackage(newerPackage)).toThrow(
+    expect(() => readKitPackage(newerPackage)).toThrow(
       /newer version of MetaKit/,
     );
   });
 
   it('refuses a corrupt zip, a zip with a bad path and files that are not packages', () => {
-    expect(() => readToolPackage(strToU8('this is not a zip'))).toThrow(
+    expect(() => readKitPackage(strToU8('this is not a zip'))).toThrow(
       /not a valid zip file/,
     );
     const evil = zipSync({
       '../tool.json': strToU8('{}'),
       'package.json': strToU8('{}'),
     });
-    expect(() => readToolPackage(evil)).toThrow(/unsafe name/);
-    expect(() => readToolPackage(zipSync({ 'a.txt': strToU8('x') }))).toThrow(
+    expect(() => readKitPackage(evil)).toThrow(/unsafe name/);
+    expect(() => readKitPackage(zipSync({ 'a.txt': strToU8('x') }))).toThrow(
       /no package\.json/,
     );
     expect(() =>
-      readToolPackage(
+      readKitPackage(
         zipSync({
           'package.json': strToU8(
             JSON.stringify({ formatVersion: 1, kind: 'mktool' }),
@@ -197,80 +197,78 @@ describe('the package', () => {
     ).toThrow(/no tool\.json/);
   });
 
-  it('returns the problems of an invalid tool library, and the import refuses it', async () => {
-    const broken = clone(tool) as unknown as Record<string, unknown>;
+  it('returns the problems of an invalid Kit, and the import refuses it', async () => {
+    const broken = clone(kit) as unknown as Record<string, unknown>;
     broken.classes = 'nope';
     const bytes = zipSync({
       'package.json': strToU8(
         JSON.stringify({
           formatVersion: 1,
           kind: 'mktool',
-          tool: { id: SAMPLE.tool },
+          tool: { id: SAMPLE.kit },
         }),
       ),
       'tool.json': strToU8(JSON.stringify(broken)),
     });
-    expect(readToolPackage(bytes).issues.length).toBeGreaterThan(0);
+    expect(readKitPackage(bytes).issues.length).toBeGreaterThan(0);
     const ws = await newWorkspace();
-    await expect(prepareToolImport(ws, bytes)).rejects.toThrow(FormatError);
-    await expect(prepareToolImport(ws, bytes)).rejects.toThrow(
+    await expect(prepareKitImport(ws, bytes)).rejects.toThrow(FormatError);
+    await expect(prepareKitImport(ws, bytes)).rejects.toThrow(
       /has \d+ problems?, so it was not imported/,
     );
-    expect(await ws.listTools()).toEqual([]);
+    expect(await ws.listKits()).toEqual([]);
   });
 });
 
-describe('moving a tool between workspaces', () => {
-  it('gives an equal tool and a model that opens identically', async () => {
+describe('moving a Kit between workspaces', () => {
+  it('gives an equal Kit and a model that opens identically', async () => {
     const from = await newWorkspace('A');
-    const toolSlug = await from.createTool(tool);
+    const kitSlug = await from.createKit(kit);
     const original = aModel();
     const modelSlug = await from.createModel(original);
-    await from.addToolAsset(toolSlug, 'icon.png', new Uint8Array([9, 8, 7]));
+    await from.addKitAsset(kitSlug, 'icon.png', new Uint8Array([9, 8, 7]));
 
-    const { bytes } = await exportToolPackageFrom(from, toolSlug, {
+    const { bytes } = await exportKitPackageFrom(from, kitSlug, {
       now: fixedNow,
     });
 
     const to = await newWorkspace('B', 'bbbb0002');
-    const prepared = await prepareToolImport(to, bytes);
+    const prepared = await prepareKitImport(to, bytes);
     expect(prepared.plan.isNew).toBe(true);
-    expect(prepared.plan.lines[0]).toContain(
-      'will be added as a new tool library',
-    );
-    const applied = await applyToolUpdate(to, prepared);
+    expect(prepared.plan.lines[0]).toContain('will be added as a new Kit');
+    const applied = await applyKitUpdate(to, prepared);
     expect(applied.created).toBe(true);
-    const toolBack = (await to.loadTool(applied.slug)).document;
-    expect(toolBack).toEqual(tool);
+    const kitBack = (await to.loadKit(applied.slug)).document;
+    expect(kitBack).toEqual(kit);
     const assetNames = (
       await to.adapter.list(`tools/${applied.slug}/assets`)
     ).map((e) => e.name);
     expect(assetNames).toHaveLength(1);
-    expect([...(await to.readToolAsset(applied.slug, assetNames[0]!))]).toEqual(
-      [9, 8, 7],
-    );
+    expect([...(await to.readKitAsset(applied.slug, assetNames[0]!))]).toEqual([
+      9, 8, 7,
+    ]);
 
     // The same model made in the first workspace opens the same in the second.
     const text = await from.exportModel(modelSlug);
     const imported = await importModelFile(to, text);
     const opened = (await to.loadModel(imported.slug)).document;
     expect(withoutPos(opened)).toEqual(withoutPos(original));
-    expect(exportMkModel(toolBack, opened)).toBe(exportMkModel(tool, original));
-    expect(validateModel(toolBack, opened)).toEqual(
-      validateModel(tool, original),
+    expect(exportMkModel(kitBack, opened)).toBe(exportMkModel(kit, original));
+    expect(validateModel(kitBack, opened)).toEqual(
+      validateModel(kit, original),
     );
   });
 
-  it('plans, then updates a tool in place and existing models keep working', async () => {
+  it('plans, then updates a Kit in place and existing models keep working', async () => {
     const ws = await newWorkspace();
-    const toolSlug = await ws.createTool(tool);
+    const kitSlug = await ws.createKit(kit);
     const original = aModel();
     const modelSlug = await ws.createModel(original);
 
     const newer = updated();
-    const bytes = exportToolPackage(newer).bytes;
-    const prepared = await prepareToolImport(ws, bytes);
-    expect(prepared.existingSlug).toBe(toolSlug);
+    const bytes = exportKitPackage(newer).bytes;
+    const prepared = await prepareKitImport(ws, bytes);
+    expect(prepared.existingSlug).toBe(kitSlug);
 
     const { plan } = prepared;
     expect(plan.isNew).toBe(false);
@@ -303,10 +301,10 @@ describe('moving a tool between workspaces', () => {
       },
     ]);
 
-    const applied = await applyToolUpdate(ws, prepared);
-    expect(applied).toEqual({ slug: toolSlug, created: false });
-    expect(await ws.listTools()).toHaveLength(1);
-    const now = (await ws.loadTool(toolSlug)).document;
+    const applied = await applyKitUpdate(ws, prepared);
+    expect(applied).toEqual({ slug: kitSlug, created: false });
+    expect(await ws.listKits()).toHaveLength(1);
+    const now = (await ws.loadKit(kitSlug)).document;
     expect(now).toEqual(newer);
 
     // The model is untouched and still valid; the removed attribute's value is still stored.
@@ -324,7 +322,7 @@ describe('moving a tool between workspaces', () => {
   });
 
   it('says what happens to models that use a removed class', () => {
-    const smaller = clone(tool);
+    const smaller = clone(kit);
     delete smaller.classes[SAMPLE.gateway as ClassId];
     const model = clone(aModel());
     model.elements['el_gw' as keyof typeof model.elements] = {
@@ -332,7 +330,7 @@ describe('moving a tool between workspaces', () => {
       id: 'el_gw',
       class: SAMPLE.gateway,
     } as never;
-    const plan = planToolUpdate(tool, smaller, [modelUsage('order', model)]);
+    const plan = planKitUpdate(kit, smaller, [modelUsage('order', model)]);
     expect(plan.changes).toEqual([
       { area: 'class', change: 'removed', name: 'Gateway' },
     ]);
@@ -343,7 +341,7 @@ describe('moving a tool between workspaces', () => {
   });
 
   it('reports renames, type changes, older versions and changes to shapes, panels and rules', () => {
-    const t = clone(tool);
+    const t = clone(kit);
     t.manifest.version = '0.9.0';
     const task = t.classes[SAMPLE.task as ClassId]!;
     task.key = 'Job';
@@ -359,7 +357,7 @@ describe('moving a tool between workspaces', () => {
       when: { event: 'created' },
       then: [],
     };
-    const plan = planToolUpdate(tool, t);
+    const plan = planKitUpdate(kit, t);
     expect(plan.version.direction).toBe('older');
     expect(plan.changes).toEqual(
       expect.arrayContaining([
@@ -386,19 +384,19 @@ describe('moving a tool between workspaces', () => {
   });
 
   it('plans no changes for an identical library', () => {
-    const plan = planToolUpdate(tool, clone(tool));
+    const plan = planKitUpdate(kit, clone(kit));
     expect(plan.changes).toEqual([]);
     expect(plan.version.direction).toBe('same');
-    expect(plan.lines).toContain('Nothing in the library changes.');
+    expect(plan.lines).toContain('Nothing in the Kit changes.');
   });
 
-  it('will not update a different tool library', async () => {
+  it('will not update a different Kit', async () => {
     const ws = await newWorkspace();
-    const slug = await ws.createTool(tool);
-    const other = clone(tool);
+    const slug = await ws.createKit(kit);
+    const other = clone(kit);
     other.manifest.id = 'tool_other' as never;
     await expect(
-      applyToolUpdate(ws, { incoming: other, existingSlug: slug, assets: {} }),
-    ).rejects.toThrow(/different tool library/);
+      applyKitUpdate(ws, { incoming: other, existingSlug: slug, assets: {} }),
+    ).rejects.toThrow(/different Kit/);
   });
 });

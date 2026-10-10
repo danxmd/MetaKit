@@ -1,32 +1,36 @@
 import {
-  validateToolLibrary,
+  validateKit,
   type AttributeDef,
   type Issue,
   type Json,
   type Model,
-  type ToolId,
-  type ToolLibrary,
+  type KitId,
+  type Kit,
 } from '@metakit-app/core';
 import { FormatError, NewerFormatError } from './errors';
 import { stringifyCanonical } from './json';
 import { migrate } from './migrate';
+import {
+  KIT_FOLDER,
+  KIT_PACKAGE_EXTENSION,
+  KIT_PACKAGE_FILE,
+  KIT_PACKAGE_KIND,
+} from './names';
 import { slugify } from './slugify';
 import type { Workspace } from './workspace';
 import { unzipFiles, zipFiles } from './zip';
 
-export const TOOL_PACKAGE_EXTENSION = '.mktool';
-
 /** `package.json` in a `.mktool`: what the package is and what it holds. */
-export interface ToolPackageInfo {
+export interface KitPackageInfo {
   formatVersion: number;
-  kind: 'mktool';
+  kind: typeof KIT_PACKAGE_KIND;
   tool: { id: string; name: string; version: string };
   created: string;
   /** Every file in the package except `package.json` itself. */
   contents: string[];
 }
 
-export interface ExportToolPackageOptions {
+export interface ExportKitPackageOptions {
   /** Script sources by file name, written to `scripts/`. Scripts arrive in phase 7. */
   scripts?: Record<string, string>;
   /** Assets (icons, images) by file name, written to `assets/`. */
@@ -37,28 +41,28 @@ export interface ExportToolPackageOptions {
 const json = (value: unknown): string => stringifyCanonical(value as Json);
 
 /**
- * Packs a tool library into one `.mktool` file: `package.json`, `tool.json` (definitions, shapes,
+ * Packs a Kit into one `.mktool` file: `package.json`, `tool.json` (definitions, shapes,
  * panels, rules, settings, manifest, and any other field the library has, such as `scripts`),
  * and the folders `scripts/` and `assets/`.
  */
-export function exportToolPackage(
-  tool: ToolLibrary,
-  options: ExportToolPackageOptions = {},
+export function exportKitPackage(
+  kit: Kit,
+  options: ExportKitPackageOptions = {},
 ): { bytes: Uint8Array; fileName: string } {
   const files: Record<string, Uint8Array | string> = {
-    'tool.json': json(tool),
+    [KIT_PACKAGE_FILE]: json(kit),
   };
   for (const [name, source] of Object.entries(options.scripts ?? {}))
     files[`scripts/${name}`] = source;
   for (const [name, bytes] of Object.entries(options.assets ?? {}))
     files[`assets/${name}`] = bytes;
-  const info: ToolPackageInfo = {
+  const info: KitPackageInfo = {
     formatVersion: 1,
-    kind: 'mktool',
+    kind: KIT_PACKAGE_KIND,
     tool: {
-      id: tool.manifest.id,
-      name: tool.manifest.name,
-      version: tool.manifest.version,
+      id: kit.manifest.id,
+      name: kit.manifest.name,
+      version: kit.manifest.version,
     },
     created: (options.now ?? (() => new Date()))().toISOString(),
     contents: Object.keys(files).sort(),
@@ -66,15 +70,15 @@ export function exportToolPackage(
   files['package.json'] = json(info);
   return {
     bytes: zipFiles(files),
-    fileName: `${slugify(tool.manifest.name)}-${tool.manifest.version}${TOOL_PACKAGE_EXTENSION}`,
+    fileName: `${slugify(kit.manifest.name)}-${kit.manifest.version}${KIT_PACKAGE_EXTENSION}`,
   };
 }
 
-export interface ReadToolPackage {
-  tool: ToolLibrary;
-  /** Problems with the tool library in the package. Empty when it is fine. */
+export interface ReadKitPackage {
+  kit: Kit;
+  /** Problems with the Kit in the package. Empty when it is fine. */
   issues: Issue[];
-  info: ToolPackageInfo;
+  info: KitPackageInfo;
   scripts: Record<string, string>;
   assets: Record<string, Uint8Array>;
 }
@@ -84,50 +88,50 @@ function parse(bytes: Uint8Array, what: string): unknown {
     return JSON.parse(new TextDecoder('utf-8').decode(bytes));
   } catch (error) {
     throw new FormatError(
-      `${what} in this tool package is not valid JSON: ${(error as Error).message}`,
+      `${what} in this Kit package is not valid JSON: ${(error as Error).message}`,
     );
   }
 }
 
 /**
  * Reads a `.mktool`. A package from an older release is brought up to date; one from a newer
- * release is refused. Problems in the tool library itself are returned as `issues` so that they
+ * release is refused. Problems in the Kit itself are returned as `issues` so that they
  * can be shown; a package that is not a package at all raises a `FormatError`.
  */
-export function readToolPackage(bytes: Uint8Array): ReadToolPackage {
+export function readKitPackage(bytes: Uint8Array): ReadKitPackage {
   const files = unzipFiles(bytes);
   const infoFile = files['package.json'];
-  const toolFile = files['tool.json'];
+  const kitFile = files[KIT_PACKAGE_FILE];
   if (!infoFile)
     throw new FormatError(
-      'This is not a MetaKit tool package: there is no package.json in it.',
+      'This is not a Kit package: there is no package.json in it.',
     );
-  if (!toolFile)
+  if (!kitFile)
     throw new FormatError(
-      'This tool package is incomplete: there is no tool.json in it.',
+      `This Kit package is incomplete: there is no ${KIT_PACKAGE_FILE} in it.`,
     );
-  let info: ToolPackageInfo;
-  let tool: ToolLibrary;
+  let info: KitPackageInfo;
+  let kit: Kit;
   try {
     info = migrate('tool-package', parse(infoFile, 'package.json'))
-      .value as unknown as ToolPackageInfo;
-    if (info.kind !== 'mktool')
+      .value as unknown as KitPackageInfo;
+    if (info.kind !== KIT_PACKAGE_KIND)
       throw new FormatError(
-        'This is not a MetaKit tool package (package.json has the wrong kind).',
+        'This is not a Kit package (package.json has the wrong kind).',
       );
-    tool = migrate('tool-document', parse(toolFile, 'tool.json'))
-      .value as unknown as ToolLibrary;
+    kit = migrate('tool-document', parse(kitFile, KIT_PACKAGE_FILE))
+      .value as unknown as Kit;
   } catch (error) {
     if (error instanceof NewerFormatError)
       throw new NewerFormatError(
-        `This tool package was made with a newer version of MetaKit than this one, so it cannot be imported safely. Update MetaKit and try again. (${error.message})`,
+        `This Kit package was made with a newer version of MetaKit than this one, so it cannot be imported safely. Update MetaKit and try again. (${error.message})`,
       );
     throw error;
   }
-  const issues = validateToolLibrary(tool);
-  if (issues.length === 0 && info.tool?.id !== tool.manifest.id)
+  const issues = validateKit(kit);
+  if (issues.length === 0 && info.tool?.id !== kit.manifest.id)
     throw new FormatError(
-      'This tool package is damaged: package.json and tool.json name different tool libraries.',
+      `This Kit package is damaged: package.json and ${KIT_PACKAGE_FILE} name different Kits.`,
     );
   const scripts: Record<string, string> = {};
   const assets: Record<string, Uint8Array> = {};
@@ -139,12 +143,12 @@ export function readToolPackage(bytes: Uint8Array): ReadToolPackage {
     else if (path.startsWith('assets/'))
       assets[path.slice('assets/'.length)] = content;
   }
-  return { tool, issues, info, scripts, assets };
+  return { kit, issues, info, scripts, assets };
 }
 
 // --- the plan ----------------------------------------------------------------------------------
 
-export type ToolArea =
+export type KitArea =
   | 'class'
   | 'relation class'
   | 'model type'
@@ -154,15 +158,15 @@ export type ToolArea =
   | 'rule'
   | 'settings';
 
-export interface ToolChange {
-  area: ToolArea;
+export interface KitChange {
+  area: KitArea;
   change: 'added' | 'removed' | 'changed';
   /** The key, such as `Task` or `Task.Priority`. */
   name: string;
   detail?: string;
 }
 
-/** What one existing model uses of the tool library (by id), so that the plan can say what an update does to it. */
+/** What one existing model uses of the Kit (by id), so that the plan can say what an update does to it. */
 export interface ModelUsage {
   slug: string;
   name: string;
@@ -200,16 +204,16 @@ export interface AffectedModel {
   effects: string[];
 }
 
-export interface ToolUpdatePlan {
-  /** The tool library is not in the workspace yet. */
+export interface KitUpdatePlan {
+  /** The Kit is not in the workspace yet. */
   isNew: boolean;
-  tool: { id: string; name: string };
+  kit: { id: string; name: string };
   version: {
     from: string | null;
     to: string;
     direction: 'new' | 'same' | 'newer' | 'older';
   };
-  changes: ToolChange[];
+  changes: KitChange[];
   affectedModels: AffectedModel[];
   /** Things to read before confirming. */
   warnings: string[];
@@ -246,16 +250,16 @@ interface Keyed {
 }
 
 /**
- * Says in plain English what importing `incoming` over `existing` (or as a new tool library, when
+ * Says in plain English what importing `incoming` over `existing` (or as a new Kit, when
  * `existing` is null) will change. Things are matched by id, as models do; a changed key is
  * shown as a rename. Pass the models that use the existing library to see what happens to each.
  */
-export function planToolUpdate(
-  existing: ToolLibrary | null,
-  incoming: ToolLibrary,
+export function planKitUpdate(
+  existing: Kit | null,
+  incoming: Kit,
   usage: ModelUsage[] = [],
-): ToolUpdatePlan {
-  const changes: ToolChange[] = [];
+): KitUpdatePlan {
+  const changes: KitChange[] = [];
   const warnings: string[] = [];
   const effects = new Map<string, string[]>();
   const affect = (model: ModelUsage, text: string) =>
@@ -275,7 +279,7 @@ export function planToolUpdate(
   if (existing) {
     // keyed definitions: classes, relation classes and model types, with their attributes
     const diff = <T extends Keyed>(
-      area: ToolArea,
+      area: KitArea,
       before: Record<string, T>,
       after: Record<string, T>,
       shallow: (item: T) => object,
@@ -412,14 +416,14 @@ export function planToolUpdate(
       existing.relations[id as keyof typeof existing.relations]?.key ??
       id;
     // A shape has no name of its own; it is named by the class that uses it.
-    const shapeName = (tool: ToolLibrary, id: string) => {
+    const shapeName = (kit: Kit, id: string) => {
       const owner =
-        Object.values(tool.classes).find((c) => c.shape === id) ??
-        Object.values(tool.relations).find((r) => r.shape === id);
+        Object.values(kit.classes).find((c) => c.shape === id) ??
+        Object.values(kit.relations).find((r) => r.shape === id);
       return owner ? `${owner.key} (shape)` : `shape ${id}`;
     };
     const plain = <T>(
-      area: ToolArea,
+      area: KitArea,
       before: Record<string, T>,
       after: Record<string, T>,
       name: (id: string, side: 'old' | 'new') => string,
@@ -454,15 +458,15 @@ export function planToolUpdate(
       changes.push({ area: 'settings', change: 'changed', name: 'Settings' });
     if (existing.manifest.id !== incoming.manifest.id)
       warnings.push(
-        'The package is for a different tool library than the one in the workspace.',
+        'The package is for a different Kit than the one in the workspace.',
       );
     if (direction === 'older')
       warnings.push(
-        `The package has version ${to}, which is older than the version ${from} in the workspace. Importing it replaces the newer library.`,
+        `The package has version ${to}, which is older than the version ${from} in the workspace. Importing it replaces the newer Kit.`,
       );
     if (direction === 'same' && changes.length > 0)
       warnings.push(
-        `The version number (${to}) is the same, but the content differs. Consider giving the changed library a new version number.`,
+        `The version number (${to}) is the same, but the content differs. Consider giving the changed Kit a new version number.`,
       );
   }
 
@@ -477,7 +481,7 @@ export function planToolUpdate(
   const lines: string[] = [];
   if (!existing)
     lines.push(
-      `"${incoming.manifest.name}" (version ${to}) is not in this workspace yet. It will be added as a new tool library, with ${Object.keys(incoming.classes).length} classes, ${Object.keys(incoming.relations).length} relation classes and ${Object.keys(incoming.modelTypes).length} model types.`,
+      `"${incoming.manifest.name}" (version ${to}) is not in this workspace yet. It will be added as a new Kit, with ${Object.keys(incoming.classes).length} classes, ${Object.keys(incoming.relations).length} relation classes and ${Object.keys(incoming.modelTypes).length} model types.`,
     );
   else {
     lines.push(
@@ -485,7 +489,7 @@ export function planToolUpdate(
         ? `"${incoming.manifest.name}" will be updated. The version stays ${to}.`
         : `"${incoming.manifest.name}" will be updated from version ${from} to version ${to}.`,
     );
-    if (changes.length === 0) lines.push('Nothing in the library changes.');
+    if (changes.length === 0) lines.push('Nothing in the Kit changes.');
     for (const c of changes)
       lines.push(
         `${c.change === 'added' ? 'Added' : c.change === 'removed' ? 'Removed' : 'Changed'} ${c.area} ${c.name}${c.detail ? ` (${c.detail})` : ''}.`,
@@ -496,7 +500,7 @@ export function planToolUpdate(
   }
   return {
     isNew: !existing,
-    tool: { id: incoming.manifest.id, name: incoming.manifest.name },
+    kit: { id: incoming.manifest.id, name: incoming.manifest.name },
     version: { from, to, direction },
     changes,
     affectedModels,
@@ -507,14 +511,14 @@ export function planToolUpdate(
 
 // --- importing ---------------------------------------------------------------------------------
 
-/** What the models of the workspace made with a tool library use of it. */
+/** What the models of the workspace made with a Kit use of it. */
 export async function collectUsage(
   workspace: Workspace,
-  toolId: ToolId,
+  kitId: KitId,
 ): Promise<ModelUsage[]> {
   const usage: ModelUsage[] = [];
   for (const entry of await workspace.listModels()) {
-    if (entry.tool !== toolId) continue;
+    if (entry.kit !== kitId) continue;
     usage.push(
       modelUsage(entry.slug, (await workspace.loadModel(entry.slug)).document),
     );
@@ -522,86 +526,86 @@ export async function collectUsage(
   return usage;
 }
 
-export interface PreparedToolImport {
-  incoming: ToolLibrary;
-  /** The folder of the tool library in the workspace that this updates; null when it is new. */
+export interface PreparedKitImport {
+  incoming: Kit;
+  /** The folder of the Kit in the workspace that this updates; null when it is new. */
   existingSlug: string | null;
-  plan: ToolUpdatePlan;
+  plan: KitUpdatePlan;
   scripts: Record<string, string>;
   assets: Record<string, Uint8Array>;
 }
 
 /**
  * Reads a `.mktool` and works out what importing it would change, without changing anything. Show
- * `plan` to the person, then call `applyToolUpdate` once they confirm.
+ * `plan` to the person, then call `applyKitUpdate` once they confirm.
  */
-export async function prepareToolImport(
+export async function prepareKitImport(
   workspace: Workspace,
   bytes: Uint8Array,
-): Promise<PreparedToolImport> {
-  const { tool, issues, scripts, assets } = readToolPackage(bytes);
+): Promise<PreparedKitImport> {
+  const { kit, issues, scripts, assets } = readKitPackage(bytes);
   if (issues.length > 0)
     throw new FormatError(
-      `The tool library in this package has ${issues.length} problem${issues.length === 1 ? '' : 's'}, so it was not imported: ${issues
+      `The Kit in this package has ${issues.length} problem${issues.length === 1 ? '' : 's'}, so it was not imported: ${issues
         .slice(0, 3)
         .map((i) => `${i.path || '(top level)'}: ${i.message}`)
         .join('; ')}${issues.length > 3 ? '; and more' : ''}.`,
     );
-  const existingSlug = await workspace.findToolSlug(tool.manifest.id);
+  const existingSlug = await workspace.findKitSlug(kit.manifest.id);
   const existing = existingSlug
-    ? (await workspace.loadTool(existingSlug)).document
+    ? (await workspace.loadKit(existingSlug)).document
     : null;
-  const plan = planToolUpdate(
+  const plan = planKitUpdate(
     existing,
-    tool,
-    existing ? await collectUsage(workspace, tool.manifest.id) : [],
+    kit,
+    existing ? await collectUsage(workspace, kit.manifest.id) : [],
   );
   if (Object.keys(scripts).length > 0)
     plan.warnings.push(
       'The package contains scripts. This version of MetaKit does not run scripts yet, so they were not added.',
     );
-  return { incoming: tool, existingSlug, plan, scripts, assets };
+  return { incoming: kit, existingSlug, plan, scripts, assets };
 }
 
 /**
- * Adds the tool library to the workspace, or replaces the one with the same id. The ids in the
+ * Adds the Kit to the workspace, or replaces the one with the same id. The ids in the
  * package win, so models made with the old library follow the update; values of attributes the
  * new library no longer has stay stored in the models.
  */
-export async function applyToolUpdate(
+export async function applyKitUpdate(
   workspace: Workspace,
-  prepared: Pick<PreparedToolImport, 'incoming' | 'existingSlug' | 'assets'>,
+  prepared: Pick<PreparedKitImport, 'incoming' | 'existingSlug' | 'assets'>,
 ): Promise<{ slug: string; created: boolean }> {
   const { incoming, existingSlug, assets } = prepared;
   let slug: string;
   if (existingSlug === null) {
-    slug = await workspace.createTool(incoming);
+    slug = await workspace.createKit(incoming);
   } else {
-    const current = (await workspace.loadTool(existingSlug)).document;
+    const current = (await workspace.loadKit(existingSlug)).document;
     if (current.manifest.id !== incoming.manifest.id)
       throw new FormatError(
-        'The package is for a different tool library than the one it should update, so nothing was changed.',
+        'The package is for a different Kit than the one it should update, so nothing was changed.',
       );
-    await workspace.saveTool(existingSlug, incoming);
+    await workspace.saveKit(existingSlug, incoming);
     slug = existingSlug;
   }
   for (const [name, bytes] of Object.entries(assets))
-    await workspace.addToolAsset(slug, name, bytes);
+    await workspace.addKitAsset(slug, name, bytes);
   return { slug, created: existingSlug === null };
 }
 
-/** Bytes and a file name for a tool library in the workspace, with its assets. */
-export async function exportToolPackageFrom(
+/** Bytes and a file name for a Kit in the workspace, with its assets. */
+export async function exportKitPackageFrom(
   workspace: Workspace,
-  toolSlug: string,
-  options: Pick<ExportToolPackageOptions, 'now'> = {},
+  kitSlug: string,
+  options: Pick<ExportKitPackageOptions, 'now'> = {},
 ): Promise<{ bytes: Uint8Array; fileName: string }> {
-  const { document } = await workspace.loadTool(toolSlug);
+  const { document } = await workspace.loadKit(kitSlug);
   const assets: Record<string, Uint8Array> = {};
-  const folder = `tools/${toolSlug}/assets`;
-  // Listing a folder that does not exist gives nothing, so a tool without assets needs no check.
+  const folder = `${KIT_FOLDER}/${kitSlug}/assets`;
+  // Listing a folder that does not exist gives nothing, so a Kit without assets needs no check.
   for (const entry of await workspace.adapter.list(folder))
     if (entry.kind === 'file')
-      assets[entry.name] = await workspace.readToolAsset(toolSlug, entry.name);
-  return exportToolPackage(document, { assets, ...options });
+      assets[entry.name] = await workspace.readKitAsset(kitSlug, entry.name);
+  return exportKitPackage(document, { assets, ...options });
 }

@@ -16,9 +16,9 @@ The page has two columns (one on a narrow window). The left column holds the hea
 
 - **Heading:** "Build modelling languages and model with them", with a short lead: "MetaKit is a tool for method engineers and modellers. In Build you define a notation, in Model you draw with it."
 - **Three steps** (a numbered card):
-  1. **Open or create a workspace folder.** Pick a folder on your computer. It holds everything: tool libraries and models.
-  2. **Add a tool library, or build one.** A tool library defines the kinds of objects, connections, shapes and rules. Use a ready-made one or make your own in Build.
-  3. **Model.** Draw models with the tool library in Model. Several people can work in the same folder at once.
+  1. **Open or create a workspace folder.** Pick a folder on your computer. It holds everything: Kits and models.
+  2. **Add a Kit, or build one.** A Kit defines the kinds of objects, connections, shapes and rules. Use a ready-made one or make your own in Build.
+  3. **Model.** Draw models with the Kit in Model. Several people can work in the same folder at once.
 - **What is a workspace folder?** A normal folder with plain JSON files. Keep it in OneDrive, SharePoint, Google Drive or Dropbox and your team shares it through that service. MetaKit runs in your browser and uploads nothing anywhere. See [[concepts-workspace]] and [[concepts-no-server]].
 
 ## Where to find it

@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { generateDeclarations } from '@metakit-app/behaviour';
-import { SAMPLE, sampleTool } from '@metakit-app/core/testing';
-import type { ToolLibrary } from '@metakit-app/core';
+import { SAMPLE, sampleKit } from '@metakit-app/core/testing';
+import type { Kit } from '@metakit-app/core';
 import { createLanguageServer, type LanguageServer } from './script-language';
 import { loadTestLibs as loadLibs } from './test-libs';
 
@@ -29,8 +29,8 @@ commands.register({
 });
 `;
 
-function tool(): ToolLibrary {
-  const t = sampleTool();
+function kit(): Kit {
+  const t = sampleKit();
   t.classes[SAMPLE.task]!.attributes.push({
     id: 'att_number',
     key: 'Number',
@@ -42,7 +42,7 @@ function tool(): ToolLibrary {
 let server: LanguageServer;
 beforeAll(() => {
   server = createLanguageServer(loadLibs());
-  server.setDeclarations(generateDeclarations(tool()));
+  server.setDeclarations(generateDeclarations(kit()));
 });
 
 const messages = (source: string) =>
@@ -183,8 +183,8 @@ commands.register({ id: "x", label: "X", run: async () => { await files.write("b
     expect(server.details(src, src.length, 'Effort')?.text).toContain('number');
   });
 
-  it('follows a change of the tool: new declarations, new names', () => {
-    const other = sampleTool();
+  it('follows a change of the Kit: new declarations, new names', () => {
+    const other = sampleKit();
     other.classes = {};
     other.relations = {};
     other.modelTypes = {};
@@ -194,7 +194,7 @@ commands.register({ id: "x", label: "X", run: async () => { await files.write("b
       s.diagnostics(`import { model } from "metakit";\nmodel.objects("Task");`)
         .length,
     ).toBeGreaterThan(0);
-    s.setDeclarations(generateDeclarations(tool()));
+    s.setDeclarations(generateDeclarations(kit()));
     expect(
       s.diagnostics(`import { model } from "metakit";\nmodel.objects("Task");`),
     ).toEqual([]);

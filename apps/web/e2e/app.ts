@@ -3,8 +3,8 @@ import { fileURLToPath } from 'node:url';
 import { expect, type Page } from '@playwright/test';
 import { loadHarness } from './bundle';
 
-export const toolJson = readFileSync(
-  fileURLToPath(new URL('../../../tools/bpmn-lite/tool.json', import.meta.url)),
+export const kitJson = readFileSync(
+  fileURLToPath(new URL('../../../kits/bpmn-lite/kit.json', import.meta.url)),
   'utf8',
 );
 
@@ -24,7 +24,7 @@ export type Model = {
 export interface PrepareOptions {
   /** The folder of the browser's private file system to use; a second window passes the first one's. */
   folder?: string;
-  /** Make the workspace and its tool library (the first window does; a second one joins). */
+  /** Make the workspace and its Kit (the first window does; a second one joins). */
   seed?: boolean;
   name?: string;
   colour?: string;
@@ -60,7 +60,7 @@ export async function prepare(page: Page, options: PrepareOptions = {}) {
   await page.evaluate(
     (json) =>
       (window as unknown as { __seed(t: string): Promise<void> }).__seed(json),
-    toolJson,
+    kitJson,
   );
   await page.reload();
   return folder;

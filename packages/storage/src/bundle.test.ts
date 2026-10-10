@@ -4,19 +4,19 @@ import { FormatError } from './errors';
 import {
   newWorkspace,
   sampleModelFromDisk,
-  sampleToolFromDisk,
+  sampleKitFromDisk,
   withoutPos,
 } from './exchange-fixtures';
 import { exportMkModel } from './mkmodel';
 import { unzipFiles, zipFiles } from './zip';
 
 const dir = 'bpmn-lite';
-const tool = sampleToolFromDisk(dir);
+const kit = sampleKitFromDisk(dir);
 const original = sampleModelFromDisk(dir, 'order-process.mkmodel.json');
 
 async function source() {
   const ws = await newWorkspace('Source');
-  await ws.createTool(tool);
+  await ws.createKit(kit);
   const a = await ws.createModel(original);
   const second = {
     ...original,
@@ -32,11 +32,11 @@ async function source() {
 }
 
 describe('bundles', () => {
-  it('holds bundle.json, the tool and one model file per model', async () => {
+  it('holds bundle.json, the Kit and one model file per model', async () => {
     const { ws, a, b } = await source();
     const { bytes, fileName } = await exportBundle(ws, {
       models: [a, b],
-      includeTool: true,
+      includeKit: true,
       name: 'Case study',
       now: () => new Date('2026-10-07T09:00:00.000Z'),
     });
@@ -54,7 +54,7 @@ describe('bundles', () => {
       kind: 'mkbundle',
       name: 'Case study',
       created: '2026-10-07T09:00:00.000Z',
-      tool: { id: tool.manifest.id, version: tool.manifest.version },
+      tool: { id: kit.manifest.id, version: kit.manifest.version },
       models: [
         { name: 'Order process', folder: 'Samples' },
         { name: 'Second process', folder: 'Samples/More' },
@@ -66,7 +66,7 @@ describe('bundles', () => {
     const { ws, a } = await source();
     const options = {
       models: [a],
-      includeTool: true,
+      includeKit: true,
       now: () => new Date('2026-10-07T09:00:00.000Z'),
     };
     const one = await exportBundle(ws, options);
@@ -74,15 +74,15 @@ describe('bundles', () => {
     expect([...one.bytes]).toEqual([...two.bytes]);
   });
 
-  it('imports into a fresh workspace with the tool, new model ids and the same folders', async () => {
+  it('imports into a fresh workspace with the Kit, new model ids and the same folders', async () => {
     const { ws, a, b } = await source();
     const { bytes } = await exportBundle(ws, {
       models: [a, b],
-      includeTool: true,
+      includeKit: true,
     });
     const target = await newWorkspace('Target', 'bbbb0002');
     const report = await importBundle(target, bytes);
-    expect(report.toolAdded).toBe(true);
+    expect(report.kitAdded).toBe(true);
     expect(report.skipped).toEqual([]);
     expect(report.added.map((m) => m.name)).toEqual([
       'Order process',
@@ -93,38 +93,38 @@ describe('bundles', () => {
       'Samples/More',
     ]);
 
-    const toolBack = (await target.loadTool(report.toolSlug)).document;
-    expect(toolBack).toEqual(tool);
+    const kitBack = (await target.loadKit(report.kitSlug)).document;
+    expect(kitBack).toEqual(kit);
     for (const [i, slug] of [a, b].entries()) {
       const before = (await ws.loadModel(slug)).document;
       const after = (await target.loadModel(report.added[i]!.slug)).document;
       expect(after.manifest.id).not.toBe(before.manifest.id);
       expect(
-        exportMkModel(toolBack, { ...after, manifest: before.manifest }),
-      ).toBe(exportMkModel(tool, before));
+        exportMkModel(kitBack, { ...after, manifest: before.manifest }),
+      ).toBe(exportMkModel(kit, before));
       expect(withoutPos({ ...after, manifest: before.manifest })).toEqual(
         withoutPos(before),
       );
     }
   });
 
-  it('uses the tool already in the workspace and reports another version', async () => {
+  it('uses the Kit already in the workspace and reports another version', async () => {
     const { ws, a } = await source();
     const { bytes } = await exportBundle(ws, {
       models: [a],
-      includeTool: true,
+      includeKit: true,
     });
     const target = await newWorkspace('Target', 'bbbb0002');
-    const slug = await target.createTool({
-      ...tool,
-      manifest: { ...tool.manifest, version: '1.1.0' },
+    const slug = await target.createKit({
+      ...kit,
+      manifest: { ...kit.manifest, version: '1.1.0' },
     });
     const report = await importBundle(target, bytes);
-    expect(report.toolAdded).toBe(false);
-    expect(report.toolSlug).toBe(slug);
-    expect(report.toolVersionDiffers).toBe(true);
+    expect(report.kitAdded).toBe(false);
+    expect(report.kitSlug).toBe(slug);
+    expect(report.kitVersionDiffers).toBe(true);
     expect(report.messages.join(' ')).toContain('version 1.1.0');
-    expect(await target.listTools()).toHaveLength(1);
+    expect(await target.listKits()).toHaveLength(1);
     expect(report.added).toHaveLength(1);
   });
 
@@ -132,7 +132,7 @@ describe('bundles', () => {
     const { ws, a, b } = await source();
     const { bytes } = await exportBundle(ws, {
       models: [a, b],
-      includeTool: true,
+      includeKit: true,
     });
     const files = unzipFiles(bytes);
     const broken = JSON.parse(
@@ -152,33 +152,33 @@ describe('bundles', () => {
     expect(await target.listModels()).toHaveLength(1);
   });
 
-  it('needs the tool when the bundle has none and the workspace lacks it', async () => {
+  it('needs the Kit when the bundle has none and the workspace lacks it', async () => {
     const { ws, a } = await source();
     const { bytes } = await exportBundle(ws, {
       models: [a],
-      includeTool: false,
+      includeKit: false,
     });
     expect(Object.keys(unzipFiles(bytes))).not.toContain('tool/tool.json');
     const target = await newWorkspace('Target', 'bbbb0002');
     await expect(importBundle(target, bytes)).rejects.toThrow(
-      /does not include its tool library/,
+      /does not include its Kit/,
     );
-    await target.createTool(tool);
+    await target.createKit(kit);
     expect((await importBundle(target, bytes)).added).toHaveLength(1);
   });
 
-  it('refuses models of two tools in one bundle, no models, and files that are not bundles', async () => {
+  it('refuses models of two Kits in one bundle, no models, and files that are not bundles', async () => {
     const { ws, a } = await source();
-    const otherTool = sampleToolFromDisk('er-lite');
-    await ws.createTool(otherTool);
+    const otherKit = sampleKitFromDisk('er-lite');
+    await ws.createKit(otherKit);
     const er = await ws.createModel(
       sampleModelFromDisk('er-lite', 'library.mkmodel.json'),
     );
     await expect(
-      exportBundle(ws, { models: [a, er], includeTool: true }),
+      exportBundle(ws, { models: [a, er], includeKit: true }),
     ).rejects.toThrow(/different ones/);
     await expect(
-      exportBundle(ws, { models: [], includeTool: true }),
+      exportBundle(ws, { models: [], includeKit: true }),
     ).rejects.toThrow(FormatError);
     const target = await newWorkspace('Target', 'bbbb0002');
     await expect(

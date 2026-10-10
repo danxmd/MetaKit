@@ -11,7 +11,7 @@ import {
   type Labels,
   type Model,
   type ModelCalculator,
-  type ToolLibrary,
+  type Kit,
   type ValidationIssue,
 } from '@metakit-app/core';
 
@@ -231,16 +231,16 @@ export function buildField(
 }
 
 function attributesOf(
-  tool: ToolLibrary,
+  kit: Kit,
   model: Model,
   id: ElementId | ConnectorId,
 ): AttributeDef[] | null {
   const el = model.elements[id as ElementId];
   try {
-    if (el) return effectiveAttributes(tool, el.class);
+    if (el) return effectiveAttributes(kit, el.class);
     const cn = model.connectors[id as ConnectorId];
     // An unknown class or relation has no attributes, so the panel stays empty.
-    if (cn) return effectiveRelationAttributes(tool, cn.relation);
+    if (cn) return effectiveRelationAttributes(kit, cn.relation);
   } catch {
     return [];
   }
@@ -264,7 +264,7 @@ function storedValue(
  * A selection that mixes elements and connectors, or is empty, has no sections.
  */
 export function buildPanel(
-  tool: ToolLibrary,
+  kit: Kit,
   model: Model,
   targets: readonly PanelTarget[],
   issues: readonly ValidationIssue[],
@@ -277,7 +277,7 @@ export function buildPanel(
   const kind = isElement(first.id);
   if (targets.some((t) => isElement(t.id) !== kind)) return [];
 
-  const lists = targets.map((t) => attributesOf(tool, model, t.id) ?? []);
+  const lists = targets.map((t) => attributesOf(kit, model, t.id) ?? []);
   const common = lists[0]!.filter((a) =>
     lists.every((list) => list.some((b) => b.id === a.id)),
   );

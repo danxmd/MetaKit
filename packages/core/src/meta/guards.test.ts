@@ -1,28 +1,23 @@
 import { describe, expect, it } from 'vitest';
-import { sampleTool, SAMPLE, clone } from '../testing/sample-tool';
-import {
-  formatIssues,
-  parseToolLibrary,
-  validateToolLibrary,
-  type Issue,
-} from './guards';
-import type { AttributeDef, ToolLibrary } from './types';
+import { sampleKit, SAMPLE, clone } from '../testing/sample-kit';
+import { formatIssues, parseKit, validateKit, type Issue } from './guards';
+import type { AttributeDef, Kit } from './types';
 
 type Loose = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any -- tests edit parts of a library freely
 
-const base = (): Loose => clone(sampleTool()) as unknown as Loose;
-const issuesOf = (tool: unknown): Issue[] => validateToolLibrary(tool);
-const messageAt = (tool: unknown, path: string): string[] =>
-  issuesOf(tool)
+const base = (): Loose => clone(sampleKit()) as unknown as Loose;
+const issuesOf = (kit: unknown): Issue[] => validateKit(kit);
+const messageAt = (kit: unknown, path: string): string[] =>
+  issuesOf(kit)
     .filter((i) => i.path === path)
     .map((i) => i.message);
-const attr = (tool: Loose, extra: Record<string, unknown>): Loose => {
-  tool.classes[SAMPLE.task].attributes.push({
+const attr = (kit: Loose, extra: Record<string, unknown>): Loose => {
+  kit.classes[SAMPLE.task].attributes.push({
     id: 'att_zz',
     key: 'Zz',
     ...extra,
   });
-  return tool;
+  return kit;
 };
 const attrIssues = (extra: Record<string, unknown>) =>
   issuesOf(attr(base(), extra)).filter(
@@ -31,12 +26,12 @@ const attrIssues = (extra: Record<string, unknown>) =>
 
 describe('a complete library', () => {
   it('has no issues', () => {
-    expect(issuesOf(sampleTool())).toEqual([]);
-    expect(parseToolLibrary(sampleTool()).ok).toBe(true);
+    expect(issuesOf(sampleKit())).toEqual([]);
+    expect(parseKit(sampleKit()).ok).toBe(true);
   });
 
   it('covers every attribute type', () => {
-    const tool = base();
+    const kit = base();
     const extras: Record<string, unknown>[] = [
       {
         type: 'text',
@@ -82,31 +77,31 @@ describe('a complete library', () => {
       { type: 'link', target: 'any', default: 'https://example.com' },
     ];
     extras.forEach((e, i) =>
-      tool.classes[SAMPLE.task].attributes.push({
+      kit.classes[SAMPLE.task].attributes.push({
         id: `att_t${i}`,
         key: `T${i}`,
         ...e,
       }),
     );
-    expect(issuesOf(tool)).toEqual([]);
+    expect(issuesOf(kit)).toEqual([]);
   });
 });
 
 describe('structure', () => {
   it('reports a missing manifest id with its path', () => {
-    const tool = base();
-    delete tool.manifest.id;
-    expect(messageAt(tool, 'manifest.id')[0]).toMatch(
-      /tool id must be an id of the form tool_/,
+    const kit = base();
+    delete kit.manifest.id;
+    expect(messageAt(kit, 'manifest.id')[0]).toMatch(
+      /Kit id must be an id of the form tool_/,
     );
   });
 
   it('reports a missing manifest, settings and collections', () => {
-    const tool = base();
-    delete tool.manifest;
-    delete tool.settings;
-    delete tool.classes;
-    const paths = issuesOf(tool).map((i) => i.path);
+    const kit = base();
+    delete kit.manifest;
+    delete kit.settings;
+    delete kit.classes;
+    const paths = issuesOf(kit).map((i) => i.path);
     expect(paths).toEqual(
       expect.arrayContaining(['manifest', 'settings', 'classes']),
     );
@@ -118,73 +113,69 @@ describe('structure', () => {
   });
 
   it('flags unknown fields, which are usually typos', () => {
-    const tool = base();
-    tool.classes[SAMPLE.task].colour = 'red';
-    expect(messageAt(tool, `classes.${SAMPLE.task}.colour`)[0]).toMatch(
+    const kit = base();
+    kit.classes[SAMPLE.task].colour = 'red';
+    expect(messageAt(kit, `classes.${SAMPLE.task}.colour`)[0]).toMatch(
       /Unknown field "colour"/,
     );
   });
 
   it('checks version, languages and labels', () => {
-    const tool = base();
-    tool.manifest.version = '1';
-    tool.manifest.languages = ['en', 'EN'];
-    tool.classes[SAMPLE.task].labels = { fr: 'Tâche' };
-    expect(messageAt(tool, 'manifest.version')[0]).toMatch(/look like 1\.0\.0/);
-    expect(messageAt(tool, 'manifest.languages[1]')[0]).toMatch(
-      /language code/,
-    );
-    expect(messageAt(tool, `classes.${SAMPLE.task}.labels.fr`)[0]).toMatch(
-      /not listed in the tool's languages/,
+    const kit = base();
+    kit.manifest.version = '1';
+    kit.manifest.languages = ['en', 'EN'];
+    kit.classes[SAMPLE.task].labels = { fr: 'Tâche' };
+    expect(messageAt(kit, 'manifest.version')[0]).toMatch(/look like 1\.0\.0/);
+    expect(messageAt(kit, 'manifest.languages[1]')[0]).toMatch(/language code/);
+    expect(messageAt(kit, `classes.${SAMPLE.task}.labels.fr`)[0]).toMatch(
+      /not listed in the Kit's languages/,
     );
   });
 
   it('requires entry names to match ids', () => {
-    const tool = base();
-    tool.classes[SAMPLE.task].id = 'cls_other';
-    expect(messageAt(tool, `classes.${SAMPLE.task}.id`)[0]).toMatch(
+    const kit = base();
+    kit.classes[SAMPLE.task].id = 'cls_other';
+    expect(messageAt(kit, `classes.${SAMPLE.task}.id`)[0]).toMatch(
       /does not match the entry name/,
     );
   });
 
   it('checks settings', () => {
-    const tool = base();
-    tool.settings.grid.size = 0;
-    tool.settings.layers.push({
+    const kit = base();
+    kit.settings.grid.size = 0;
+    kit.settings.layers.push({
       key: 'main',
       labels: { en: 'Again' },
       visible: true,
     });
-    tool.settings.numbering.start = -1;
-    expect(messageAt(tool, 'settings.grid.size')[0]).toMatch(/above 0/);
-    expect(messageAt(tool, 'settings.layers[1].key')[0]).toMatch(/used twice/);
-    expect(messageAt(tool, 'settings.numbering.start')[0]).toMatch(
-      /at least 0/,
-    );
+    kit.settings.numbering.start = -1;
+    expect(messageAt(kit, 'settings.grid.size')[0]).toMatch(/above 0/);
+    expect(messageAt(kit, 'settings.layers[1].key')[0]).toMatch(/used twice/);
+    expect(messageAt(kit, 'settings.numbering.start')[0]).toMatch(/at least 0/);
   });
 });
 
 describe('classes', () => {
   it('rejects an unknown kind and names the allowed ones', () => {
-    const tool = base();
-    tool.classes[SAMPLE.task].kind = 'box';
-    expect(messageAt(tool, `classes.${SAMPLE.task}.kind`)[0]).toMatch(
+    const kit = base();
+    kit.classes[SAMPLE.task].kind = 'box';
+    expect(messageAt(kit, `classes.${SAMPLE.task}.kind`)[0]).toMatch(
       /node, container, swimlane/,
     );
   });
 
   it('rejects a parent that does not exist', () => {
-    const tool = base();
-    tool.classes[SAMPLE.task].extends = 'cls_missing';
-    expect(messageAt(tool, `classes.${SAMPLE.task}.extends`)[0]).toMatch(
+    const kit = base();
+    kit.classes[SAMPLE.task].extends = 'cls_missing';
+    expect(messageAt(kit, `classes.${SAMPLE.task}.extends`)[0]).toMatch(
       /cls_missing does not exist/,
     );
   });
 
   it('reports an inheritance cycle once, naming both classes', () => {
-    const tool = base();
-    tool.classes[SAMPLE.flowNode].extends = SAMPLE.task;
-    const loops = issuesOf(tool).filter((i) =>
+    const kit = base();
+    kit.classes[SAMPLE.flowNode].extends = SAMPLE.task;
+    const loops = issuesOf(kit).filter((i) =>
       /extend each other in a loop/.test(i.message),
     );
     expect(loops).toHaveLength(1);
@@ -194,58 +185,58 @@ describe('classes', () => {
   });
 
   it('reports duplicate class keys with both ids', () => {
-    const tool = base();
-    tool.classes[SAMPLE.gateway].key = 'Task';
-    const m = issuesOf(tool).find((i) =>
+    const kit = base();
+    kit.classes[SAMPLE.gateway].key = 'Task';
+    const m = issuesOf(kit).find((i) =>
       /class key "Task" is also used by/.test(i.message),
     );
     expect(m).toBeDefined();
   });
 
   it('rejects keys that formulas cannot use', () => {
-    const tool = base();
-    tool.classes[SAMPLE.task].key = 'My Task';
-    expect(messageAt(tool, `classes.${SAMPLE.task}.key`)[0]).toMatch(
+    const kit = base();
+    kit.classes[SAMPLE.task].key = 'My Task';
+    expect(messageAt(kit, `classes.${SAMPLE.task}.key`)[0]).toMatch(
       /letters, digits and underscores/,
     );
   });
 
   it('reports a subclass that repeats an inherited attribute key', () => {
-    const tool = base();
-    tool.classes[SAMPLE.task].attributes.push({
+    const kit = base();
+    kit.classes[SAMPLE.task].attributes.push({
       id: 'att_name2',
       key: 'Name',
       type: 'text',
     });
-    const m = messageAt(tool, `classes.${SAMPLE.task}.attributes`);
+    const m = messageAt(kit, `classes.${SAMPLE.task}.attributes`);
     expect(m.join(' ')).toMatch(/two attributes with the key "Name"/);
   });
 
   it('reports duplicate attribute ids across the chain', () => {
-    const tool = base();
-    tool.classes[SAMPLE.task].attributes.push({
+    const kit = base();
+    kit.classes[SAMPLE.task].attributes.push({
       id: SAMPLE.attName,
       key: 'Other',
       type: 'text',
     });
     expect(
-      messageAt(tool, `classes.${SAMPLE.task}.attributes`).join(' '),
+      messageAt(kit, `classes.${SAMPLE.task}.attributes`).join(' '),
     ).toMatch(/two attributes with the id att_name/);
   });
 });
 
 describe('relation classes', () => {
   it('needs both ends when there is no parent', () => {
-    const tool = base();
-    tool.relations[SAMPLE.flow].to = [];
-    expect(messageAt(tool, `relations.${SAMPLE.flow}.to`)[0]).toMatch(
+    const kit = base();
+    kit.relations[SAMPLE.flow].to = [];
+    expect(messageAt(kit, `relations.${SAMPLE.flow}.to`)[0]).toMatch(
       /At least one TO class is required/,
     );
   });
 
   it('allows empty ends when there is a parent', () => {
-    const tool = base();
-    tool.relations.rel_child = {
+    const kit = base();
+    kit.relations.rel_child = {
       id: 'rel_child',
       key: 'Child',
       labels: { en: 'Child' },
@@ -254,20 +245,20 @@ describe('relation classes', () => {
       to: [],
       attributes: [],
     };
-    expect(issuesOf(tool)).toEqual([]);
+    expect(issuesOf(kit)).toEqual([]);
   });
 
   it('names a missing class at an end', () => {
-    const tool = base();
-    tool.relations[SAMPLE.flow].from = ['cls_nope'];
-    expect(messageAt(tool, `relations.${SAMPLE.flow}.from[0]`)[0]).toMatch(
+    const kit = base();
+    kit.relations[SAMPLE.flow].from = ['cls_nope'];
+    expect(messageAt(kit, `relations.${SAMPLE.flow}.from[0]`)[0]).toMatch(
       /cls_nope does not exist/,
     );
   });
 
   it('detects relation inheritance loops', () => {
-    const tool = base();
-    tool.relations.rel_b = {
+    const kit = base();
+    kit.relations.rel_b = {
       id: 'rel_b',
       key: 'B',
       labels: { en: 'B' },
@@ -276,9 +267,9 @@ describe('relation classes', () => {
       to: [],
       attributes: [],
     };
-    tool.relations[SAMPLE.flow].extends = 'rel_b';
+    kit.relations[SAMPLE.flow].extends = 'rel_b';
     expect(
-      issuesOf(tool).some((i) =>
+      issuesOf(kit).some((i) =>
         /relation classes .* extend each other in a loop/.test(i.message),
       ),
     ).toBe(true);
@@ -289,23 +280,23 @@ describe('model types', () => {
   const mt = SAMPLE.process;
 
   it('keeps views inside what the model type allows', () => {
-    const tool = base();
-    tool.modelTypes[mt].views[0].classes.push(SAMPLE.flowNode);
-    const m = messageAt(tool, `modelTypes.${mt}.views[0].classes[4]`);
+    const kit = base();
+    kit.modelTypes[mt].views[0].classes.push(SAMPLE.flowNode);
+    const m = messageAt(kit, `modelTypes.${mt}.views[0].classes[4]`);
     expect(m[0]).toMatch(
       /view "FlowOnly" uses the class cls_flownode, which the model type does not allow/,
     );
   });
 
   it('keeps cardinalities inside what the model type allows', () => {
-    const tool = base();
-    tool.modelTypes[mt].cardinalities.push({
+    const kit = base();
+    kit.modelTypes[mt].cardinalities.push({
       kind: 'count',
       class: SAMPLE.flowNode,
       min: 1,
     });
     expect(
-      messageAt(tool, `modelTypes.${mt}.cardinalities[3].class`)[0],
+      messageAt(kit, `modelTypes.${mt}.cardinalities[3].class`)[0],
     ).toMatch(/does not allow/);
   });
 
@@ -331,49 +322,49 @@ describe('model types', () => {
   });
 
   it('checks cardinality bounds', () => {
-    const tool = base();
-    tool.modelTypes[mt].cardinalities[0] = {
+    const kit = base();
+    kit.modelTypes[mt].cardinalities[0] = {
       kind: 'count',
       class: SAMPLE.start,
       min: 3,
       max: 1,
     };
-    tool.modelTypes[mt].cardinalities[1] = { kind: 'count', class: SAMPLE.end };
-    expect(messageAt(tool, `modelTypes.${mt}.cardinalities[0]`)[0]).toMatch(
+    kit.modelTypes[mt].cardinalities[1] = { kind: 'count', class: SAMPLE.end };
+    expect(messageAt(kit, `modelTypes.${mt}.cardinalities[0]`)[0]).toMatch(
       /minimum \(3\) is above the maximum \(1\)/,
     );
-    expect(messageAt(tool, `modelTypes.${mt}.cardinalities[1]`)[0]).toMatch(
+    expect(messageAt(kit, `modelTypes.${mt}.cardinalities[1]`)[0]).toMatch(
       /needs a minimum, a maximum or both/,
     );
   });
 
   it('checks degree cardinalities', () => {
-    const tool = base();
-    tool.modelTypes[mt].cardinalities[2] = {
+    const kit = base();
+    kit.modelTypes[mt].cardinalities[2] = {
       kind: 'degree',
       class: SAMPLE.start,
       relation: 'rel_x',
       end: 'middle',
       max: 0,
     };
-    expect(messageAt(tool, `modelTypes.${mt}.cardinalities[2].end`)[0]).toMatch(
+    expect(messageAt(kit, `modelTypes.${mt}.cardinalities[2].end`)[0]).toMatch(
       /"from" or "to"/,
     );
-    expect(issuesOf(tool).some((i) => /rel_x/.test(i.message))).toBe(true);
+    expect(issuesOf(kit).some((i) => /rel_x/.test(i.message))).toBe(true);
   });
 
   it('rejects classes listed twice and duplicate view keys', () => {
-    const tool = base();
-    tool.modelTypes[mt].classes.push(SAMPLE.task);
-    tool.modelTypes[mt].views.push({
-      ...tool.modelTypes[mt].views[0],
+    const kit = base();
+    kit.modelTypes[mt].classes.push(SAMPLE.task);
+    kit.modelTypes[mt].views.push({
+      ...kit.modelTypes[mt].views[0],
       id: 'vw_two',
     });
     expect(
-      issuesOf(tool).some((i) => /listed more than once/.test(i.message)),
+      issuesOf(kit).some((i) => /listed more than once/.test(i.message)),
     ).toBe(true);
     expect(
-      issuesOf(tool).some((i) =>
+      issuesOf(kit).some((i) =>
         /view key "FlowOnly" is used twice/.test(i.message),
       ),
     ).toBe(true);
@@ -483,29 +474,29 @@ describe('attribute definitions', () => {
   });
 
   it('checks the ids of attributes', () => {
-    const tool = base();
-    tool.classes[SAMPLE.task].attributes[0].id = 'name';
+    const kit = base();
+    kit.classes[SAMPLE.task].attributes[0].id = 'name';
     expect(
-      messageAt(tool, `classes.${SAMPLE.task}.attributes[0].id`)[0],
+      messageAt(kit, `classes.${SAMPLE.task}.attributes[0].id`)[0],
     ).toMatch(/att_something/);
   });
 });
 
 describe('reporting', () => {
   it('formats issues with their paths', () => {
-    const tool = base();
-    delete tool.manifest.name;
-    expect(formatIssues(issuesOf(tool))).toMatch(
-      /^manifest\.name: The tool name must be text\./,
+    const kit = base();
+    delete kit.manifest.name;
+    expect(formatIssues(issuesOf(kit))).toMatch(
+      /^manifest\.name: The Kit name must be text\./,
     );
-    const parsed = parseToolLibrary(tool);
+    const parsed = parseKit(kit);
     expect(parsed.ok).toBe(false);
   });
 
   it('types a parsed library', () => {
-    const parsed = parseToolLibrary(sampleTool());
+    const parsed = parseKit(sampleKit());
     if (parsed.ok) {
-      const lib: ToolLibrary = parsed.value;
+      const lib: Kit = parsed.value;
       const names: AttributeDef['key'][] = lib.classes[
         SAMPLE.flowNode
       ]!.attributes.map((a) => a.key);

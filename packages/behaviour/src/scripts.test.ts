@@ -4,14 +4,10 @@ import {
   type ElementId,
   type Script,
   type ScriptId,
-  type ToolLibrary,
-  type ToolPermissions,
+  type Kit,
+  type KitPermissions,
 } from '@metakit-app/core';
-import {
-  SAMPLE,
-  emptySampleModel,
-  sampleTool,
-} from '@metakit-app/core/testing';
+import { SAMPLE, emptySampleModel, sampleKit } from '@metakit-app/core/testing';
 import { createBehaviour, silentHost, type BehaviourHost } from './index';
 import { ScriptEngine } from './scripts';
 import type { PermissionGrant } from './permissions';
@@ -53,19 +49,16 @@ const script = (
   ...extra,
 });
 
-function toolWith(
-  scripts: Script[],
-  permissions?: ToolPermissions,
-): ToolLibrary {
-  const tool = sampleTool();
-  tool.classes[SAMPLE.task]!.attributes.push({
+function kitWith(scripts: Script[], permissions?: KitPermissions): Kit {
+  const kit = sampleKit();
+  kit.classes[SAMPLE.task]!.attributes.push({
     id: 'att_number',
     key: 'Number',
     type: 'integer',
   });
-  tool.scripts = Object.fromEntries(scripts.map((s) => [s.id, s]));
-  if (permissions) tool.manifest.permissions = permissions;
-  return tool;
+  kit.scripts = Object.fromEntries(scripts.map((s) => [s.id, s]));
+  if (permissions) kit.manifest.permissions = permissions;
+  return kit;
 }
 
 interface Rig {
@@ -73,7 +66,7 @@ interface Rig {
   engine: ScriptEngine;
   messages: { kind: string; text: string }[];
   host: BehaviourHost;
-  tool: ToolLibrary;
+  kit: Kit;
   commands: ReturnType<typeof createBehaviour>['commands'];
   addTask: (x: number, y: number) => ElementId;
   number: (id: ElementId) => unknown;
@@ -85,7 +78,7 @@ const behaviours: ReturnType<typeof createBehaviour>[] = [];
 async function rig(
   scripts: Script[],
   options: {
-    permissions?: ToolPermissions;
+    permissions?: KitPermissions;
     grant?: PermissionGrant;
     files?: ScriptFiles;
     http?: ScriptHttp;
@@ -93,20 +86,20 @@ async function rig(
     limits?: { handlerMs?: number; runMs?: number };
   } = {},
 ): Promise<Rig> {
-  const tool = toolWith(scripts, options.permissions);
-  const store = createModelStore(emptySampleModel(), { tool });
+  const kit = kitWith(scripts, options.permissions);
+  const store = createModelStore(emptySampleModel(), { kit });
   const messages: { kind: string; text: string }[] = [];
   const host = silentHost({
     message: (kind, text) => messages.push({ kind, text }),
     ...options.host,
   });
-  const behaviour = createBehaviour({ store, tool: () => tool, host });
+  const behaviour = createBehaviour({ store, kit: () => kit, host });
   behaviours.push(behaviour);
   const engine = new ScriptEngine({
     store,
     bus: behaviour.bus,
     calculator: behaviour.calculator,
-    tool: () => tool,
+    kit: () => kit,
     host,
     commands: behaviour.commands,
     ...(options.files ? { files: options.files } : {}),
@@ -131,7 +124,7 @@ async function rig(
     engine,
     messages,
     host,
-    tool,
+    kit,
     commands: behaviour.commands,
     addTask,
     number: (id) => store.state.elements[id]?.attrs['att_number'],
@@ -212,7 +205,7 @@ describe('the "Renumber tasks" script of the plan', () => {
 
   it('runs by hand through runScript, the way a rule action or the Run button does', async () => {
     const r = await rig([script(RENUMBER, 'Renumber tasks')]);
-    const id = Object.keys(r.tool.scripts)[0]!;
+    const id = Object.keys(r.kit.scripts)[0]!;
     const a = r.addTask(0, 10);
     r.store.execute({
       type: 'setAttribute',
@@ -410,7 +403,7 @@ describe('the model API', () => {
       ),
     ]);
     const before = r.store.history().length;
-    await r.engine.runScript(Object.keys(r.tool.scripts)[0]!, null);
+    await r.engine.runScript(Object.keys(r.kit.scripts)[0]!, null);
     expect(lines(r)).toEqual([
       'log: 2 1 A B2',
       'log: B2 1',
@@ -443,9 +436,9 @@ describe('the model API', () => {
          }});`,
       ),
     ]);
-    await r.engine.runScript(Object.keys(r.tool.scripts)[0]!, null);
+    await r.engine.runScript(Object.keys(r.kit.scripts)[0]!, null);
     const out = lines(r);
-    expect(out[0]).toMatch(/This tool has no class "Nope"\. Classes: /);
+    expect(out[0]).toMatch(/This Kit has no class "Nope"\. Classes: /);
     expect(out[1]).toMatch(/The class "FlowNode" is abstract/);
     expect(out[2]).toMatch(
       /Nope is not an attribute of the class "Task"\. Attributes: /,
@@ -456,7 +449,7 @@ describe('the model API', () => {
     expect(out[6]).toMatch(/must be an object of the model or its id/);
   });
 
-  it('reads the selection and the meta-model of the tool', async () => {
+  it('reads the selection and the meta-model of the Kit', async () => {
     const r = await rig([
       script(
         `import { model, tool, commands } from "metakit";
@@ -515,7 +508,7 @@ describe('dialogs', () => {
         },
       },
     );
-    await r.engine.runScript(Object.keys(r.tool.scripts)[0]!, null);
+    await r.engine.runScript(Object.keys(r.kit.scripts)[0]!, null);
     expect(r.messages).toEqual([
       { kind: 'info', text: 'hello' },
       { kind: 'warning', text: 'careful' },
@@ -539,7 +532,7 @@ describe('dialogs', () => {
          commands.register({ id: "t", label: "T", run: () => { ui.prompt("x"); } });`,
       ),
     ]);
-    await r.engine.runScript(Object.keys(r.tool.scripts)[0]!, null);
+    await r.engine.runScript(Object.keys(r.kit.scripts)[0]!, null);
     expect(lines(r)[0]).toBe('error: This app cannot ask for text.');
   });
 });
@@ -556,11 +549,11 @@ describe('files and web services need a permission', () => {
       console.log(await files.read("notes/a.txt"));
     }});`;
 
-  it('refuses a tool that does not declare the permission', async () => {
+  it('refuses a Kit that does not declare the permission', async () => {
     const r = await rig([script(READ)], { files: FILES });
-    await r.engine.runScript(Object.keys(r.tool.scripts)[0]!, null);
+    await r.engine.runScript(Object.keys(r.kit.scripts)[0]!, null);
     expect(lines(r)[0]).toMatch(
-      /^error: This script tries to use files, but the tool does not say it needs to\. Add the "files" permission/,
+      /^error: This script tries to use files, but the Kit does not say it needs to\. Add the "files" permission/,
     );
   });
 
@@ -569,9 +562,9 @@ describe('files and web services need a permission', () => {
       files: FILES,
       permissions: { files: true },
     });
-    await r.engine.runScript(Object.keys(r.tool.scripts)[0]!, null);
+    await r.engine.runScript(Object.keys(r.kit.scripts)[0]!, null);
     expect(lines(r)[0]).toMatch(
-      /^error: This script tries to use files, but you have not allowed that for this tool in this browser\./,
+      /^error: This script tries to use files, but you have not allowed that for this Kit in this browser\./,
     );
   });
 
@@ -581,7 +574,7 @@ describe('files and web services need a permission', () => {
       permissions: { files: true },
       grant: { files: true, network: false },
     });
-    await r.engine.runScript(Object.keys(r.tool.scripts)[0]!, null);
+    await r.engine.runScript(Object.keys(r.kit.scripts)[0]!, null);
     expect(lines(r)).toEqual(['log: contents of notes/a.txt']);
   });
 
@@ -603,7 +596,7 @@ describe('files and web services need a permission', () => {
         grant: { files: true, network: false },
       },
     );
-    await r.engine.runScript(Object.keys(r.tool.scripts)[0]!, null);
+    await r.engine.runScript(Object.keys(r.kit.scripts)[0]!, null);
     expect(lines(r)).toEqual([
       'log: refused',
       'log: refused',
@@ -634,7 +627,7 @@ describe('files and web services need a permission', () => {
         },
       },
     );
-    await r.engine.runScript(Object.keys(r.tool.scripts)[0]!, null);
+    await r.engine.runScript(Object.keys(r.kit.scripts)[0]!, null);
     expect(lines(r)).toEqual(['log: in.csv x,y', 'log: true']);
     expect(saved).toEqual(['out.csv=a,b']);
   });
@@ -663,7 +656,7 @@ describe('files and web services need a permission', () => {
   it('calls web services only with the network permission', async () => {
     const seen: string[] = [];
     const denied = await rig([script(CALL)], { http: HTTP(seen) });
-    await denied.engine.runScript(Object.keys(denied.tool.scripts)[0]!, null);
+    await denied.engine.runScript(Object.keys(denied.kit.scripts)[0]!, null);
     expect(lines(denied)[0]).toMatch(/does not say it needs to/);
     expect(seen).toEqual([]);
 
@@ -672,7 +665,7 @@ describe('files and web services need a permission', () => {
       permissions: { network: true },
       grant: { network: true, files: false },
     });
-    await allowed.engine.runScript(Object.keys(allowed.tool.scripts)[0]!, null);
+    await allowed.engine.runScript(Object.keys(allowed.kit.scripts)[0]!, null);
     expect(lines(allowed)).toEqual([
       'log: 42',
       'log: 201 true made',
@@ -716,7 +709,7 @@ describe('limits and failures', () => {
     await new Promise((resolve) => setTimeout(resolve, 100));
     await r.engine.ready();
     expect(
-      r.engine.status(Object.keys(r.tool.scripts)[0] as ScriptId),
+      r.engine.status(Object.keys(r.kit.scripts)[0] as ScriptId),
     ).toMatchObject({
       state: 'stopped',
     });
@@ -739,7 +732,7 @@ describe('limits and failures', () => {
       ],
       { limits: { runMs: 5000 } },
     );
-    await r.engine.runScript(Object.keys(r.tool.scripts)[0]!, null);
+    await r.engine.runScript(Object.keys(r.kit.scripts)[0]!, null);
     expect(r.messages.at(-1)?.text).toMatch(
       /used more memory than it is allowed/,
     );
@@ -770,7 +763,7 @@ commands.register({ id: "x", label: "X", run: () => {
         'Thrower',
       ),
     ]);
-    await r.engine.runScript(Object.keys(r.tool.scripts)[0]!, null);
+    await r.engine.runScript(Object.keys(r.kit.scripts)[0]!, null);
     const error = r.engine.log.find((l) => l.level === 'error')!;
     expect(error).toMatchObject({
       text: 'went wrong',
@@ -791,7 +784,7 @@ commands.register({ id: "x", label: "X", run: () => {
     ]);
     let heard = 0;
     r.engine.onLog(() => heard++);
-    await r.engine.runScript(Object.keys(r.tool.scripts)[0]!, null);
+    await r.engine.runScript(Object.keys(r.kit.scripts)[0]!, null);
     expect(r.engine.log).toHaveLength(500);
     expect(r.engine.log[0]!.text).toBe('line 100');
     expect(r.engine.log.at(-1)).toMatchObject({
@@ -815,8 +808,8 @@ commands.register({ id: "x", label: "X", run: () => {
         'Once',
       ),
     ]);
-    const id = Object.keys(r.tool.scripts)[0]!;
-    // The top level of every enabled script runs when the tool is loaded; top-level await works.
+    const id = Object.keys(r.kit.scripts)[0]!;
+    // The top level of every enabled script runs when the Kit is loaded; top-level await works.
     expect(r.messages).toEqual([
       { kind: 'info', text: 'There are 0 objects.' },
     ]);
@@ -865,7 +858,7 @@ commands.register({ id: "x", label: "X", run: () => {
          }});`,
       ),
     ]);
-    await r.engine.runScript(Object.keys(r.tool.scripts)[0]!, null);
+    await r.engine.runScript(Object.keys(r.kit.scripts)[0]!, null);
     expect(lines(r)).toEqual([
       'log: undefined,undefined,undefined,undefined,undefined,undefined,undefined',
       'log: __fire,__loadScript,__run,__runOnce,__setOneShot,__settle',
@@ -885,7 +878,7 @@ commands.register({ id: "x", label: "X", run: () => {
          commands.register({ id: "big", label: "Big", run: () => { console.log("y".repeat(50000)); } });`,
       ),
     ]);
-    await r.engine.runScript(Object.keys(r.tool.scripts)[0]!, null);
+    await r.engine.runScript(Object.keys(r.kit.scripts)[0]!, null);
     const text = r.engine.log[0]!.text;
     expect(text.length).toBeLessThan(10_100);
     expect(text).toMatch(/… \(40000 more characters\)$/);

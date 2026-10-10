@@ -6,10 +6,10 @@ import {
   type GitFile,
   type GitRemote,
 } from '@metakit-app/storage';
-import type { ToolLibrary } from '@metakit-app/core';
-import tool from '../../../tools/bpmn-lite/tool.json';
+import type { Kit } from '@metakit-app/core';
+import kit from '../../../kits/bpmn-lite/kit.json';
 
-const remote = new MemoryRemote(toLayout(tool as unknown as ToolLibrary));
+const remote = new MemoryRemote(toLayout(kit as unknown as Kit));
 
 async function otherWriterEdits(
   path: string,

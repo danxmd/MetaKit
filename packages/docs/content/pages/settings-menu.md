@@ -8,7 +8,7 @@ contexts: []
 order: 50
 ---
 
-The **Settings** menu is the right-most entry in the [[top-bar]]. It gathers everything that belongs to you or your browser rather than to a model or a tool library.
+The **Settings** menu is the right-most entry in the [[top-bar]]. It gathers everything that belongs to you or your browser rather than to a model or a Kit.
 
 ## What it is
 
@@ -24,7 +24,7 @@ A drop-down menu with four groups:
 
 ## Where to find it
 
-Click **Settings** at the right end of the top bar. It is there on the Models page, the Tool libraries page, the Model view and the Build view.
+Click **Settings** at the right end of the top bar. It is there on the Models page, the Kits page, the Model view and the Build view.
 
 ## How to use it
 
@@ -37,13 +37,13 @@ Click **Settings** at the right end of the top bar. It is there on the Models pa
 
 **Appearance.** Three buttons, one of which is pressed. **System** follows your operating system, **Light** and **Dark** are fixed. The choice is remembered in this browser.
 
-**Git settings…** Opens a panel named "Git settings" over the page. There you add tokens, link repositories and open a tool library from Git. If something goes wrong while opening, an error appears at the top of the panel. See [[git-mode]] and [[git-tokens]].
+**Git settings…** Opens a panel named "Git settings" over the page. There you add tokens, link repositories and open a Kit from Git. If something goes wrong while opening, an error appears at the top of the panel. See [[git-mode]] and [[git-tokens]].
 
-**Assistant…** Opens a panel named "Assistant" with its settings. The assistant is off by default, uses your own key and sends only tool library definitions. The panel has a **Close** button. See [[assistant-overview]] and [[assistant-privacy]].
+**Assistant…** Opens a panel named "Assistant" with its settings. The assistant is off by default, uses your own key and sends only Kit definitions. The panel has a **Close** button. See [[assistant-overview]] and [[assistant-privacy]].
 
 **Your name and colour…** Opens the profile dialog so you can change your display name and colour. This dialog has a **Cancel** button; the first-visit version does not. See [[profile]].
 
-**Close workspace.** Closes the open model or tool library, stops sharing your presence, forgets the open workspace in the app and shows the Start page. It deletes nothing. The remembered folder stays available as **Continue with "name"**.
+**Close workspace.** Closes the open model or Kit, stops sharing your presence, forgets the open workspace in the app and shows the Start page. It deletes nothing. The remembered folder stays available as **Continue with "name"**.
 
 ## Examples
 
@@ -51,7 +51,7 @@ Ben wants a dark screen for the evening: **Settings**, then **Dark**. Later he w
 
 ## Good to know
 
-- **Git settings and the Assistant are also reachable elsewhere.** The Tool libraries page has **Add > From Git…**, and the Build view has a **Source control** menu for linked libraries ([[page-tool-libraries]], [[git-mode]]).
+- **Git settings and the Assistant are also reachable elsewhere.** The Kits page has **Add > From Git…**, and the Build view has a **Source control** menu for linked Kits ([[page-kits]], [[git-mode]]).
 - **Closing a workspace** while a model is open first closes the model. Unsaved work does not exist: changes are saved as you make them. If the status says **Not saved**, wait for **Saved** before closing.
 - Help and Documentation have their own entries in the top bar, not in this menu ([[docs-help]]).
 - Settings in this menu are per browser. They are not stored in the workspace folder, so colleagues do not see your choices.

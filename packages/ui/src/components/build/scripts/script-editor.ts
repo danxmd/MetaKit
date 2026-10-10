@@ -49,7 +49,7 @@ export interface ScriptEditorHandle {
   readonly view: EditorView;
   /** The text now in the editor. */
   text(): string;
-  /** Replaces the whole text, for a change that came from outside (an undo of the tool library). */
+  /** Replaces the whole text, for a change that came from outside (an undo of the Kit). */
   setText(text: string): void;
   /** Asks the language service to look at the text again, for example after the declarations changed. */
   recheck(): void;

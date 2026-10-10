@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createToolPermissionBacking, getTabInstanceId } from './browser-state';
+import { createKitPermissionBacking, getTabInstanceId } from './browser-state';
 
 const fake = () => {
   const map = new Map<string, string>();
@@ -31,7 +31,7 @@ describe('getTabInstanceId', () => {
   });
 });
 
-describe('createToolPermissionBacking', () => {
+describe('createKitPermissionBacking', () => {
   const memory = () => {
     const map = new Map<string, unknown>();
     return {
@@ -40,15 +40,15 @@ describe('createToolPermissionBacking', () => {
       set: (k: string, v: unknown) => (map.set(k, v), Promise.resolve()),
     };
   };
-  const record = (toolId: string, files = true) => ({
-    toolId,
+  const record = (kitId: string, files = true) => ({
+    toolId: kitId,
     granted: { network: false, files },
     asked: { network: false, files: true },
     decidedAt: '2026-10-07T09:00:00.000Z',
   });
 
-  it('saves, loads and removes the decision about a tool', async () => {
-    const backing = createToolPermissionBacking(memory());
+  it('saves, loads and removes the decision about a Kit', async () => {
+    const backing = createKitPermissionBacking(memory());
     expect(await backing.load()).toEqual([]);
     await backing.save(record('tool_a'));
     await backing.save(record('tool_b', false));
@@ -74,7 +74,7 @@ describe('createToolPermissionBacking', () => {
       tool_c: record('tool_c'),
     });
     expect(
-      (await createToolPermissionBacking(kv).load()).map((r) => r.toolId),
+      (await createKitPermissionBacking(kv).load()).map((r) => r.toolId),
     ).toEqual(['tool_c']);
   });
 });

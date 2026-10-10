@@ -6,7 +6,7 @@ import type {
   ModelId,
   ModelTypeId,
   RelationId,
-  ToolId,
+  KitId,
 } from '../ids';
 import type { Json } from '../json';
 
@@ -18,8 +18,8 @@ export interface Point {
 export interface ModelManifest {
   id: ModelId;
   name: string;
-  /** The tool library this model was made with, and the version it was last saved with. */
-  tool: ToolId;
+  /** The Kit this model was made with, and the version it was last saved with. */
+  tool: KitId;
   toolVersion: string;
   modelType: ModelTypeId;
   /** Explorer folder, a path such as "Sales/2026". It is a field, not a directory. */
@@ -35,7 +35,7 @@ export interface ElementData {
   h: number;
   /** The container this element sits in; absent for top-level elements. */
   parent?: ElementId;
-  /** Values by attribute id. Values for attributes the tool no longer has are kept. */
+  /** Values by attribute id. Values for attributes the Kit no longer has are kept. */
   attrs: Record<AttributeId, Json>;
   /** Drawing order key; larger sorts on top. */
   pos: string;

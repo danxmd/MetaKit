@@ -163,11 +163,11 @@ export function setProfile(
 }
 
 /**
- * What the person allowed the scripts of each tool to do in this browser. It lives in IndexedDB of
+ * What the person allowed the scripts of each Kit to do in this browser. It lives in IndexedDB of
  * this browser profile and nowhere else: a permission is never written to the workspace folder or
- * the repository, so a shared tool cannot arrive with permissions already granted (rule 9).
+ * the repository, so a shared Kit cannot arrive with permissions already granted (rule 9).
  */
-export interface ToolPermissionRecord {
+export interface KitPermissionRecord {
   toolId: string;
   granted: { network: boolean; files: boolean };
   /** What was ever asked, so that a refusal is not asked again and a new permission is. */
@@ -182,8 +182,8 @@ export interface KeyValue {
 
 const PERMISSIONS_KEY = 'toolPermissions';
 
-const isPermissionRecord = (r: unknown): r is ToolPermissionRecord => {
-  const x = r as Partial<ToolPermissionRecord> | null;
+const isPermissionRecord = (r: unknown): r is KitPermissionRecord => {
+  const x = r as Partial<KitPermissionRecord> | null;
   return (
     !!x &&
     typeof x.toolId === 'string' &&
@@ -196,16 +196,16 @@ const isPermissionRecord = (r: unknown): r is ToolPermissionRecord => {
 };
 
 /** The store that the permission logic of the behaviour package saves through. */
-export function createToolPermissionBacking(
+export function createKitPermissionBacking(
   kv: KeyValue = { get: (k) => kvGet(k), set: (k, v) => kvSet(k, v) },
 ): {
-  load(): Promise<ToolPermissionRecord[]>;
-  save(record: ToolPermissionRecord): Promise<void>;
-  remove(toolId: string): Promise<void>;
+  load(): Promise<KitPermissionRecord[]>;
+  save(record: KitPermissionRecord): Promise<void>;
+  remove(kitId: string): Promise<void>;
 } {
-  const all = async (): Promise<Record<string, ToolPermissionRecord>> => {
+  const all = async (): Promise<Record<string, KitPermissionRecord>> => {
     const stored = await kv.get<Record<string, unknown>>(PERMISSIONS_KEY);
-    const out: Record<string, ToolPermissionRecord> = {};
+    const out: Record<string, KitPermissionRecord> = {};
     for (const [id, r] of Object.entries(stored ?? {}))
       if (isPermissionRecord(r) && r.toolId === id) out[id] = r;
     return out;
@@ -218,9 +218,9 @@ export function createToolPermissionBacking(
         [record.toolId]: record,
       });
     },
-    remove: async (toolId) => {
+    remove: async (kitId) => {
       const rest = await all();
-      delete rest[toolId];
+      delete rest[kitId];
       await kv.set(PERMISSIONS_KEY, rest);
     },
   };

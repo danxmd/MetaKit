@@ -3,8 +3,8 @@ import type {
   ClassDef,
   Issue,
   Json,
-  ToolCommand,
-  ToolLibrary,
+  KitCommand,
+  Kit,
 } from '@metakit-app/core';
 import { fromLayout, isLayoutPath, toLayout } from './layout';
 import type { GitLink, GitLinkStore } from './link';
@@ -32,7 +32,7 @@ export class GitSyncError extends Error {
 const layoutOnly = (files: readonly GitFile[]): GitFile[] =>
   files.filter((f) => isLayoutPath(f.path));
 
-/** A link for a tool library that was just opened from a snapshot of the repository. */
+/** A link for a Kit that was just opened from a snapshot of the repository. */
 export function linkFromSnapshot(
   where: Pick<
     GitLink,
@@ -47,13 +47,13 @@ export function linkFromSnapshot(
   };
 }
 
-/** The parts of the tool library that differ from the last pulled or pushed state. */
+/** The parts of the Kit that differ from the last pulled or pushed state. */
 export function pendingChanges(
   link: GitLink,
-  tool: ToolLibrary,
+  kit: Kit,
   assets: readonly GitFile[] = [],
 ): PartChange[] {
-  return describeChanges(link.baseFiles, toLayout(tool, assets));
+  return describeChanges(link.baseFiles, toLayout(kit, assets));
 }
 
 // -- Commit ---------------------------------------------------------------------------------------
@@ -61,7 +61,7 @@ export function pendingChanges(
 export interface CommitInput {
   remote: GitRemote;
   link: GitLink;
-  tool: ToolLibrary;
+  kit: Kit;
   assets?: readonly GitFile[];
   message: string;
   /** When given, the moved link is saved here. */
@@ -78,7 +78,7 @@ export async function commitPending(
   const message = input.message.trim();
   if (message === '')
     throw new GitSyncError('Write a short message that says what you changed.');
-  const current = toLayout(input.tool, input.assets);
+  const current = toLayout(input.kit, input.assets);
   const changes = fileChanges(input.link.baseFiles, current);
   if (changes.length === 0)
     throw new GitSyncError(
@@ -104,7 +104,7 @@ export async function commitPending(
 export interface PullInput {
   remote: GitRemote;
   link: GitLink;
-  tool: ToolLibrary;
+  kit: Kit;
   assets?: readonly GitFile[];
 }
 
@@ -113,8 +113,8 @@ export interface PullMerged {
   /** The merge; hand it to `finishPull` with the person's choices when `conflicts` is not empty. */
   merge: MergeResult;
   conflicts: MergeConflict[];
-  /** The tool library with every clash resolved to our side; final when there are no conflicts. */
-  tool: ToolLibrary;
+  /** The Kit with every clash resolved to our side; final when there are no conflicts. */
+  kit: Kit;
   assets: GitFile[];
   issues: Issue[];
   /** The link to save once the pull has been applied. */
@@ -126,25 +126,25 @@ export interface PullMerged {
 export type PullOutcome = { status: 'up-to-date' } | PullMerged;
 
 function read(files: GitFile[]): {
-  tool: ToolLibrary;
+  kit: Kit;
   assets: GitFile[];
   issues: Issue[];
 } {
   const r = fromLayout(files);
-  if (!r.tool)
+  if (!r.kit)
     throw new GitSyncError(
-      `The merged tool library cannot be read: ${r.issues.map((i) => `${i.path}: ${i.message}`).join('; ')}`,
+      `The merged Kit cannot be read: ${r.issues.map((i) => `${i.path}: ${i.message}`).join('; ')}`,
     );
-  return { tool: r.tool, assets: r.assets, issues: r.issues };
+  return { kit: r.kit, assets: r.assets, issues: r.issues };
 }
 
-/** Fetches the head of the branch and merges it with the tool library, field by field. */
+/** Fetches the head of the branch and merges it with the Kit, field by field. */
 export async function pull(input: PullInput): Promise<PullOutcome> {
   const { remote, link } = input;
   const head = await remote.head(link.branch);
   if (head === link.baseCommit) return { status: 'up-to-date' };
   const theirs = await remote.read(head);
-  const ours = toLayout(input.tool, input.assets);
+  const ours = toLayout(input.kit, input.assets);
   const merge = mergeLayouts(link.baseFiles, ours, layoutOnly(theirs.files));
   return {
     status: 'merged',
@@ -164,7 +164,7 @@ export async function pull(input: PullInput): Promise<PullOutcome> {
 export function finishPull(
   merged: PullMerged,
   choices: Resolutions,
-): { tool: ToolLibrary; assets: GitFile[]; issues: Issue[]; link: GitLink } {
+): { kit: Kit; assets: GitFile[]; issues: Issue[]; link: GitLink } {
   return {
     ...read(applyResolutions(merged.merge, choices)),
     link: merged.link,
@@ -214,18 +214,15 @@ function shapeRemovalOrder(
 }
 
 /**
- * The tool commands that turn `current` into `merged`. Parts are replaced whole (`putClass` and
+ * The Kit commands that turn `current` into `merged`. Parts are replaced whole (`putClass` and
  * so on), parts are added before others are removed, and a class is removed after what uses it.
  * Run the result as one batch so the pull is one undo step (`pullBatch`). Ids that do not exist
  * on one side are the only thing it relies on; the format version is left alone.
  */
-export function diffToolCommands(
-  current: ToolLibrary,
-  merged: ToolLibrary,
-): ToolCommand[] {
-  const out: ToolCommand[] = [];
+export function diffKitCommands(current: Kit, merged: Kit): KitCommand[] {
+  const out: KitCommand[] = [];
 
-  const manifest: Extract<ToolCommand, { type: 'updateManifest' }> = {
+  const manifest: Extract<KitCommand, { type: 'updateManifest' }> = {
     type: 'updateManifest',
   };
   let manifestChanged = false;
@@ -316,10 +313,10 @@ export function diffToolCommands(
 
 /** The commands as one batch: a single undo step. Null when there is nothing to change. */
 export function pullBatch(
-  current: ToolLibrary,
-  merged: ToolLibrary,
-): BatchCommand<ToolCommand> | null {
-  const commands = diffToolCommands(current, merged);
+  current: Kit,
+  merged: Kit,
+): BatchCommand<KitCommand> | null {
+  const commands = diffKitCommands(current, merged);
   return commands.length === 0 ? null : { type: 'batch', commands };
 }
 
@@ -333,26 +330,26 @@ export function listReleases(remote: GitRemote): Promise<GitTag[]> {
 export interface OpenedRelease {
   tag: string;
   commit: string;
-  tool: ToolLibrary;
+  kit: Kit;
   assets: GitFile[];
   issues: Issue[];
 }
 
-/** Reads the tool library as it was at a tag. It is a copy to read or to follow, not to edit. */
+/** Reads the Kit as it was at a tag. It is a copy to read or to follow, not to edit. */
 export async function openRelease(
   remote: GitRemote,
   tag: string,
 ): Promise<OpenedRelease> {
   const snapshot = await remote.read(tag);
   const r = fromLayout(layoutOnly(snapshot.files));
-  if (!r.tool)
+  if (!r.kit)
     throw new GitSyncError(
-      `The tool library at "${tag}" cannot be read: ${r.issues.map((i) => `${i.path}: ${i.message}`).join('; ')}`,
+      `The Kit at "${tag}" cannot be read: ${r.issues.map((i) => `${i.path}: ${i.message}`).join('; ')}`,
     );
   return {
     tag,
     commit: snapshot.commit,
-    tool: r.tool,
+    kit: r.kit,
     assets: r.assets,
     issues: r.issues,
   };

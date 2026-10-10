@@ -1,14 +1,14 @@
-import type { ToolLibrary } from '@metakit-app/core';
+import type { Kit } from '@metakit-app/core';
 import { AssistantError, type CompletionRequest } from './provider';
 import { MAX_SENTENCE_CHARS, buildRequest, type DraftKind } from './prompts';
 
-// Ids of things that only exist in models. A tool library never contains them.
+// Ids of things that only exist in models. A Kit never contains them.
 const MODEL_ID = /\b(?:el|cn|mdl)_[0-9a-z]{4,}\b/;
 // Any real id has exactly ten characters after its prefix (newId).
 const ANY_ID =
   /\b(?:tool|cls|rel|att|mt|shp|rule|scr|vw)_[0-9a-hjkmnp-tv-z]{10}\b/g;
 
-function toolIds(tool: ToolLibrary): Set<string> {
+function kitIds(kit: Kit): Set<string> {
   const ids = new Set<string>();
   const walk = (value: unknown): void => {
     if (typeof value === 'string') {
@@ -21,21 +21,21 @@ function toolIds(tool: ToolLibrary): Set<string> {
       }
     }
   };
-  walk(tool);
+  walk(kit);
   return ids;
 }
 
 const ALLOWED_FIELDS = new Set(['system', 'messages', 'maxTokens']);
 
 /**
- * Refuses a request that could carry model content. The builders take only a tool library, so this
+ * Refuses a request that could carry model content. The builders take only a Kit, so this
  * is a second line of defence: the request must have exactly the expected shape, hold no id of a
- * model object (`el_`, `cn_`, `mdl_`), no id that the tool library does not contain, and nothing
+ * model object (`el_`, `cn_`, `mdl_`), no id that the Kit does not contain, and nothing
  * that looks like a model file. It throws `AssistantError`; it never returns false.
  */
 export function assertNoModelContent(
   payload: unknown,
-  tool: ToolLibrary,
+  kit: Kit,
 ): asserts payload is CompletionRequest {
   const fail = (why: string): never => {
     throw new AssistantError(
@@ -60,14 +60,14 @@ export function assertNoModelContent(
       return fail('a message has the wrong shape');
     texts.push(msg.content);
   }
-  const known = toolIds(tool);
+  const known = kitIds(kit);
   for (const text of texts) {
     if (MODEL_ID.test(text)) fail('it contains the id of a model object');
     if (/"elements"\s*:/.test(text) && /"connectors"\s*:/.test(text))
       fail('it looks like a model file');
     for (const m of text.matchAll(ANY_ID))
       if (!known.has(m[0]))
-        fail(`it contains the id ${m[0]}, which is not in the tool library`);
+        fail(`it contains the id ${m[0]}, which is not in the Kit`);
   }
 }
 
@@ -84,7 +84,7 @@ export interface OutgoingPreview {
  * settings page can show it before anything is sent. Nothing is sent by calling this.
  */
 export function describeOutgoing(
-  tool: ToolLibrary,
+  kit: Kit,
   kind: DraftKind,
   sentence: string,
   language?: string,
@@ -93,8 +93,8 @@ export function describeOutgoing(
     throw new AssistantError(
       `Keep the description under ${MAX_SENTENCE_CHARS} characters.`,
     );
-  const request = buildRequest(tool, kind, sentence, language);
-  assertNoModelContent(request, tool);
+  const request = buildRequest(kit, kind, sentence, language);
+  assertNoModelContent(request, kit);
   const text = `SYSTEM\n${request.system}\n\n${request.messages
     .map((m) => `${m.role.toUpperCase()}\n${m.content}`)
     .join('\n\n')}`;

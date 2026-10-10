@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { SAMPLE, sampleTool } from '../testing/sample-tool';
-import { createToolStore } from './commands';
-import { validateToolLibrary } from './guards';
+import { SAMPLE, sampleKit } from '../testing/sample-kit';
+import { createKitStore } from './commands';
+import { validateKit } from './guards';
 import type { Rule } from './rule-types';
-import type { AttributeDef, ToolLibrary } from './types';
+import type { AttributeDef, Kit } from './types';
 
 /** The plan's rule: high-priority tasks need an owner. */
 const PLAN_RULE: Rule = {
@@ -25,15 +25,15 @@ const PLAN_RULE: Rule = {
   ],
 };
 
-const paths = (tool: unknown) => validateToolLibrary(tool).map((i) => i.path);
+const paths = (kit: unknown) => validateKit(kit).map((i) => i.path);
 
-function withRule(rule: Rule): ToolLibrary {
-  return { ...sampleTool(), rules: { [rule.id]: rule } } as ToolLibrary;
+function withRule(rule: Rule): Kit {
+  return { ...sampleKit(), rules: { [rule.id]: rule } } as Kit;
 }
 
-describe('rules in the tool library', () => {
+describe('rules in the Kit', () => {
   it("accept the plan's rule", () => {
-    expect(validateToolLibrary(withRule(PLAN_RULE))).toEqual([]);
+    expect(validateKit(withRule(PLAN_RULE))).toEqual([]);
   });
 
   it('report an unknown event, class, action and a bad command entry with their paths', () => {
@@ -63,7 +63,7 @@ describe('rules in the tool library', () => {
   });
 
   it('are put and removed by commands, and a rule that is not valid is refused', () => {
-    const store = createToolStore(sampleTool());
+    const store = createKitStore(sampleKit());
     store.execute({ type: 'putRule', rule: PLAN_RULE });
     expect(store.state.rules[PLAN_RULE.id]?.label).toBe(PLAN_RULE.label);
     expect(() =>
@@ -86,12 +86,12 @@ describe('rules in the tool library', () => {
   });
 
   it('follow a renamed attribute: the trigger, the condition and the actions', () => {
-    const tool = sampleTool();
+    const kit = sampleKit();
     const withCommand = {
-      ...tool,
+      ...kit,
       rules: { [PLAN_RULE.id]: PLAN_RULE },
-    } as ToolLibrary;
-    const store = createToolStore(withCommand);
+    } as Kit;
+    const store = createKitStore(withCommand);
     store.execute({
       type: 'renameKey',
       scope: {
@@ -111,7 +111,7 @@ describe('rules in the tool library', () => {
 
 describe('constraints and default formulas', () => {
   it('are accepted, put and removed, and follow a renamed attribute', () => {
-    const store = createToolStore(sampleTool());
+    const store = createKitStore(sampleKit());
     const owner = { kind: 'class', id: SAMPLE.task } as const;
     store.execute({
       type: 'putConstraint',
@@ -132,7 +132,7 @@ describe('constraints and default formulas', () => {
         defaultFormula: '= today()',
       } as AttributeDef,
     });
-    expect(validateToolLibrary(store.state)).toEqual([]);
+    expect(validateKit(store.state)).toEqual([]);
     store.execute({
       type: 'renameKey',
       scope: { kind: 'attribute', owner, id: SAMPLE.attEffort },
@@ -149,14 +149,14 @@ describe('constraints and default formulas', () => {
   });
 
   it('are checked for their shape', () => {
-    const tool = sampleTool() as unknown as {
+    const kit = sampleKit() as unknown as {
       classes: Record<string, Record<string, unknown>>;
     };
-    tool.classes[SAMPLE.task]!.constraints = [
+    kit.classes[SAMPLE.task]!.constraints = [
       { id: 'a', formula: 1, message: 'x', severity: 'fatal' },
       { id: 'a', formula: 'x', message: 'y' },
     ];
-    const p = paths(tool);
+    const p = paths(kit);
     expect(p).toContain(`classes.${SAMPLE.task}.constraints[0].formula`);
     expect(p).toContain(`classes.${SAMPLE.task}.constraints[0].severity`);
     expect(p).toContain(`classes.${SAMPLE.task}.constraints[1].id`);
