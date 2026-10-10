@@ -1,0 +1,527 @@
+{
+  "attributes": {
+    "Persona": "Sam, moving into a new flat",
+    "Scenario": "Sam needs fast internet from the first week in a new flat and works from home twice a week.",
+    "Title": "Getting broadband at home"
+  },
+  "connectors": [
+    {
+      "from": "el_vs",
+      "id": "cn_001",
+      "relation": "Includes",
+      "to": "el_st_1"
+    },
+    {
+      "from": "el_vs",
+      "id": "cn_002",
+      "relation": "Includes",
+      "to": "el_st_2"
+    },
+    {
+      "from": "el_vs",
+      "id": "cn_003",
+      "relation": "Includes",
+      "to": "el_st_3"
+    },
+    {
+      "from": "el_vs",
+      "id": "cn_004",
+      "relation": "Includes",
+      "to": "el_st_4"
+    },
+    {
+      "from": "el_vs",
+      "id": "cn_005",
+      "relation": "Includes",
+      "to": "el_st_5"
+    },
+    {
+      "from": "el_t_ad",
+      "id": "cn_006",
+      "relation": "Then",
+      "to": "el_t_compare"
+    },
+    {
+      "from": "el_t_compare",
+      "id": "cn_007",
+      "relation": "Then",
+      "to": "el_t_choose"
+    },
+    {
+      "from": "el_t_choose",
+      "id": "cn_008",
+      "relation": "Then",
+      "to": "el_t_check"
+    },
+    {
+      "from": "el_t_check",
+      "id": "cn_009",
+      "relation": "Then",
+      "to": "el_t_confirm"
+    },
+    {
+      "from": "el_t_confirm",
+      "id": "cn_010",
+      "relation": "Then",
+      "to": "el_t_date"
+    },
+    {
+      "from": "el_t_date",
+      "id": "cn_011",
+      "relation": "Then",
+      "to": "el_t_reminder"
+    },
+    {
+      "from": "el_t_reminder",
+      "id": "cn_012",
+      "relation": "Then",
+      "to": "el_t_visit"
+    },
+    {
+      "from": "el_t_visit",
+      "id": "cn_013",
+      "relation": "Then",
+      "to": "el_t_bill"
+    },
+    {
+      "from": "el_t_bill",
+      "id": "cn_014",
+      "relation": "Then",
+      "to": "el_t_call"
+    },
+    {
+      "from": "el_p_range",
+      "id": "cn_015",
+      "relation": "Hurts",
+      "to": "el_t_check"
+    },
+    {
+      "from": "el_p_wait",
+      "id": "cn_016",
+      "relation": "Hurts",
+      "to": "el_t_date"
+    },
+    {
+      "from": "el_p_day",
+      "id": "cn_017",
+      "relation": "Hurts",
+      "to": "el_t_visit"
+    },
+    {
+      "from": "el_p_evening",
+      "id": "cn_018",
+      "relation": "Hurts",
+      "to": "el_t_call"
+    },
+    {
+      "from": "el_o_speed",
+      "id": "cn_019",
+      "relation": "Addresses",
+      "to": "el_p_range"
+    },
+    {
+      "from": "el_o_slots",
+      "id": "cn_020",
+      "relation": "Addresses",
+      "to": "el_p_wait"
+    },
+    {
+      "from": "el_o_check",
+      "id": "cn_021",
+      "relation": "Addresses",
+      "to": "el_p_evening"
+    },
+    {
+      "from": "el_k_days",
+      "id": "cn_022",
+      "relation": "Measures",
+      "to": "el_st_3"
+    },
+    {
+      "from": "el_k_satisfaction",
+      "id": "cn_023",
+      "relation": "Measures",
+      "to": "el_st_4"
+    },
+    {
+      "from": "el_k_calls",
+      "id": "cn_024",
+      "relation": "Measures",
+      "to": "el_st_5"
+    }
+  ],
+  "elements": [
+    {
+      "attributes": {
+        "Customer": "New home customer",
+        "Name": "Get connected at home",
+        "ValueProposition": "Fast, reliable internet from the day you move in."
+      },
+      "class": "ValueStream",
+      "h": 56,
+      "id": "el_vs",
+      "w": 320,
+      "x": 580,
+      "y": 20
+    },
+    {
+      "attributes": {
+        "CustomerGoal": "Find a good offer for the new flat.",
+        "Name": "Discover",
+        "Order": 1
+      },
+      "class": "Stage",
+      "h": 480,
+      "id": "el_st_1",
+      "w": 250,
+      "x": 40,
+      "y": 120
+    },
+    {
+      "attributes": {
+        "CustomerGoal": "Be sure the speed is right, then order.",
+        "Name": "Choose and order",
+        "Order": 2
+      },
+      "class": "Stage",
+      "h": 480,
+      "id": "el_st_2",
+      "w": 250,
+      "x": 340,
+      "y": 120
+    },
+    {
+      "attributes": {
+        "CustomerGoal": "Know when the line will work.",
+        "Name": "Wait for installation",
+        "Order": 3
+      },
+      "class": "Stage",
+      "h": 480,
+      "id": "el_st_3",
+      "w": 250,
+      "x": 640,
+      "y": 120
+    },
+    {
+      "attributes": {
+        "CustomerGoal": "Get connected without losing a day.",
+        "Name": "Installation day",
+        "Order": 4
+      },
+      "class": "Stage",
+      "h": 480,
+      "id": "el_st_4",
+      "w": 250,
+      "x": 940,
+      "y": 120
+    },
+    {
+      "attributes": {
+        "CustomerGoal": "Pay what was promised and get the speed.",
+        "Name": "First month",
+        "Order": 5
+      },
+      "class": "Stage",
+      "h": 480,
+      "id": "el_st_5",
+      "w": 250,
+      "x": 1240,
+      "y": 120
+    },
+    {
+      "attributes": {
+        "Channel": "Social media",
+        "Emotion": 0,
+        "Name": "Sees an advert"
+      },
+      "class": "Touchpoint",
+      "h": 60,
+      "id": "el_t_ad",
+      "parent": "el_st_1",
+      "w": 190,
+      "x": 70,
+      "y": 170
+    },
+    {
+      "attributes": {
+        "Channel": "Website",
+        "Emotion": 1,
+        "Name": "Compares offers online"
+      },
+      "class": "Touchpoint",
+      "h": 60,
+      "id": "el_t_compare",
+      "parent": "el_st_1",
+      "w": 190,
+      "x": 70,
+      "y": 260
+    },
+    {
+      "attributes": {
+        "Channel": "Website",
+        "Emotion": 1,
+        "Name": "Chooses a package"
+      },
+      "class": "Touchpoint",
+      "h": 60,
+      "id": "el_t_choose",
+      "parent": "el_st_2",
+      "w": 190,
+      "x": 370,
+      "y": 170
+    },
+    {
+      "attributes": {
+        "Channel": "Website",
+        "Emotion": -1,
+        "Name": "Checks the speed at the address"
+      },
+      "class": "Touchpoint",
+      "h": 60,
+      "id": "el_t_check",
+      "parent": "el_st_2",
+      "w": 190,
+      "x": 370,
+      "y": 260
+    },
+    {
+      "attributes": {
+        "Channel": "Email",
+        "Emotion": 0,
+        "Name": "Gets the order confirmation"
+      },
+      "class": "Touchpoint",
+      "h": 60,
+      "id": "el_t_confirm",
+      "parent": "el_st_3",
+      "w": 190,
+      "x": 670,
+      "y": 170
+    },
+    {
+      "attributes": {
+        "Channel": "Email",
+        "Emotion": -2,
+        "Name": "Is offered an installation date"
+      },
+      "class": "Touchpoint",
+      "h": 60,
+      "id": "el_t_date",
+      "parent": "el_st_3",
+      "w": 190,
+      "x": 670,
+      "y": 260
+    },
+    {
+      "attributes": {
+        "Channel": "Email",
+        "Emotion": 0,
+        "Name": "Gets a reminder the day before"
+      },
+      "class": "Touchpoint",
+      "h": 60,
+      "id": "el_t_reminder",
+      "parent": "el_st_4",
+      "w": 190,
+      "x": 970,
+      "y": 170
+    },
+    {
+      "attributes": {
+        "Channel": "In person",
+        "Emotion": 0,
+        "Name": "Engineer connects the line"
+      },
+      "class": "Touchpoint",
+      "h": 60,
+      "id": "el_t_visit",
+      "parent": "el_st_4",
+      "w": 190,
+      "x": 970,
+      "y": 260
+    },
+    {
+      "attributes": {
+        "Channel": "Email",
+        "Emotion": 0,
+        "Name": "First bill arrives"
+      },
+      "class": "Touchpoint",
+      "h": 60,
+      "id": "el_t_bill",
+      "parent": "el_st_5",
+      "w": 190,
+      "x": 1270,
+      "y": 170
+    },
+    {
+      "attributes": {
+        "Channel": "Phone",
+        "Emotion": -2,
+        "Name": "Calls about slow evenings"
+      },
+      "class": "Touchpoint",
+      "h": 60,
+      "id": "el_t_call",
+      "parent": "el_st_5",
+      "w": 190,
+      "x": 1270,
+      "y": 260
+    },
+    {
+      "attributes": {
+        "Name": "Speed shown as a wide range",
+        "Severity": "Medium"
+      },
+      "class": "PainPoint",
+      "h": 56,
+      "id": "el_p_range",
+      "parent": "el_st_2",
+      "w": 190,
+      "x": 370,
+      "y": 370
+    },
+    {
+      "attributes": {
+        "Name": "First free date is three weeks away",
+        "Severity": "High"
+      },
+      "class": "PainPoint",
+      "h": 56,
+      "id": "el_p_wait",
+      "parent": "el_st_3",
+      "w": 190,
+      "x": 670,
+      "y": 370
+    },
+    {
+      "attributes": {
+        "Cause": "Visits are booked for the whole day, not for a time slot.",
+        "Name": "Waits at home all day",
+        "Severity": "High"
+      },
+      "class": "PainPoint",
+      "h": 56,
+      "id": "el_p_day",
+      "parent": "el_st_4",
+      "w": 190,
+      "x": 970,
+      "y": 370
+    },
+    {
+      "attributes": {
+        "Cause": "The street cabinet is busy when everyone streams.",
+        "Name": "Speed drops in the evening",
+        "Severity": "Medium"
+      },
+      "class": "PainPoint",
+      "h": 56,
+      "id": "el_p_evening",
+      "parent": "el_st_5",
+      "w": 190,
+      "x": 1270,
+      "y": 370
+    },
+    {
+      "attributes": {
+        "Effort": 3,
+        "Name": "Show the speed for the exact flat",
+        "Status": "Planned",
+        "Value": 4
+      },
+      "class": "Opportunity",
+      "h": 60,
+      "id": "el_o_speed",
+      "parent": "el_st_2",
+      "w": 190,
+      "x": 370,
+      "y": 490
+    },
+    {
+      "attributes": {
+        "Effort": 3,
+        "Name": "Let customers pick a slot online",
+        "Status": "In progress",
+        "Value": 5
+      },
+      "class": "Opportunity",
+      "h": 60,
+      "id": "el_o_slots",
+      "parent": "el_st_3",
+      "w": 190,
+      "x": 670,
+      "y": 490
+    },
+    {
+      "attributes": {
+        "Effort": 2,
+        "Name": "Check the line a week after installation",
+        "Status": "Idea",
+        "Value": 4
+      },
+      "class": "Opportunity",
+      "h": 60,
+      "id": "el_o_check",
+      "parent": "el_st_5",
+      "w": 190,
+      "x": 1270,
+      "y": 490
+    },
+    {
+      "attributes": {
+        "Current": 18,
+        "Direction": "Lower is better",
+        "Name": "Days from order to installation",
+        "Target": 7,
+        "Unit": "days"
+      },
+      "class": "KPI",
+      "h": 60,
+      "id": "el_k_days",
+      "w": 190,
+      "x": 670,
+      "y": 640
+    },
+    {
+      "attributes": {
+        "Current": 8.3,
+        "Direction": "Higher is better",
+        "Name": "Satisfaction after installation",
+        "Target": 8,
+        "Unit": "of 10"
+      },
+      "class": "KPI",
+      "h": 60,
+      "id": "el_k_satisfaction",
+      "w": 190,
+      "x": 970,
+      "y": 640
+    },
+    {
+      "attributes": {
+        "Current": 24,
+        "Direction": "Lower is better",
+        "Name": "Calls in the first month",
+        "Target": 15,
+        "Unit": "per 100"
+      },
+      "class": "KPI",
+      "h": 60,
+      "id": "el_k_calls",
+      "w": 190,
+      "x": 1270,
+      "y": 640
+    }
+  ],
+  "formatVersion": 2,
+  "id": "mdl_broadbandjourney",
+  "kind": "mkmodel",
+  "kit": {
+    "id": "kit_valuejourneys",
+    "name": "Value streams and customer journeys",
+    "version": "1.0.0"
+  },
+  "modelType": "JourneyMap",
+  "name": "Getting broadband at home"
+}

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Rule, ToolLibrary } from '@metakit-app/core';
+  import type { Rule, Kit } from '@metakit-app/core';
   import {
     eventLabel,
     RuleEditorModel,
@@ -13,12 +13,12 @@
   import { useBuildUndo } from '../../../build/undo-context';
 
   let {
-    tool,
+    kit,
     run,
     behaviourTest,
     assistant,
   }: {
-    tool: ToolLibrary;
+    kit: Kit;
     run: (command: never) => CommandResult;
     /** A dry run of a rule on the selected object, or null when nothing is selected. */
     behaviourTest?: (rule: Rule) => RuleTryResult | null;
@@ -27,7 +27,7 @@
   } = $props();
 
   const rules = $derived(
-    Object.values(tool.rules ?? {}).sort((a, b) =>
+    Object.values(kit.rules ?? {}).sort((a, b) =>
       a.label.localeCompare(b.label),
     ),
   );
@@ -35,7 +35,7 @@
   const offerUndo = useBuildUndo();
   let error = $state<string | null>(null);
   const current = $derived(
-    selected ? tool.rules?.[selected as Rule['id']] : undefined,
+    selected ? kit.rules?.[selected as Rule['id']] : undefined,
   );
 
   const exec = (command: Record<string, unknown>): boolean => {
@@ -45,7 +45,7 @@
   };
 
   function add() {
-    const rule = new RuleEditorModel(tool).toRule();
+    const rule = new RuleEditorModel(kit).toRule();
     if (exec({ type: 'putRule', rule })) selected = rule.id;
   }
 
@@ -109,7 +109,7 @@
     >
     <DraftWithAssistant
       kind="rule"
-      {tool}
+      {kit}
       {assistant}
       onAccept={(commands) => {
         const first = commands[0];
@@ -125,7 +125,7 @@
   {#if current}
     {#key `${current.id}:${current.enabled}`}
       <div class="editor">
-        <RuleForm {tool} rule={current} {run} {behaviourTest} />
+        <RuleForm {kit} rule={current} {run} {behaviourTest} />
       </div>
     {/key}
   {/if}

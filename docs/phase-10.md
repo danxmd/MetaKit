@@ -2,26 +2,26 @@
 
 Phase 10 puts MetaKit in front of real users and ends with the version 1.0 release. Two or three project teams use it on real projects while the gaps they find are fixed.
 
-**Before starting:** Danial picks the beta teams and the three tools to port.
+**Before starting:** Danial picks the beta teams and the three modelling tools to port to Kits.
 
-## 10.1 Port three real tools
+## 10.1 Port three real tools to Kits
 
 Deliver, with Danial choosing which tools:
 
-- three established modelling tools, rebuilt in Build mode (notation, panels, rules, scripts);
+- three established modelling tools, rebuilt as Kits in Build mode (notation, panels, rules, scripts);
 - a list of every gap found, each turned into a fix or a rule action, or recorded as a known limit.
 
-Done when: the three tools are usable by their teams.
+Done when: the three Kits are usable by their teams.
 
 ## 10.2 Documentation and onboarding
 
 Deliver:
 
 - a user guide for modellers;
-- a tool-builder guide covering classes, Shapes, panels, formulas, rules and scripts;
+- a Kit-builder guide covering classes, Shapes, panels, formulas, rules and scripts;
 - a script API reference generated from the TypeScript declarations;
-- two tutorials (build a small tool; collaborate in a shared folder);
-- a starter gallery of tools in the app;
+- two tutorials (build a small Kit; collaborate in a shared folder);
+- a starter gallery of Kits in the app;
 - a first-run screen that explains the folder setup and the browser requirement.
 
 Done when: a new user gets from the start page to a first model using only the in-app guidance.

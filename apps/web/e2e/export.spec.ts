@@ -4,8 +4,8 @@ import { expect, test, type Page } from '@playwright/test';
 import { loadHarness } from './bundle';
 import type { CanvasHarness } from './canvas-harness';
 
-const toolJson = readFileSync(
-  fileURLToPath(new URL('../../../tools/bpmn-lite/tool.json', import.meta.url)),
+const kitJson = readFileSync(
+  fileURLToPath(new URL('../../../kits/bpmn-lite/kit.json', import.meta.url)),
   'utf8',
 );
 
@@ -45,7 +45,7 @@ async function sampleModel(page: Page) {
     (
       window as unknown as { __canvas: { mount(t: unknown): void } }
     ).__canvas.mount(JSON.parse(json));
-  }, toolJson);
+  }, kitJson);
   const create = async (
     cls: string,
     x: number,

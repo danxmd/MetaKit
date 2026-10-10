@@ -6,7 +6,7 @@
     type ClassDef,
     type ClassId,
     type ClassKind,
-    type ToolLibrary,
+    type Kit,
   } from '@metakit-app/core';
   import {
     copyStarter,
@@ -28,7 +28,7 @@
   import DraftWithAssistant from '../assistant/DraftWithAssistant.svelte';
 
   let {
-    tool,
+    kit,
     id,
     run,
     onEditShape,
@@ -37,7 +37,7 @@
     usages,
     assistant,
   }: {
-    tool: ToolLibrary;
+    kit: Kit;
     id: ClassId;
     run: (command: never) => CommandResult;
     onEditShape: (shapeId: string) => void;
@@ -48,8 +48,8 @@
     assistant?: AssistantPort | undefined;
   } = $props();
 
-  const def = $derived(tool.classes[id]);
-  const languages = $derived(tool.manifest.languages);
+  const def = $derived(kit.classes[id]);
+  const languages = $derived(kit.manifest.languages);
   let error = $state<string | null>(null);
 
   const exec = (command: Record<string, unknown>): string | null => {
@@ -65,7 +65,7 @@
   function changeKind(kind: ClassKind) {
     if (!def) return;
     const next = withPatch<ClassDef>(def, { kind });
-    const current = appearanceOfClass(tool, id);
+    const current = appearanceOfClass(kit, id);
     if (
       current.kind === 'look' &&
       current.shared.length === 0 &&
@@ -89,17 +89,17 @@
   }
 
   const parents = $derived(
-    Object.values(tool.classes)
-      .filter((c) => c.id !== id && !isA(tool, c.id, id))
+    Object.values(kit.classes)
+      .filter((c) => c.id !== id && !isA(kit, c.id, id))
       .sort((a, b) => a.key.localeCompare(b.key)),
   );
   const nodeShapes = $derived(
-    Object.values(tool.shapes).filter((s) => s.kind === 'node'),
+    Object.values(kit.shapes).filter((s) => s.kind === 'node'),
   );
   const parentKeys = $derived.by(() => {
     const keys: string[] = [];
-    for (const c of Object.values(tool.classes))
-      if (c.id !== id && (isA(tool, id, c.id) || isA(tool, c.id, id)))
+    for (const c of Object.values(kit.classes))
+      if (c.id !== id && (isA(kit, id, c.id) || isA(kit, c.id, id)))
         keys.push(...c.attributes.map((a) => a.key));
     return keys;
   });
@@ -123,7 +123,7 @@
       <span class="spacer"></span>
       <DraftWithAssistant
         kind="class"
-        {tool}
+        {kit}
         {assistant}
         onAccept={(commands) => exec(asOneStep(commands) as never)}
       />
@@ -210,7 +210,7 @@
       help="How objects of this class look on the canvas. Pick a form, colours and text; no drawing needed."
     >
       <AppearanceCard
-        {tool}
+        {kit}
         owner={{ kind: 'class', id }}
         {run}
         {onEditAppearance}
@@ -231,7 +231,7 @@
                 >{/each}
             </select>
           </label>
-          {#if def.shape && appearanceOfClass(tool, id).kind === 'look'}
+          {#if def.shape && appearanceOfClass(kit, id).kind === 'look'}
             <button
               type="button"
               onclick={() => onEditShape(def.shape!)}
@@ -249,14 +249,14 @@
           onclick={() => onEditPanel(id)}
           data-testid="class-edit-panel"
         >
-          {tool.panels[id] ? 'Edit panel layout' : 'Set up panel layout'}
+          {kit.panels[id] ? 'Edit panel layout' : 'Set up panel layout'}
         </button>
       </div>
     </Section>
     <AttributeList
       owner={{ kind: 'class', id }}
       attributes={def.attributes}
-      {tool}
+      {kit}
       {run}
       taken={parentKeys}
       {usages}
@@ -264,7 +264,7 @@
     <ConstraintsEditor
       owner={{ kind: 'class', id }}
       constraints={def.constraints ?? []}
-      {tool}
+      {kit}
       {run}
     />
   </div>

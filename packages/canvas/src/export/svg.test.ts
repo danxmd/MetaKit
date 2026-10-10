@@ -5,7 +5,7 @@ import type {
   Model,
   NodeShape,
   RelationShape,
-  ToolLibrary,
+  Kit,
 } from '@metakit-app/core';
 import { Scene } from '../scene';
 import { BPMN, bpmnStore } from '../testing';
@@ -63,12 +63,12 @@ const flowShape: RelationShape = {
 
 function setup() {
   const base = bpmnStore();
-  const tool: ToolLibrary = {
-    ...base.tool,
-    shapes: { ...base.tool.shapes, shp_task: taskShape, shp_flow: flowShape },
+  const kit: Kit = {
+    ...base.kit,
+    shapes: { ...base.kit.shapes, shp_task: taskShape, shp_flow: flowShape },
   };
   const store = base.store;
-  const scene = new Scene(store.state as Model, tool);
+  const scene = new Scene(store.state as Model, kit);
   scene.attach(store);
   const create = (x: number, y: number, name: string) =>
     (

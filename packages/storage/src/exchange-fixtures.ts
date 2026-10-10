@@ -1,30 +1,30 @@
 // Shared by the tests of the exchange formats; not part of the package.
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import type { Model, ToolLibrary } from '@metakit-app/core';
+import type { Model, Kit } from '@metakit-app/core';
 import { importMkModel } from './mkmodel';
 import { MemoryAdapter } from './memory';
 import { migrate } from './migrate';
 import { Workspace } from './workspace';
 
-const toolsDir = fileURLToPath(new URL('../../../tools/', import.meta.url));
+const kitsDir = fileURLToPath(new URL('../../../kits/', import.meta.url));
 
 export const SAMPLE_MODELS = [
-  { tool: 'bpmn-lite', file: 'order-process.mkmodel.json' },
-  { tool: 'er-lite', file: 'library.mkmodel.json' },
+  { kit: 'bpmn-lite', file: 'order-process.mkmodel.json' },
+  { kit: 'er-lite', file: 'library.mkmodel.json' },
 ] as const;
 
-export function sampleToolFromDisk(dir: string): ToolLibrary {
-  const raw = JSON.parse(readFileSync(`${toolsDir}${dir}/tool.json`, 'utf8'));
-  return migrate('tool-document', raw).value as unknown as ToolLibrary;
+export function sampleKitFromDisk(dir: string): Kit {
+  const raw = JSON.parse(readFileSync(`${kitsDir}${dir}/kit.json`, 'utf8'));
+  return migrate('kit-document', raw).value as unknown as Kit;
 }
 
 export function sampleModelText(dir: string, file: string): string {
-  return readFileSync(`${toolsDir}${dir}/${file}`, 'utf8');
+  return readFileSync(`${kitsDir}${dir}/${file}`, 'utf8');
 }
 
 export function sampleModelFromDisk(dir: string, file: string): Model {
-  return importMkModel(sampleToolFromDisk(dir), sampleModelText(dir, file));
+  return importMkModel(sampleKitFromDisk(dir), sampleModelText(dir, file));
 }
 
 export async function newWorkspace(

@@ -1,4 +1,4 @@
-import type { ClassDef, RelationDef, ToolLibrary } from '@metakit-app/core';
+import type { ClassDef, RelationDef, Kit } from '@metakit-app/core';
 import { describeEnds } from './suggestions';
 
 /**
@@ -15,7 +15,7 @@ export type HintState =
   | { kind: 'connector'; relation: RelationDef; from: string; to: string }
   | { kind: 'refused'; reason: string };
 
-export function hintFor(tool: ToolLibrary, state: HintState): string {
+export function hintFor(kit: Kit, state: HintState): string {
   switch (state.kind) {
     case 'idle':
       return state.selected === 0
@@ -27,17 +27,17 @@ export function hintFor(tool: ToolLibrary, state: HintState): string {
       return `Click on the canvas to place a ${state.class.key}. Press Escape to stop.`;
     case 'connect':
       return state.picked
-        ? `Now click the concept where the ${state.relation.key} should end. ${describeEnds(tool, state.relation)}`
-        : `Click the concept where the ${state.relation.key} should start. ${describeEnds(tool, state.relation)}`;
+        ? `Now click the concept where the ${state.relation.key} should end. ${describeEnds(kit, state.relation)}`
+        : `Click the concept where the ${state.relation.key} should start. ${describeEnds(kit, state.relation)}`;
     case 'palette-relation':
-      return describeEnds(tool, state.relation);
+      return describeEnds(kit, state.relation);
     case 'palette-class': {
-      const uses = Object.values(tool.relations).filter(
+      const uses = Object.values(kit.relations).filter(
         (r) =>
           (!r.abstract &&
             (r.from.length === 0 ||
               r.from.some(
-                (c) => c === state.class.id || tool.classes[c]?.abstract,
+                (c) => c === state.class.id || kit.classes[c]?.abstract,
               ))) ||
           r.to.some((c) => c === state.class.id),
       );
@@ -49,7 +49,7 @@ export function hintFor(tool: ToolLibrary, state: HintState): string {
             .join(', ')}.`;
     }
     case 'connector':
-      return `${state.relation.key}: ${state.from} to ${state.to}. ${describeEnds(tool, state.relation)}`;
+      return `${state.relation.key}: ${state.from} to ${state.to}. ${describeEnds(kit, state.relation)}`;
     case 'refused':
       return state.reason;
   }

@@ -18,7 +18,7 @@ declare global {
   }
 }
 
-/** The repository holds the bpmn-lite tool; this opens it from "Git" into a fresh workspace. */
+/** The repository holds the bpmn-lite Kit; this opens it from "Git" into a fresh workspace. */
 async function openFromRepository(page: Page) {
   await prepare(page, { name: 'Anna', colour: '#e8590c', seed: false });
   await loadHarness(page, './git-harness.ts');

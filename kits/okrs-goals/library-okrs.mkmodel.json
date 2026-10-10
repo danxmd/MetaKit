@@ -1,0 +1,344 @@
+{
+  "attributes": {
+    "Organisation": "A city library service",
+    "Title": "Library OKRs, first half of 2027"
+  },
+  "connectors": [
+    {
+      "from": "el_o_1",
+      "id": "cn_001",
+      "relation": "ContributesTo",
+      "to": "el_g_people"
+    },
+    {
+      "from": "el_o_2",
+      "id": "cn_002",
+      "relation": "ContributesTo",
+      "to": "el_g_people"
+    },
+    {
+      "from": "el_o_3",
+      "id": "cn_003",
+      "relation": "ContributesTo",
+      "to": "el_g_green"
+    },
+    {
+      "from": "el_i_events",
+      "id": "cn_004",
+      "relation": "ContributesTo",
+      "to": "el_kr_events"
+    },
+    {
+      "from": "el_i_app",
+      "id": "cn_005",
+      "relation": "ContributesTo",
+      "to": "el_kr_rating"
+    },
+    {
+      "from": "el_i_app",
+      "id": "cn_006",
+      "relation": "ContributesTo",
+      "to": "el_kr_ebooks"
+    },
+    {
+      "from": "el_i_lighting",
+      "id": "cn_007",
+      "relation": "ContributesTo",
+      "to": "el_kr_energy"
+    },
+    {
+      "from": "el_p_maya",
+      "id": "cn_008",
+      "relation": "Owns",
+      "to": "el_o_1"
+    },
+    {
+      "from": "el_p_tom",
+      "id": "cn_009",
+      "relation": "Owns",
+      "to": "el_o_2"
+    },
+    {
+      "from": "el_p_ines",
+      "id": "cn_010",
+      "relation": "Owns",
+      "to": "el_o_3"
+    }
+  ],
+  "elements": [
+    {
+      "attributes": {
+        "Horizon": "Long term",
+        "Measure": "Share of residents who are members",
+        "Name": "A library everyone uses"
+      },
+      "class": "Goal",
+      "h": 80,
+      "id": "el_g_people",
+      "w": 220,
+      "x": 170,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "Horizon": "Long term",
+        "Measure": "Greenhouse gas emissions",
+        "Name": "Net zero by 2035"
+      },
+      "class": "Goal",
+      "h": 80,
+      "id": "el_g_green",
+      "w": 220,
+      "x": 600,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "End": "2027-06-30",
+        "Name": "First half of 2027",
+        "Start": "2027-01-01"
+      },
+      "class": "Period",
+      "h": 490,
+      "id": "el_period",
+      "w": 830,
+      "x": 40,
+      "y": 160
+    },
+    {
+      "attributes": {
+        "Ambition": "Committed",
+        "Name": "More people visit"
+      },
+      "class": "Objective",
+      "h": 430,
+      "id": "el_o_1",
+      "parent": "el_period",
+      "w": 250,
+      "x": 60,
+      "y": 200
+    },
+    {
+      "attributes": {
+        "Ambition": "Aspirational",
+        "Name": "Make digital lending easy"
+      },
+      "class": "Objective",
+      "h": 430,
+      "id": "el_o_2",
+      "parent": "el_period",
+      "w": 250,
+      "x": 330,
+      "y": 200
+    },
+    {
+      "attributes": {
+        "Ambition": "Committed",
+        "Name": "Run a greener service"
+      },
+      "class": "Objective",
+      "h": 430,
+      "id": "el_o_3",
+      "parent": "el_period",
+      "w": 250,
+      "x": 600,
+      "y": 200
+    },
+    {
+      "attributes": {
+        "Confidence": "High",
+        "Current": 2100,
+        "Name": "New members",
+        "StartValue": 0,
+        "Target": 3000,
+        "Unit": "members"
+      },
+      "class": "KeyResult",
+      "h": 110,
+      "id": "el_kr_members",
+      "parent": "el_o_1",
+      "w": 210,
+      "x": 80,
+      "y": 244
+    },
+    {
+      "attributes": {
+        "Confidence": "Medium",
+        "Current": 9800,
+        "Name": "Visits per week",
+        "StartValue": 9000,
+        "Target": 11000,
+        "Unit": "visits"
+      },
+      "class": "KeyResult",
+      "h": 110,
+      "id": "el_kr_visits",
+      "parent": "el_o_1",
+      "w": 210,
+      "x": 80,
+      "y": 368
+    },
+    {
+      "attributes": {
+        "Confidence": "High",
+        "Current": 10,
+        "Name": "Events with 20 or more guests",
+        "StartValue": 4,
+        "Target": 12,
+        "Unit": "events"
+      },
+      "class": "KeyResult",
+      "h": 110,
+      "id": "el_kr_events",
+      "parent": "el_o_1",
+      "w": 210,
+      "x": 80,
+      "y": 492
+    },
+    {
+      "attributes": {
+        "Confidence": "High",
+        "Current": 8200,
+        "Name": "E-book loans per month",
+        "StartValue": 5000,
+        "Target": 9000,
+        "Unit": "loans"
+      },
+      "class": "KeyResult",
+      "h": 110,
+      "id": "el_kr_ebooks",
+      "parent": "el_o_2",
+      "w": 210,
+      "x": 350,
+      "y": 244
+    },
+    {
+      "attributes": {
+        "Confidence": "Medium",
+        "Current": 3.9,
+        "Name": "App rating",
+        "StartValue": 3.1,
+        "Target": 4.2,
+        "Unit": "stars"
+      },
+      "class": "KeyResult",
+      "h": 110,
+      "id": "el_kr_rating",
+      "parent": "el_o_2",
+      "w": 210,
+      "x": 350,
+      "y": 368
+    },
+    {
+      "attributes": {
+        "Confidence": "Low",
+        "Current": 405,
+        "Name": "Energy use per year",
+        "StartValue": 420,
+        "Target": 360,
+        "Unit": "MWh"
+      },
+      "class": "KeyResult",
+      "h": 110,
+      "id": "el_kr_energy",
+      "parent": "el_o_3",
+      "w": 210,
+      "x": 620,
+      "y": 244
+    },
+    {
+      "attributes": {
+        "Budget": 40000,
+        "End": "2027-06-30",
+        "Name": "Weekend events",
+        "Sponsor": "Head of libraries",
+        "Start": "2027-01-15",
+        "Status": "In progress"
+      },
+      "class": "Initiative",
+      "h": 110,
+      "id": "el_i_events",
+      "w": 170,
+      "x": 155,
+      "y": 690
+    },
+    {
+      "attributes": {
+        "Budget": 120000,
+        "End": "2027-05-31",
+        "Name": "New library app",
+        "Sponsor": "Digital lead",
+        "Start": "2026-10-01",
+        "Status": "In progress"
+      },
+      "class": "Initiative",
+      "h": 110,
+      "id": "el_i_app",
+      "w": 170,
+      "x": 425,
+      "y": 690
+    },
+    {
+      "attributes": {
+        "Budget": 85000,
+        "End": "2027-09-30",
+        "Name": "LED lighting in all branches",
+        "Sponsor": "Facilities manager",
+        "Start": "2027-04-01",
+        "Status": "Approved"
+      },
+      "class": "Initiative",
+      "h": 110,
+      "id": "el_i_lighting",
+      "w": 170,
+      "x": 695,
+      "y": 690
+    },
+    {
+      "attributes": {
+        "Name": "Maya Okafor",
+        "Role": "Head of libraries"
+      },
+      "class": "Person",
+      "h": 110,
+      "id": "el_p_maya",
+      "w": 90,
+      "x": 60,
+      "y": 690
+    },
+    {
+      "attributes": {
+        "Name": "Tom Lindgren",
+        "Role": "Digital lead"
+      },
+      "class": "Person",
+      "h": 110,
+      "id": "el_p_tom",
+      "w": 90,
+      "x": 330,
+      "y": 690
+    },
+    {
+      "attributes": {
+        "Name": "Ines Duarte",
+        "Role": "Facilities manager"
+      },
+      "class": "Person",
+      "h": 110,
+      "id": "el_p_ines",
+      "w": 90,
+      "x": 600,
+      "y": 690
+    }
+  ],
+  "formatVersion": 2,
+  "id": "mdl_libraryokrs",
+  "kind": "mkmodel",
+  "kit": {
+    "id": "kit_okrs",
+    "name": "OKRs and goals",
+    "version": "1.0.0"
+  },
+  "modelType": "OKRs",
+  "name": "Library OKRs, first half of 2027"
+}

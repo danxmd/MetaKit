@@ -5,7 +5,7 @@
     type LookBase,
     type LookLineStyle,
     type NodeLook,
-    type ToolLibrary,
+    type Kit,
   } from '@metakit-app/core';
   import { readableOn } from '@metakit-app/shapes';
   import {
@@ -27,20 +27,20 @@
   import TextControls from './TextControls.svelte';
 
   let {
-    tool,
+    kit,
     classId,
     run,
     onClose,
   }: {
-    tool: ToolLibrary;
+    kit: Kit;
     classId: ClassId;
     run: (command: never) => CommandResult;
     onClose: () => void;
   } = $props();
 
-  const cls = $derived(tool.classes[classId]);
-  const attributes = $derived(effectiveAttributes(tool, classId));
-  const appearance = $derived(appearanceOfClass(tool, classId));
+  const cls = $derived(kit.classes[classId]);
+  const attributes = $derived(effectiveAttributes(kit, classId));
+  const appearance = $derived(appearanceOfClass(kit, classId));
   // Until the first change the class has no shape of its own; the editor starts from a good one.
   let pending = $state<NodeLook | null>(null);
   const look = $derived.by((): NodeLook => {
@@ -53,7 +53,7 @@
   function change(next: NodeLook) {
     if (!cls) return;
     if (appearance.kind !== 'look') pending = next;
-    const result = run(saveNodeLook(tool, classId, next) as never);
+    const result = run(saveNodeLook(kit, classId, next) as never);
     error = result.ok ? null : result.error;
   }
 

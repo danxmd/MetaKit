@@ -3,10 +3,10 @@ import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
   createModelStore,
-  validateToolLibrary,
+  validateKit,
   type Rule,
   type Script,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 import { importMkModel } from '@metakit-app/storage';
 import {
@@ -23,13 +23,13 @@ import { loadTestLibs } from '../components/build/scripts/test-libs';
 
 /**
  * The three behaviours chosen from established modelling tools (docs/phase-7-behaviour-candidates.md), rebuilt as
- * scripts and rules. The sources live in tools/behaviour-examples and are run here against the
- * sample tool libraries and models of tools/.
+ * scripts and rules. The sources live in kits/behaviour-examples and are run here against the
+ * sample Kits and models of kits/.
  */
 
 const read = (path: string): string =>
   readFileSync(
-    fileURLToPath(new URL(`../../../../tools/${path}`, import.meta.url)),
+    fileURLToPath(new URL(`../../../../kits/${path}`, import.meta.url)),
     'utf8',
   );
 
@@ -40,7 +40,7 @@ const script = (id: string, name: string, file: string): Script => ({
 });
 
 interface Rig {
-  tool: ToolLibrary;
+  kit: Kit;
   behaviour: Behaviour;
   handle: ScriptsHandle;
   store: ReturnType<typeof createModelStore>;
@@ -56,23 +56,23 @@ afterEach(() => {
 });
 
 async function start(
-  toolName: string,
+  kitName: string,
   modelFile: string,
   scripts: Script[],
   options: {
-    permissions?: ToolLibrary['manifest']['permissions'];
+    permissions?: Kit['manifest']['permissions'];
     host?: Partial<BehaviourHost>;
   } = {},
 ): Promise<Rig> {
-  const tool = JSON.parse(read(`${toolName}/tool.json`)) as ToolLibrary;
-  tool.scripts = Object.fromEntries(scripts.map((s) => [s.id, s]));
-  if (options.permissions) tool.manifest.permissions = options.permissions;
-  const model = importMkModel(tool, read(`${toolName}/${modelFile}`));
-  const store = createModelStore(model, { tool });
+  const kit = JSON.parse(read(`${kitName}/kit.json`)) as Kit;
+  kit.scripts = Object.fromEntries(scripts.map((s) => [s.id, s]));
+  if (options.permissions) kit.manifest.permissions = options.permissions;
+  const model = importMkModel(kit, read(`${kitName}/${modelFile}`));
+  const store = createModelStore(model, { kit });
   const messages: { kind: string; text: string }[] = [];
   const behaviour = createBehaviour({
     store,
-    tool: () => tool,
+    kit: () => kit,
     host: silentHost({
       message: (kind, text) => messages.push({ kind, text }),
       ...options.host,
@@ -80,7 +80,7 @@ async function start(
   });
   const handle = await attachScripts(behaviour, {
     store,
-    tool: () => tool,
+    kit: () => kit,
     permissions: {
       granted: () => ({
         network: false,
@@ -90,7 +90,7 @@ async function start(
       forget: () => Promise.resolve(),
     },
   });
-  const rig = { tool, behaviour, handle, store, messages };
+  const rig = { kit, behaviour, handle, store, messages };
   open.push(rig);
   return rig;
 }
@@ -99,7 +99,7 @@ const problems = (handle: ScriptsHandle) =>
   handle.log.filter((l) => l.level === 'error').map((l) => l.text);
 
 describe('every example script', () => {
-  it('type-checks against the declarations generated from its tool', () => {
+  it('type-checks against the declarations generated from its Kit', () => {
     const libs = loadTestLibs();
     const cases: [string, Script][] = [
       [
@@ -112,10 +112,10 @@ describe('every example script', () => {
       ],
       ['er-lite', script('scr_sql', 'Export SQL', 'er-to-sql.script.ts')],
     ];
-    for (const [toolName, s] of cases) {
-      const tool = JSON.parse(read(`${toolName}/tool.json`)) as ToolLibrary;
+    for (const [kitName, s] of cases) {
+      const kit = JSON.parse(read(`${kitName}/kit.json`)) as Kit;
       const server = createLanguageServer(libs);
-      server.setDeclarations(generateDeclarations(tool));
+      server.setDeclarations(generateDeclarations(kit));
       expect(
         server.diagnostics(s.source).map((d) => d.message),
         s.name,
@@ -148,7 +148,7 @@ describe('candidate 1: check gateways (BPMN lite, script)', () => {
       gateways,
     ]);
     const m = r.store.state;
-    const condition = Object.values(r.tool.relations)[0]!.attributes.find(
+    const condition = Object.values(r.kit.relations)[0]!.attributes.find(
       (a) => a.key === 'Condition',
     )!;
     const flow = Object.values(m.connectors).find(
@@ -161,8 +161,8 @@ describe('candidate 1: check gateways (BPMN lite, script)', () => {
       value: '',
     });
     const classId = (key: string) =>
-      Object.values(r.tool.classes).find((c) => c.key === key)!.id;
-    const nameId = Object.values(r.tool.classes)
+      Object.values(r.kit.classes).find((c) => c.key === key)!.id;
+    const nameId = Object.values(r.kit.classes)
       .flatMap((c) => c.attributes)
       .find((a) => a.key === 'Name')!.id;
     r.store.execute({
@@ -187,10 +187,10 @@ describe('candidate 2: total effort (BPMN lite, rule and script)', () => {
     read('behaviour-examples/total-effort.rule.json'),
   );
 
-  it('the rule is valid in the tool and its message formula adds up the effort of the tasks', async () => {
+  it('the rule is valid in the Kit and its message formula adds up the effort of the tasks', async () => {
     const r = await start('bpmn-lite', 'order-process.mkmodel.json', []);
-    const tool = { ...r.tool, rules: { [rule.id]: rule } };
-    expect(validateToolLibrary(tool)).toEqual([]);
+    const kit = { ...r.kit, rules: { [rule.id]: rule } };
+    expect(validateKit(kit)).toEqual([]);
     const action = rule.then[0]! as { action: 'message'; text: string };
     const result = r.behaviour.calculator.evaluate(null, action.text);
     expect(result.error).toBeUndefined();

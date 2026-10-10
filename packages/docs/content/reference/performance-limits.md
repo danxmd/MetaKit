@@ -40,7 +40,7 @@ The reference model has 5,000 objects and 7,000 connectors.
 | Open the reference model | Under 1 second |
 | Edit an attribute and see the shape change | Under 50 ms |
 | App download | Under 1.5 MB compressed |
-| Script engine | Loads only when a tool has a script |
+| Script engine | Loads only when a Kit has a script |
 
 The benchmark measures the time the page spends drawing in a frame (95th percentile under 8 ms for dragging and for pan and zoom) and the share of frames over 20 ms (under 20 percent). The frame interval itself is reported but not gated, because a 60 Hz screen can only show 16.7 or 33.3 ms.
 
@@ -51,7 +51,7 @@ Shapes are turned into cached draw lists, which the canvas replays. See [[canvas
 | Part | Size (compressed) | Loads when |
 | --- | --- | --- |
 | The app | Under 1.5 MB | Always |
-| Script engine (QuickJS in WebAssembly) | About 236 KB | A tool with an enabled script is opened |
+| Script engine (QuickJS in WebAssembly) | About 236 KB | A Kit with an enabled script is opened |
 | Script compiler | About 46 KB | The first script is compiled |
 | Script editor and TypeScript checker | About 1 MB | The first script editor is opened |
 | PDF export libraries | Loaded lazily | You export a PDF |

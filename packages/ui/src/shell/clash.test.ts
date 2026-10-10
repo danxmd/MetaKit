@@ -5,25 +5,25 @@ import {
   createEmptyModel,
   createModelStore,
   type Model,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 import { describeClash } from './clash';
 
-const tool = JSON.parse(
+const kit = JSON.parse(
   readFileSync(
     fileURLToPath(
-      new URL('../../../../tools/bpmn-lite/tool.json', import.meta.url),
+      new URL('../../../../kits/bpmn-lite/kit.json', import.meta.url),
     ),
     'utf8',
   ),
-) as ToolLibrary;
+) as Kit;
 
 describe('describeClash', () => {
   const store = createModelStore(
-    createEmptyModel(tool, Object.keys(tool.modelTypes)[0] as never, {
+    createEmptyModel(kit, Object.keys(kit.modelTypes)[0] as never, {
       name: 'M',
     }),
-    { tool },
+    { kit },
   );
   const id = (
     store.execute({
@@ -38,7 +38,7 @@ describe('describeClash', () => {
 
   it('names the attribute, the object and who won, without paths or ids', () => {
     const text = describeClash(
-      tool,
+      kit,
       model,
       {
         path: ['elements', id, 'attrs', 'att_priority'],
@@ -57,7 +57,7 @@ describe('describeClash', () => {
   it('says position or size for geometry, and the model name for the manifest', () => {
     expect(
       describeClash(
-        tool,
+        kit,
         model,
         { path: ['elements', id, 'x'], mine: 1, theirs: 2, by: 'b' },
         'Ben',
@@ -65,7 +65,7 @@ describe('describeClash', () => {
     ).toContain('the position of "Review order"');
     expect(
       describeClash(
-        tool,
+        kit,
         model,
         { path: ['elements', id, 'w'], mine: 1, theirs: 2, by: 'b' },
         'Ben',
@@ -73,7 +73,7 @@ describe('describeClash', () => {
     ).toContain('the size');
     expect(
       describeClash(
-        tool,
+        kit,
         model,
         { path: ['manifest', 'name'], mine: 'a', theirs: 'b', by: 'b' },
         'Ben',
@@ -84,7 +84,7 @@ describe('describeClash', () => {
   it('still gives a notice for something it does not know', () => {
     expect(
       describeClash(
-        tool,
+        kit,
         model,
         {
           path: ['elements', 'el_gone', 'whatever'],
