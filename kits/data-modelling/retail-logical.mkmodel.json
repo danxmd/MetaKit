@@ -1,0 +1,663 @@
+{
+  "attributes": {
+    "ModelVersion": "1.2",
+    "Organisation": "A home and garden retailer",
+    "Title": "Retail sales: logical model"
+  },
+  "connectors": [
+    {
+      "attributes": {
+        "FromCardinality": "1",
+        "ToCardinality": "1..*",
+        "Verb": "lives at"
+      },
+      "from": "el_customer",
+      "id": "cn_001",
+      "relation": "RelatesTo",
+      "to": "el_address"
+    },
+    {
+      "attributes": {
+        "FromCardinality": "1",
+        "ToCardinality": "0..*",
+        "Verb": "places"
+      },
+      "from": "el_customer",
+      "id": "cn_002",
+      "relation": "RelatesTo",
+      "to": "el_order"
+    },
+    {
+      "attributes": {
+        "FromCardinality": "1",
+        "ToCardinality": "1..*",
+        "Verb": "contains"
+      },
+      "from": "el_order",
+      "id": "cn_003",
+      "relation": "RelatesTo",
+      "to": "el_line"
+    },
+    {
+      "attributes": {
+        "FromCardinality": "1",
+        "ToCardinality": "0..*",
+        "Verb": "is sold in"
+      },
+      "from": "el_product",
+      "id": "cn_004",
+      "relation": "RelatesTo",
+      "to": "el_line"
+    },
+    {
+      "attributes": {
+        "FromCardinality": "1",
+        "ToCardinality": "0..*",
+        "Verb": "groups"
+      },
+      "from": "el_category",
+      "id": "cn_005",
+      "relation": "RelatesTo",
+      "to": "el_product"
+    },
+    {
+      "attributes": {
+        "FromCardinality": "1",
+        "ToCardinality": "1..*",
+        "Verb": "is priced by"
+      },
+      "from": "el_product",
+      "id": "cn_006",
+      "relation": "RelatesTo",
+      "to": "el_price"
+    },
+    {
+      "from": "el_online",
+      "id": "cn_007",
+      "relation": "SubtypeOf",
+      "to": "el_order"
+    }
+  ],
+  "elements": [
+    {
+      "attributes": {
+        "Name": "Customer",
+        "Owner": "Head of customer"
+      },
+      "class": "SubjectArea",
+      "h": 290,
+      "id": "el_sa_customer",
+      "w": 580,
+      "x": 40,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "Description": "A person or business that buys from us.",
+        "Name": "Customer"
+      },
+      "class": "Entity",
+      "h": 204,
+      "id": "el_customer",
+      "parent": "el_sa_customer",
+      "w": 220,
+      "x": 380,
+      "y": 80
+    },
+    {
+      "attributes": {
+        "DataType": "Identifier",
+        "Key": "PK",
+        "Name": "Customer id"
+      },
+      "class": "EntityAttribute",
+      "h": 28,
+      "id": "el_customer_1",
+      "parent": "el_customer",
+      "w": 200,
+      "x": 390,
+      "y": 116
+    },
+    {
+      "attributes": {
+        "DataType": "Text",
+        "Name": "Name"
+      },
+      "class": "EntityAttribute",
+      "h": 28,
+      "id": "el_customer_2",
+      "parent": "el_customer",
+      "w": 200,
+      "x": 390,
+      "y": 148
+    },
+    {
+      "attributes": {
+        "DataType": "Text",
+        "Name": "Email"
+      },
+      "class": "EntityAttribute",
+      "h": 28,
+      "id": "el_customer_3",
+      "parent": "el_customer",
+      "w": 200,
+      "x": 390,
+      "y": 180
+    },
+    {
+      "attributes": {
+        "DataType": "Date",
+        "Name": "Date of birth"
+      },
+      "class": "EntityAttribute",
+      "h": 28,
+      "id": "el_customer_4",
+      "parent": "el_customer",
+      "w": 200,
+      "x": 390,
+      "y": 212
+    },
+    {
+      "attributes": {
+        "DataType": "Code",
+        "Name": "Loyalty tier"
+      },
+      "class": "EntityAttribute",
+      "h": 28,
+      "id": "el_customer_5",
+      "parent": "el_customer",
+      "w": 200,
+      "x": 390,
+      "y": 244
+    },
+    {
+      "attributes": {
+        "Description": "Where a customer lives or wants deliveries.",
+        "Name": "Customer address"
+      },
+      "class": "Entity",
+      "h": 204,
+      "id": "el_address",
+      "parent": "el_sa_customer",
+      "w": 220,
+      "x": 60,
+      "y": 80
+    },
+    {
+      "attributes": {
+        "DataType": "Identifier",
+        "Key": "PK",
+        "Name": "Address id"
+      },
+      "class": "EntityAttribute",
+      "h": 28,
+      "id": "el_address_1",
+      "parent": "el_address",
+      "w": 200,
+      "x": 70,
+      "y": 116
+    },
+    {
+      "attributes": {
+        "DataType": "Identifier",
+        "Key": "FK",
+        "Name": "Customer id"
+      },
+      "class": "EntityAttribute",
+      "h": 28,
+      "id": "el_address_2",
+      "parent": "el_address",
+      "w": 200,
+      "x": 70,
+      "y": 148
+    },
+    {
+      "attributes": {
+        "DataType": "Text",
+        "Name": "Street"
+      },
+      "class": "EntityAttribute",
+      "h": 28,
+      "id": "el_address_3",
+      "parent": "el_address",
+      "w": 200,
+      "x": 70,
+      "y": 180
+    },
+    {
+      "attributes": {
+        "DataType": "Code",
+        "Name": "Postcode"
+      },
+      "class": "EntityAttribute",
+      "h": 28,
+      "id": "el_address_4",
+      "parent": "el_address",
+      "w": 200,
+      "x": 70,
+      "y": 212
+    },
+    {
+      "attributes": {
+        "DataType": "Code",
+        "Name": "Country"
+      },
+      "class": "EntityAttribute",
+      "h": 28,
+      "id": "el_address_5",
+      "parent": "el_address",
+      "w": 200,
+      "x": 70,
+      "y": 244
+    },
+    {
+      "attributes": {
+        "Name": "Sales",
+        "Owner": "Head of sales operations"
+      },
+      "class": "SubjectArea",
+      "h": 420,
+      "id": "el_sa_sales",
+      "w": 580,
+      "x": 740,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "Description": "A request by a customer to buy products.",
+        "Name": "Sales order"
+      },
+      "class": "Entity",
+      "h": 204,
+      "id": "el_order",
+      "parent": "el_sa_sales",
+      "w": 220,
+      "x": 760,
+      "y": 80
+    },
+    {
+      "attributes": {
+        "DataType": "Identifier",
+        "Key": "PK",
+        "Name": "Order id"
+      },
+      "class": "EntityAttribute",
+      "h": 28,
+      "id": "el_order_1",
+      "parent": "el_order",
+      "w": 200,
+      "x": 770,
+      "y": 116
+    },
+    {
+      "attributes": {
+        "DataType": "Identifier",
+        "Key": "FK",
+        "Name": "Customer id"
+      },
+      "class": "EntityAttribute",
+      "h": 28,
+      "id": "el_order_2",
+      "parent": "el_order",
+      "w": 200,
+      "x": 770,
+      "y": 148
+    },
+    {
+      "attributes": {
+        "DataType": "Date",
+        "Name": "Order date"
+      },
+      "class": "EntityAttribute",
+      "h": 28,
+      "id": "el_order_3",
+      "parent": "el_order",
+      "w": 200,
+      "x": 770,
+      "y": 180
+    },
+    {
+      "attributes": {
+        "DataType": "Code",
+        "Name": "Channel"
+      },
+      "class": "EntityAttribute",
+      "h": 28,
+      "id": "el_order_4",
+      "parent": "el_order",
+      "w": 200,
+      "x": 770,
+      "y": 212
+    },
+    {
+      "attributes": {
+        "DataType": "Identifier",
+        "Key": "FK",
+        "Name": "Store id"
+      },
+      "class": "EntityAttribute",
+      "h": 28,
+      "id": "el_order_5",
+      "parent": "el_order",
+      "w": 200,
+      "x": 770,
+      "y": 244
+    },
+    {
+      "attributes": {
+        "Description": "One product on an order, with its quantity.",
+        "Name": "Order line"
+      },
+      "class": "Entity",
+      "h": 204,
+      "id": "el_line",
+      "parent": "el_sa_sales",
+      "w": 220,
+      "x": 1080,
+      "y": 80
+    },
+    {
+      "attributes": {
+        "DataType": "Identifier",
+        "Key": "PK and FK",
+        "Name": "Order id"
+      },
+      "class": "EntityAttribute",
+      "h": 28,
+      "id": "el_line_1",
+      "parent": "el_line",
+      "w": 200,
+      "x": 1090,
+      "y": 116
+    },
+    {
+      "attributes": {
+        "DataType": "Integer",
+        "Key": "PK",
+        "Name": "Line number"
+      },
+      "class": "EntityAttribute",
+      "h": 28,
+      "id": "el_line_2",
+      "parent": "el_line",
+      "w": 200,
+      "x": 1090,
+      "y": 148
+    },
+    {
+      "attributes": {
+        "DataType": "Identifier",
+        "Key": "FK",
+        "Name": "Product id"
+      },
+      "class": "EntityAttribute",
+      "h": 28,
+      "id": "el_line_3",
+      "parent": "el_line",
+      "w": 200,
+      "x": 1090,
+      "y": 180
+    },
+    {
+      "attributes": {
+        "DataType": "Integer",
+        "Name": "Quantity"
+      },
+      "class": "EntityAttribute",
+      "h": 28,
+      "id": "el_line_4",
+      "parent": "el_line",
+      "w": 200,
+      "x": 1090,
+      "y": 212
+    },
+    {
+      "attributes": {
+        "DataType": "Money",
+        "Name": "Net amount"
+      },
+      "class": "EntityAttribute",
+      "h": 28,
+      "id": "el_line_5",
+      "parent": "el_line",
+      "w": 200,
+      "x": 1090,
+      "y": 244
+    },
+    {
+      "attributes": {
+        "Description": "An order placed in the online shop.",
+        "Name": "Online order"
+      },
+      "class": "Entity",
+      "h": 108,
+      "id": "el_online",
+      "parent": "el_sa_sales",
+      "w": 220,
+      "x": 760,
+      "y": 330
+    },
+    {
+      "attributes": {
+        "DataType": "Text",
+        "Name": "Web session id"
+      },
+      "class": "EntityAttribute",
+      "h": 28,
+      "id": "el_online_1",
+      "parent": "el_online",
+      "w": 200,
+      "x": 770,
+      "y": 366
+    },
+    {
+      "attributes": {
+        "DataType": "Code",
+        "Name": "Delivery method"
+      },
+      "class": "EntityAttribute",
+      "h": 28,
+      "id": "el_online_2",
+      "parent": "el_online",
+      "w": 200,
+      "x": 770,
+      "y": 398
+    },
+    {
+      "attributes": {
+        "Name": "Product",
+        "Owner": "Head of buying"
+      },
+      "class": "SubjectArea",
+      "h": 240,
+      "id": "el_sa_product",
+      "w": 900,
+      "x": 740,
+      "y": 520
+    },
+    {
+      "attributes": {
+        "Description": "Something we sell.",
+        "Name": "Product"
+      },
+      "class": "Entity",
+      "h": 172,
+      "id": "el_product",
+      "parent": "el_sa_product",
+      "w": 220,
+      "x": 1080,
+      "y": 560
+    },
+    {
+      "attributes": {
+        "DataType": "Identifier",
+        "Key": "PK",
+        "Name": "Product id"
+      },
+      "class": "EntityAttribute",
+      "h": 28,
+      "id": "el_product_1",
+      "parent": "el_product",
+      "w": 200,
+      "x": 1090,
+      "y": 596
+    },
+    {
+      "attributes": {
+        "DataType": "Text",
+        "Name": "Name"
+      },
+      "class": "EntityAttribute",
+      "h": 28,
+      "id": "el_product_2",
+      "parent": "el_product",
+      "w": 200,
+      "x": 1090,
+      "y": 628
+    },
+    {
+      "attributes": {
+        "DataType": "Identifier",
+        "Key": "FK",
+        "Name": "Category id"
+      },
+      "class": "EntityAttribute",
+      "h": 28,
+      "id": "el_product_3",
+      "parent": "el_product",
+      "w": 200,
+      "x": 1090,
+      "y": 660
+    },
+    {
+      "attributes": {
+        "DataType": "Money",
+        "Name": "List price"
+      },
+      "class": "EntityAttribute",
+      "h": 28,
+      "id": "el_product_4",
+      "parent": "el_product",
+      "w": 200,
+      "x": 1090,
+      "y": 692
+    },
+    {
+      "attributes": {
+        "Description": "A group of similar products.",
+        "Name": "Product category"
+      },
+      "class": "Entity",
+      "h": 140,
+      "id": "el_category",
+      "parent": "el_sa_product",
+      "w": 220,
+      "x": 760,
+      "y": 560
+    },
+    {
+      "attributes": {
+        "DataType": "Identifier",
+        "Key": "PK",
+        "Name": "Category id"
+      },
+      "class": "EntityAttribute",
+      "h": 28,
+      "id": "el_category_1",
+      "parent": "el_category",
+      "w": 200,
+      "x": 770,
+      "y": 596
+    },
+    {
+      "attributes": {
+        "DataType": "Text",
+        "Name": "Name"
+      },
+      "class": "EntityAttribute",
+      "h": 28,
+      "id": "el_category_2",
+      "parent": "el_category",
+      "w": 200,
+      "x": 770,
+      "y": 628
+    },
+    {
+      "attributes": {
+        "DataType": "Identifier",
+        "Key": "FK",
+        "Name": "Parent category id"
+      },
+      "class": "EntityAttribute",
+      "h": 28,
+      "id": "el_category_3",
+      "parent": "el_category",
+      "w": 200,
+      "x": 770,
+      "y": 660
+    },
+    {
+      "attributes": {
+        "Description": "The price of a product from a date onwards.",
+        "Name": "Product price"
+      },
+      "class": "Entity",
+      "h": 140,
+      "id": "el_price",
+      "parent": "el_sa_product",
+      "w": 220,
+      "x": 1400,
+      "y": 560
+    },
+    {
+      "attributes": {
+        "DataType": "Identifier",
+        "Key": "FK",
+        "Name": "Product id"
+      },
+      "class": "EntityAttribute",
+      "h": 28,
+      "id": "el_price_1",
+      "parent": "el_price",
+      "w": 200,
+      "x": 1410,
+      "y": 596
+    },
+    {
+      "attributes": {
+        "DataType": "Date",
+        "Name": "Valid from"
+      },
+      "class": "EntityAttribute",
+      "h": 28,
+      "id": "el_price_2",
+      "parent": "el_price",
+      "w": 200,
+      "x": 1410,
+      "y": 628
+    },
+    {
+      "attributes": {
+        "DataType": "Money",
+        "Name": "Price"
+      },
+      "class": "EntityAttribute",
+      "h": 28,
+      "id": "el_price_3",
+      "parent": "el_price",
+      "w": 200,
+      "x": 1410,
+      "y": 660
+    }
+  ],
+  "formatVersion": 2,
+  "id": "mdl_retaillogical",
+  "kind": "mkmodel",
+  "kit": {
+    "id": "kit_datamodelling",
+    "name": "Data modelling",
+    "version": "1.0.0"
+  },
+  "modelType": "Logical",
+  "name": "Retail sales: logical model"
+}

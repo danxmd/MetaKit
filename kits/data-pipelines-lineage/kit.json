@@ -1,0 +1,1895 @@
+{
+  "formatVersion": 7,
+  "manifest": {
+    "id": "kit_datalineage",
+    "name": "Data pipelines and lineage",
+    "version": "1.0.0",
+    "languages": ["en"]
+  },
+  "settings": {
+    "grid": {
+      "size": 10,
+      "snap": true,
+      "visible": true
+    },
+    "layers": [],
+    "numbering": {
+      "enabled": false,
+      "prefix": "",
+      "start": 1
+    }
+  },
+  "classes": {
+    "cls_sourcesystem": {
+      "id": "cls_sourcesystem",
+      "key": "SourceSystem",
+      "kind": "node",
+      "labels": {
+        "en": "Source system"
+      },
+      "help": {
+        "en": "A system where data is first created or captured."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Source system",
+          "id": "att_sourcesystem_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_sourcesystem_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Technology",
+          "id": "att_sourcesystem_technology",
+          "labels": {
+            "en": "Technology"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_sourcesystem_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Hosting",
+          "options": ["On-premises", "Cloud", "Software as a service"],
+          "id": "att_sourcesystem_hosting",
+          "labels": {
+            "en": "Hosting"
+          }
+        }
+      ],
+      "shape": "shp_sourcesystem"
+    },
+    "cls_dataset": {
+      "id": "cls_dataset",
+      "key": "Dataset",
+      "kind": "node",
+      "labels": {
+        "en": "Dataset"
+      },
+      "help": {
+        "en": "A table or a set of files that jobs write and read. Orphan datasets, which nothing feeds and nothing reads, are reported."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Dataset",
+          "id": "att_dataset_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_dataset_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Format",
+          "id": "att_dataset_format",
+          "labels": {
+            "en": "Format"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Refresh",
+          "options": [
+            "Real time",
+            "Hourly",
+            "Daily",
+            "Weekly",
+            "Monthly",
+            "On demand"
+          ],
+          "id": "att_dataset_refresh",
+          "labels": {
+            "en": "Refresh"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Classification",
+          "options": ["Public", "Internal", "Confidential", "Restricted"],
+          "id": "att_dataset_classification",
+          "labels": {
+            "en": "Classification"
+          }
+        },
+        {
+          "type": "boolean",
+          "key": "ContainsPersonalData",
+          "id": "att_dataset_containspersonaldata",
+          "labels": {
+            "en": "Contains personal data"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "RowCount",
+          "min": 0,
+          "id": "att_dataset_rowcount",
+          "labels": {
+            "en": "Row count"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Layer",
+          "options": ["Raw", "Cleaned", "Curated", "Serving"],
+          "id": "att_dataset_layer",
+          "labels": {
+            "en": "Layer"
+          },
+          "help": {
+            "en": "How far the data has been prepared. The header colour shows it."
+          }
+        },
+        {
+          "type": "text",
+          "key": "Location",
+          "id": "att_dataset_location",
+          "labels": {
+            "en": "Location"
+          },
+          "help": {
+            "en": "Where it is kept, such as a schema and table name."
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_dataset_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Upstream",
+          "formula": "count(incoming('FlowsTo'))",
+          "result": "number",
+          "id": "att_dataset_upstream",
+          "labels": {
+            "en": "Upstream"
+          },
+          "help": {
+            "en": "How many sources, jobs or datasets feed it directly."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Downstream",
+          "formula": "count(outgoing('FlowsTo'))",
+          "result": "number",
+          "id": "att_dataset_downstream",
+          "labels": {
+            "en": "Downstream"
+          },
+          "help": {
+            "en": "How many jobs, datasets, reports or applications it feeds directly."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "StepsFromSource",
+          "formula": "count(incoming('FlowsTo')) == 0 ? null : (max(incoming('FlowsTo').StepsFromSource) ?? 0) + 1",
+          "result": "number",
+          "id": "att_dataset_stepsfromsource",
+          "labels": {
+            "en": "Steps from source"
+          },
+          "help": {
+            "en": "How many \"Flows to\" steps lie between it and the furthest source system before it. Empty when nothing flows into it."
+          }
+        }
+      ],
+      "shape": "shp_dataset",
+      "constraints": [
+        {
+          "id": "k_dataset_orphan",
+          "formula": "Upstream + Downstream > 0",
+          "message": "= 'Dataset \"' + Name + '\" is an orphan: nothing flows into it and it flows nowhere.'",
+          "severity": "warning"
+        }
+      ]
+    },
+    "cls_reportordashboard": {
+      "id": "cls_reportordashboard",
+      "key": "ReportOrDashboard",
+      "kind": "node",
+      "labels": {
+        "en": "Report or dashboard"
+      },
+      "help": {
+        "en": "A report or dashboard that shows data to people."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Report or dashboard",
+          "id": "att_reportordashboard_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_reportordashboard_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Tool",
+          "id": "att_reportordashboard_tool",
+          "labels": {
+            "en": "Tool"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Audience",
+          "id": "att_reportordashboard_audience",
+          "labels": {
+            "en": "Audience"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Refresh",
+          "id": "att_reportordashboard_refresh",
+          "labels": {
+            "en": "Refresh"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_reportordashboard_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Upstream",
+          "formula": "count(incoming('FlowsTo'))",
+          "result": "number",
+          "id": "att_reportordashboard_upstream",
+          "labels": {
+            "en": "Upstream"
+          },
+          "help": {
+            "en": "How many sources, jobs or datasets feed it directly."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "StepsFromSource",
+          "formula": "count(incoming('FlowsTo')) == 0 ? null : (max(incoming('FlowsTo').StepsFromSource) ?? 0) + 1",
+          "result": "number",
+          "id": "att_reportordashboard_stepsfromsource",
+          "labels": {
+            "en": "Steps from source"
+          },
+          "help": {
+            "en": "How many \"Flows to\" steps lie between it and the furthest source system before it. Empty when nothing flows into it."
+          }
+        }
+      ],
+      "shape": "shp_reportordashboard",
+      "constraints": [
+        {
+          "id": "k_report_source",
+          "formula": "Upstream > 0",
+          "message": "= 'Report \"' + Name + '\" has no data flowing into it.'",
+          "severity": "warning"
+        }
+      ]
+    },
+    "cls_application": {
+      "id": "cls_application",
+      "key": "Application",
+      "kind": "node",
+      "labels": {
+        "en": "Application"
+      },
+      "help": {
+        "en": "An operational application that receives data from a pipeline, such as a finance system. A target of the lineage."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Application",
+          "id": "att_application_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_application_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_application_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Lifecycle",
+          "options": ["Invest", "Tolerate", "Migrate", "Eliminate"],
+          "id": "att_application_lifecycle",
+          "labels": {
+            "en": "Lifecycle"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "Users",
+          "min": 0,
+          "id": "att_application_users",
+          "labels": {
+            "en": "Users"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Upstream",
+          "formula": "count(incoming('FlowsTo'))",
+          "result": "number",
+          "id": "att_application_upstream",
+          "labels": {
+            "en": "Upstream"
+          },
+          "help": {
+            "en": "How many sources, jobs or datasets feed it directly."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "StepsFromSource",
+          "formula": "count(incoming('FlowsTo')) == 0 ? null : (max(incoming('FlowsTo').StepsFromSource) ?? 0) + 1",
+          "result": "number",
+          "id": "att_application_stepsfromsource",
+          "labels": {
+            "en": "Steps from source"
+          },
+          "help": {
+            "en": "How many \"Flows to\" steps lie between it and the furthest source system before it. Empty when nothing flows into it."
+          }
+        }
+      ],
+      "shape": "shp_application"
+    },
+    "cls_job": {
+      "id": "cls_job",
+      "key": "Job",
+      "kind": "node",
+      "labels": {
+        "en": "Job"
+      },
+      "help": {
+        "en": "A step that moves or transforms data: it reads what flows into it and writes what flows out of it. The fill shows how its last run went."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Job",
+          "id": "att_job_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_job_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Kind",
+          "options": ["Ingestion", "Transformation", "Export", "Quality check"],
+          "id": "att_job_kind",
+          "labels": {
+            "en": "Kind"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Tool",
+          "id": "att_job_tool",
+          "labels": {
+            "en": "Tool"
+          },
+          "help": {
+            "en": "The tool or language it runs in, as free text."
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_job_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Logic",
+          "multiline": true,
+          "id": "att_job_logic",
+          "labels": {
+            "en": "Logic"
+          },
+          "help": {
+            "en": "What it does to the data, in a few lines or as code."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "LastRunStatus",
+          "options": ["Succeeded", "Failed", "Running", "Not run yet"],
+          "id": "att_job_lastrunstatus",
+          "labels": {
+            "en": "Last run status"
+          }
+        },
+        {
+          "type": "number",
+          "key": "AverageMinutes",
+          "unit": "min",
+          "min": 0,
+          "id": "att_job_averageminutes",
+          "labels": {
+            "en": "Average run time"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "ScheduleText",
+          "formula": "count(incoming('Triggers')) > 0 ? join(incoming('Triggers').Name, ', ') : (count(outgoing('RunsAfter')) > 0 ? 'After ' + join(outgoing('RunsAfter').Name, ', ') : null)",
+          "result": "text",
+          "id": "att_job_scheduletext",
+          "labels": {
+            "en": "Runs"
+          },
+          "help": {
+            "en": "The schedules that start it, or the jobs it runs after."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Upstream",
+          "formula": "count(incoming('FlowsTo'))",
+          "result": "number",
+          "id": "att_job_upstream",
+          "labels": {
+            "en": "Upstream"
+          },
+          "help": {
+            "en": "How many sources, jobs or datasets feed it directly."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Downstream",
+          "formula": "count(outgoing('FlowsTo'))",
+          "result": "number",
+          "id": "att_job_downstream",
+          "labels": {
+            "en": "Downstream"
+          },
+          "help": {
+            "en": "How many jobs, datasets, reports or applications it feeds directly."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "StepsFromSource",
+          "formula": "count(incoming('FlowsTo')) == 0 ? null : (max(incoming('FlowsTo').StepsFromSource) ?? 0) + 1",
+          "result": "number",
+          "id": "att_job_stepsfromsource",
+          "labels": {
+            "en": "Steps from source"
+          },
+          "help": {
+            "en": "How many \"Flows to\" steps lie between it and the furthest source system before it. Empty when nothing flows into it."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_job_schedule",
+          "formula": "count(incoming('Triggers')) > 0 || count(outgoing('RunsAfter')) > 0",
+          "message": "= 'Job \"' + Name + '\" has no schedule: connect a schedule with \"Triggers\", or the job it runs after with \"Runs after\".'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_job_flows",
+          "formula": "Upstream > 0 && Downstream > 0",
+          "message": "= 'Job \"' + Name + '\" needs something that flows into it and something it flows to.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_job"
+    },
+    "cls_schedule": {
+      "id": "cls_schedule",
+      "key": "Schedule",
+      "kind": "node",
+      "labels": {
+        "en": "Schedule"
+      },
+      "help": {
+        "en": "When jobs start: at fixed times, on an event or by hand, and in which orchestration tool (free text)."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Schedule",
+          "id": "att_schedule_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_schedule_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Frequency",
+          "options": [
+            "Every 15 minutes",
+            "Hourly",
+            "Daily",
+            "Weekly",
+            "Monthly",
+            "On an event",
+            "By hand"
+          ],
+          "id": "att_schedule_frequency",
+          "labels": {
+            "en": "Frequency"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Cron",
+          "id": "att_schedule_cron",
+          "labels": {
+            "en": "Cron expression"
+          },
+          "help": {
+            "en": "The exact times in cron form, such as \"0 2 * * *\" for 02:00 every day."
+          }
+        },
+        {
+          "type": "text",
+          "key": "Timezone",
+          "id": "att_schedule_timezone",
+          "labels": {
+            "en": "Timezone"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Orchestrator",
+          "id": "att_schedule_orchestrator",
+          "labels": {
+            "en": "Orchestrator"
+          },
+          "help": {
+            "en": "The tool that starts the jobs, as free text."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Jobs",
+          "formula": "count(outgoing('Triggers'))",
+          "result": "number",
+          "id": "att_schedule_jobs",
+          "labels": {
+            "en": "Jobs"
+          },
+          "help": {
+            "en": "How many jobs it starts."
+          }
+        }
+      ],
+      "shape": "shp_schedule"
+    },
+    "cls_field": {
+      "id": "cls_field",
+      "key": "Field",
+      "kind": "node",
+      "labels": {
+        "en": "Field"
+      },
+      "help": {
+        "en": "One column of a dataset or one value on a report. Map fields to each other for lineage down to the field."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Field",
+          "id": "att_field_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "DataType",
+          "id": "att_field_datatype",
+          "labels": {
+            "en": "Data type"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_field_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "In",
+          "formula": "join(outgoing('PartOf').Name, ', ')",
+          "result": "text",
+          "id": "att_field_in",
+          "labels": {
+            "en": "In"
+          },
+          "help": {
+            "en": "The dataset or report it belongs to."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "SourceFields",
+          "formula": "count(incoming('MapsTo'))",
+          "result": "number",
+          "id": "att_field_sourcefields",
+          "labels": {
+            "en": "Source fields"
+          },
+          "help": {
+            "en": "How many fields it is made from."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "TargetFields",
+          "formula": "count(outgoing('MapsTo'))",
+          "result": "number",
+          "id": "att_field_targetfields",
+          "labels": {
+            "en": "Target fields"
+          },
+          "help": {
+            "en": "How many fields are made from it."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_field_partof",
+          "formula": "count(outgoing('PartOf')) > 0",
+          "message": "= 'Field \"' + Name + '\" belongs to no dataset or report: connect it with \"Part of\".'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_field"
+    }
+  },
+  "relations": {
+    "rel_flowsto": {
+      "id": "rel_flowsto",
+      "key": "FlowsTo",
+      "labels": {
+        "en": "Flows to"
+      },
+      "help": {
+        "en": "Data moves from one place to the next."
+      },
+      "from": ["cls_sourcesystem", "cls_dataset", "cls_job"],
+      "to": [
+        "cls_dataset",
+        "cls_reportordashboard",
+        "cls_job",
+        "cls_application"
+      ],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Frequency",
+          "id": "att_flowsto_frequency",
+          "labels": {
+            "en": "Frequency"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Format",
+          "id": "att_flowsto_format",
+          "labels": {
+            "en": "Format"
+          }
+        },
+        {
+          "type": "boolean",
+          "key": "ContainsPersonalData",
+          "id": "att_flowsto_containspersonaldata",
+          "labels": {
+            "en": "Contains personal data"
+          }
+        }
+      ],
+      "shape": "shp_rel_flowsto"
+    },
+    "rel_triggers": {
+      "id": "rel_triggers",
+      "key": "Triggers",
+      "labels": {
+        "en": "Triggers"
+      },
+      "help": {
+        "en": "The schedule starts the job."
+      },
+      "from": ["cls_schedule"],
+      "to": ["cls_job"],
+      "attributes": [],
+      "shape": "shp_rel_triggers"
+    },
+    "rel_runsafter": {
+      "id": "rel_runsafter",
+      "key": "RunsAfter",
+      "labels": {
+        "en": "Runs after"
+      },
+      "help": {
+        "en": "The job starts when the other job has finished."
+      },
+      "from": ["cls_job"],
+      "to": ["cls_job"],
+      "attributes": [],
+      "shape": "shp_rel_runsafter"
+    },
+    "rel_partof": {
+      "id": "rel_partof",
+      "key": "PartOf",
+      "labels": {
+        "en": "Part of"
+      },
+      "help": {
+        "en": "The field is a column of the dataset or a value on the report."
+      },
+      "from": ["cls_field"],
+      "to": ["cls_dataset", "cls_reportordashboard"],
+      "attributes": [],
+      "shape": "shp_rel_partof"
+    },
+    "rel_mapsto": {
+      "id": "rel_mapsto",
+      "key": "MapsTo",
+      "labels": {
+        "en": "Maps to"
+      },
+      "help": {
+        "en": "The value of the target field is made from this field: lineage at the level of fields."
+      },
+      "from": ["cls_field"],
+      "to": ["cls_field"],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Transformation",
+          "id": "att_mapsto_transformation",
+          "labels": {
+            "en": "Transformation"
+          },
+          "help": {
+            "en": "How the value is made, such as \"amount_cents / 100\"."
+          }
+        }
+      ],
+      "shape": "shp_rel_mapsto"
+    }
+  },
+  "modelTypes": {
+    "mt_lineage": {
+      "id": "mt_lineage",
+      "key": "Lineage",
+      "labels": {
+        "en": "Data pipelines and lineage"
+      },
+      "classes": [
+        "cls_sourcesystem",
+        "cls_dataset",
+        "cls_reportordashboard",
+        "cls_application",
+        "cls_job",
+        "cls_schedule",
+        "cls_field"
+      ],
+      "relations": [
+        "rel_flowsto",
+        "rel_triggers",
+        "rel_runsafter",
+        "rel_partof",
+        "rel_mapsto"
+      ],
+      "views": [
+        {
+          "id": "vw_pipelines",
+          "key": "Pipelines",
+          "labels": {
+            "en": "Pipelines"
+          },
+          "classes": [
+            "cls_sourcesystem",
+            "cls_job",
+            "cls_schedule",
+            "cls_dataset",
+            "cls_reportordashboard",
+            "cls_application"
+          ],
+          "relations": ["rel_flowsto", "rel_triggers", "rel_runsafter"]
+        },
+        {
+          "id": "vw_fieldlineage",
+          "key": "FieldLineage",
+          "labels": {
+            "en": "Field lineage"
+          },
+          "classes": ["cls_dataset", "cls_reportordashboard", "cls_field"],
+          "relations": ["rel_partof", "rel_mapsto"]
+        }
+      ],
+      "cardinalities": [],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Title",
+          "required": true,
+          "maxLength": 100,
+          "id": "att_mtlineage_title",
+          "labels": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Organisation",
+          "id": "att_mtlineage_organisation",
+          "labels": {
+            "en": "Organisation"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "JobCount",
+          "formula": "count(objects('Job'))",
+          "result": "number",
+          "id": "att_mtlineage_jobcount",
+          "labels": {
+            "en": "Jobs"
+          },
+          "help": {
+            "en": "How many jobs the model holds."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "DatasetCount",
+          "formula": "count(objects('Dataset'))",
+          "result": "number",
+          "id": "att_mtlineage_datasetcount",
+          "labels": {
+            "en": "Datasets"
+          },
+          "help": {
+            "en": "How many datasets the model holds."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "LongestChain",
+          "formula": "max(objects('ReportOrDashboard').StepsFromSource, objects('Application').StepsFromSource)",
+          "result": "number",
+          "id": "att_mtlineage_longestchain",
+          "labels": {
+            "en": "Longest chain"
+          },
+          "help": {
+            "en": "The most steps between a source system and a report or application."
+          }
+        }
+      ],
+      "help": {
+        "en": "Source systems, jobs, schedules, datasets, reports and target applications, with lineage from field to report."
+      }
+    }
+  },
+  "shapes": {
+    "shp_sourcesystem": {
+      "id": "shp_sourcesystem",
+      "name": "SourceSystem look",
+      "kind": "node",
+      "size": {
+        "width": 150,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 0,
+          "fill": "#a5d8ff",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= Technology",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6 M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "box",
+        "fill": "#a5d8ff",
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 150,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Technology"
+        },
+        "icon": {
+          "name": "database"
+        }
+      }
+    },
+    "shp_dataset": {
+      "id": "shp_dataset",
+      "name": "Dataset look",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 126,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 4,
+          "fill": "#ffffff",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": 28,
+          "radius": 4,
+          "fill": "= Layer == 'Raw' ? '#e9ecef' : Layer == 'Cleaned' ? '#d0ebff' : Layer == 'Curated' ? '#a5d8ff' : Layer == 'Serving' ? '#74c0fc' : '#a5d8ff'",
+          "stroke": "#1c7ed6"
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 2,
+          "width": "100% - 36",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 34,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Layer: ' + Layer",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 50,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Refresh: ' + Refresh",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 66,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Upstream: ' + Upstream",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 82,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Downstream: ' + Downstream",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6 M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3",
+          "viewBox": [0, 0, 24, 24],
+          "x": "100% - 26",
+          "y": 4,
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "header-box",
+        "fill": {
+          "by": "Layer",
+          "values": {
+            "Raw": "#e9ecef",
+            "Cleaned": "#d0ebff",
+            "Curated": "#a5d8ff",
+            "Serving": "#74c0fc"
+          },
+          "fallback": "#a5d8ff"
+        },
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 170,
+          "height": 126,
+          "resizable": true
+        },
+        "icon": {
+          "name": "database"
+        },
+        "fields": ["Layer", "Refresh", "Upstream", "Downstream"]
+      }
+    },
+    "shp_reportordashboard": {
+      "id": "shp_reportordashboard",
+      "name": "ReportOrDashboard look",
+      "kind": "node",
+      "size": {
+        "width": 120,
+        "height": 90,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          [0, 0],
+          ["100% - 18", 0],
+          ["100%", 18],
+          ["100%", "100%"],
+          [0, "100%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            [0, 0],
+            ["100% - 18", 0],
+            ["100%", 18],
+            ["100%", "100%"],
+            [0, "100%"]
+          ],
+          "fill": "#a5d8ff",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "polygon",
+          "points": [
+            ["100% - 18", 0],
+            ["100% - 18", 18],
+            ["100%", 18]
+          ],
+          "fill": "#00000022",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 20,
+          "width": "100% - 16",
+          "height": "100% - 46",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 24",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= Audience",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "document",
+        "fill": "#a5d8ff",
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 120,
+          "height": 90,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Audience"
+        }
+      }
+    },
+    "shp_application": {
+      "id": "shp_application",
+      "name": "Application look",
+      "kind": "node",
+      "size": {
+        "width": 150,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 0,
+          "fill": "#96f2d7",
+          "stroke": "#0c8599",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 4,
+          "width": "100% - 16",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 22",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= Lifecycle",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "box",
+        "fill": "#96f2d7",
+        "border": "#0c8599",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 150,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Lifecycle"
+        }
+      }
+    },
+    "shp_rel_flowsto": {
+      "id": "shp_rel_flowsto",
+      "name": "FlowsTo look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#1c7ed6",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "labels": [
+        {
+          "at": "middle",
+          "text": "= Frequency",
+          "font": {
+            "size": 11
+          },
+          "background": "#ffffff",
+          "visible": "= Frequency != null"
+        }
+      ],
+      "look": {
+        "colour": "#1c7ed6",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": {
+          "attribute": "Frequency"
+        }
+      }
+    },
+    "shp_job": {
+      "id": "shp_job",
+      "name": "Job look",
+      "kind": "node",
+      "size": {
+        "width": 160,
+        "height": 60,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "= LastRunStatus == 'Succeeded' ? '#d3f9d8' : LastRunStatus == 'Failed' ? '#ffc9c9' : LastRunStatus == 'Running' ? '#fff3bf' : LastRunStatus == 'Not run yet' ? '#e9ecef' : '#e9ecef'",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= ScheduleText",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M19 12l2-1-1-3-2 .5-1.5-1.5.5-2-3-1-1 2h-2l-1-2-3 1 .5 2L6 8.5 4 8l-1 3 2 1v2l-2 1 1 3 2-.5L7.5 19l-.5 2 3 1 1-2h2l1 2 3-1-.5-2 1.5-1.5 2 .5 1-3-2-1z",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": {
+          "by": "LastRunStatus",
+          "values": {
+            "Succeeded": "#d3f9d8",
+            "Failed": "#ffc9c9",
+            "Running": "#fff3bf",
+            "Not run yet": "#e9ecef"
+          },
+          "fallback": "#e9ecef"
+        },
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 160,
+          "height": 60,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "ScheduleText"
+        },
+        "icon": {
+          "name": "gear"
+        }
+      }
+    },
+    "shp_schedule": {
+      "id": "shp_schedule",
+      "name": "Schedule look",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 50,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 999,
+          "fill": "#fff3bf",
+          "stroke": "#f08c00",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 42,
+          "y": 4,
+          "width": "100% - 58",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 42,
+          "y": "100% - 22",
+          "width": "100% - 58",
+          "height": 18,
+          "text": "= Frequency",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z M12 7v5l3 2",
+          "viewBox": [0, 0, 24, 24],
+          "x": 14,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "pill",
+        "fill": "#fff3bf",
+        "border": "#f08c00",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 170,
+          "height": 50,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Frequency"
+        },
+        "icon": {
+          "name": "clock"
+        }
+      }
+    },
+    "shp_field": {
+      "id": "shp_field",
+      "name": "Field look",
+      "kind": "node",
+      "size": {
+        "width": 160,
+        "height": 44,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 999,
+          "fill": "#f3f0ff",
+          "stroke": "#7048e8",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 16,
+          "y": 4,
+          "width": "100% - 32",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 16,
+          "y": "100% - 22",
+          "width": "100% - 32",
+          "height": 18,
+          "text": "= In",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "pill",
+        "fill": "#f3f0ff",
+        "border": "#7048e8",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 160,
+          "height": 44,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "In"
+        }
+      }
+    },
+    "shp_rel_triggers": {
+      "id": "shp_rel_triggers",
+      "name": "Triggers look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#f08c00",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [2, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#f08c00",
+        "width": 1.5,
+        "style": "dotted",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_runsafter": {
+      "id": "shp_rel_runsafter",
+      "name": "RunsAfter look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#f08c00",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "open-arrow"
+      },
+      "look": {
+        "colour": "#f08c00",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "open-arrow",
+        "label": null
+      }
+    },
+    "shp_rel_partof": {
+      "id": "shp_rel_partof",
+      "name": "PartOf look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#7048e8",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "startMarker": {
+        "type": "circle"
+      },
+      "look": {
+        "colour": "#7048e8",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "circle",
+        "end": "none",
+        "label": null
+      }
+    },
+    "shp_rel_mapsto": {
+      "id": "shp_rel_mapsto",
+      "name": "MapsTo look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#7048e8",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "labels": [
+        {
+          "at": "middle",
+          "text": "= Transformation",
+          "font": {
+            "size": 11
+          },
+          "background": "#ffffff",
+          "visible": "= Transformation != null"
+        }
+      ],
+      "look": {
+        "colour": "#7048e8",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": {
+          "attribute": "Transformation"
+        }
+      }
+    }
+  },
+  "panels": {
+    "cls_job": {
+      "class": "cls_job",
+      "tabs": [
+        {
+          "label": "Job",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Kind",
+              "control": "select"
+            },
+            {
+              "attribute": "Owner"
+            },
+            {
+              "attribute": "Tool"
+            },
+            {
+              "attribute": "ScheduleText"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            }
+          ]
+        },
+        {
+          "label": "Runs",
+          "items": [
+            {
+              "attribute": "LastRunStatus",
+              "control": "segmented"
+            },
+            {
+              "attribute": "AverageMinutes"
+            },
+            {
+              "attribute": "Logic",
+              "control": "textarea"
+            }
+          ]
+        },
+        {
+          "label": "Lineage",
+          "items": [
+            {
+              "attribute": "Upstream"
+            },
+            {
+              "attribute": "Downstream"
+            },
+            {
+              "attribute": "StepsFromSource"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    }
+  },
+  "rules": {},
+  "scripts": {}
+}
