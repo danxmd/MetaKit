@@ -1,23 +1,27 @@
 import {
-  validateToolLibrary,
+  validateKit,
   type Issue,
   type Json,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 import { FormatError, NewerFormatError } from '../errors';
 import { stringifyCanonical } from '../json';
 import { migrate } from '../migrate';
+import { GIT_KIT_FILE, OLDER_GIT_KIT_FILE } from '../names';
 import type { GitFile } from './remote';
 
 /**
- * The one-file-per-part form of a tool library (ADR 0007): `tool.json` for the manifest, the
+ * The one-file-per-part form of a Kit (ADR 0007): `kit.json` for the manifest, the
  * settings and the order of the parts, then one file for each class, relation class, model type,
  * shape, panel layout, rule and script. Scripts are a `.ts` file with the source and a small
  * `.json` file with the rest. Ids stay inside the files, so renaming a file never changes what a
  * part is, and two people editing different parts never touch the same file.
+ *
+ * Repositories written before the Kit rename have `tool.json` instead of `kit.json` (ADR 0011).
+ * It is read when there is no `kit.json`, and the next commit replaces it with `kit.json`.
  */
 
-/** The parts that have a folder, with the table of the tool library, the id prefix and the plain name. */
+/** The parts that have a folder, with the table of the Kit, the id prefix and the plain name. */
 export const LAYOUT_PARTS = [
   { table: 'classes', dir: 'classes', prefix: 'cls_', label: 'class' },
   {
@@ -42,20 +46,34 @@ export const LAYOUT_PARTS = [
 export type PartTable = (typeof LAYOUT_PARTS)[number]['table'];
 
 export const ASSET_DIR = 'assets';
-export const TOOL_FILE = 'tool.json';
+
+/** Whether a path is the head file of a layout: `kit.json`, or `tool.json` of an older repository. */
+export function isKitFile(path: string): boolean {
+  return path === GIT_KIT_FILE || path === OLDER_GIT_KIT_FILE;
+}
+
+/** The head file of a layout: `kit.json`, or else the `tool.json` of an older repository. */
+export function kitFileOf<T extends { path: string }>(
+  files: readonly T[],
+): T | undefined {
+  return (
+    files.find((f) => f.path === GIT_KIT_FILE) ??
+    files.find((f) => f.path === OLDER_GIT_KIT_FILE)
+  );
+}
 
 /** Whether a repository path belongs to the layout; README files and the like are left alone. */
 export function isLayoutPath(path: string): boolean {
   return (
-    path === TOOL_FILE ||
+    isKitFile(path) ||
     LAYOUT_PARTS.some((p) => path.startsWith(`${p.dir}/`)) ||
     path.startsWith(`${ASSET_DIR}/`)
   );
 }
 
 export interface LayoutResult {
-  /** Null when `tool.json` is missing or unusable; the issues say why. */
-  tool: ToolLibrary | null;
+  /** Null when `kit.json` (or `tool.json`) is missing or unusable; the issues say why. */
+  kit: Kit | null;
   issues: Issue[];
   /** Files under `assets/`, with the path relative to that folder. */
   assets: GitFile[];
@@ -118,7 +136,7 @@ function partName(
   table: PartTable,
   id: string,
   def: Record<string, unknown>,
-  tool: ToolLibrary,
+  kit: Kit,
 ): string {
   const str = (v: unknown) => (typeof v === 'string' ? v : '');
   switch (table) {
@@ -129,7 +147,7 @@ function partName(
     case 'scripts':
       return str(def.name) || id;
     case 'panels': {
-      const owner = tool.classes[id as never] ?? tool.relations[id as never];
+      const owner = kit.classes[id as never] ?? kit.relations[id as never];
       return str(owner?.key) || id;
     }
     default:
@@ -138,18 +156,15 @@ function partName(
 }
 
 /**
- * The files of a tool library. Equal tool libraries give equal files, and the files are sorted
+ * The files of a Kit. Equal Kits give equal files, and the files are sorted
  * by path. `assets` have paths relative to `assets/` (an optional `assets/` prefix is accepted).
  */
-export function toLayout(
-  tool: ToolLibrary,
-  assets: readonly GitFile[] = [],
-): GitFile[] {
+export function toLayout(kit: Kit, assets: readonly GitFile[] = []): GitFile[] {
   const files: GitFile[] = [];
   const parts: Record<string, string[]> = {};
   for (const part of LAYOUT_PARTS) {
-    const table = (tool[part.table] ?? {}) as unknown as Table;
-    // Sorted: the key order of a table is not kept when a tool library goes through sync, so an
+    const table = (kit[part.table] ?? {}) as unknown as Table;
+    // Sorted: the key order of a table is not kept when a Kit goes through sync, so an
     // order taken from it would show up as a change nobody made.
     const ids = Object.keys(table).sort();
     parts[part.table] = ids;
@@ -157,7 +172,7 @@ export function toLayout(
       ids.map((id) => ({
         id,
         value: table[id],
-        name: partName(part.table, id, table[id] ?? {}, tool),
+        name: partName(part.table, id, table[id] ?? {}, kit),
       })),
     );
     for (const id of ids) {
@@ -174,10 +189,10 @@ export function toLayout(
     }
   }
   files.push(
-    json(TOOL_FILE, {
-      formatVersion: tool.formatVersion,
-      manifest: tool.manifest,
-      settings: tool.settings,
+    json(GIT_KIT_FILE, {
+      formatVersion: kit.formatVersion,
+      manifest: kit.manifest,
+      settings: kit.settings,
       parts,
     }),
   );
@@ -216,30 +231,31 @@ export function fromLayout(files: readonly GitFile[]): LayoutResult {
     if (f.path.startsWith(`${ASSET_DIR}/`))
       assets.push({ ...f, path: f.path.slice(ASSET_DIR.length + 1) });
 
-  const head = byPath.get(TOOL_FILE);
+  const head = kitFileOf(files);
   if (!head) {
     issues.push({
-      path: TOOL_FILE,
+      path: GIT_KIT_FILE,
       message:
-        'This file is missing, so the tool library cannot be read. It holds the name, settings and order of the parts.',
+        'This file is missing, so the Kit cannot be read. It holds the name, settings and order of the parts.',
     });
-    return { tool: null, issues, assets };
+    return { kit: null, issues, assets };
   }
+  const headPath = head.path;
   const top = parse(head);
   if (!isObject(top)) {
     if (top !== undefined)
       issues.push({
-        path: TOOL_FILE,
+        path: headPath,
         message: 'This file must hold an object.',
       });
-    return { tool: null, issues, assets };
+    return { kit: null, issues, assets };
   }
   if (!isObject(top.manifest) || !isObject(top.settings)) {
     issues.push({
-      path: TOOL_FILE,
+      path: headPath,
       message: 'This file needs a "manifest" and "settings".',
     });
-    return { tool: null, issues, assets };
+    return { kit: null, issues, assets };
   }
 
   const order = isObject(top.parts) ? top.parts : {};
@@ -334,7 +350,7 @@ export function fromLayout(files: readonly GitFile[]): LayoutResult {
 
   let value: Record<string, unknown>;
   try {
-    value = migrate('tool-document', {
+    value = migrate('kit-document', {
       formatVersion: top.formatVersion,
       manifest: top.manifest,
       settings: top.settings,
@@ -342,23 +358,23 @@ export function fromLayout(files: readonly GitFile[]): LayoutResult {
     }).value;
   } catch (error) {
     if (error instanceof FormatError || error instanceof NewerFormatError) {
-      issues.push({ path: TOOL_FILE, message: error.message });
-      return { tool: null, issues, assets };
+      issues.push({ path: headPath, message: error.message });
+      return { kit: null, issues, assets };
     }
     throw error;
   }
 
   const placed =
     /^(classes|relations|modelTypes|shapes|panels|rules|scripts)\.([^.[]+)/;
-  for (const issue of validateToolLibrary(value)) {
+  for (const issue of validateKit(value)) {
     const m = placed.exec(issue.path);
     const where = m ? owner.get(`${m[1]}.${m[2]}`) : undefined;
     issues.push({
-      path: where ?? TOOL_FILE,
+      path: where ?? headPath,
       message: where
         ? `${issue.path}: ${issue.message}`
         : `${issue.path || '(top level)'}: ${issue.message}`,
     });
   }
-  return { tool: value as unknown as ToolLibrary, issues, assets };
+  return { kit: value as unknown as Kit, issues, assets };
 }

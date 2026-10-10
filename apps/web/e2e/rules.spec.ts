@@ -47,9 +47,9 @@ test.describe('Rules', () => {
   }) => {
     await bareWorkspace(page);
     await page.getByTestId('mode-build').click();
-    await page.getByTestId('new-tool').click();
-    await page.getByTestId('new-tool-name').fill('Task tracker');
-    await page.getByTestId('new-tool-create').click();
+    await page.getByTestId('new-kit').click();
+    await page.getByTestId('new-kit-name').fill('Task tracker');
+    await page.getByTestId('new-kit-create').click();
     await expect(page.getByTestId('build-view')).toBeVisible();
 
     // The class and its attributes.
@@ -92,12 +92,12 @@ test.describe('Rules', () => {
     await expect(page.getByTestId('rule-saved')).toBeVisible();
     await expect(page.getByTestId('rule-error')).toHaveCount(0);
 
-    // A model with the tool.
+    // A model with the Kit.
     await page.getByTestId('build-back').click();
     await page.getByTestId('mode-model').click();
     await page.getByTestId('new-model').click();
     await page
-      .getByTestId('new-model-tool')
+      .getByTestId('new-model-kit')
       .selectOption({ label: 'Task tracker (0.1.0)' });
     await page.getByTestId('new-model-name').fill('Plan');
     await page.getByTestId('new-model-create').click();

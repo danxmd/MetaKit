@@ -1,14 +1,14 @@
 # ADR 0002: change files, snapshots and merge unit
 
-Status: accepted (phase 3). Settles what the plan left open: how the same merge rule serves tool libraries and models, and what a change file and a snapshot contain.
+Status: accepted (phase 3). Settles what the plan left open: how the same merge rule serves Kits and models, and what a change file and a snapshot contain.
 
 ## Context
 
-The plan shows change lines addressed by element and field (`"el":"el_a1","f":"attr.att_priority"`). That covers models only. Tool libraries are documents too (rule 2) and have the same shape: records keyed by id (`classes`, `relations`, `modelTypes`) with nested fields. Phase 1 stores both through one command API that records patches `{path, before, after}`, so the sync layer should speak paths as well.
+The plan shows change lines addressed by element and field (`"el":"el_a1","f":"attr.att_priority"`). That covers models only. Kits are documents too (rule 2) and have the same shape: records keyed by id (`classes`, `relations`, `modelTypes`) with nested fields. Phase 1 stores both through one command API that records patches `{path, before, after}`, so the sync layer should speak paths as well.
 
 ## Decision
 
-**Unit of merge.** The state of a document is a set of registers. A register is one path (for example `elements/el_a1/attrs/att_priority`) with a value and the clock stamp and instance of the last write. The highest stamp wins; the instance id breaks exact ties. Values are JSON; arrays and tables are one register each (the whole value is replaced). Registers are grouped into entities: the records of the collections `elements`, `connectors` (models) and `classes`, `relations`, `modelTypes` (tool libraries), addressed as `<collection>/<id>`.
+**Unit of merge.** The state of a document is a set of registers. A register is one path (for example `elements/el_a1/attrs/att_priority`) with a value and the clock stamp and instance of the last write. The highest stamp wins; the instance id breaks exact ties. Values are JSON; arrays and tables are one register each (the whole value is replaced). Registers are grouped into entities: the records of the collections `elements`, `connectors` (models) and `classes`, `relations`, `modelTypes` (Kits), addressed as `<collection>/<id>`.
 
 **Births and deaths.** An entity has a *birth* stamp (written when it is created, and again when an undo brings it back) and a *death* stamp (written when it is deleted). It is alive when it has no death, or its birth is later than its death. Edits never change a birth, so an edit made by someone who had not seen a delete cannot bring the entity back ("a delete wins over concurrent edits"), while an undo of the delete, which writes a new birth, does. Connectors whose end is not alive are hidden when the document is built, not deleted.
 
@@ -36,13 +36,13 @@ The plan shows change lines addressed by element and field (`"el":"el_a1","f":"a
 
 ## Consequences
 
-- One engine for models and tool libraries; the sync layer needs no knowledge of classes or shapes.
+- One engine for models and Kits; the sync layer needs no knowledge of classes or shapes.
 - The stamp table and one-entity-per-line layout keep a snapshot of a 5,000-element model small; the year-of-edits test (five people) measures opening it within the budget.
 - Two people adding an attribute to the same class at the same time replace each other's array (arrays are one register). This is the same limit as tables and is recorded as a risk for Build mode.
 - Divergence can be detected by comparing a hash of the state for equal sets of read files.
 
 ## Alternatives considered
 
-- Element and field addressing as in the plan: no way to carry nested tool-library data without inventing a second scheme.
+- Element and field addressing as in the plan: no way to carry nested Kit data without inventing a second scheme.
 - JSON patch or CRDT libraries: heavier files and a dependency for what last-writer-wins per field already gives; kept as the fallback in the plan.
 - Vector clocks per op: larger files; `seen` per file is enough for the clash notice.

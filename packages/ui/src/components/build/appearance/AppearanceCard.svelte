@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
   import { ImageCache } from '@metakit-app/canvas';
-  import type { ClassId, RelationId, ToolLibrary } from '@metakit-app/core';
+  import type { ClassId, RelationId, Kit } from '@metakit-app/core';
   import { baseInfo, defaultRelationLook } from '@metakit-app/shapes';
   import {
     MARKER_SHAPES,
@@ -19,14 +19,14 @@
   import { useBuildUndo } from '../../../build/undo-context';
 
   let {
-    tool,
+    kit,
     owner,
     run,
     onEditAppearance,
     onEditShape,
     children,
   }: {
-    tool: ToolLibrary;
+    kit: Kit;
     owner:
       { kind: 'class'; id: ClassId } | { kind: 'relation'; id: RelationId };
     run: (command: never) => CommandResult;
@@ -42,19 +42,19 @@
   const isClass = $derived(owner.kind === 'class');
   const noun = $derived(isClass ? 'concept' : 'relation');
   const classState = $derived(
-    owner.kind === 'class' ? appearanceOfClass(tool, owner.id) : null,
+    owner.kind === 'class' ? appearanceOfClass(kit, owner.id) : null,
   );
   const relationState = $derived(
-    owner.kind === 'relation' ? appearanceOfRelation(tool, owner.id) : null,
+    owner.kind === 'relation' ? appearanceOfRelation(kit, owner.id) : null,
   );
   const appearance = $derived(classState ?? relationState!);
   const def = $derived(
-    owner.kind === 'class' ? tool.classes[owner.id] : tool.relations[owner.id],
+    owner.kind === 'class' ? kit.classes[owner.id] : kit.relations[owner.id],
   );
   let error = $state<string | null>(null);
 
   const thumb = $derived(
-    owner.kind === 'class' ? classThumbnail(tool, owner.id) : null,
+    owner.kind === 'class' ? classThumbnail(kit, owner.id) : null,
   );
   const zoom = $derived(
     thumb ? Math.min(1, 150 / thumb.width, 80 / thumb.height) : 1,
@@ -80,15 +80,15 @@
       owner.kind === 'class' && classState?.kind === 'drawn'
         ? run(
             saveNodeLook(
-              tool,
+              kit,
               owner.id,
-              lookReplacingDrawing(tool.classes[owner.id]!, classState.shape),
+              lookReplacingDrawing(kit.classes[owner.id]!, classState.shape),
             ) as never,
           )
         : owner.kind === 'relation' && relationState?.kind === 'drawn'
           ? run(
               saveRelationLook(
-                tool,
+                kit,
                 owner.id,
                 relationLookFromShape(relationState.shape),
               ) as never,

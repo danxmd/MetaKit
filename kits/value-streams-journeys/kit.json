@@ -1,0 +1,1493 @@
+{
+  "formatVersion": 7,
+  "manifest": {
+    "id": "kit_valuejourneys",
+    "name": "Value streams and customer journeys",
+    "version": "1.0.0",
+    "languages": ["en"]
+  },
+  "settings": {
+    "grid": {
+      "size": 10,
+      "snap": true,
+      "visible": true
+    },
+    "layers": [],
+    "numbering": {
+      "enabled": false,
+      "prefix": "",
+      "start": 1
+    }
+  },
+  "classes": {
+    "cls_valuestream": {
+      "id": "cls_valuestream",
+      "key": "ValueStream",
+      "kind": "node",
+      "labels": {
+        "en": "Value stream"
+      },
+      "help": {
+        "en": "The stages through which value reaches a customer, from first need to final result. Connect it to its stages with \"Includes\"."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Value stream",
+          "id": "att_valuestream_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_valuestream_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Customer",
+          "id": "att_valuestream_customer",
+          "labels": {
+            "en": "Customer"
+          }
+        },
+        {
+          "type": "text",
+          "key": "ValueProposition",
+          "multiline": true,
+          "id": "att_valuestream_valueproposition",
+          "labels": {
+            "en": "Value proposition"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Stages",
+          "formula": "count(outgoing('Includes'))",
+          "result": "number",
+          "id": "att_valuestream_stages",
+          "labels": {
+            "en": "Stages"
+          },
+          "help": {
+            "en": "How many stages it includes."
+          }
+        }
+      ],
+      "shape": "shp_valuestream"
+    },
+    "cls_kpi": {
+      "id": "cls_kpi",
+      "key": "KPI",
+      "kind": "node",
+      "labels": {
+        "en": "Metric"
+      },
+      "help": {
+        "en": "A number with a target that shows how well a stage, touchpoint or value stream does."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "KPI",
+          "id": "att_kpi_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_kpi_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Unit",
+          "id": "att_kpi_unit",
+          "labels": {
+            "en": "Unit"
+          }
+        },
+        {
+          "type": "number",
+          "key": "Target",
+          "id": "att_kpi_target",
+          "labels": {
+            "en": "Target"
+          }
+        },
+        {
+          "type": "number",
+          "key": "Current",
+          "id": "att_kpi_current",
+          "labels": {
+            "en": "Current"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Direction",
+          "options": ["Higher is better", "Lower is better"],
+          "id": "att_kpi_direction",
+          "labels": {
+            "en": "Direction"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "OnTrack",
+          "formula": "Current == null || Target == null ? null : (Direction == 'Lower is better' ? Current <= Target : Current >= Target)",
+          "result": "boolean",
+          "id": "att_kpi_ontrack",
+          "labels": {
+            "en": "On track"
+          },
+          "help": {
+            "en": "Yes when the current value has reached the target in the given direction."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Reading",
+          "formula": "(Current == null ? '-' : text(Current)) + (Unit ? ' ' + Unit : '') + ', target ' + (Target == null ? '-' : text(Target))",
+          "result": "text",
+          "id": "att_kpi_reading",
+          "labels": {
+            "en": "Reading"
+          },
+          "help": {
+            "en": "The current value and the target, shown on the diagram."
+          }
+        }
+      ],
+      "shape": "shp_kpi",
+      "constraints": [
+        {
+          "id": "k_metric_measures",
+          "formula": "count(outgoing('Measures')) > 0",
+          "message": "= 'Metric \"' + Name + '\" measures nothing: connect it with \"Measures\".'",
+          "severity": "warning"
+        }
+      ]
+    },
+    "cls_stage": {
+      "id": "cls_stage",
+      "key": "Stage",
+      "kind": "container",
+      "labels": {
+        "en": "Stage"
+      },
+      "help": {
+        "en": "A stage of the journey or value stream, such as \"Choose and order\". Place its touchpoints, pain points and opportunities inside it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Stage",
+          "id": "att_stage_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "Order",
+          "min": 1,
+          "id": "att_stage_order",
+          "labels": {
+            "en": "Order"
+          },
+          "help": {
+            "en": "Its place in the journey: 1, 2, 3 …"
+          }
+        },
+        {
+          "type": "text",
+          "key": "CustomerGoal",
+          "multiline": true,
+          "id": "att_stage_customergoal",
+          "labels": {
+            "en": "Customer goal"
+          },
+          "help": {
+            "en": "What the customer wants to achieve in this stage."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "AverageEmotion",
+          "formula": "IFERROR(round(avg(children().Emotion), 1), null)",
+          "result": "number",
+          "id": "att_stage_averageemotion",
+          "labels": {
+            "en": "Average emotion"
+          },
+          "help": {
+            "en": "The average emotion of the touchpoints inside, from -2 to +2."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Mood",
+          "formula": "AverageEmotion == null ? null : (AverageEmotion >= 0.5 ? 'Positive' : (AverageEmotion > -0.5 ? 'Neutral' : 'Negative'))",
+          "result": "text",
+          "id": "att_stage_mood",
+          "labels": {
+            "en": "Mood"
+          },
+          "help": {
+            "en": "Positive from an average emotion of 0.5, Negative from -0.5 down, otherwise Neutral. The fill shows it."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "PainPoints",
+          "formula": "count(children().Severity)",
+          "result": "number",
+          "id": "att_stage_painpoints",
+          "labels": {
+            "en": "Pain points"
+          },
+          "help": {
+            "en": "How many pain points sit inside."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Heading",
+          "formula": "(Order == null ? '' : Order + '. ') + Name + (AverageEmotion == null ? '' : ', mood ' + AverageEmotion)",
+          "result": "text",
+          "id": "att_stage_heading",
+          "labels": {
+            "en": "Heading"
+          },
+          "help": {
+            "en": "The order, the name and the average emotion, shown as the heading."
+          }
+        }
+      ],
+      "shape": "shp_stage"
+    },
+    "cls_touchpoint": {
+      "id": "cls_touchpoint",
+      "key": "Touchpoint",
+      "kind": "node",
+      "labels": {
+        "en": "Touchpoint"
+      },
+      "help": {
+        "en": "A step where the customer meets the organisation, through a channel, and how they feel about it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Touchpoint",
+          "id": "att_touchpoint_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "CustomerAction",
+          "multiline": true,
+          "id": "att_touchpoint_customeraction",
+          "labels": {
+            "en": "Customer action"
+          },
+          "help": {
+            "en": "What the customer does or experiences here."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Channel",
+          "options": [
+            "Website",
+            "Mobile app",
+            "Phone",
+            "Email",
+            "Letter",
+            "Shop",
+            "Chat",
+            "Social media",
+            "In person"
+          ],
+          "id": "att_touchpoint_channel",
+          "labels": {
+            "en": "Channel"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "Emotion",
+          "min": -2,
+          "max": 2,
+          "id": "att_touchpoint_emotion",
+          "labels": {
+            "en": "Emotion (-2 to +2)"
+          },
+          "help": {
+            "en": "-2 very unhappy, 0 neutral, +2 very happy."
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_touchpoint_owner",
+          "labels": {
+            "en": "Owner"
+          },
+          "help": {
+            "en": "The team responsible for this touchpoint."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Feeling",
+          "formula": "Emotion == null ? null : (Emotion > 0 ? 'Happy' : (Emotion == 0 ? 'Neutral' : 'Unhappy'))",
+          "result": "text",
+          "id": "att_touchpoint_feeling",
+          "labels": {
+            "en": "Feeling"
+          },
+          "help": {
+            "en": "Happy above 0, Unhappy below 0, otherwise Neutral. The fill shows it."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Summary",
+          "formula": "(Channel ?? '') + (Emotion == null ? '' : (Channel ? ', ' : '') + (Emotion > 0 ? '+' : '') + Emotion)",
+          "result": "text",
+          "id": "att_touchpoint_summary",
+          "labels": {
+            "en": "Summary"
+          },
+          "help": {
+            "en": "The channel and the emotion, shown on the diagram."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "PainPoints",
+          "formula": "count(incoming('Hurts'))",
+          "result": "number",
+          "id": "att_touchpoint_painpoints",
+          "labels": {
+            "en": "Pain points"
+          },
+          "help": {
+            "en": "How many pain points hurt this touchpoint."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_touchpoint_stage",
+          "formula": "parent != null",
+          "message": "= 'Touchpoint \"' + Name + '\" is not inside a stage.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_touchpoint_channel",
+          "formula": "Channel != null",
+          "message": "= 'Touchpoint \"' + Name + '\" has no channel.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_touchpoint"
+    },
+    "cls_painpoint": {
+      "id": "cls_painpoint",
+      "key": "PainPoint",
+      "kind": "node",
+      "labels": {
+        "en": "Pain point"
+      },
+      "help": {
+        "en": "Something that annoys or blocks the customer at a touchpoint, and how bad it is."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Pain point",
+          "id": "att_painpoint_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_painpoint_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Severity",
+          "options": ["Low", "Medium", "High"],
+          "required": true,
+          "id": "att_painpoint_severity",
+          "labels": {
+            "en": "Severity"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Cause",
+          "multiline": true,
+          "id": "att_painpoint_cause",
+          "labels": {
+            "en": "Cause"
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_pain_touchpoint",
+          "formula": "count(outgoing('Hurts')) > 0",
+          "message": "= 'Pain point \"' + Name + '\" hurts no touchpoint: connect it with \"Hurts\".'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_pain_opportunity",
+          "formula": "Severity != 'High' || count(incoming('Addresses')) > 0",
+          "message": "= 'Pain point \"' + Name + '\" is severe, but no opportunity addresses it.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_painpoint"
+    },
+    "cls_opportunity": {
+      "id": "cls_opportunity",
+      "key": "Opportunity",
+      "kind": "node",
+      "labels": {
+        "en": "Opportunity"
+      },
+      "help": {
+        "en": "An idea to remove a pain point or make a touchpoint better, rated on value and effort."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Opportunity",
+          "id": "att_opportunity_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_opportunity_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "Value",
+          "min": 1,
+          "max": 5,
+          "id": "att_opportunity_value",
+          "labels": {
+            "en": "Value (1 to 5)"
+          },
+          "help": {
+            "en": "How much it helps the customer and the business."
+          }
+        },
+        {
+          "type": "integer",
+          "key": "Effort",
+          "min": 1,
+          "max": 5,
+          "id": "att_opportunity_effort",
+          "labels": {
+            "en": "Effort (1 to 5)"
+          },
+          "help": {
+            "en": "How much work it takes."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Status",
+          "options": ["Idea", "Planned", "In progress", "Done"],
+          "default": "Idea",
+          "id": "att_opportunity_status",
+          "labels": {
+            "en": "Status"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Priority",
+          "formula": "Value == null || Effort == null ? null : Value * (6 - Effort)",
+          "result": "number",
+          "id": "att_opportunity_priority",
+          "labels": {
+            "en": "Priority"
+          },
+          "help": {
+            "en": "Value times (6 minus effort), from 1 to 25: high value and low effort come first."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Rating",
+          "formula": "(Status ?? 'Idea') + (Priority == null ? '' : ', priority ' + Priority)",
+          "result": "text",
+          "id": "att_opportunity_rating",
+          "labels": {
+            "en": "Rating"
+          },
+          "help": {
+            "en": "The status and the priority, shown on the diagram."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_opportunity_addresses",
+          "formula": "count(outgoing('Addresses')) > 0",
+          "message": "= 'Opportunity \"' + Name + '\" addresses nothing: connect it to a pain point or touchpoint.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_opportunity"
+    }
+  },
+  "relations": {
+    "rel_includes": {
+      "id": "rel_includes",
+      "key": "Includes",
+      "labels": {
+        "en": "Includes"
+      },
+      "help": {
+        "en": "The value stream goes through the stage."
+      },
+      "from": ["cls_valuestream"],
+      "to": ["cls_stage"],
+      "attributes": [],
+      "shape": "shp_rel_includes"
+    },
+    "rel_then": {
+      "id": "rel_then",
+      "key": "Then",
+      "labels": {
+        "en": "Then"
+      },
+      "help": {
+        "en": "The customer goes on from one touchpoint to the next."
+      },
+      "from": ["cls_touchpoint"],
+      "to": ["cls_touchpoint"],
+      "attributes": [],
+      "shape": "shp_rel_then"
+    },
+    "rel_hurts": {
+      "id": "rel_hurts",
+      "key": "Hurts",
+      "labels": {
+        "en": "Hurts"
+      },
+      "help": {
+        "en": "The pain point spoils the touchpoint."
+      },
+      "from": ["cls_painpoint"],
+      "to": ["cls_touchpoint"],
+      "attributes": [],
+      "shape": "shp_rel_hurts"
+    },
+    "rel_addresses": {
+      "id": "rel_addresses",
+      "key": "Addresses",
+      "labels": {
+        "en": "Addresses"
+      },
+      "help": {
+        "en": "The opportunity removes the pain point or improves the touchpoint."
+      },
+      "from": ["cls_opportunity"],
+      "to": ["cls_painpoint", "cls_touchpoint"],
+      "attributes": [],
+      "shape": "shp_rel_addresses"
+    },
+    "rel_measures": {
+      "id": "rel_measures",
+      "key": "Measures",
+      "labels": {
+        "en": "Measures"
+      },
+      "help": {
+        "en": "The metric shows how well the stage, touchpoint or value stream does."
+      },
+      "from": ["cls_kpi"],
+      "to": ["cls_stage", "cls_touchpoint", "cls_valuestream"],
+      "attributes": [],
+      "shape": "shp_rel_measures"
+    }
+  },
+  "modelTypes": {
+    "mt_journeymap": {
+      "id": "mt_journeymap",
+      "key": "JourneyMap",
+      "labels": {
+        "en": "Customer journey map"
+      },
+      "classes": [
+        "cls_valuestream",
+        "cls_kpi",
+        "cls_stage",
+        "cls_touchpoint",
+        "cls_painpoint",
+        "cls_opportunity"
+      ],
+      "relations": [
+        "rel_includes",
+        "rel_then",
+        "rel_hurts",
+        "rel_addresses",
+        "rel_measures"
+      ],
+      "views": [
+        {
+          "id": "vw_journey",
+          "key": "Journey",
+          "labels": {
+            "en": "Journey"
+          },
+          "classes": [
+            "cls_stage",
+            "cls_touchpoint",
+            "cls_painpoint",
+            "cls_opportunity"
+          ],
+          "relations": ["rel_then", "rel_hurts", "rel_addresses"]
+        },
+        {
+          "id": "vw_valuestream",
+          "key": "ValueStream",
+          "labels": {
+            "en": "Value stream"
+          },
+          "classes": ["cls_valuestream", "cls_stage", "cls_kpi"],
+          "relations": ["rel_includes", "rel_measures"]
+        }
+      ],
+      "cardinalities": [],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Title",
+          "required": true,
+          "maxLength": 100,
+          "id": "att_mtjourneymap_title",
+          "labels": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Persona",
+          "id": "att_mtjourneymap_persona",
+          "labels": {
+            "en": "Persona"
+          },
+          "help": {
+            "en": "Who the journey is about."
+          }
+        },
+        {
+          "type": "text",
+          "key": "Scenario",
+          "multiline": true,
+          "id": "att_mtjourneymap_scenario",
+          "labels": {
+            "en": "Scenario"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "AverageEmotion",
+          "formula": "IFERROR(round(avg(objects('Touchpoint').Emotion), 1), null)",
+          "result": "number",
+          "id": "att_mtjourneymap_averageemotion",
+          "labels": {
+            "en": "Average emotion"
+          },
+          "help": {
+            "en": "The average emotion of all touchpoints."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "PainPoints",
+          "formula": "count(objects('PainPoint'))",
+          "result": "number",
+          "id": "att_mtjourneymap_painpoints",
+          "labels": {
+            "en": "Pain points"
+          },
+          "help": {
+            "en": "How many pain points the journey has."
+          }
+        }
+      ],
+      "help": {
+        "en": "A value stream with its stages, touchpoints scored by emotion, pain points, opportunities and metrics."
+      },
+      "containers": {
+        "cls_stage": ["cls_touchpoint", "cls_painpoint", "cls_opportunity"]
+      }
+    }
+  },
+  "shapes": {
+    "shp_valuestream": {
+      "id": "shp_valuestream",
+      "name": "ValueStream look",
+      "kind": "node",
+      "size": {
+        "width": 320,
+        "height": 56,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 999,
+          "fill": "#b2f2bb",
+          "stroke": "#2f9e44",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 42,
+          "y": 4,
+          "width": "100% - 58",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 42,
+          "y": "100% - 22",
+          "width": "100% - 58",
+          "height": 18,
+          "text": "= Customer",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M5 21V3 M5 4h12l-2 4 2 4H5",
+          "viewBox": [0, 0, 24, 24],
+          "x": 14,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "pill",
+        "fill": "#b2f2bb",
+        "border": "#2f9e44",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 320,
+          "height": 56,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Customer"
+        },
+        "icon": {
+          "name": "flag"
+        }
+      }
+    },
+    "shp_kpi": {
+      "id": "shp_kpi",
+      "name": "KPI look",
+      "kind": "node",
+      "size": {
+        "width": 190,
+        "height": 60,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "= OnTrack == true ? '#b2f2bb' : OnTrack == false ? '#ffc9c9' : '#e9ecef'",
+          "stroke": "#2f9e44",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= Reading",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M5 21V3 M5 4h12l-2 4 2 4H5",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": {
+          "by": "OnTrack",
+          "values": {
+            "true": "#b2f2bb",
+            "false": "#ffc9c9"
+          },
+          "fallback": "#e9ecef"
+        },
+        "border": "#2f9e44",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 190,
+          "height": 60,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Reading"
+        },
+        "icon": {
+          "name": "flag"
+        }
+      }
+    },
+    "shp_stage": {
+      "id": "shp_stage",
+      "name": "Stage look",
+      "kind": "node",
+      "size": {
+        "width": 250,
+        "height": 480,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 6,
+          "fill": "= Mood == 'Positive' ? '#d3f9d866' : Mood == 'Neutral' ? '#f1f3f566' : Mood == 'Negative' ? '#ffc9c966' : '#f1f3f566'",
+          "stroke": "#2f9e44",
+          "strokeWidth": 1.5,
+          "dash": [7, 4]
+        },
+        {
+          "type": "text",
+          "x": 12,
+          "y": 4,
+          "width": "100% - 48",
+          "height": 24,
+          "text": "= Heading",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "container",
+        "fill": {
+          "by": "Mood",
+          "values": {
+            "Positive": "#d3f9d866",
+            "Neutral": "#f1f3f566",
+            "Negative": "#ffc9c966"
+          },
+          "fallback": "#f1f3f566"
+        },
+        "border": "#2f9e44",
+        "borderWidth": 1.5,
+        "borderStyle": "dashed",
+        "title": {
+          "attribute": "Heading",
+          "bold": true
+        },
+        "size": {
+          "width": 250,
+          "height": 480,
+          "resizable": true
+        }
+      }
+    },
+    "shp_touchpoint": {
+      "id": "shp_touchpoint",
+      "name": "Touchpoint look",
+      "kind": "node",
+      "size": {
+        "width": 190,
+        "height": 60,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "= Feeling == 'Happy' ? '#b2f2bb' : Feeling == 'Neutral' ? '#fff3bf' : Feeling == 'Unhappy' ? '#ffc9c9' : '#e9ecef'",
+          "stroke": "#2f9e44",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 4,
+          "width": "100% - 16",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 22",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= Summary",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": {
+          "by": "Feeling",
+          "values": {
+            "Happy": "#b2f2bb",
+            "Neutral": "#fff3bf",
+            "Unhappy": "#ffc9c9"
+          },
+          "fallback": "#e9ecef"
+        },
+        "border": "#2f9e44",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 190,
+          "height": 60,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Summary"
+        }
+      }
+    },
+    "shp_painpoint": {
+      "id": "shp_painpoint",
+      "name": "PainPoint look",
+      "kind": "node",
+      "size": {
+        "width": 190,
+        "height": 56,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 999,
+          "fill": "= Severity == 'Low' ? '#fff3bf' : Severity == 'Medium' ? '#ffd8a8' : Severity == 'High' ? '#ffa8a8' : '#ffd8a8'",
+          "stroke": "#e03131",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 42,
+          "y": 4,
+          "width": "100% - 58",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 42,
+          "y": "100% - 22",
+          "width": "100% - 58",
+          "height": 18,
+          "text": "= Severity",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 3L2 20h20z M12 10v5 M12 18h.01",
+          "viewBox": [0, 0, 24, 24],
+          "x": 14,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "pill",
+        "fill": {
+          "by": "Severity",
+          "values": {
+            "Low": "#fff3bf",
+            "Medium": "#ffd8a8",
+            "High": "#ffa8a8"
+          },
+          "fallback": "#ffd8a8"
+        },
+        "border": "#e03131",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 190,
+          "height": 56,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Severity"
+        },
+        "icon": {
+          "name": "warning"
+        }
+      }
+    },
+    "shp_opportunity": {
+      "id": "shp_opportunity",
+      "name": "Opportunity look",
+      "kind": "node",
+      "size": {
+        "width": 190,
+        "height": 60,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "#e5dbff",
+          "stroke": "#6741d9",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= Rating",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": "#e5dbff",
+        "border": "#6741d9",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 190,
+          "height": 60,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Rating"
+        },
+        "icon": {
+          "name": "star"
+        }
+      }
+    },
+    "shp_rel_includes": {
+      "id": "shp_rel_includes",
+      "name": "Includes look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#2f9e44",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [2, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#2f9e44",
+        "width": 1.5,
+        "style": "dotted",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_then": {
+      "id": "shp_rel_then",
+      "name": "Then look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#495057",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#495057",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_hurts": {
+      "id": "shp_rel_hurts",
+      "name": "Hurts look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#e03131",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#e03131",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_addresses": {
+      "id": "shp_rel_addresses",
+      "name": "Addresses look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#6741d9",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#6741d9",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_measures": {
+      "id": "shp_rel_measures",
+      "name": "Measures look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#2f9e44",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [2, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#2f9e44",
+        "width": 1.5,
+        "style": "dotted",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    }
+  },
+  "panels": {
+    "cls_touchpoint": {
+      "class": "cls_touchpoint",
+      "tabs": [
+        {
+          "label": "Touchpoint",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Channel",
+              "control": "select"
+            },
+            {
+              "attribute": "Emotion"
+            },
+            {
+              "attribute": "Feeling"
+            },
+            {
+              "attribute": "CustomerAction",
+              "control": "textarea"
+            },
+            {
+              "attribute": "Owner"
+            },
+            {
+              "attribute": "PainPoints"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_opportunity": {
+      "class": "cls_opportunity",
+      "tabs": [
+        {
+          "label": "Opportunity",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            },
+            {
+              "attribute": "Value"
+            },
+            {
+              "attribute": "Effort"
+            },
+            {
+              "attribute": "Priority"
+            },
+            {
+              "attribute": "Status",
+              "control": "segmented"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    }
+  },
+  "rules": {},
+  "scripts": {}
+}

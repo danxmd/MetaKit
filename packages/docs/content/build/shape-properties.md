@@ -47,7 +47,7 @@ Which properties are shown depends on the kind of part.
 | | **Align**, **Vertical align** | Left, Center, Right; Top, Middle, Bottom. Fixed values only. |
 | | **Wrap lines** | A checkbox. |
 | | **When too long** | **None**, **Shrink** or **Clip**. |
-| **Image** | **Image source** | A data address or a path under the tool library's `assets/` folder. Imported SVG files are stored as data ([[shape-svg-import]]). |
+| **Image** | **Image source** | A data address or a path under the Kit's `assets/` folder. Imported SVG files are stored as data ([[shape-svg-import]]). |
 | | **Fit** | **Contain**, **Cover** or **Stretch**. |
 | **Behaviour** | **Visible** | A checkbox or a formula. A false value hides the part. |
 | | **Tooltip** | Text or formula shown when the pointer rests on the part in a model. |
@@ -96,7 +96,7 @@ Help text: "A named value is worked out once and can be used in any formula of t
 
 ## Examples
 
-In the **Task (status stripe)** shape of the Agent pipeline tool:
+In the **Task (status stripe)** shape of the Agent pipeline Kit:
 
 - The stripe's **Fill colour** is a formula: `= if(Status == 'Done', '#d3f9d8', if(Status == 'Failed', '#ffe3e3', ...))`, with `#f1f3f5` for all other values.
 - The label's **Text** is `= $label`, and its **When too long** is **Shrink**.

@@ -8,11 +8,11 @@ contexts: [build.modelTypes]
 order: 90
 ---
 
-A model type is a kind of model, such as a Process map or an ER diagram. It decides which classes and relation classes a modeller can use in that kind of model. A tool library can offer several model types that share the same classes.
+A model type is a kind of model, such as a Process map or an ER diagram. It decides which classes and relation classes a modeller can use in that kind of model. A Kit can offer several model types that share the same classes.
 
 ## What it is
 
-When someone creates a model they choose a tool library and a model type ([[dialog-new-model]]). The model type then controls:
+When someone creates a model they choose a Kit and a model type ([[dialog-new-model]]). The model type then controls:
 
 - **Allowed content**: the classes and relation classes in the palette ([[palette]]).
 - **Views**: smaller palettes for parts of the work.
@@ -21,7 +21,7 @@ When someone creates a model they choose a tool library and a model type ([[dial
 - A **background** shape drawn behind the model.
 - **Attributes** and **constraints** of the model itself, such as a Title.
 
-A class that is not allowed in a model type cannot be used in models of that type, even if it exists in the tool library.
+A class that is not allowed in a model type cannot be used in models of that type, even if it exists in the Kit.
 
 ## Where to find it
 
@@ -31,7 +31,7 @@ Build mode, **Model types** under **Metamodel**. Select a model type to see its 
 
 1. Add a model type and set its **Key** and **Label**.
 2. Under **Allowed content**, tick the classes and the relation classes that belong in this kind of model.
-3. Look at the [[try-it-preview]]. The tool buttons now list your classes. If the tool library has several model types, choose which one to try in the list at the top of the preview.
+3. Look at the [[try-it-preview]]. The tool buttons now list your classes. If the Kit has several model types, choose which one to try in the list at the top of the preview.
 4. Optionally add **Views**, **Cardinalities** and container rules (below).
 5. Add attributes of the model, such as Title or Owner ([[attributes]]).
 
@@ -51,7 +51,7 @@ Build mode, **Model types** under **Metamodel**. Select a model type to see its 
 | --- | --- |
 | **Classes allowed in the model** | One checkbox per class. A class is allowed when it or one of its parents is ticked ([[abstract-classes]]). |
 | **Relation classes allowed** | One checkbox per relation class. |
-| **Background shape** | A shape drawn behind the whole model, for example a title block. Choices are **None** and every node shape in the tool library. |
+| **Background shape** | A shape drawn behind the whole model, for example a title block. Choices are **None** and every node shape in the Kit. |
 
 > **Warning**
 > Unticking a class does not remove it from the views, cardinalities and container rules of this model type. Those then refer to something the model type does not allow, and the problems banner reports it: The view "Flow" uses the class cls_task, which the model type does not allow. Clean them up first.
@@ -98,7 +98,7 @@ The attributes of a model type belong to the model itself, not to its objects ([
 
 ## Examples
 
-The Agent pipeline tool has two model types.
+The Agent pipeline Kit has two model types.
 
 **Pipeline** allows Agent, Human, Task, Artifact, Gate and Stage and all six relation classes. It has two views, **Flow** (Task, Gate, Stage and the relation class HandsOverTo) and **Responsibilities** (Agent, Human, Task, with Performs and DelegatesTo). It has one cardinality: Number of objects of class Task, at least 1. **Stage** is a swimlane that accepts Agent, Human, Task, Gate and Artifact. The model attributes are Title (required, up to 100 characters), PipelineOwner and Purpose.
 
@@ -106,9 +106,9 @@ The Agent pipeline tool has two model types.
 
 ## Good to know
 
-- Deleting a model type has no "still in use" check. A model made with it then reports: The model type mdl... does not exist in the tool library, so the model cannot be checked against its rules. Delete a model type only when no model uses it.
+- Deleting a model type has no "still in use" check. A model made with it then reports: The model type mdl... does not exist in the Kit, so the model cannot be checked against its rules. Delete a model type only when no model uses it.
 - A model type with no classes shows "Nothing to try yet" or "Allow a class in the model type to place it here." in the preview.
-- When you add a class to the tool library, a model type does not allow it until you tick it here.
+- When you add a class to the Kit, a model type does not allow it until you tick it here.
 
 > **Tip**
 > Start with one model type that allows everything. Split it into more specific model types and views only when modellers ask for a calmer palette.

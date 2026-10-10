@@ -1,0 +1,664 @@
+{
+  "attributes": {
+    "Organisation": "A regional retailer",
+    "Title": "Capability map 2027"
+  },
+  "connectors": [
+    {
+      "attributes": {
+        "Coverage": "Full"
+      },
+      "from": "el_app_shop",
+      "id": "cn_001",
+      "relation": "Supports",
+      "to": "el_l3_online"
+    },
+    {
+      "attributes": {
+        "Coverage": "Partial"
+      },
+      "from": "el_app_shop",
+      "id": "cn_002",
+      "relation": "Supports",
+      "to": "el_l3_campaigns"
+    },
+    {
+      "attributes": {
+        "Coverage": "Full"
+      },
+      "from": "el_app_till",
+      "id": "cn_003",
+      "relation": "Supports",
+      "to": "el_l3_store"
+    },
+    {
+      "attributes": {
+        "Coverage": "Partial"
+      },
+      "from": "el_app_till",
+      "id": "cn_004",
+      "relation": "Supports",
+      "to": "el_l3_returns"
+    },
+    {
+      "attributes": {
+        "Coverage": "Full"
+      },
+      "from": "el_app_desk",
+      "id": "cn_005",
+      "relation": "Supports",
+      "to": "el_l3_support"
+    },
+    {
+      "attributes": {
+        "Coverage": "Partial"
+      },
+      "from": "el_app_desk",
+      "id": "cn_006",
+      "relation": "Supports",
+      "to": "el_l3_returns"
+    },
+    {
+      "attributes": {
+        "Coverage": "Full"
+      },
+      "from": "el_app_merch",
+      "id": "cn_007",
+      "relation": "Supports",
+      "to": "el_l3_assortment"
+    },
+    {
+      "attributes": {
+        "Coverage": "Full"
+      },
+      "from": "el_app_wms",
+      "id": "cn_008",
+      "relation": "Supports",
+      "to": "el_l3_warehousing"
+    },
+    {
+      "attributes": {
+        "Coverage": "Partial"
+      },
+      "from": "el_app_wms",
+      "id": "cn_009",
+      "relation": "Supports",
+      "to": "el_l3_replenishment"
+    },
+    {
+      "attributes": {
+        "Coverage": "Full"
+      },
+      "from": "el_app_erp",
+      "id": "cn_010",
+      "relation": "Supports",
+      "to": "el_l3_accounting"
+    },
+    {
+      "attributes": {
+        "Coverage": "Partial"
+      },
+      "from": "el_app_erp",
+      "id": "cn_011",
+      "relation": "Supports",
+      "to": "el_l3_planning"
+    },
+    {
+      "attributes": {
+        "Coverage": "Full"
+      },
+      "from": "el_app_erp",
+      "id": "cn_012",
+      "relation": "Supports",
+      "to": "el_l3_payroll"
+    },
+    {
+      "attributes": {
+        "Coverage": "Full"
+      },
+      "from": "el_app_dataplatform",
+      "id": "cn_013",
+      "relation": "Supports",
+      "to": "el_l3_insight"
+    },
+    {
+      "attributes": {
+        "Coverage": "Partial"
+      },
+      "from": "el_app_dataplatform",
+      "id": "cn_014",
+      "relation": "Supports",
+      "to": "el_l3_forecasting"
+    },
+    {
+      "attributes": {
+        "Coverage": "Full"
+      },
+      "from": "el_app_dataplatform",
+      "id": "cn_015",
+      "relation": "Supports",
+      "to": "el_l3_data"
+    }
+  ],
+  "elements": [
+    {
+      "attributes": {
+        "Name": "Customer"
+      },
+      "class": "CapabilityL1",
+      "h": 410,
+      "id": "el_l1_customer",
+      "w": 384,
+      "x": 40,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "Name": "Marketing"
+      },
+      "class": "CapabilityL2",
+      "h": 110,
+      "id": "el_l2_marketing",
+      "parent": "el_l1_customer",
+      "w": 360,
+      "x": 52,
+      "y": 84
+    },
+    {
+      "attributes": {
+        "Maturity": 3,
+        "Name": "Campaign management",
+        "StrategicImportance": "Medium",
+        "TargetMaturity": 3
+      },
+      "class": "CapabilityL3",
+      "h": 60,
+      "id": "el_l3_campaigns",
+      "parent": "el_l2_marketing",
+      "w": 160,
+      "x": 64,
+      "y": 122
+    },
+    {
+      "attributes": {
+        "Maturity": 2,
+        "Name": "Customer insight",
+        "StrategicImportance": "High",
+        "TargetMaturity": 4
+      },
+      "class": "CapabilityL3",
+      "h": 60,
+      "id": "el_l3_insight",
+      "parent": "el_l2_marketing",
+      "w": 160,
+      "x": 240,
+      "y": 122
+    },
+    {
+      "attributes": {
+        "Name": "Sales"
+      },
+      "class": "CapabilityL2",
+      "h": 110,
+      "id": "el_l2_sales",
+      "parent": "el_l1_customer",
+      "w": 360,
+      "x": 52,
+      "y": 206
+    },
+    {
+      "attributes": {
+        "Maturity": 3,
+        "Name": "Online sales",
+        "StrategicImportance": "High",
+        "TargetMaturity": 5
+      },
+      "class": "CapabilityL3",
+      "h": 60,
+      "id": "el_l3_online",
+      "parent": "el_l2_sales",
+      "w": 160,
+      "x": 64,
+      "y": 244
+    },
+    {
+      "attributes": {
+        "Maturity": 4,
+        "Name": "Store sales",
+        "StrategicImportance": "Medium",
+        "TargetMaturity": 4
+      },
+      "class": "CapabilityL3",
+      "h": 60,
+      "id": "el_l3_store",
+      "parent": "el_l2_sales",
+      "w": 160,
+      "x": 240,
+      "y": 244
+    },
+    {
+      "attributes": {
+        "Name": "Service"
+      },
+      "class": "CapabilityL2",
+      "h": 110,
+      "id": "el_l2_service",
+      "parent": "el_l1_customer",
+      "w": 360,
+      "x": 52,
+      "y": 328
+    },
+    {
+      "attributes": {
+        "Maturity": 2,
+        "Name": "Returns handling",
+        "StrategicImportance": "Medium",
+        "TargetMaturity": 3
+      },
+      "class": "CapabilityL3",
+      "h": 60,
+      "id": "el_l3_returns",
+      "parent": "el_l2_service",
+      "w": 160,
+      "x": 64,
+      "y": 366
+    },
+    {
+      "attributes": {
+        "Maturity": 3,
+        "Name": "Customer support",
+        "StrategicImportance": "Medium",
+        "TargetMaturity": 4
+      },
+      "class": "CapabilityL3",
+      "h": 60,
+      "id": "el_l3_support",
+      "parent": "el_l2_service",
+      "w": 160,
+      "x": 240,
+      "y": 366
+    },
+    {
+      "attributes": {
+        "Name": "Products and supply"
+      },
+      "class": "CapabilityL1",
+      "h": 410,
+      "id": "el_l1_products",
+      "w": 384,
+      "x": 444,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "Name": "Range planning"
+      },
+      "class": "CapabilityL2",
+      "h": 110,
+      "id": "el_l2_range",
+      "parent": "el_l1_products",
+      "w": 360,
+      "x": 456,
+      "y": 84
+    },
+    {
+      "attributes": {
+        "Maturity": 3,
+        "Name": "Assortment planning",
+        "StrategicImportance": "Medium",
+        "TargetMaturity": 4
+      },
+      "class": "CapabilityL3",
+      "h": 60,
+      "id": "el_l3_assortment",
+      "parent": "el_l2_range",
+      "w": 160,
+      "x": 468,
+      "y": 122
+    },
+    {
+      "attributes": {
+        "Maturity": 1,
+        "Name": "Dynamic pricing",
+        "StrategicImportance": "High",
+        "TargetMaturity": 4
+      },
+      "class": "CapabilityL3",
+      "h": 60,
+      "id": "el_l3_pricing",
+      "parent": "el_l2_range",
+      "w": 160,
+      "x": 644,
+      "y": 122
+    },
+    {
+      "attributes": {
+        "Name": "Supply chain"
+      },
+      "class": "CapabilityL2",
+      "h": 110,
+      "id": "el_l2_supply",
+      "parent": "el_l1_products",
+      "w": 360,
+      "x": 456,
+      "y": 206
+    },
+    {
+      "attributes": {
+        "Maturity": 2,
+        "Name": "Demand forecasting",
+        "StrategicImportance": "High",
+        "TargetMaturity": 4
+      },
+      "class": "CapabilityL3",
+      "h": 60,
+      "id": "el_l3_forecasting",
+      "parent": "el_l2_supply",
+      "w": 160,
+      "x": 468,
+      "y": 244
+    },
+    {
+      "attributes": {
+        "Maturity": 3,
+        "Name": "Replenishment",
+        "StrategicImportance": "Medium",
+        "TargetMaturity": 4
+      },
+      "class": "CapabilityL3",
+      "h": 60,
+      "id": "el_l3_replenishment",
+      "parent": "el_l2_supply",
+      "w": 160,
+      "x": 644,
+      "y": 244
+    },
+    {
+      "attributes": {
+        "Name": "Logistics"
+      },
+      "class": "CapabilityL2",
+      "h": 110,
+      "id": "el_l2_logistics",
+      "parent": "el_l1_products",
+      "w": 360,
+      "x": 456,
+      "y": 328
+    },
+    {
+      "attributes": {
+        "Maturity": 4,
+        "Name": "Warehousing",
+        "StrategicImportance": "Medium",
+        "TargetMaturity": 4
+      },
+      "class": "CapabilityL3",
+      "h": 60,
+      "id": "el_l3_warehousing",
+      "parent": "el_l2_logistics",
+      "w": 160,
+      "x": 468,
+      "y": 366
+    },
+    {
+      "attributes": {
+        "Maturity": 2,
+        "Name": "Home delivery",
+        "StrategicImportance": "Medium",
+        "TargetMaturity": 3
+      },
+      "class": "CapabilityL3",
+      "h": 60,
+      "id": "el_l3_delivery",
+      "parent": "el_l2_logistics",
+      "w": 160,
+      "x": 644,
+      "y": 366
+    },
+    {
+      "attributes": {
+        "Name": "Support"
+      },
+      "class": "CapabilityL1",
+      "h": 410,
+      "id": "el_l1_support",
+      "w": 384,
+      "x": 848,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "Name": "Finance"
+      },
+      "class": "CapabilityL2",
+      "h": 110,
+      "id": "el_l2_finance",
+      "parent": "el_l1_support",
+      "w": 360,
+      "x": 860,
+      "y": 84
+    },
+    {
+      "attributes": {
+        "Maturity": 4,
+        "Name": "Accounting",
+        "StrategicImportance": "Low",
+        "TargetMaturity": 4
+      },
+      "class": "CapabilityL3",
+      "h": 60,
+      "id": "el_l3_accounting",
+      "parent": "el_l2_finance",
+      "w": 160,
+      "x": 872,
+      "y": 122
+    },
+    {
+      "attributes": {
+        "Maturity": 2,
+        "Name": "Financial planning",
+        "StrategicImportance": "Medium",
+        "TargetMaturity": 3
+      },
+      "class": "CapabilityL3",
+      "h": 60,
+      "id": "el_l3_planning",
+      "parent": "el_l2_finance",
+      "w": 160,
+      "x": 1048,
+      "y": 122
+    },
+    {
+      "attributes": {
+        "Name": "People"
+      },
+      "class": "CapabilityL2",
+      "h": 110,
+      "id": "el_l2_people",
+      "parent": "el_l1_support",
+      "w": 360,
+      "x": 860,
+      "y": 206
+    },
+    {
+      "attributes": {
+        "Maturity": 3,
+        "Name": "Recruitment",
+        "StrategicImportance": "Low",
+        "TargetMaturity": 3
+      },
+      "class": "CapabilityL3",
+      "h": 60,
+      "id": "el_l3_recruitment",
+      "parent": "el_l2_people",
+      "w": 160,
+      "x": 872,
+      "y": 244
+    },
+    {
+      "attributes": {
+        "Maturity": 4,
+        "Name": "Payroll",
+        "StrategicImportance": "Low",
+        "TargetMaturity": 4
+      },
+      "class": "CapabilityL3",
+      "h": 60,
+      "id": "el_l3_payroll",
+      "parent": "el_l2_people",
+      "w": 160,
+      "x": 1048,
+      "y": 244
+    },
+    {
+      "attributes": {
+        "Name": "Technology"
+      },
+      "class": "CapabilityL2",
+      "h": 110,
+      "id": "el_l2_technology",
+      "parent": "el_l1_support",
+      "w": 360,
+      "x": 860,
+      "y": 328
+    },
+    {
+      "attributes": {
+        "Maturity": 3,
+        "Name": "IT operations",
+        "StrategicImportance": "Medium",
+        "TargetMaturity": 3
+      },
+      "class": "CapabilityL3",
+      "h": 60,
+      "id": "el_l3_operations",
+      "parent": "el_l2_technology",
+      "w": 160,
+      "x": 872,
+      "y": 366
+    },
+    {
+      "attributes": {
+        "Maturity": 2,
+        "Name": "Data management",
+        "StrategicImportance": "Medium",
+        "TargetMaturity": 4
+      },
+      "class": "CapabilityL3",
+      "h": 60,
+      "id": "el_l3_data",
+      "parent": "el_l2_technology",
+      "w": 160,
+      "x": 1048,
+      "y": 366
+    },
+    {
+      "attributes": {
+        "Lifecycle": "Invest",
+        "Name": "Online shop platform",
+        "Owner": "Head of e-commerce",
+        "TechnicalFit": 4
+      },
+      "class": "Application",
+      "h": 70,
+      "id": "el_app_shop",
+      "w": 160,
+      "x": 40,
+      "y": 520
+    },
+    {
+      "attributes": {
+        "Lifecycle": "Tolerate",
+        "Name": "Store till system",
+        "Owner": "Head of stores",
+        "TechnicalFit": 2
+      },
+      "class": "Application",
+      "h": 70,
+      "id": "el_app_till",
+      "w": 160,
+      "x": 216,
+      "y": 520
+    },
+    {
+      "attributes": {
+        "Lifecycle": "Invest",
+        "Name": "Customer service desk",
+        "Owner": "Head of service",
+        "TechnicalFit": 4
+      },
+      "class": "Application",
+      "h": 70,
+      "id": "el_app_desk",
+      "w": 160,
+      "x": 392,
+      "y": 520
+    },
+    {
+      "attributes": {
+        "Lifecycle": "Migrate",
+        "Name": "Merchandise planning tool",
+        "Owner": "Head of buying",
+        "TechnicalFit": 2
+      },
+      "class": "Application",
+      "h": 70,
+      "id": "el_app_merch",
+      "w": 160,
+      "x": 568,
+      "y": 520
+    },
+    {
+      "attributes": {
+        "Lifecycle": "Tolerate",
+        "Name": "Warehouse system",
+        "Owner": "Head of logistics",
+        "TechnicalFit": 3
+      },
+      "class": "Application",
+      "h": 70,
+      "id": "el_app_wms",
+      "w": 160,
+      "x": 744,
+      "y": 520
+    },
+    {
+      "attributes": {
+        "Lifecycle": "Eliminate",
+        "Name": "Finance system",
+        "Owner": "Finance director",
+        "TechnicalFit": 2
+      },
+      "class": "Application",
+      "h": 70,
+      "id": "el_app_erp",
+      "w": 160,
+      "x": 920,
+      "y": 520
+    },
+    {
+      "attributes": {
+        "Lifecycle": "Invest",
+        "Name": "Data platform",
+        "Owner": "Head of data",
+        "TechnicalFit": 4
+      },
+      "class": "Application",
+      "h": 70,
+      "id": "el_app_dataplatform",
+      "w": 160,
+      "x": 1096,
+      "y": 520
+    }
+  ],
+  "formatVersion": 2,
+  "id": "mdl_retailercapabilities",
+  "kind": "mkmodel",
+  "kit": {
+    "id": "kit_capabilitymap",
+    "name": "Business capability map",
+    "version": "1.0.0"
+  },
+  "modelType": "CapabilityMap",
+  "name": "Capability map"
+}

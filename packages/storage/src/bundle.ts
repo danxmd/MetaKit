@@ -1,10 +1,10 @@
 import {
   newId,
-  validateToolLibrary,
+  validateKit,
   type Json,
   type Model,
-  type ToolId,
-  type ToolLibrary,
+  type KitId,
+  type Kit,
 } from '@metakit-app/core';
 import { FormatError } from './errors';
 import { stringifyCanonical } from './json';
@@ -15,7 +15,8 @@ import {
   MkModelError,
   type MkModelImportReport,
 } from './mkmodel';
-import { migrate } from './migrate';
+import { CURRENT_FORMAT, migrate } from './migrate';
+import { BUNDLE_KIT_PATH, OLDER_BUNDLE_KIT_PATH } from './names';
 import { slugify } from './slugify';
 import type { Workspace } from './workspace';
 import { unzipFiles, zipFiles } from './zip';
@@ -23,7 +24,7 @@ import { unzipFiles, zipFiles } from './zip';
 /** What exporting needs from a workspace. */
 export type WorkspaceReader = Pick<
   Workspace,
-  'loadModel' | 'loadTool' | 'findToolSlug'
+  'loadModel' | 'loadKit' | 'findKitSlug'
 >;
 
 export const BUNDLE_EXTENSION = '.mkbundle';
@@ -36,23 +37,26 @@ interface BundleModelEntry {
   folder?: string;
 }
 
-/** `bundle.json`: what is in the zip. */
+/**
+ * `bundle.json`: what is in the zip. Format 1, from releases before the Kit rename, said `tool`
+ * and `includesTool` and held the Kit as `tool/tool.json`; it is read as this.
+ */
 export interface BundleManifest {
   formatVersion: number;
   kind: 'mkbundle';
   name: string;
   created: string;
-  tool: { id: string; name: string; version: string };
-  /** Whether `tool/tool.json` is in the zip. */
-  includesTool: boolean;
+  kit: { id: string; name: string; version: string };
+  /** Whether `kit/kit.json` is in the zip. */
+  includesKit: boolean;
   models: BundleModelEntry[];
 }
 
 export interface ExportBundleOptions {
   /** Folder names (slugs) of the models to put in the bundle. */
   models: string[];
-  /** Put the tool library in the bundle. Without it, the receiver must already have the tool. */
-  includeTool: boolean;
+  /** Put the Kit in the bundle. Without it, the receiver must already have the Kit. */
+  includeKit: boolean;
   /** The name of the bundle; by default the name of the first model. */
   name?: string;
   now?: () => Date;
@@ -65,13 +69,12 @@ export interface ExportedBundle {
 }
 
 const MANIFEST_PATH = 'bundle.json';
-const TOOL_PATH = 'tool/tool.json';
 
 function json(value: unknown): string {
   return stringifyCanonical(value as Json);
 }
 
-/** Packs models and their tool library into one `.mkbundle` file. All models must come from the same tool library. */
+/** Packs models and their Kit into one `.mkbundle` file. All models must come from the same Kit. */
 export async function exportBundle(
   workspace: WorkspaceReader,
   options: ExportBundleOptions,
@@ -81,18 +84,18 @@ export async function exportBundle(
   const loaded: Model[] = [];
   for (const slug of options.models)
     loaded.push((await workspace.loadModel(slug)).document);
-  const toolId = loaded[0]!.manifest.tool;
-  const other = loaded.find((m) => m.manifest.tool !== toolId);
+  const kitId = loaded[0]!.manifest.kit;
+  const other = loaded.find((m) => m.manifest.kit !== kitId);
   if (other)
     throw new FormatError(
-      `A bundle holds one tool library, but "${loaded[0]!.manifest.name}" and "${other.manifest.name}" were made with different ones. Make one bundle for each tool library.`,
+      `A bundle holds one Kit, but "${loaded[0]!.manifest.name}" and "${other.manifest.name}" were made with different ones. Make one bundle for each Kit.`,
     );
-  const toolSlug = await workspace.findToolSlug(toolId);
-  if (!toolSlug)
+  const kitSlug = await workspace.findKitSlug(kitId);
+  if (!kitSlug)
     throw new FormatError(
-      `The tool library ${toolId} that these models were made with is not in this workspace.`,
+      `The Kit ${kitId} that these models were made with is not in this workspace.`,
     );
-  const tool = (await workspace.loadTool(toolSlug)).document;
+  const kit = (await workspace.loadKit(kitSlug)).document;
 
   const files: Record<string, string> = {};
   const entries: BundleModelEntry[] = [];
@@ -102,7 +105,7 @@ export async function exportBundle(
     let file = `models/${base}.mkmodel.json`;
     for (let i = 2; file in files; i++)
       file = `models/${base}-${i}.mkmodel.json`;
-    files[file] = exportMkModel(tool, model);
+    files[file] = exportMkModel(kit, model);
     entries.push({
       name: model.manifest.name,
       file,
@@ -113,20 +116,20 @@ export async function exportBundle(
   }
   const name = options.name?.trim() || loaded[0]!.manifest.name;
   const manifest: BundleManifest = {
-    formatVersion: 1,
+    formatVersion: CURRENT_FORMAT.bundle,
     kind: 'mkbundle',
     name,
     created: (options.now ?? (() => new Date()))().toISOString(),
-    tool: {
-      id: tool.manifest.id,
-      name: tool.manifest.name,
-      version: tool.manifest.version,
+    kit: {
+      id: kit.manifest.id,
+      name: kit.manifest.name,
+      version: kit.manifest.version,
     },
-    includesTool: options.includeTool,
+    includesKit: options.includeKit,
     models: entries,
   };
   files[MANIFEST_PATH] = json(manifest);
-  if (options.includeTool) files[TOOL_PATH] = json(tool);
+  if (options.includeKit) files[BUNDLE_KIT_PATH] = json(kit);
   return {
     bytes: zipFiles(files),
     fileName: `${slugify(name)}${BUNDLE_EXTENSION}`,
@@ -135,12 +138,12 @@ export async function exportBundle(
 
 export interface BundleImportReport {
   bundleName: string;
-  /** The tool library came with the bundle and was added to the workspace. */
-  toolAdded: boolean;
-  toolSlug: string;
-  tool: { id: string; name: string; version: string };
-  /** The bundle's tool library has another version than the one already in the workspace (which was used). */
-  toolVersionDiffers: boolean;
+  /** The Kit came with the bundle and was added to the workspace. */
+  kitAdded: boolean;
+  kitSlug: string;
+  kit: { id: string; name: string; version: string };
+  /** The bundle's Kit has another version than the one already in the workspace (which was used). */
+  kitVersionDiffers: boolean;
   added: {
     name: string;
     slug: string;
@@ -186,21 +189,21 @@ export function readBundleManifest(
       'This is not a MetaKit bundle (bundle.json has the wrong kind).',
     );
   if (
-    typeof m.tool?.id !== 'string' ||
+    typeof m.kit?.id !== 'string' ||
     !Array.isArray(m.models) ||
     m.models.some(
       (e) => typeof e?.file !== 'string' || typeof e?.name !== 'string',
     )
   )
     throw new FormatError(
-      'bundle.json is incomplete: it needs the tool and a list of models with their files.',
+      'bundle.json is incomplete: it needs the Kit and a list of models with their files.',
     );
   return m;
 }
 
 /**
  * Adds the models of a bundle to the workspace, each with a new model id and in the explorer
- * folder it had. The bundle's tool library is added when the workspace does not have a tool with
+ * folder it had. The bundle's Kit is added when the workspace does not have a Kit with
  * the same id; otherwise the workspace's own is used and a difference in version is reported.
  * A model that cannot be read is skipped and named in the report; the others are still added.
  */
@@ -212,54 +215,55 @@ export async function importBundle(
   const manifest = readBundleManifest(files);
   const messages: string[] = [];
 
-  let bundledTool: ToolLibrary | null = null;
-  const toolText = readText(files, TOOL_PATH);
-  if (toolText !== null) {
-    const migrated = migrate(
-      'tool-document',
-      parseJson(toolText, 'tool/tool.json'),
-    ).value;
-    const issues = validateToolLibrary(migrated);
+  let bundledKit: Kit | null = null;
+  const kitPath =
+    files[BUNDLE_KIT_PATH] !== undefined
+      ? BUNDLE_KIT_PATH
+      : OLDER_BUNDLE_KIT_PATH;
+  const kitText = readText(files, kitPath);
+  if (kitText !== null) {
+    const migrated = migrate('kit-document', parseJson(kitText, kitPath)).value;
+    const issues = validateKit(migrated);
     if (issues.length > 0)
       throw new FormatError(
-        `The tool library in this bundle has ${issues.length} problem${issues.length === 1 ? '' : 's'}, so nothing was imported: ${issues
+        `The Kit in this bundle has ${issues.length} problem${issues.length === 1 ? '' : 's'}, so nothing was imported: ${issues
           .slice(0, 3)
           .map((i) => `${i.path || '(top level)'}: ${i.message}`)
           .join('; ')}.`,
       );
-    bundledTool = migrated as unknown as ToolLibrary;
-    if (bundledTool.manifest.id !== manifest.tool.id)
+    bundledKit = migrated as unknown as Kit;
+    if (bundledKit.manifest.id !== manifest.kit.id)
       throw new FormatError(
-        'The tool library in this bundle is not the one bundle.json names, so nothing was imported.',
+        'The Kit in this bundle is not the one bundle.json names, so nothing was imported.',
       );
   }
 
-  let toolSlug = await workspace.findToolSlug(manifest.tool.id as ToolId);
-  let toolAdded = false;
-  let toolVersionDiffers = false;
-  if (toolSlug === null) {
-    if (!bundledTool)
+  let kitSlug = await workspace.findKitSlug(manifest.kit.id as KitId);
+  let kitAdded = false;
+  let kitVersionDiffers = false;
+  if (kitSlug === null) {
+    if (!bundledKit)
       throw new FormatError(
-        `This bundle does not include its tool library "${manifest.tool.name}" (${manifest.tool.id}), and the workspace does not have it. Import the tool package first.`,
+        `This bundle does not include its Kit "${manifest.kit.name}" (${manifest.kit.id}), and the workspace does not have it. Import the Kit package first.`,
       );
-    toolSlug = await workspace.createTool(bundledTool);
-    toolAdded = true;
+    kitSlug = await workspace.createKit(bundledKit);
+    kitAdded = true;
     messages.push(
-      `Added the tool library "${bundledTool.manifest.name}" (version ${bundledTool.manifest.version}).`,
+      `Added the Kit "${bundledKit.manifest.name}" (version ${bundledKit.manifest.version}).`,
     );
   } else {
-    const have = (await workspace.loadTool(toolSlug)).document;
-    const offered = bundledTool?.manifest.version ?? manifest.tool.version;
-    toolVersionDiffers = offered !== have.manifest.version;
+    const have = (await workspace.loadKit(kitSlug)).document;
+    const offered = bundledKit?.manifest.version ?? manifest.kit.version;
+    kitVersionDiffers = offered !== have.manifest.version;
     messages.push(
-      `The workspace already has the tool library "${have.manifest.name}", so that one was used.`,
+      `The workspace already has the Kit "${have.manifest.name}", so that one was used.`,
     );
-    if (toolVersionDiffers)
+    if (kitVersionDiffers)
       messages.push(
-        `The bundle was made with version ${offered} of the tool library, but the workspace has version ${have.manifest.version}. The models were read with the version in the workspace; check them for changes.`,
+        `The bundle was made with version ${offered} of the Kit, but the workspace has version ${have.manifest.version}. The models were read with the version in the workspace; check them for changes.`,
       );
   }
-  const tool = (await workspace.loadTool(toolSlug)).document;
+  const kit = (await workspace.loadKit(kitSlug)).document;
 
   const added: BundleImportReport['added'] = [];
   const skipped: BundleImportReport['skipped'] = [];
@@ -273,7 +277,7 @@ export async function importBundle(
       continue;
     }
     try {
-      const read = importMkModel(tool, text);
+      const read = importMkModel(kit, text);
       const model: Model = {
         ...read,
         manifest: {
@@ -286,18 +290,19 @@ export async function importBundle(
         },
       };
       const slug = await workspace.createModel(model);
-      const fileTool = (
-        JSON.parse(text) as {
-          tool?: { id?: string; name?: string; version?: string };
+      // What the file says about its Kit, under the name of its format (`tool` in format 1).
+      const fileKit = (
+        migrate('mkmodel', JSON.parse(text)).value as {
+          kit?: { id?: string; name?: string; version?: string };
         }
-      ).tool;
+      ).kit;
       added.push({
         name: model.manifest.name,
         slug,
         ...(model.manifest.folder === undefined
           ? {}
           : { folder: model.manifest.folder }),
-        report: describeMkModelImport(tool, fileTool, model, false),
+        report: describeMkModelImport(kit, fileKit, model, false),
       });
     } catch (error) {
       const reason =
@@ -317,10 +322,10 @@ export async function importBundle(
   for (const s of skipped) messages.push(`Skipped "${s.name}": ${s.reason}`);
   return {
     bundleName: manifest.name,
-    toolAdded,
-    toolSlug,
-    tool: manifest.tool,
-    toolVersionDiffers,
+    kitAdded,
+    kitSlug,
+    kit: manifest.kit,
+    kitVersionDiffers,
     added,
     skipped,
     messages,

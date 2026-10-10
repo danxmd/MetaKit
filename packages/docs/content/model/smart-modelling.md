@@ -8,13 +8,13 @@ contexts: []
 order: 310
 ---
 
-Not sure what an object can be connected to? Let the model tell you. Smart modelling reads the rules of the tool library and offers every legal next step.
+Not sure what an object can be connected to? Let the model tell you. Smart modelling reads the rules of the Kit and offers every legal next step.
 
 ## What it is
 
 A card that opens next to an object when you hover over it for a moment. It lists each relation that can start or end at that object, and for each the kinds of object at the other end. A row has two buttons: **New** adds a new object of that kind and connects it, and **Existing** helps you connect to an object that is already in the model.
 
-Everything on the card comes from the tool library and the model type, so it never offers something the tool forbids.
+Everything on the card comes from the Kit and the model type, so it never offers something the Kit forbids.
 
 ## Where to find it
 
@@ -68,7 +68,7 @@ Switch on smart modelling and rest the pointer on the task **Implement** in the 
 - Because **New** creates the object and the connection together, one **Ctrl+Z** removes both.
 - Cardinality rules (how many connections an object may have) are not applied here. The [[problems-panel]] reports them.
 
-> **Tip**: Combine smart modelling with [[interaction-hints]]. Together they explain the whole tool as you hover.
+> **Tip**: Combine smart modelling with [[interaction-hints]]. Together they explain the whole Kit as you hover.
 
 ## Related
 

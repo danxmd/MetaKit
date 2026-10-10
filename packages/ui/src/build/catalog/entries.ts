@@ -12,11 +12,11 @@ import { baseInfo } from '@metakit-app/shapes';
 
 /**
  * The class catalog (openspec/changes/ai-data-catalog): generic classes and relation classes a
- * method engineer adds to a tool library instead of typing them in. The wording is neutral on
+ * method engineer adds to a Kit instead of typing them in. The wording is neutral on
  * purpose: no company or product names, and technology fields are free text.
  *
  * Entries carry no ids and no language: `catalogCommands` makes fresh ids and puts the English
- * text under the first language of the tool library when it does not list English.
+ * text under the first language of the Kit when it does not list English.
  */
 
 export type CatalogTopicId =
@@ -41,7 +41,7 @@ type WithoutIdAndText<T> = T extends unknown
   ? Omit<T, 'id' | 'labels' | 'help'>
   : never;
 
-/** An attribute as the tool library has it, without id; `label` and `help` are English. */
+/** An attribute as the Kit has it, without id; `label` and `help` are English. */
 export type CatalogAttribute = WithoutIdAndText<AttributeDef> & {
   label: string;
   help?: string;
@@ -62,7 +62,7 @@ export interface CatalogRelation {
   key: string;
   labels: { en: string };
   help: string;
-  /** Catalog class keys; empty means any class (every class of the tool library once added). */
+  /** Catalog class keys; empty means any class (every class of the Kit once added). */
   from: string[];
   to: string[];
   attributes: CatalogAttribute[];

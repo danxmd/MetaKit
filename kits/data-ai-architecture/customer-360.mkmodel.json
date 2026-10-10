@@ -1,0 +1,473 @@
+{
+  "attributes": {
+    "Purpose": "One view of each customer, and a model that predicts which customers are likely to leave.",
+    "Title": "Customer 360 and churn model"
+  },
+  "connectors": [
+    {
+      "attributes": {
+        "ContainsPersonalData": true,
+        "Format": "Extract",
+        "Frequency": "Batch"
+      },
+      "from": "el_jcpm9gr49b",
+      "id": "cn_rdf12ksb30",
+      "relation": "FlowsTo",
+      "to": "el_p6dgezef7p"
+    },
+    {
+      "attributes": {
+        "ContainsPersonalData": true,
+        "Format": "Extract",
+        "Frequency": "Batch"
+      },
+      "from": "el_49yp6xpbxb",
+      "id": "cn_zgtxq2nbj5",
+      "relation": "FlowsTo",
+      "to": "el_p6dgezef7p"
+    },
+    {
+      "attributes": {
+        "ContainsPersonalData": true,
+        "Format": "Events",
+        "Frequency": "Streaming"
+      },
+      "from": "el_cgktasp278",
+      "id": "cn_hqvsqtgs4p",
+      "relation": "FlowsTo",
+      "to": "el_wmp5vmb0re"
+    },
+    {
+      "attributes": {
+        "ContainsPersonalData": true,
+        "Frequency": "Batch"
+      },
+      "from": "el_p6dgezef7p",
+      "id": "cn_cq9rgy9h28",
+      "relation": "FlowsTo",
+      "to": "el_bv81jc1em4"
+    },
+    {
+      "attributes": {
+        "ContainsPersonalData": true,
+        "Frequency": "Streaming"
+      },
+      "from": "el_wmp5vmb0re",
+      "id": "cn_fbpdsepspc",
+      "relation": "FlowsTo",
+      "to": "el_2hz3b3m951"
+    },
+    {
+      "attributes": {
+        "ContainsPersonalData": true,
+        "Frequency": "Batch"
+      },
+      "from": "el_bv81jc1em4",
+      "id": "cn_yv9cpf85zb",
+      "relation": "FlowsTo",
+      "to": "el_g9whb03vv3"
+    },
+    {
+      "attributes": {
+        "ContainsPersonalData": true,
+        "Frequency": "Batch"
+      },
+      "from": "el_2hz3b3m951",
+      "id": "cn_se037e30p0",
+      "relation": "FlowsTo",
+      "to": "el_g9whb03vv3"
+    },
+    {
+      "attributes": {
+        "ContainsPersonalData": true,
+        "Frequency": "Batch"
+      },
+      "from": "el_g9whb03vv3",
+      "id": "cn_wgzpmebqyb",
+      "relation": "FlowsTo",
+      "to": "el_68c9j0zmv7"
+    },
+    {
+      "attributes": {
+        "ContainsPersonalData": true,
+        "Frequency": "Batch"
+      },
+      "from": "el_68c9j0zmv7",
+      "id": "cn_ykkc8p7s07",
+      "relation": "FlowsTo",
+      "to": "el_n3fw0svvbp"
+    },
+    {
+      "attributes": {
+        "ContainsPersonalData": true,
+        "Frequency": "Batch"
+      },
+      "from": "el_n3fw0svvbp",
+      "id": "cn_wzgxnswbbj",
+      "relation": "FlowsTo",
+      "to": "el_027jp5hbw7"
+    },
+    {
+      "attributes": {
+        "ContainsPersonalData": false,
+        "Frequency": "Batch"
+      },
+      "from": "el_027jp5hbw7",
+      "id": "cn_4ppx9pqjdr",
+      "relation": "FlowsTo",
+      "to": "el_c12zzakgg0"
+    },
+    {
+      "attributes": {
+        "ContainsPersonalData": false,
+        "Frequency": "Batch"
+      },
+      "from": "el_c12zzakgg0",
+      "id": "cn_8gqtsre0br",
+      "relation": "FlowsTo",
+      "to": "el_0f6j27ndax"
+    },
+    {
+      "attributes": {
+        "ContainsPersonalData": true,
+        "Frequency": "On demand"
+      },
+      "from": "el_n3fw0svvbp",
+      "id": "cn_e9sdn8tvjf",
+      "relation": "FlowsTo",
+      "to": "el_8z4rraz86h"
+    },
+    {
+      "attributes": {
+        "Split": "Training"
+      },
+      "from": "el_b0vdq7jjn7",
+      "id": "cn_2m56hs91sd",
+      "relation": "TrainsOn",
+      "to": "el_0f6j27ndax"
+    },
+    {
+      "attributes": {
+        "Channel": "Model call"
+      },
+      "from": "el_b0vdq7jjn7",
+      "id": "cn_ywqvswdsy5",
+      "relation": "Serves",
+      "to": "el_6saanf6h4x"
+    },
+    {
+      "attributes": {
+        "Channel": "Nightly scores"
+      },
+      "from": "el_6saanf6h4x",
+      "id": "cn_4fcg179kc2",
+      "relation": "Serves",
+      "to": "el_8z4rraz86h"
+    },
+    {
+      "attributes": {
+        "Channel": "API call"
+      },
+      "from": "el_6saanf6h4x",
+      "id": "cn_53kb77awzt",
+      "relation": "Serves",
+      "to": "el_t38ststhqv"
+    }
+  ],
+  "elements": [
+    {
+      "attributes": {
+        "Layer": "Raw",
+        "Name": "Raw zone"
+      },
+      "class": "Zone",
+      "h": 60,
+      "id": "el_e5dz9ftstc",
+      "w": 120,
+      "x": 260,
+      "y": 20
+    },
+    {
+      "attributes": {
+        "Layer": "Curated",
+        "Name": "Curated zone"
+      },
+      "class": "Zone",
+      "h": 60,
+      "id": "el_j9xxafhvdg",
+      "w": 120,
+      "x": 820,
+      "y": 20
+    },
+    {
+      "attributes": {
+        "Layer": "Serving",
+        "Name": "Serving zone"
+      },
+      "class": "Zone",
+      "h": 60,
+      "id": "el_473wpjz45d",
+      "w": 120,
+      "x": 1380,
+      "y": 20
+    },
+    {
+      "attributes": {
+        "Location": "Cloud",
+        "Name": "CRM",
+        "Owner": "Sales operations",
+        "Technology": "CRM"
+      },
+      "class": "SourceSystem",
+      "h": 60,
+      "id": "el_jcpm9gr49b",
+      "w": 120,
+      "x": 20,
+      "y": 60
+    },
+    {
+      "attributes": {
+        "Location": "Cloud",
+        "Name": "Web events",
+        "Owner": "Digital team",
+        "Technology": "Web analytics"
+      },
+      "class": "SourceSystem",
+      "h": 60,
+      "id": "el_cgktasp278",
+      "w": 120,
+      "x": 20,
+      "y": 200
+    },
+    {
+      "attributes": {
+        "Location": "Cloud",
+        "Name": "Billing",
+        "Owner": "Finance",
+        "Technology": "Billing system"
+      },
+      "class": "SourceSystem",
+      "h": 60,
+      "id": "el_49yp6xpbxb",
+      "w": 120,
+      "x": 20,
+      "y": 340
+    },
+    {
+      "attributes": {
+        "Mode": "Batch",
+        "Name": "Batch import",
+        "Schedule": "Nightly"
+      },
+      "class": "Ingestion",
+      "h": 60,
+      "id": "el_p6dgezef7p",
+      "parent": "el_e5dz9ftstc",
+      "w": 120,
+      "x": 290,
+      "y": 100
+    },
+    {
+      "attributes": {
+        "Mode": "Streaming",
+        "Name": "Event stream"
+      },
+      "class": "Ingestion",
+      "h": 60,
+      "id": "el_wmp5vmb0re",
+      "parent": "el_e5dz9ftstc",
+      "w": 120,
+      "x": 290,
+      "y": 220
+    },
+    {
+      "attributes": {
+        "ApprovedForPersonalData": true,
+        "Kind": "Lake",
+        "Name": "Landing store",
+        "Region": "Home region"
+      },
+      "class": "DataStore",
+      "h": 60,
+      "id": "el_bv81jc1em4",
+      "parent": "el_e5dz9ftstc",
+      "w": 120,
+      "x": 560,
+      "y": 100
+    },
+    {
+      "attributes": {
+        "ApprovedForPersonalData": false,
+        "Kind": "Lake",
+        "Name": "Event archive"
+      },
+      "class": "DataStore",
+      "h": 60,
+      "id": "el_2hz3b3m951",
+      "parent": "el_e5dz9ftstc",
+      "w": 120,
+      "x": 560,
+      "y": 220
+    },
+    {
+      "attributes": {
+        "Engine": "SQL jobs",
+        "Name": "Clean and join",
+        "Schedule": "Daily",
+        "Transformation": "Removes duplicates, joins customers across systems and adds session counts."
+      },
+      "class": "DataPipeline",
+      "h": 60,
+      "id": "el_g9whb03vv3",
+      "parent": "el_j9xxafhvdg",
+      "w": 120,
+      "x": 850,
+      "y": 100
+    },
+    {
+      "attributes": {
+        "ApprovedForPersonalData": true,
+        "Kind": "Lakehouse",
+        "Name": "Lakehouse",
+        "Owner": "Data platform team",
+        "Region": "Home region"
+      },
+      "class": "DataStore",
+      "h": 60,
+      "id": "el_68c9j0zmv7",
+      "parent": "el_j9xxafhvdg",
+      "w": 120,
+      "x": 1100,
+      "y": 100
+    },
+    {
+      "attributes": {
+        "Classification": "Restricted",
+        "ContainsPersonalData": true,
+        "Format": "Table",
+        "Name": "Customer profile",
+        "Owner": "Customer data team",
+        "Refresh": "Daily"
+      },
+      "class": "Dataset",
+      "h": 60,
+      "id": "el_n3fw0svvbp",
+      "parent": "el_j9xxafhvdg",
+      "w": 120,
+      "x": 970,
+      "y": 200
+    },
+    {
+      "attributes": {
+        "Engine": "SQL jobs",
+        "Name": "Feature build",
+        "Schedule": "Daily",
+        "Transformation": "Turns profiles into pseudonymous churn features."
+      },
+      "class": "DataPipeline",
+      "h": 60,
+      "id": "el_027jp5hbw7",
+      "parent": "el_473wpjz45d",
+      "w": 120,
+      "x": 1410,
+      "y": 100
+    },
+    {
+      "attributes": {
+        "ApprovedForPersonalData": false,
+        "Kind": "Feature store",
+        "Name": "Feature store"
+      },
+      "class": "DataStore",
+      "h": 60,
+      "id": "el_c12zzakgg0",
+      "parent": "el_473wpjz45d",
+      "w": 120,
+      "x": 1660,
+      "y": 100
+    },
+    {
+      "attributes": {
+        "Classification": "Confidential",
+        "ContainsPersonalData": false,
+        "Format": "Table",
+        "Name": "Churn features",
+        "Owner": "Data science team",
+        "Refresh": "Daily"
+      },
+      "class": "Dataset",
+      "h": 60,
+      "id": "el_0f6j27ndax",
+      "parent": "el_473wpjz45d",
+      "w": 120,
+      "x": 1530,
+      "y": 200
+    },
+    {
+      "attributes": {
+        "Framework": "Gradient boosting",
+        "Metric": "AUC",
+        "Name": "Churn model",
+        "Owner": "Data science team",
+        "Score": 0.87,
+        "Task": "Classification",
+        "Version": "1.2"
+      },
+      "class": "MLModel",
+      "h": 60,
+      "id": "el_b0vdq7jjn7",
+      "w": 120,
+      "x": 1530,
+      "y": 380
+    },
+    {
+      "attributes": {
+        "Endpoint": "/churn/score",
+        "Kind": "API",
+        "Name": "Churn score API"
+      },
+      "class": "AIService",
+      "h": 60,
+      "id": "el_6saanf6h4x",
+      "w": 120,
+      "x": 1530,
+      "y": 520
+    },
+    {
+      "attributes": {
+        "Audience": "Internal",
+        "Kind": "Dashboard",
+        "Name": "Retention dashboard"
+      },
+      "class": "Consumer",
+      "h": 60,
+      "id": "el_8z4rraz86h",
+      "w": 120,
+      "x": 1110,
+      "y": 520
+    },
+    {
+      "attributes": {
+        "Audience": "Internal",
+        "Kind": "Application",
+        "Name": "CRM app"
+      },
+      "class": "Consumer",
+      "h": 60,
+      "id": "el_t38ststhqv",
+      "w": 120,
+      "x": 1900,
+      "y": 520
+    }
+  ],
+  "formatVersion": 2,
+  "id": "mdl_m42xmps0m3",
+  "kind": "mkmodel",
+  "kit": {
+    "id": "tool_dataaiarch",
+    "name": "Data and AI architecture",
+    "version": "1.0.0"
+  },
+  "modelType": "Architecture",
+  "name": "Customer 360 and churn model"
+}
