@@ -5,9 +5,9 @@ import { exportCommand, validateCommand, type Io } from './commands';
 import {
   exportBundleCommand,
   exportCsvCommand,
-  exportToolCommand,
+  exportKitCommand,
   importBundleCommand,
-  importToolCommand,
+  importKitCommand,
 } from './exchange';
 import { CliError } from './load';
 
@@ -24,33 +24,33 @@ export function getVersion(): string {
 export const USAGE = `Usage: metakit <command> [options]
 
 Commands:
-  validate <path>            Check a workspace folder, a tool library (folder or file) or a model file.
+  validate <path>            Check a workspace folder, a Kit (folder or file) or a model file.
       --strict               Treat warnings as failures.
       --json                 Print the result as JSON.
-      --tool <path>          The tool library for a model file (default: tool.json next to it).
+      --tool <path>          The Kit for a model file (default: kit.json or tool.json next to it).
   export <model>             Write a model as an editable model file.
       --format json          The only format so far.
       --out <file>           Write to a file instead of the standard output.
-      --tool <path>          The tool library for a model file.
+      --tool <path>          The Kit for a model file.
       --workspace <folder>   Treat <model> as the folder name of a model in this workspace.
-  export-bundle [<model>...] Pack models and their tool library into a .mkbundle (all models when none are named).
+  export-bundle [<model>...] Pack models and their Kit into a .mkbundle (all models when none are named).
       --workspace <folder>   The workspace; <model> is the folder name of a model in it.
       --out <file>           The bundle to write.
       --name <name>          The name of the bundle.
-      --no-tool              Leave the tool library out.
-  import-bundle <file>       Add the models (and the tool library, when new) of a .mkbundle to a workspace.
+      --no-tool              Leave the Kit out.
+  import-bundle <file>       Add the models (and the Kit, when new) of a .mkbundle to a workspace.
       --workspace <folder>   The workspace to add to.
       --create               Make the folder a workspace first when it is not one yet.
-  export-tool <tool>         Write a tool library as a .mktool package.
-      --workspace <folder>   Treat <tool> as the folder name of a tool library in this workspace (otherwise a path).
+  export-tool <tool>         Write a Kit as a .mkkit package.
+      --workspace <folder>   Treat <tool> as the folder name of a Kit in this workspace (otherwise a path).
       --out <file>           The package to write.
-  import-tool <file>         Add or update a tool library from a .mktool package; shows what changes first.
+  import-tool <file>         Add or update a Kit from a .mkkit (or .mktool) package; shows what changes first.
       --workspace <folder>   The workspace to add to.
-      --yes                  Apply an update to a tool library that is already there.
+      --yes                  Apply an update to a Kit that is already there.
       --create               Make the folder a workspace first when it is not one yet.
   export-csv <model>         Write a model as CSV files, one per class and per relation class.
       --workspace <folder>   Treat <model> as the folder name of a model in this workspace.
-      --tool <path>          The tool library for a model file.
+      --tool <path>          The Kit for a model file.
       --out <folder|.zip>    Write the files into a folder, or into one zip when this ends in .zip.
       --bom                  Start each file with a byte order mark so that Excel reads accents correctly.
 
@@ -81,8 +81,8 @@ export async function run(args: string[], io: Io): Promise<number> {
       return await exportBundleCommand(parsed, io);
     if (command === 'import-bundle')
       return await importBundleCommand(parsed, io);
-    if (command === 'export-tool') return await exportToolCommand(parsed, io);
-    if (command === 'import-tool') return await importToolCommand(parsed, io);
+    if (command === 'export-tool') return await exportKitCommand(parsed, io);
+    if (command === 'import-tool') return await importKitCommand(parsed, io);
     if (command === 'export-csv') return await exportCsvCommand(parsed, io);
   } catch (error) {
     if (error instanceof UsageError) {

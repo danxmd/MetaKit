@@ -46,7 +46,7 @@ An empty shape says: "Nothing drawn yet. Add a part with the buttons above."
 
 ## Examples
 
-The **Task (status stripe)** shape of the Agent pipeline tool lists, from front to back:
+The **Task (status stripe)** shape of the Agent pipeline Kit lists, from front to back:
 
 1. **Text: Status + (Priority == 'High' ? ' · high' : '')**, the small line at the bottom;
 2. **Text: $label**, the name;

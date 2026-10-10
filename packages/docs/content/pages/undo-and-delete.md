@@ -33,7 +33,7 @@ The message appears centred at the bottom of the window. It stays for ten second
 | A shape ([[shapes-section]]) | Removed at once, unless something still uses it; then it is refused and the users are named | Brings it back |
 | A rule ([[rules]]) or a script ([[scripts]]) | Removed at once. A script you were still typing in is saved first. | Brings it back as it was |
 | A hand-drawn look, replaced with **Replace with a simple look** ([[appearance-editor]]) | Replaced at once, and the look editor opens | Puts the drawing back |
-| A model or tool library ([[trash-and-restore]]) | Moved to the **Deleted** list | Restores it from the list |
+| A model or Kit ([[trash-and-restore]]) | Moved to the **Deleted** list | Restores it from the list |
 
 **When MetaKit asks first**
 

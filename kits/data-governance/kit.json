@@ -1,0 +1,2169 @@
+{
+  "formatVersion": 7,
+  "manifest": {
+    "id": "tool_datagov",
+    "name": "Data governance and ownership",
+    "version": "1.0.0",
+    "languages": ["en"]
+  },
+  "settings": {
+    "grid": {
+      "size": 10,
+      "snap": true,
+      "visible": true
+    },
+    "layers": [
+      {
+        "key": "main",
+        "labels": {
+          "en": "Main"
+        },
+        "visible": true
+      }
+    ],
+    "numbering": {
+      "enabled": false,
+      "prefix": "",
+      "start": 1
+    }
+  },
+  "classes": {
+    "cls_domain": {
+      "id": "cls_domain",
+      "key": "DataDomain",
+      "kind": "container",
+      "labels": {
+        "en": "Data domain"
+      },
+      "attributes": [
+        {
+          "id": "att_domname",
+          "key": "Name",
+          "type": "text",
+          "labels": {
+            "en": "Name"
+          },
+          "required": true,
+          "maxLength": 100,
+          "default": "New domain"
+        },
+        {
+          "id": "att_domdesc",
+          "key": "Description",
+          "type": "text",
+          "labels": {
+            "en": "Description"
+          },
+          "multiline": true
+        },
+        {
+          "id": "att_domlead",
+          "key": "DomainLead",
+          "type": "text",
+          "labels": {
+            "en": "Domain lead"
+          },
+          "maxLength": 80
+        }
+      ],
+      "help": {
+        "en": "An area of the business that is responsible for its own data, such as Sales or Finance. It holds data products, data assets and glossary terms."
+      },
+      "shape": "shp_domain"
+    },
+    "cls_product": {
+      "id": "cls_product",
+      "key": "DataProduct",
+      "kind": "node",
+      "labels": {
+        "en": "Data product"
+      },
+      "attributes": [
+        {
+          "id": "att_prodname",
+          "key": "Name",
+          "type": "text",
+          "labels": {
+            "en": "Name"
+          },
+          "required": true,
+          "maxLength": 100,
+          "default": "New data product"
+        },
+        {
+          "id": "att_proddesc",
+          "key": "Description",
+          "type": "text",
+          "labels": {
+            "en": "Description"
+          },
+          "multiline": true
+        },
+        {
+          "id": "att_prodstatus",
+          "key": "Status",
+          "type": "choice",
+          "labels": {
+            "en": "Status"
+          },
+          "options": ["Draft", "Published", "Deprecated"],
+          "default": "Draft"
+        },
+        {
+          "id": "att_prodsla",
+          "key": "SLA",
+          "type": "text",
+          "labels": {
+            "en": "Service level"
+          },
+          "maxLength": 200,
+          "help": {
+            "en": "What consumers can rely on, such as \"Refreshed daily by 06:00\"."
+          }
+        },
+        {
+          "id": "att_prodconsumers",
+          "key": "Consumers",
+          "type": "text",
+          "labels": {
+            "en": "Consumers"
+          },
+          "multiline": true,
+          "help": {
+            "en": "Teams or uses outside this model that rely on the product."
+          }
+        },
+        {
+          "id": "att_prodclass",
+          "key": "Classification",
+          "type": "choice",
+          "labels": {
+            "en": "Classification"
+          },
+          "options": ["Public", "Internal", "Confidential", "Restricted"],
+          "default": "Internal"
+        },
+        {
+          "id": "att_prodowner",
+          "key": "OwnerName",
+          "type": "formula",
+          "labels": {
+            "en": "Owner"
+          },
+          "formula": "join(incoming('Owns').Name, ', ')",
+          "result": "text",
+          "help": {
+            "en": "The people with an \"Owns\" connector to this product."
+          }
+        },
+        {
+          "id": "att_prodsteward",
+          "key": "StewardName",
+          "type": "formula",
+          "labels": {
+            "en": "Steward"
+          },
+          "formula": "join(incoming('Stewards').Name, ', ')",
+          "result": "text"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_prod_steward",
+          "formula": "Status != 'Published' || count(incoming('Stewards')) > 0",
+          "message": "A published data product needs a steward.",
+          "severity": "warning"
+        }
+      ],
+      "help": {
+        "en": "Data that a team publishes for others to use, with an owner, a service level and known consumers."
+      },
+      "shape": "shp_product"
+    },
+    "cls_asset": {
+      "id": "cls_asset",
+      "key": "DataAsset",
+      "kind": "node",
+      "labels": {
+        "en": "Data asset"
+      },
+      "attributes": [
+        {
+          "id": "att_assetname",
+          "key": "Name",
+          "type": "text",
+          "labels": {
+            "en": "Name"
+          },
+          "required": true,
+          "maxLength": 100,
+          "default": "New data asset"
+        },
+        {
+          "id": "att_assetkind",
+          "key": "Kind",
+          "type": "choice",
+          "labels": {
+            "en": "Kind"
+          },
+          "options": ["Table", "File", "Stream", "Report", "Model"],
+          "default": "Table"
+        },
+        {
+          "id": "att_assetclass",
+          "key": "Classification",
+          "type": "choice",
+          "labels": {
+            "en": "Classification"
+          },
+          "options": ["Public", "Internal", "Confidential", "Restricted"],
+          "default": "Internal"
+        },
+        {
+          "id": "att_assetpd",
+          "key": "ContainsPersonalData",
+          "type": "boolean",
+          "labels": {
+            "en": "Contains personal data"
+          },
+          "default": false
+        },
+        {
+          "id": "att_assetretention",
+          "key": "RetentionPeriod",
+          "type": "duration",
+          "labels": {
+            "en": "Retention period"
+          },
+          "help": {
+            "en": "How long the data is kept, as an ISO 8601 duration: P7Y is seven years, P90D is 90 days."
+          }
+        },
+        {
+          "id": "att_assetdesc",
+          "key": "Description",
+          "type": "text",
+          "labels": {
+            "en": "Description"
+          },
+          "multiline": true
+        },
+        {
+          "id": "att_assetscore",
+          "key": "QualityScore",
+          "type": "formula",
+          "labels": {
+            "en": "Quality score"
+          },
+          "formula": "IF(count(incoming('Checks')) > 0, round(avg(incoming('Checks').PassValue) * 100, 0))",
+          "result": "number",
+          "help": {
+            "en": "The share of the quality rules checking this asset that pass, from 0 to 100. Empty when no rule checks it."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_asset_policy",
+          "formula": "!(Classification == 'Restricted' || (Classification == 'Confidential' && ContainsPersonalData == true)) || count(outgoing('GovernedBy')) > 0",
+          "message": "A restricted data asset, or a confidential one with personal data, needs a policy (\"Governed by\").",
+          "severity": "warning"
+        },
+        {
+          "id": "k_asset_retention",
+          "formula": "ContainsPersonalData != true || RetentionPeriod != null",
+          "message": "A data asset with personal data should say how long it is kept.",
+          "severity": "warning"
+        },
+        {
+          "id": "k_asset_level",
+          "formula": "count(outgoing('ClassifiedAs')) == 0 || outgoing('ClassifiedAs')[0].Level == Classification",
+          "message": "The classification of this data asset differs from the classification it is linked to.",
+          "severity": "warning"
+        }
+      ],
+      "help": {
+        "en": "A table, file, stream, report or model that holds data. Its colour shows its classification."
+      },
+      "shape": "shp_asset"
+    },
+    "cls_person": {
+      "id": "cls_person",
+      "key": "Person",
+      "kind": "node",
+      "labels": {
+        "en": "Person"
+      },
+      "attributes": [
+        {
+          "id": "att_personname",
+          "key": "Name",
+          "type": "text",
+          "labels": {
+            "en": "Name"
+          },
+          "required": true,
+          "maxLength": 100,
+          "default": "New person"
+        },
+        {
+          "id": "att_personemail",
+          "key": "Email",
+          "type": "text",
+          "labels": {
+            "en": "Email"
+          },
+          "maxLength": 120
+        },
+        {
+          "id": "att_personteam",
+          "key": "Team",
+          "type": "text",
+          "labels": {
+            "en": "Team"
+          },
+          "maxLength": 80
+        },
+        {
+          "id": "att_personroles",
+          "key": "Responsibilities",
+          "type": "formula",
+          "labels": {
+            "en": "Responsibilities"
+          },
+          "formula": "count(outgoing('Owns')) + count(outgoing('Stewards')) + count(outgoing('CustodianOf'))",
+          "result": "number",
+          "help": {
+            "en": "How many things this person owns, stewards or looks after."
+          }
+        }
+      ],
+      "help": {
+        "en": "Someone who takes part in governance. Their roles come from their connectors: Owns, Stewards and Custodian of."
+      },
+      "shape": "shp_person"
+    },
+    "cls_term": {
+      "id": "cls_term",
+      "key": "GlossaryTerm",
+      "kind": "node",
+      "labels": {
+        "en": "Glossary term"
+      },
+      "attributes": [
+        {
+          "id": "att_termname",
+          "key": "Name",
+          "type": "text",
+          "labels": {
+            "en": "Name"
+          },
+          "required": true,
+          "maxLength": 100,
+          "default": "New term"
+        },
+        {
+          "id": "att_termdef",
+          "key": "Definition",
+          "type": "text",
+          "labels": {
+            "en": "Definition"
+          },
+          "multiline": true
+        },
+        {
+          "id": "att_termstatus",
+          "key": "Status",
+          "type": "choice",
+          "labels": {
+            "en": "Status"
+          },
+          "options": ["Draft", "Approved"],
+          "default": "Draft"
+        },
+        {
+          "id": "att_termsyn",
+          "key": "Synonyms",
+          "type": "text",
+          "labels": {
+            "en": "Synonyms"
+          },
+          "help": {
+            "en": "Other words people use for the same thing, separated by commas."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_term_def",
+          "formula": "Status != 'Approved' || !isEmpty(Definition)",
+          "message": "An approved glossary term needs a definition.",
+          "severity": "warning"
+        }
+      ],
+      "help": {
+        "en": "A business word with an agreed meaning, linked to the data it describes."
+      },
+      "shape": "shp_term"
+    },
+    "cls_policy": {
+      "id": "cls_policy",
+      "key": "Policy",
+      "kind": "node",
+      "labels": {
+        "en": "Policy"
+      },
+      "attributes": [
+        {
+          "id": "att_policyname",
+          "key": "Name",
+          "type": "text",
+          "labels": {
+            "en": "Name"
+          },
+          "required": true,
+          "maxLength": 100,
+          "default": "New policy"
+        },
+        {
+          "id": "att_policykind",
+          "key": "Kind",
+          "type": "choice",
+          "labels": {
+            "en": "Kind"
+          },
+          "options": ["Access", "Retention", "Privacy", "Quality", "Usage"],
+          "default": "Access"
+        },
+        {
+          "id": "att_policyeff",
+          "key": "EffectiveDate",
+          "type": "date",
+          "labels": {
+            "en": "Effective date"
+          }
+        },
+        {
+          "id": "att_policyrev",
+          "key": "ReviewDate",
+          "type": "date",
+          "labels": {
+            "en": "Review date"
+          }
+        },
+        {
+          "id": "att_policydesc",
+          "key": "Description",
+          "type": "text",
+          "labels": {
+            "en": "Description"
+          },
+          "multiline": true
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_policy_dates",
+          "formula": "EffectiveDate == null || ReviewDate == null || daysBetween(EffectiveDate, ReviewDate) > 0",
+          "message": "The review date of a policy should come after its effective date.",
+          "severity": "warning"
+        }
+      ],
+      "help": {
+        "en": "A rule the organisation sets for its data: who may access it, how long it is kept, and so on."
+      },
+      "shape": "shp_policy"
+    },
+    "cls_classification": {
+      "id": "cls_classification",
+      "key": "Classification",
+      "kind": "node",
+      "labels": {
+        "en": "Classification"
+      },
+      "attributes": [
+        {
+          "id": "att_classname",
+          "key": "Name",
+          "type": "text",
+          "labels": {
+            "en": "Name"
+          },
+          "required": true,
+          "maxLength": 100,
+          "default": "New classification"
+        },
+        {
+          "id": "att_classlevel",
+          "key": "Level",
+          "type": "choice",
+          "labels": {
+            "en": "Level"
+          },
+          "options": ["Public", "Internal", "Confidential", "Restricted"],
+          "default": "Internal"
+        },
+        {
+          "id": "att_classhandling",
+          "key": "Handling",
+          "type": "text",
+          "labels": {
+            "en": "Handling"
+          },
+          "multiline": true,
+          "help": {
+            "en": "How data at this level must be stored, shared and disposed of."
+          }
+        }
+      ],
+      "help": {
+        "en": "A sensitivity level and the handling it requires."
+      },
+      "shape": "shp_classification"
+    },
+    "cls_rule": {
+      "id": "cls_rule",
+      "key": "QualityRule",
+      "kind": "node",
+      "labels": {
+        "en": "Quality rule"
+      },
+      "attributes": [
+        {
+          "id": "att_rulename",
+          "key": "Name",
+          "type": "text",
+          "labels": {
+            "en": "Name"
+          },
+          "required": true,
+          "maxLength": 100,
+          "default": "New quality rule"
+        },
+        {
+          "id": "att_ruledim",
+          "key": "Dimension",
+          "type": "choice",
+          "labels": {
+            "en": "Dimension"
+          },
+          "options": [
+            "Completeness",
+            "Validity",
+            "Uniqueness",
+            "Timeliness",
+            "Accuracy",
+            "Consistency"
+          ],
+          "default": "Completeness"
+        },
+        {
+          "id": "att_rulethreshold",
+          "key": "Threshold",
+          "type": "number",
+          "labels": {
+            "en": "Threshold"
+          },
+          "min": 0,
+          "max": 100,
+          "decimals": 1,
+          "unit": "%",
+          "default": 95
+        },
+        {
+          "id": "att_ruleresult",
+          "key": "LastResult",
+          "type": "number",
+          "labels": {
+            "en": "Last result"
+          },
+          "min": 0,
+          "max": 100,
+          "decimals": 1,
+          "unit": "%"
+        },
+        {
+          "id": "att_rulepassing",
+          "key": "Passing",
+          "type": "formula",
+          "labels": {
+            "en": "Passing"
+          },
+          "formula": "LastResult >= Threshold",
+          "result": "boolean",
+          "help": {
+            "en": "True when the last result reaches the threshold."
+          }
+        },
+        {
+          "id": "att_rulepassvalue",
+          "key": "PassValue",
+          "type": "formula",
+          "labels": {
+            "en": "Passing as a number"
+          },
+          "formula": "IF(Passing, 1, 0)",
+          "result": "number",
+          "help": {
+            "en": "1 when passing, else 0. The quality score of a data asset averages it."
+          }
+        },
+        {
+          "id": "att_ruleoutcome",
+          "key": "Outcome",
+          "type": "formula",
+          "labels": {
+            "en": "Outcome"
+          },
+          "formula": "IF(LastResult == null, 'Not run', IF(Passing, 'Passing', 'Failing'))",
+          "result": "text"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_rule_checks",
+          "formula": "count(outgoing('Checks')) > 0",
+          "message": "A quality rule should check at least one data asset.",
+          "severity": "warning"
+        }
+      ],
+      "help": {
+        "en": "A measurable check on the data, with a threshold and the last result."
+      },
+      "shape": "shp_rule"
+    }
+  },
+  "relations": {
+    "rel_owns": {
+      "id": "rel_owns",
+      "key": "Owns",
+      "labels": {
+        "en": "Owns"
+      },
+      "from": ["cls_person"],
+      "to": ["cls_product", "cls_asset", "cls_domain"],
+      "attributes": [],
+      "shape": "shp_rowns",
+      "help": {
+        "en": "The person is accountable for it and decides about it."
+      }
+    },
+    "rel_stewards": {
+      "id": "rel_stewards",
+      "key": "Stewards",
+      "labels": {
+        "en": "Stewards"
+      },
+      "from": ["cls_person"],
+      "to": ["cls_product", "cls_asset"],
+      "attributes": [],
+      "shape": "shp_rstewards",
+      "help": {
+        "en": "The person looks after its meaning, quality and use day to day."
+      }
+    },
+    "rel_custodian": {
+      "id": "rel_custodian",
+      "key": "CustodianOf",
+      "labels": {
+        "en": "Custodian of"
+      },
+      "from": ["cls_person"],
+      "to": ["cls_asset"],
+      "attributes": [],
+      "shape": "shp_rcustodian",
+      "help": {
+        "en": "The person runs the technical side: storage, access and backups."
+      }
+    },
+    "rel_governed": {
+      "id": "rel_governed",
+      "key": "GovernedBy",
+      "labels": {
+        "en": "Governed by"
+      },
+      "from": ["cls_product", "cls_asset"],
+      "to": ["cls_policy"],
+      "attributes": [],
+      "shape": "shp_rgoverned",
+      "help": {
+        "en": "The policy applies to it."
+      }
+    },
+    "rel_classified": {
+      "id": "rel_classified",
+      "key": "ClassifiedAs",
+      "labels": {
+        "en": "Classified as"
+      },
+      "from": ["cls_asset"],
+      "to": ["cls_classification"],
+      "attributes": [],
+      "shape": "shp_rclassified",
+      "help": {
+        "en": "The data asset has this classification."
+      }
+    },
+    "rel_defines": {
+      "id": "rel_defines",
+      "key": "Defines",
+      "labels": {
+        "en": "Defines"
+      },
+      "from": ["cls_term"],
+      "to": ["cls_asset", "cls_product"],
+      "attributes": [],
+      "shape": "shp_rdefines",
+      "help": {
+        "en": "The glossary term gives the meaning of the data."
+      }
+    },
+    "rel_checks": {
+      "id": "rel_checks",
+      "key": "Checks",
+      "labels": {
+        "en": "Checks"
+      },
+      "from": ["cls_rule"],
+      "to": ["cls_asset"],
+      "attributes": [],
+      "shape": "shp_rchecks",
+      "help": {
+        "en": "The quality rule is measured on this data asset."
+      }
+    },
+    "rel_consumes": {
+      "id": "rel_consumes",
+      "key": "Consumes",
+      "labels": {
+        "en": "Consumes"
+      },
+      "from": ["cls_product"],
+      "to": ["cls_product"],
+      "attributes": [
+        {
+          "id": "att_consumespurpose",
+          "key": "Purpose",
+          "type": "text",
+          "labels": {
+            "en": "Purpose"
+          },
+          "maxLength": 80
+        }
+      ],
+      "shape": "shp_rconsumes",
+      "help": {
+        "en": "The data product uses the data of another."
+      }
+    },
+    "rel_contains": {
+      "id": "rel_contains",
+      "key": "Contains",
+      "labels": {
+        "en": "Contains"
+      },
+      "from": ["cls_product"],
+      "to": ["cls_asset"],
+      "attributes": [],
+      "shape": "shp_rcontains",
+      "help": {
+        "en": "The data asset is part of the data product."
+      }
+    }
+  },
+  "modelTypes": {
+    "mt_governance": {
+      "id": "mt_governance",
+      "key": "Governance",
+      "labels": {
+        "en": "Governance"
+      },
+      "classes": [
+        "cls_domain",
+        "cls_product",
+        "cls_asset",
+        "cls_person",
+        "cls_term",
+        "cls_policy",
+        "cls_classification",
+        "cls_rule"
+      ],
+      "relations": [
+        "rel_owns",
+        "rel_stewards",
+        "rel_custodian",
+        "rel_governed",
+        "rel_classified",
+        "rel_defines",
+        "rel_checks",
+        "rel_consumes",
+        "rel_contains"
+      ],
+      "views": [
+        {
+          "id": "vw_raci",
+          "key": "RACI",
+          "labels": {
+            "en": "RACI"
+          },
+          "classes": ["cls_person", "cls_product", "cls_asset"],
+          "relations": ["rel_owns", "rel_stewards", "rel_custodian"]
+        },
+        {
+          "id": "vw_quality",
+          "key": "Quality",
+          "labels": {
+            "en": "Quality"
+          },
+          "classes": ["cls_domain", "cls_asset", "cls_rule"],
+          "relations": ["rel_checks"]
+        }
+      ],
+      "cardinalities": [
+        {
+          "kind": "degree",
+          "class": "cls_product",
+          "relation": "rel_owns",
+          "end": "to",
+          "min": 1,
+          "max": 1
+        }
+      ],
+      "containers": {
+        "cls_domain": ["cls_product", "cls_asset", "cls_term"]
+      },
+      "attributes": [
+        {
+          "id": "att_govtitle",
+          "key": "Title",
+          "type": "text",
+          "labels": {
+            "en": "Title"
+          },
+          "required": true,
+          "maxLength": 100
+        },
+        {
+          "id": "att_govscope",
+          "key": "Scope",
+          "type": "text",
+          "labels": {
+            "en": "Scope"
+          },
+          "multiline": true
+        }
+      ],
+      "help": {
+        "en": "Domains, data products and data assets with their owners, stewards, custodians, policies, classifications, glossary terms and quality rules."
+      }
+    },
+    "mt_glossary": {
+      "id": "mt_glossary",
+      "key": "BusinessGlossary",
+      "labels": {
+        "en": "Business glossary"
+      },
+      "classes": ["cls_domain", "cls_term", "cls_product", "cls_asset"],
+      "relations": ["rel_defines"],
+      "views": [],
+      "cardinalities": [
+        {
+          "kind": "count",
+          "class": "cls_term",
+          "min": 1
+        }
+      ],
+      "containers": {
+        "cls_domain": ["cls_term", "cls_product", "cls_asset"]
+      },
+      "attributes": [
+        {
+          "id": "att_glotitle",
+          "key": "Title",
+          "type": "text",
+          "labels": {
+            "en": "Title"
+          },
+          "required": true,
+          "maxLength": 100
+        }
+      ],
+      "help": {
+        "en": "Glossary terms and the data products and data assets they define."
+      }
+    }
+  },
+  "shapes": {
+    "shp_domain": {
+      "id": "shp_domain",
+      "name": "Data domain",
+      "kind": "node",
+      "size": {
+        "width": 560,
+        "height": 380,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 6,
+          "fill": "#f8f9fa",
+          "stroke": "#868e96",
+          "strokeWidth": 1.5,
+          "dash": [7, 4]
+        },
+        {
+          "type": "text",
+          "x": 12,
+          "y": 4,
+          "width": "100% - 48",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "container",
+        "fill": "#f8f9fa",
+        "border": "#868e96",
+        "borderWidth": 1.5,
+        "borderStyle": "dashed",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "subtitle": {
+          "attribute": "DomainLead"
+        },
+        "size": {
+          "width": 560,
+          "height": 380,
+          "resizable": true
+        }
+      }
+    },
+    "shp_product": {
+      "id": "shp_product",
+      "name": "Data product",
+      "kind": "node",
+      "size": {
+        "width": 160,
+        "height": 80,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          ["15%", 0],
+          ["85%", 0],
+          ["100%", "50%"],
+          ["85%", "100%"],
+          ["15%", "100%"],
+          [0, "50%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            ["15%", 0],
+            ["85%", 0],
+            ["100%", "50%"],
+            ["85%", "100%"],
+            ["15%", "100%"],
+            [0, "50%"]
+          ],
+          "fill": "= Status == 'Draft' ? '#fff3bf' : Status == 'Published' ? '#d3f9d8' : Status == 'Deprecated' ? '#e9ecef' : '#e7f5ff'",
+          "stroke": "#1971c2",
+          "strokeWidth": 2
+        },
+        {
+          "type": "text",
+          "x": "18%",
+          "y": 4,
+          "width": "64%",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": "18%",
+          "y": "100% - 22",
+          "width": "64%",
+          "height": 18,
+          "text": "= Status",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "hexagon",
+        "fill": {
+          "by": "Status",
+          "values": {
+            "Draft": "#fff3bf",
+            "Published": "#d3f9d8",
+            "Deprecated": "#e9ecef"
+          },
+          "fallback": "#e7f5ff"
+        },
+        "border": "#1971c2",
+        "borderWidth": 2,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "subtitle": {
+          "attribute": "Status"
+        },
+        "size": {
+          "width": 160,
+          "height": 80,
+          "resizable": true
+        }
+      }
+    },
+    "shp_asset": {
+      "id": "shp_asset",
+      "name": "Data asset",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 80,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 4,
+          "fill": "#ffffff",
+          "stroke": "= ContainsPersonalData == true ? '#c92a2a' : '#495057'",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": 28,
+          "radius": 4,
+          "fill": "= Classification == 'Public' ? '#d3f9d8' : Classification == 'Internal' ? '#d0ebff' : Classification == 'Confidential' ? '#ffe8cc' : Classification == 'Restricted' ? '#ffc9c9' : '#f1f3f5'",
+          "stroke": "= ContainsPersonalData == true ? '#c92a2a' : '#495057'"
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 2,
+          "width": "100% - 36",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 34,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Kind: ' + Kind",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 50,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'QualityScore: ' + QualityScore",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6 M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3",
+          "viewBox": [0, 0, 24, 24],
+          "x": "100% - 26",
+          "y": 4,
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "header-box",
+        "fill": {
+          "by": "Classification",
+          "values": {
+            "Public": "#d3f9d8",
+            "Internal": "#d0ebff",
+            "Confidential": "#ffe8cc",
+            "Restricted": "#ffc9c9"
+          },
+          "fallback": "#f1f3f5"
+        },
+        "border": {
+          "by": "ContainsPersonalData",
+          "values": {
+            "true": "#c92a2a"
+          },
+          "fallback": "#495057"
+        },
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "icon": {
+          "name": "database"
+        },
+        "fields": ["Kind", "QualityScore"],
+        "size": {
+          "width": 170,
+          "height": 80,
+          "resizable": true
+        }
+      }
+    },
+    "shp_person": {
+      "id": "shp_person",
+      "name": "Person",
+      "kind": "node",
+      "size": {
+        "width": 100,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "ellipse",
+          "x": "50% - 16",
+          "y": 4,
+          "width": 32,
+          "height": 32,
+          "fill": "#fff4e6",
+          "stroke": "#e8590c",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 6,
+          "y": 42,
+          "width": "100% - 12",
+          "height": "100% - 46",
+          "radius": 18,
+          "fill": "#fff4e6",
+          "stroke": "#e8590c",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 10,
+          "y": 46,
+          "width": "100% - 20",
+          "height": "100% - 72",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {}
+        },
+        {
+          "type": "text",
+          "x": 10,
+          "y": "100% - 24",
+          "width": "100% - 20",
+          "height": 18,
+          "text": "= Team",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "person",
+        "fill": "#fff4e6",
+        "border": "#e8590c",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name"
+        },
+        "subtitle": {
+          "attribute": "Team"
+        },
+        "size": {
+          "width": 100,
+          "height": 110,
+          "resizable": true
+        }
+      }
+    },
+    "shp_term": {
+      "id": "shp_term",
+      "name": "Glossary term",
+      "kind": "node",
+      "size": {
+        "width": 130,
+        "height": 80,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          [0, 0],
+          ["100% - 18", 0],
+          ["100%", 18],
+          ["100%", "100%"],
+          [0, "100%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            [0, 0],
+            ["100% - 18", 0],
+            ["100%", 18],
+            ["100%", "100%"],
+            [0, "100%"]
+          ],
+          "fill": "= Status == 'Draft' ? '#f8f9fa' : Status == 'Approved' ? '#e6fcf5' : '#f8f9fa'",
+          "stroke": "#0ca678",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "polygon",
+          "points": [
+            ["100% - 18", 0],
+            ["100% - 18", 18],
+            ["100%", 18]
+          ],
+          "fill": "#00000022",
+          "stroke": "#0ca678",
+          "strokeWidth": 1
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 20,
+          "width": "100% - 16",
+          "height": "100% - 46",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 24",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= Status",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "document",
+        "fill": {
+          "by": "Status",
+          "values": {
+            "Draft": "#f8f9fa",
+            "Approved": "#e6fcf5"
+          },
+          "fallback": "#f8f9fa"
+        },
+        "border": "#0ca678",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "subtitle": {
+          "attribute": "Status"
+        },
+        "size": {
+          "width": 130,
+          "height": 80,
+          "resizable": true
+        }
+      }
+    },
+    "shp_policy": {
+      "id": "shp_policy",
+      "name": "Policy",
+      "kind": "node",
+      "size": {
+        "width": 140,
+        "height": 90,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          [0, 0],
+          ["100% - 18", 0],
+          ["100%", 18],
+          ["100%", "100%"],
+          [0, "100%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            [0, 0],
+            ["100% - 18", 0],
+            ["100%", 18],
+            ["100%", "100%"],
+            [0, "100%"]
+          ],
+          "fill": "#f3f0ff",
+          "stroke": "#7048e8",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "polygon",
+          "points": [
+            ["100% - 18", 0],
+            ["100% - 18", 18],
+            ["100%", 18]
+          ],
+          "fill": "#00000022",
+          "stroke": "#7048e8",
+          "strokeWidth": 1
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 20,
+          "width": "100% - 16",
+          "height": "100% - 46",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 24",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= Kind",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "document",
+        "fill": "#f3f0ff",
+        "border": "#7048e8",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "subtitle": {
+          "attribute": "Kind"
+        },
+        "size": {
+          "width": 140,
+          "height": 90,
+          "resizable": true
+        }
+      }
+    },
+    "shp_classification": {
+      "id": "shp_classification",
+      "name": "Classification",
+      "kind": "node",
+      "size": {
+        "width": 150,
+        "height": 44,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 999,
+          "fill": "= Level == 'Public' ? '#d3f9d8' : Level == 'Internal' ? '#d0ebff' : Level == 'Confidential' ? '#ffe8cc' : Level == 'Restricted' ? '#ffc9c9' : '#f1f3f5'",
+          "stroke": "#495057",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 42,
+          "y": 4,
+          "width": "100% - 58",
+          "height": "100% - 8",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {}
+        },
+        {
+          "type": "path",
+          "d": "M6 11h12v10H6z M8 11V8a4 4 0 0 1 8 0v3",
+          "viewBox": [0, 0, 24, 24],
+          "x": 14,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "pill",
+        "fill": {
+          "by": "Level",
+          "values": {
+            "Public": "#d3f9d8",
+            "Internal": "#d0ebff",
+            "Confidential": "#ffe8cc",
+            "Restricted": "#ffc9c9"
+          },
+          "fallback": "#f1f3f5"
+        },
+        "border": "#495057",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name"
+        },
+        "icon": {
+          "name": "lock"
+        },
+        "size": {
+          "width": 150,
+          "height": 44,
+          "resizable": true
+        }
+      }
+    },
+    "shp_rule": {
+      "id": "shp_rule",
+      "name": "Quality rule",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "= Outcome == 'Passing' ? '#d3f9d8' : Outcome == 'Failing' ? '#ffe3e3' : Outcome == 'Not run' ? '#f1f3f5' : '#f1f3f5'",
+          "stroke": "#2f9e44",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {}
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= Dimension",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M4 12.5l5 5L20 6.5",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        },
+        {
+          "type": "rect",
+          "x": "100% - 34",
+          "y": -6,
+          "width": 30,
+          "height": 16,
+          "radius": 8,
+          "fill": "#e03131",
+          "visible": "= Outcome == 'Failing'"
+        },
+        {
+          "type": "text",
+          "x": "100% - 34",
+          "y": -6,
+          "width": 30,
+          "height": 16,
+          "text": "Fail",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#ffffff",
+          "font": {
+            "size": 10,
+            "weight": 600
+          },
+          "visible": "= Outcome == 'Failing'"
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": {
+          "by": "Outcome",
+          "values": {
+            "Passing": "#d3f9d8",
+            "Failing": "#ffe3e3",
+            "Not run": "#f1f3f5"
+          },
+          "fallback": "#f1f3f5"
+        },
+        "border": "#2f9e44",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "corner": 10,
+        "title": {
+          "attribute": "Name"
+        },
+        "subtitle": {
+          "attribute": "Dimension"
+        },
+        "icon": {
+          "name": "check"
+        },
+        "badge": {
+          "attribute": "Outcome",
+          "equals": "Failing",
+          "text": "Fail",
+          "colour": "#e03131"
+        },
+        "size": {
+          "width": 170,
+          "height": 70,
+          "resizable": true
+        }
+      }
+    },
+    "shp_rowns": {
+      "id": "shp_rowns",
+      "name": "Owns",
+      "kind": "relation",
+      "line": {
+        "stroke": "#e8590c",
+        "strokeWidth": 2,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#e8590c",
+        "width": 2,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rstewards": {
+      "id": "shp_rstewards",
+      "name": "Stewards",
+      "kind": "relation",
+      "line": {
+        "stroke": "#1971c2",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#1971c2",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rcustodian": {
+      "id": "shp_rcustodian",
+      "name": "Custodian of",
+      "kind": "relation",
+      "line": {
+        "stroke": "#495057",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [2, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#495057",
+        "width": 1.5,
+        "style": "dotted",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rgoverned": {
+      "id": "shp_rgoverned",
+      "name": "Governed by",
+      "kind": "relation",
+      "line": {
+        "stroke": "#7048e8",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "open-arrow"
+      },
+      "look": {
+        "colour": "#7048e8",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "open-arrow",
+        "label": null
+      }
+    },
+    "shp_rclassified": {
+      "id": "shp_rclassified",
+      "name": "Classified as",
+      "kind": "relation",
+      "line": {
+        "stroke": "#c92a2a",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [2, 4]
+      },
+      "endMarker": {
+        "type": "open-arrow"
+      },
+      "look": {
+        "colour": "#c92a2a",
+        "width": 1.5,
+        "style": "dotted",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "open-arrow",
+        "label": null
+      }
+    },
+    "shp_rdefines": {
+      "id": "shp_rdefines",
+      "name": "Defines",
+      "kind": "relation",
+      "line": {
+        "stroke": "#0ca678",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "open-arrow"
+      },
+      "look": {
+        "colour": "#0ca678",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "open-arrow",
+        "label": null
+      }
+    },
+    "shp_rchecks": {
+      "id": "shp_rchecks",
+      "name": "Checks",
+      "kind": "relation",
+      "line": {
+        "stroke": "#2f9e44",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#2f9e44",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rconsumes": {
+      "id": "shp_rconsumes",
+      "name": "Consumes",
+      "kind": "relation",
+      "line": {
+        "stroke": "#1c7ed6",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "triangle"
+      },
+      "labels": [
+        {
+          "at": "middle",
+          "text": "= Purpose",
+          "font": {
+            "size": 11
+          },
+          "background": "#ffffff",
+          "visible": "= Purpose != null"
+        }
+      ],
+      "look": {
+        "colour": "#1c7ed6",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "triangle",
+        "label": {
+          "attribute": "Purpose"
+        }
+      }
+    },
+    "shp_rcontains": {
+      "id": "shp_rcontains",
+      "name": "Contains",
+      "kind": "relation",
+      "line": {
+        "stroke": "#868e96",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "startMarker": {
+        "type": "diamond"
+      },
+      "look": {
+        "colour": "#868e96",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "diamond",
+        "end": "none",
+        "label": null
+      }
+    }
+  },
+  "panels": {
+    "cls_domain": {
+      "class": "cls_domain",
+      "tabs": [
+        {
+          "label": "Domain",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "DomainLead"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_product": {
+      "class": "cls_product",
+      "tabs": [
+        {
+          "label": "Product",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Status",
+              "control": "segmented"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            },
+            {
+              "attribute": "OwnerName"
+            },
+            {
+              "attribute": "StewardName"
+            }
+          ]
+        },
+        {
+          "label": "Use",
+          "items": [
+            {
+              "attribute": "SLA"
+            },
+            {
+              "attribute": "Consumers",
+              "control": "textarea"
+            },
+            {
+              "attribute": "Classification",
+              "control": "select"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_asset": {
+      "class": "cls_asset",
+      "tabs": [
+        {
+          "label": "Asset",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Kind",
+              "control": "select"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            },
+            {
+              "attribute": "QualityScore"
+            }
+          ]
+        },
+        {
+          "label": "Protection",
+          "items": [
+            {
+              "attribute": "Classification",
+              "control": "segmented"
+            },
+            {
+              "attribute": "ContainsPersonalData",
+              "control": "switch"
+            },
+            {
+              "attribute": "RetentionPeriod",
+              "control": "duration"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_person": {
+      "class": "cls_person",
+      "tabs": [
+        {
+          "label": "Person",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Email"
+            },
+            {
+              "attribute": "Team"
+            },
+            {
+              "attribute": "Responsibilities"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_term": {
+      "class": "cls_term",
+      "tabs": [
+        {
+          "label": "Term",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Status",
+              "control": "segmented"
+            },
+            {
+              "attribute": "Definition",
+              "control": "textarea"
+            },
+            {
+              "attribute": "Synonyms"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_policy": {
+      "class": "cls_policy",
+      "tabs": [
+        {
+          "label": "Policy",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Kind",
+              "control": "select"
+            },
+            {
+              "attribute": "EffectiveDate",
+              "control": "date"
+            },
+            {
+              "attribute": "ReviewDate",
+              "control": "date"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_classification": {
+      "class": "cls_classification",
+      "tabs": [
+        {
+          "label": "Classification",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Level",
+              "control": "segmented"
+            },
+            {
+              "attribute": "Handling",
+              "control": "textarea"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_rule": {
+      "class": "cls_rule",
+      "tabs": [
+        {
+          "label": "Rule",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Dimension",
+              "control": "select"
+            },
+            {
+              "attribute": "Threshold"
+            },
+            {
+              "attribute": "LastResult"
+            },
+            {
+              "attribute": "Passing"
+            },
+            {
+              "attribute": "Outcome"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    }
+  },
+  "rules": {
+    "rule_failing": {
+      "id": "rule_failing",
+      "label": "Warn when a quality rule fails",
+      "when": {
+        "event": "attribute.changed",
+        "class": "cls_rule",
+        "attribute": "LastResult"
+      },
+      "if": "= LastResult != null && LastResult < Threshold",
+      "then": [
+        {
+          "action": "message",
+          "kind": "warning",
+          "text": "= 'Quality rule \"' + Name + '\" is below its threshold: ' + LastResult + '% of ' + Threshold + '%.'"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "scr_checkgov": {
+      "id": "scr_checkgov",
+      "name": "Check governance",
+      "source": "// For the tool \"Data governance and ownership\". The command \"Check governance\" lists the gaps\n// that matter most: data products nobody owns, sensitive data assets without a policy, quality\n// rules that fail or check nothing, and glossary terms that define no data.\nimport { commands, model, ui } from 'metakit';\n\nconst nameOf = (o: { attrs: { Name?: string | null } }) =>\n  `\"${o.attrs.Name || 'unnamed'}\"`;\n\ncommands.register({\n  id: 'check-governance',\n  label: 'Check governance',\n  menu: 'Model',\n  run: () => {\n    const sections: string[] = [];\n    const section = (title: string, lines: string[]) => {\n      if (lines.length > 0)\n        sections.push(`${title}:\\n${lines.map((l) => `- ${l}`).join('\\n')}`);\n    };\n\n    // 1. Every data product has exactly one owner.\n    const owners: string[] = [];\n    for (const product of model.objects('DataProduct')) {\n      const count = product.incoming('Owns').length;\n      if (count === 0) owners.push(`${nameOf(product)} has no owner.`);\n      else if (count > 1)\n        owners.push(\n          `${nameOf(product)} has ${count} owners: ${product\n            .incoming('Owns')\n            .map(nameOf)\n            .join(', ')}.`,\n        );\n    }\n    section('Data products without one owner', owners);\n\n    // 2. Restricted assets, and confidential ones with personal data, are governed by a policy.\n    const unprotected: string[] = [];\n    for (const asset of model.objects('DataAsset')) {\n      const level = asset.attrs.Classification;\n      const sensitive =\n        level === 'Restricted' ||\n        (level === 'Confidential' && asset.attrs.ContainsPersonalData === true);\n      if (sensitive && asset.outgoing('GovernedBy').length === 0)\n        unprotected.push(\n          `${nameOf(asset)} is ${level}${asset.attrs.ContainsPersonalData ? ' with personal data' : ''} and no policy governs it.`,\n        );\n    }\n    section('Sensitive data assets without a policy', unprotected);\n\n    // 3. Quality rules that fail, and rules that check nothing.\n    const quality: string[] = [];\n    for (const rule of model.objects('QualityRule')) {\n      const assets = rule.outgoing('Checks');\n      if (assets.length === 0)\n        quality.push(`${nameOf(rule)} checks no data asset.`);\n      if (rule.attrs.Outcome === 'Failing')\n        quality.push(\n          `${nameOf(rule)} fails: ${rule.attrs.LastResult}% against a threshold of ${rule.attrs.Threshold}%${\n            assets.length > 0 ? ` on ${assets.map(nameOf).join(', ')}` : ''\n          }.`,\n        );\n    }\n    section('Quality rules', quality);\n\n    // 4. Glossary terms that define no data.\n    const unused = model\n      .objects('GlossaryTerm')\n      .filter((term) => term.outgoing('Defines').length === 0)\n      .map((term) => `${nameOf(term)} defines no data product or asset.`);\n    section('Unused glossary terms', unused);\n\n    if (sections.length === 0) ui.message('Governance looks complete.');\n    else ui.message(sections.join('\\n\\n'), 'warning');\n  },\n});\n"
+    }
+  }
+}

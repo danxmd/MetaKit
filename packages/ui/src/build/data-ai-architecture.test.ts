@@ -7,7 +7,7 @@ import {
   createModelStore,
   effectiveAttributes,
   validateModel,
-  validateToolLibrary,
+  validateKit,
   type ClassId,
   type ElementId,
   type Model,
@@ -16,7 +16,7 @@ import {
   type RelationId,
   type RelationShape,
   type ShapeId,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 import { exportMkModel, importMkModel } from '@metakit-app/storage';
 import {
@@ -34,18 +34,17 @@ import { createLanguageServer } from '../components/build/scripts/script-languag
 import { loadTestLibs } from '../components/build/scripts/test-libs';
 
 /**
- * The built-in "Data and AI architecture" tool (openspec/changes/ai-data-catalog): sources,
+ * The built-in "Data and AI architecture" Kit (openspec/changes/ai-data-catalog): sources,
  * pipelines, stores, datasets, models, AI services and consumers connected by data flows. The
  * sample model is a customer 360 platform with a churn model; set WRITE_SAMPLE=1 to write it
- * again after the tool library changes.
+ * again after the Kit changes.
  */
 
 const here = (path: string) =>
   fileURLToPath(
-    new URL(`../../../../tools/data-ai-architecture/${path}`, import.meta.url),
+    new URL(`../../../../kits/data-ai-architecture/${path}`, import.meta.url),
   );
-const loadTool = () =>
-  JSON.parse(readFileSync(here('tool.json'), 'utf8')) as ToolLibrary;
+const loadKit = () => JSON.parse(readFileSync(here('kit.json'), 'utf8')) as Kit;
 // Windows checkouts may turn the line ends of the script file into CRLF.
 const scriptFile = () =>
   readFileSync(here('show-lineage.script.ts'), 'utf8').replace(/\r\n/g, '\n');
@@ -60,10 +59,10 @@ const byKey = <T extends { key: string; id: string }>(
 };
 
 /** Builds models through commands, naming classes, relations and attributes by their keys. */
-function builder(tool: ToolLibrary, model: Model) {
-  const store = createModelStore(model, { tool });
+function builder(kit: Kit, model: Model) {
+  const store = createModelStore(model, { kit });
   const attrs = (cls: ClassId, values: Record<string, unknown>) => {
-    const defs = effectiveAttributes(tool, cls);
+    const defs = effectiveAttributes(kit, cls);
     return Object.fromEntries(
       Object.entries(values).map(([k, v]) => {
         const def = defs.find((d) => d.key === k);
@@ -79,7 +78,7 @@ function builder(tool: ToolLibrary, model: Model) {
     y: number,
     parent?: ElementId,
   ): ElementId => {
-    const cls = byKey(tool.classes, key).id as ClassId;
+    const cls = byKey(kit.classes, key).id as ClassId;
     const r = store.execute({
       type: 'createElement',
       class: cls,
@@ -96,7 +95,7 @@ function builder(tool: ToolLibrary, model: Model) {
     to: ElementId,
     values: Record<string, unknown> = {},
   ) => {
-    const rel = byKey(tool.relations, key);
+    const rel = byKey(kit.relations, key);
     const defs = rel.attributes;
     store.execute({
       type: 'createConnector',
@@ -121,13 +120,13 @@ function builder(tool: ToolLibrary, model: Model) {
  * archive is not approved for personal data, and the event stream carries it there: the one
  * warning of the sample, on purpose.
  */
-function customer360(tool: ToolLibrary): Model {
+function customer360(kit: Kit): Model {
   const model = createEmptyModel(
-    tool,
-    byKey(tool.modelTypes, 'Architecture').id as never,
+    kit,
+    byKey(kit.modelTypes, 'Architecture').id as never,
     { name: 'Customer 360 and churn model' },
   );
-  const b = builder(tool, model);
+  const b = builder(kit, model);
   b.store.execute({
     type: 'setAttribute',
     target: 'model',
@@ -344,19 +343,19 @@ function customer360(tool: ToolLibrary): Model {
 }
 
 const SAMPLE = 'customer-360.mkmodel.json';
-const loadSample = (tool: ToolLibrary) =>
-  importMkModel(tool, readFileSync(here(SAMPLE), 'utf8'));
+const loadSample = (kit: Kit) =>
+  importMkModel(kit, readFileSync(here(SAMPLE), 'utf8'));
 
-const problems = (tool: ToolLibrary, model: Model) =>
-  validateModel(tool, model, new ModelCalculator(tool, () => model));
+const problems = (kit: Kit, model: Model) =>
+  validateModel(kit, model, new ModelCalculator(kit, () => model));
 
-describe('the tool library', () => {
+describe('the Kit', () => {
   it('is valid', () => {
-    expect(validateToolLibrary(loadTool())).toEqual([]);
+    expect(validateKit(loadKit())).toEqual([]);
   });
 
   it('has formulas that all parse', () => {
-    // The tool-level check does not read constraint formulas, so this walks every formula in the file.
+    // The Kit-level check does not read constraint formulas, so this walks every formula in the file.
     const bad: string[] = [];
     const FORMULA_KEYS = new Set(['formula', 'defaultFormula', 'if', 'when']);
     let seen = 0;
@@ -377,18 +376,18 @@ describe('the tool library', () => {
       else if (value && typeof value === 'object')
         for (const [k, v] of Object.entries(value)) walk(v, `${path}.${k}`, k);
     };
-    walk(loadTool(), 'tool');
+    walk(loadKit(), 'kit');
     expect(bad).toEqual([]);
     expect(seen).toBeGreaterThan(10);
   });
 
   it('draws every class and relation class with a simple look the look editor can open', () => {
-    const tool = loadTool();
+    const kit = loadKit();
     for (const owner of [
-      ...Object.values(tool.classes).filter((c) => !c.abstract),
-      ...Object.values(tool.relations),
+      ...Object.values(kit.classes).filter((c) => !c.abstract),
+      ...Object.values(kit.relations),
     ]) {
-      const shape = tool.shapes[owner.shape as ShapeId]!;
+      const shape = kit.shapes[owner.shape as ShapeId]!;
       expect(shape, owner.key).toBeDefined();
       expect(shape.look, owner.key).toBeDefined();
       const again =
@@ -403,20 +402,20 @@ describe('the tool library', () => {
     }
   });
 
-  it('has the script that the tool carries equal to its source file', () => {
-    expect(loadTool().scripts['scr_lineage' as never]!.source).toBe(
+  it('has the script that the Kit carries equal to its source file', () => {
+    expect(loadKit().scripts['scr_lineage' as never]!.source).toBe(
       scriptFile(),
     );
   });
 
-  it('has a script that type-checks against the declarations of the tool', () => {
+  it('has a script that type-checks against the declarations of the Kit', () => {
     const server = createLanguageServer(loadTestLibs());
-    server.setDeclarations(generateDeclarations(loadTool()));
+    server.setDeclarations(generateDeclarations(loadKit()));
     expect(server.diagnostics(scriptFile()).map((d) => d.message)).toEqual([]);
   });
 
   it('names no company or product', () => {
-    const text = readFileSync(here('tool.json'), 'utf8').toLowerCase();
+    const text = readFileSync(here('kit.json'), 'utf8').toLowerCase();
     for (const word of [
       'accenture',
       'snowflake',
@@ -435,17 +434,17 @@ describe('the tool library', () => {
 describe('the sample model', () => {
   if (process.env['WRITE_SAMPLE'] === '1' || !existsSync(here(SAMPLE))) {
     it('writes the sample model', () => {
-      const tool = loadTool();
-      writeFileSync(here(SAMPLE), exportMkModel(tool, customer360(tool)));
+      const kit = loadKit();
+      writeFileSync(here(SAMPLE), exportMkModel(kit, customer360(kit)));
     });
   }
 
   it('matches the model built by the test and has no errors', () => {
-    const tool = loadTool();
-    const stored = loadSample(tool);
-    const built = customer360(tool);
+    const kit = loadKit();
+    const stored = loadSample(kit);
+    const built = customer360(kit);
     expect(
-      validateModel(tool, stored).filter((i) => i.severity === 'error'),
+      validateModel(kit, stored).filter((i) => i.severity === 'error'),
     ).toEqual([]);
     expect(Object.keys(stored.elements)).toHaveLength(
       Object.keys(built.elements).length,
@@ -458,8 +457,8 @@ describe('the sample model', () => {
   });
 
   it('shows exactly one problem: personal data into the event archive', () => {
-    const tool = loadTool();
-    const issues = problems(tool, loadSample(tool));
+    const kit = loadKit();
+    const issues = problems(kit, loadSample(kit));
     expect(issues.map((i) => [i.severity, i.message])).toEqual([
       [
         'warning',
@@ -470,9 +469,9 @@ describe('the sample model', () => {
   });
 
   it('calculates upstream and downstream counts', () => {
-    const tool = loadTool();
-    const model = loadSample(tool);
-    const calc = new ModelCalculator(tool, () => model);
+    const kit = loadKit();
+    const model = loadSample(kit);
+    const calc = new ModelCalculator(kit, () => model);
     const clean = Object.values(model.elements).find((e) =>
       Object.values(e.attrs).includes('Clean and join' as never),
     )!;
@@ -487,21 +486,21 @@ describe('the checks', () => {
     change: (
       b: ReturnType<typeof builder>,
       idOf: (name: string) => ElementId,
-      tool: ToolLibrary,
+      kit: Kit,
     ) => void,
   ) => {
-    const tool = loadTool();
-    const b = builder(tool, loadSample(tool));
+    const kit = loadKit();
+    const b = builder(kit, loadSample(kit));
     const idOf = (name: string) =>
       Object.values((b.store.state as Model).elements).find((e) =>
         Object.values(e.attrs).includes(name as never),
       )!.id;
-    change(b, idOf, tool);
-    return problems(tool, b.store.state as Model).map((i) => i.message);
+    change(b, idOf, kit);
+    return problems(kit, b.store.state as Model).map((i) => i.message);
   };
   const setAttr = (
     b: ReturnType<typeof builder>,
-    tool: ToolLibrary,
+    kit: Kit,
     id: ElementId,
     cls: string,
     key: string,
@@ -510,7 +509,7 @@ describe('the checks', () => {
     b.store.execute({
       type: 'setAttribute',
       target: id,
-      attr: effectiveAttributes(tool, byKey(tool.classes, cls).id).find(
+      attr: effectiveAttributes(kit, byKey(kit.classes, cls).id).find(
         (a) => a.key === key,
       )!.id,
       value,
@@ -518,10 +517,10 @@ describe('the checks', () => {
 
   it('stops warning about personal data once the store is approved', () => {
     expect(
-      warningsAfter((b, idOf, tool) =>
+      warningsAfter((b, idOf, kit) =>
         setAttr(
           b,
-          tool,
+          kit,
           idOf('Event archive'),
           'DataStore',
           'ApprovedForPersonalData',
@@ -561,10 +560,10 @@ describe('the checks', () => {
   it('warns when a restricted dataset flows to a public consumer, and only then', () => {
     const warning =
       'The restricted dataset "Customer profile" flows to "Retention dashboard", which has a public audience.';
-    const publicDashboard = warningsAfter((b, idOf, tool) =>
+    const publicDashboard = warningsAfter((b, idOf, kit) =>
       setAttr(
         b,
-        tool,
+        kit,
         idOf('Retention dashboard'),
         'Consumer',
         'Audience',
@@ -573,10 +572,10 @@ describe('the checks', () => {
     );
     expect(publicDashboard).toContain(warning);
     expect(publicDashboard).toHaveLength(2);
-    const notRestricted = warningsAfter((b, idOf, tool) => {
+    const notRestricted = warningsAfter((b, idOf, kit) => {
       setAttr(
         b,
-        tool,
+        kit,
         idOf('Retention dashboard'),
         'Consumer',
         'Audience',
@@ -584,7 +583,7 @@ describe('the checks', () => {
       );
       setAttr(
         b,
-        tool,
+        kit,
         idOf('Customer profile'),
         'Dataset',
         'Classification',
@@ -596,10 +595,10 @@ describe('the checks', () => {
   });
 
   it('warns about a public dataset with personal data', () => {
-    const messages = warningsAfter((b, idOf, tool) =>
+    const messages = warningsAfter((b, idOf, kit) =>
       setAttr(
         b,
-        tool,
+        kit,
         idOf('Customer profile'),
         'Dataset',
         'Classification',
@@ -613,7 +612,7 @@ describe('the checks', () => {
 });
 
 interface Rig {
-  tool: ToolLibrary;
+  kit: Kit;
   store: ModelStore;
   behaviour: Behaviour;
   handle: ScriptsHandle;
@@ -628,20 +627,20 @@ afterEach(() => {
   }
 });
 async function start(): Promise<Rig> {
-  const tool = loadTool();
-  const store = createModelStore(loadSample(tool), { tool });
+  const kit = loadKit();
+  const store = createModelStore(loadSample(kit), { kit });
   const messages: { kind: string; text: string }[] = [];
   const behaviour = createBehaviour({
     store,
-    tool: () => tool,
+    kit: () => kit,
     host: silentHost({
       message: (kind, text) => messages.push({ kind, text }),
     }),
   });
-  attachRules(behaviour, { store, tool: () => tool });
+  attachRules(behaviour, { store, kit: () => kit });
   const handle = await attachScripts(behaviour, {
     store,
-    tool: () => tool,
+    kit: () => kit,
     permissions: {
       granted: () => ({ network: false, files: false }),
       request: () => Promise.resolve(true),
@@ -652,7 +651,7 @@ async function start(): Promise<Rig> {
     Object.values((store.state as Model).elements).find((e) =>
       Object.values(e.attrs).includes(name as never),
     )!.id;
-  const rig = { tool, store, behaviour, handle, messages, idOf };
+  const rig = { kit, store, behaviour, handle, messages, idOf };
   rigs.push(rig);
   return rig;
 }
@@ -711,9 +710,9 @@ describe('commands', () => {
     const r = await start();
     const archive = r.idOf('Event archive');
     r.behaviour.commands.get('rule_approvepd')!.run(archive);
-    expect(problems(r.tool, r.store.state as Model)).toEqual([]);
+    expect(problems(r.kit, r.store.state as Model)).toEqual([]);
     r.store.undo();
-    expect(problems(r.tool, r.store.state as Model)).toHaveLength(1);
+    expect(problems(r.kit, r.store.state as Model)).toHaveLength(1);
   });
 
   it('does nothing to an object that is not a store', async () => {
@@ -729,8 +728,8 @@ describe('commands', () => {
     const id = r.idOf('Churn features');
     r.behaviour.commands.get('rule_restrict')!.run(id);
     const cls = effectiveAttributes(
-      r.tool,
-      byKey(r.tool.classes, 'Dataset').id,
+      r.kit,
+      byKey(r.kit.classes, 'Dataset').id,
     ).find((a) => a.key === 'Classification')!;
     expect((r.store.state as Model).elements[id]!.attrs[cls.id]).toBe(
       'Restricted',

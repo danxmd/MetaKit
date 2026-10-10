@@ -18,8 +18,8 @@ import {
   type RelationShape,
   type ShapeDef,
   type ShapeId,
-  type ToolCommandOrBatch,
-  type ToolLibrary,
+  type KitCommandOrBatch,
+  type Kit,
 } from '@metakit-app/core';
 import {
   baseInfo,
@@ -267,25 +267,22 @@ export type AppearanceState =
   | { kind: 'drawn'; shape: NodeShape; shared: string[] };
 
 /** The classes and relation classes that draw with a shape. */
-export function shapeUsers(tool: ToolLibrary, shapeId: string): string[] {
+export function shapeUsers(kit: Kit, shapeId: string): string[] {
   return [
-    ...Object.values(tool.classes)
+    ...Object.values(kit.classes)
       .filter((c) => c.shape === shapeId)
       .map((c) => c.key),
-    ...Object.values(tool.relations)
+    ...Object.values(kit.relations)
       .filter((r) => r.shape === shapeId)
       .map((r) => r.key),
   ];
 }
 
-export function appearanceOfClass(
-  tool: ToolLibrary,
-  classId: ClassId,
-): AppearanceState {
-  const cls = tool.classes[classId];
-  const shape = cls?.shape ? tool.shapes[cls.shape] : undefined;
+export function appearanceOfClass(kit: Kit, classId: ClassId): AppearanceState {
+  const cls = kit.classes[classId];
+  const shape = cls?.shape ? kit.shapes[cls.shape] : undefined;
   if (!cls || !shape || shape.kind !== 'node') return { kind: 'none' };
-  const shared = shapeUsers(tool, shape.id).filter((k) => k !== cls.key);
+  const shared = shapeUsers(kit, shape.id).filter((k) => k !== cls.key);
   return shape.look
     ? { kind: 'look', shape, look: shape.look, shared }
     : { kind: 'drawn', shape, shared };
@@ -302,13 +299,13 @@ export type RelationAppearanceState =
   | { kind: 'drawn'; shape: RelationShape; shared: string[] };
 
 export function appearanceOfRelation(
-  tool: ToolLibrary,
+  kit: Kit,
   id: RelationId,
 ): RelationAppearanceState {
-  const rel = tool.relations[id];
-  const shape = rel?.shape ? tool.shapes[rel.shape] : undefined;
+  const rel = kit.relations[id];
+  const shape = rel?.shape ? kit.shapes[rel.shape] : undefined;
   if (!rel || !shape || shape.kind !== 'relation') return { kind: 'none' };
-  const shared = shapeUsers(tool, shape.id).filter((k) => k !== rel.key);
+  const shared = shapeUsers(kit, shape.id).filter((k) => k !== rel.key);
   return shape.look
     ? { kind: 'look', shape, look: shape.look, shared }
     : { kind: 'drawn', shape, shared };
@@ -319,16 +316,16 @@ export function appearanceOfRelation(
  * shape that other classes share, or no shape at all, gives the class a new shape of its own.
  */
 export function saveNodeLook(
-  tool: ToolLibrary,
+  kit: Kit,
   classId: ClassId,
   look: NodeLook,
-): ToolCommandOrBatch {
-  const cls = tool.classes[classId]!;
-  const current = cls.shape ? tool.shapes[cls.shape] : undefined;
+): KitCommandOrBatch {
+  const cls = kit.classes[classId]!;
+  const current = cls.shape ? kit.shapes[cls.shape] : undefined;
   if (
     current &&
     current.kind === 'node' &&
-    shapeUsers(tool, current.id).length <= 1
+    shapeUsers(kit, current.id).length <= 1
   )
     return {
       type: 'putShape',
@@ -348,16 +345,16 @@ export function saveNodeLook(
 }
 
 export function saveRelationLook(
-  tool: ToolLibrary,
+  kit: Kit,
   id: RelationId,
   look: RelationLook,
-): ToolCommandOrBatch {
-  const rel = tool.relations[id]!;
-  const current = rel.shape ? tool.shapes[rel.shape] : undefined;
+): KitCommandOrBatch {
+  const rel = kit.relations[id]!;
+  const current = rel.shape ? kit.shapes[rel.shape] : undefined;
   if (
     current &&
     current.kind === 'relation' &&
-    shapeUsers(tool, current.id).length <= 1
+    shapeUsers(kit, current.id).length <= 1
   )
     return {
       type: 'putShape',
@@ -595,17 +592,14 @@ export function compileTile(
 const SAMPLE_TILE: PreviewTile = { attribute: null, label: '', values: {} };
 
 /** What a class draws with now, small, for the Appearance card. */
-export function classThumbnail(
-  tool: ToolLibrary,
-  classId: ClassId,
-): TilePicture | null {
-  const cls = tool.classes[classId];
+export function classThumbnail(kit: Kit, classId: ClassId): TilePicture | null {
+  const cls = kit.classes[classId];
   if (!cls) return null;
-  const own = cls.shape ? tool.shapes[cls.shape] : undefined;
+  const own = cls.shape ? kit.shapes[cls.shape] : undefined;
   const shape = own?.kind === 'node' ? own : starterFor(cls);
   return compileShape(
     shape,
-    effectiveAttributes(tool, classId),
+    effectiveAttributes(kit, classId),
     SAMPLE_TILE,
     cls.key,
   );

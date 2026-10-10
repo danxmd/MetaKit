@@ -5,7 +5,7 @@ import {
   validateModel,
   validateModelDocument,
   type Model,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 import {
   exportMkModel,
@@ -21,7 +21,13 @@ import {
   UsageError,
   type ParsedArgs,
 } from './args';
-import { CliError, findToolFor, readJsonFileAt, readToolFile } from './load';
+import {
+  CliError,
+  findKitFor,
+  kitFileIn,
+  readJsonFileAt,
+  readKitFile,
+} from './load';
 import {
   exitCode,
   formatJson,
@@ -35,10 +41,10 @@ export interface Io {
   err(text: string): void;
 }
 
-function modelIssues(tool: ToolLibrary, model: Model): ReportIssue[] {
+function modelIssues(kit: Kit, model: Model): ReportIssue[] {
   // Constraints and formula attributes need the calculator; the model never changes here.
-  const calculator = new ModelCalculator(tool, () => model);
-  return validateModel(tool, model, calculator).map((i) => ({
+  const calculator = new ModelCalculator(kit, () => model);
+  return validateModel(kit, model, calculator).map((i) => ({
     severity: i.severity,
     location: i.attr ? `${i.id}.${i.attr}` : i.id,
     code: i.code,
@@ -48,7 +54,7 @@ function modelIssues(tool: ToolLibrary, model: Model): ReportIssue[] {
 
 async function kindOf(
   path: string,
-): Promise<'workspace' | 'tool-folder' | 'file'> {
+): Promise<'workspace' | 'kit-folder' | 'file'> {
   let info;
   try {
     info = await stat(path);
@@ -62,9 +68,9 @@ async function kindOf(
       () => false,
     );
   if (await has('workspace.json')) return 'workspace';
-  if (await has('tool.json')) return 'tool-folder';
+  if ((await kitFileIn(path)) !== null) return 'kit-folder';
   throw new CliError(
-    `"${path}" is neither a MetaKit workspace (no workspace.json) nor a tool library folder (no tool.json).`,
+    `"${path}" is neither a MetaKit workspace (no workspace.json) nor a Kit folder (no kit.json or tool.json).`,
   );
 }
 
@@ -74,14 +80,13 @@ async function validateWorkspace(root: string): Promise<DocumentReport[]> {
   const reports: DocumentReport[] = [
     { path: 'workspace.json', kind: 'workspace', issues: [] },
   ];
-  const tools = new Map<string, ToolLibrary>();
-  for (const entry of await ws.adapter.list('tools')) {
-    if (entry.kind !== 'directory') continue;
-    const path = `tools/${entry.name}`;
+  const kits = new Map<string, Kit>();
+  // Kits made before the Kit rename are in tools/, newer ones in kits/.
+  for (const { slug, folder: path } of await ws.listKitFolders()) {
     const issues: ReportIssue[] = [];
     try {
-      const loaded = await ws.loadTool(entry.name);
-      tools.set(loaded.document.manifest.id, loaded.document);
+      const loaded = await ws.loadKit(slug);
+      kits.set(loaded.document.manifest.id, loaded.document);
       issues.push(
         ...loaded.issues.map((i): ReportIssue => ({
           severity: 'error',
@@ -125,15 +130,15 @@ async function validateWorkspace(root: string): Promise<DocumentReport[]> {
           message: w,
         })),
       );
-      const tool = tools.get(loaded.document.manifest.tool);
-      if (!tool)
+      const kit = kits.get(loaded.document.manifest.kit);
+      if (!kit)
         issues.push({
           severity: 'error',
-          location: 'manifest.tool',
-          message: `The tool library ${loaded.document.manifest.tool} is not in this workspace, so the model cannot be checked.`,
+          location: 'manifest.kit',
+          message: `The Kit ${loaded.document.manifest.kit} is not in this workspace, so the model cannot be checked.`,
         });
       else if (loaded.issues.length === 0)
-        issues.push(...modelIssues(tool, loaded.document));
+        issues.push(...modelIssues(kit, loaded.document));
     } catch (error) {
       issues.push({
         severity: 'error',
@@ -148,27 +153,27 @@ async function validateWorkspace(root: string): Promise<DocumentReport[]> {
 
 async function validateModelFile(
   path: string,
-  toolOption: string | undefined,
+  kitOption: string | undefined,
 ): Promise<DocumentReport[]> {
-  const toolPath = await findToolFor(path, toolOption);
-  const { tool, issues: toolIssues } = await readToolFile(toolPath);
+  const kitPath = await findKitFor(path, kitOption);
+  const { kit, issues: kitIssues } = await readKitFile(kitPath);
   const reports: DocumentReport[] = [];
-  const toolIssuesOut = toolIssues.map((i): ReportIssue => ({
+  const kitIssuesOut = kitIssues.map((i): ReportIssue => ({
     severity: 'error',
     location: i.path || '(top level)',
     message: i.message,
   }));
-  reports.push({ path: toolPath, kind: 'tool', issues: toolIssuesOut });
+  reports.push({ path: kitPath, kind: 'tool', issues: kitIssuesOut });
   const issues: ReportIssue[] = [];
-  if (toolIssues.length > 0) {
+  if (kitIssues.length > 0) {
     issues.push({
       severity: 'error',
-      location: '(tool)',
-      message: `The tool library has ${toolIssues.length} problem${toolIssues.length === 1 ? '' : 's'}, so the model was not checked.`,
+      location: '(Kit)',
+      message: `The Kit has ${kitIssues.length} problem${kitIssues.length === 1 ? '' : 's'}, so the model was not checked.`,
     });
   } else {
     try {
-      const model = importMkModel(tool, await readJsonFileAt(path));
+      const model = importMkModel(kit, await readJsonFileAt(path));
       const structure = validateModelDocument(model);
       issues.push(
         ...structure.map((i): ReportIssue => ({
@@ -177,7 +182,7 @@ async function validateModelFile(
           message: i.message,
         })),
       );
-      issues.push(...modelIssues(tool, model));
+      issues.push(...modelIssues(kit, model));
     } catch (error) {
       if (error instanceof MkModelError)
         issues.push(
@@ -206,7 +211,7 @@ export async function validateCommand(
   checkFlags(args, ['strict', 'json', 'tool']);
   if (args.positionals.length !== 1)
     throw new UsageError(
-      'validate needs exactly one path: a workspace folder, a tool library, or a model file.',
+      'validate needs exactly one path: a workspace folder, a Kit, or a model file.',
     );
   const path = args.positionals[0]!;
   const strict = hasFlag(args, 'strict');
@@ -214,11 +219,11 @@ export async function validateCommand(
   let reports: DocumentReport[];
   if (kind === 'workspace') {
     reports = await validateWorkspace(path);
-  } else if (kind === 'tool-folder') {
-    const { issues } = await readToolFile(path);
+  } else if (kind === 'kit-folder') {
+    const { issues } = await readKitFile(path);
     reports = [
       {
-        path: join(path, 'tool.json'),
+        path: (await kitFileIn(path)) ?? path,
         kind: 'tool',
         issues: issues.map((i): ReportIssue => ({
           severity: 'error',
@@ -229,13 +234,13 @@ export async function validateCommand(
     ];
   } else {
     const raw = await readJsonFileAt(path);
-    const looksLikeTool =
+    const looksLikeKit =
       raw !== null &&
       typeof raw === 'object' &&
       'classes' in raw &&
       'manifest' in raw;
-    if (looksLikeTool && !path.endsWith('.mkmodel.json')) {
-      const { issues } = await readToolFile(path);
+    if (looksLikeKit && !path.endsWith('.mkmodel.json')) {
+      const { issues } = await readKitFile(path);
       reports = [
         {
           path,
@@ -277,15 +282,15 @@ export async function exportCommand(args: ParsedArgs, io: Io): Promise<number> {
     const ws = await Workspace.open(new NodeFsAdapter(workspace));
     text = await ws.exportModel(subject);
   } else {
-    const toolPath = await findToolFor(subject, stringFlag(args, 'tool'));
-    const { tool, issues } = await readToolFile(toolPath);
+    const kitPath = await findKitFor(subject, stringFlag(args, 'tool'));
+    const { kit, issues } = await readKitFile(kitPath);
     if (issues.length > 0)
       throw new CliError(
-        `The tool library "${toolPath}" has ${issues.length} problem(s); run "metakit validate ${toolPath}" to see them.`,
+        `The Kit "${kitPath}" has ${issues.length} problem(s); run "metakit validate ${kitPath}" to see them.`,
       );
     text = exportMkModel(
-      tool,
-      importMkModel(tool, await readJsonFileAt(subject)),
+      kit,
+      importMkModel(kit, await readJsonFileAt(subject)),
     );
   }
   const out = stringFlag(args, 'out');

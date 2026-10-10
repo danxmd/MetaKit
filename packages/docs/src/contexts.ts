@@ -5,7 +5,7 @@
 export const DOC_CONTEXTS = [
   'start',
   'models',
-  'tool-libraries',
+  'kits',
   'model',
   'docs',
   'build',
@@ -21,7 +21,7 @@ export const DOC_CONTEXTS = [
   'build.shape-editor',
   'build.catalog',
   'dialog.new-model',
-  'dialog.tool-import',
+  'dialog.kit-import',
   'dialog.export',
   'dialog.permission',
   'settings.git',

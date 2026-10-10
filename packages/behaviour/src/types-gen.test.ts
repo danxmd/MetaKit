@@ -1,14 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import {
-  CANCELLABLE_EVENTS,
-  EVENT_NAMES,
-  type ToolLibrary,
-} from '@metakit-app/core';
-import { SAMPLE, sampleTool } from '@metakit-app/core/testing';
+import { CANCELLABLE_EVENTS, EVENT_NAMES, type Kit } from '@metakit-app/core';
+import { SAMPLE, sampleKit } from '@metakit-app/core/testing';
 import { generateDeclarations } from './types-gen';
 
-function tool(): ToolLibrary {
-  const t = sampleTool();
+function kit(): Kit {
+  const t = sampleKit();
   t.classes[SAMPLE.task]!.attributes.push(
     { id: 'att_number', key: 'Number', type: 'integer' },
     { id: 'att_due', key: 'Due', type: 'date' },
@@ -45,7 +41,7 @@ const block = (text: string, name: string): string => {
 };
 
 describe('generateDeclarations', () => {
-  const text = generateDeclarations(tool());
+  const text = generateDeclarations(kit());
 
   it('declares the metakit module', () => {
     expect(text).toMatch(/^declare module "metakit" \{/);
@@ -62,7 +58,7 @@ describe('generateDeclarations', () => {
       expect(text).toMatch(new RegExp(`export (const|function) ${name}\\b`));
   });
 
-  it('names the classes, relation classes and model types of the tool', () => {
+  it('names the classes, relation classes and model types of the Kit', () => {
     expect(text).toContain(
       'export type ClassName = "FlowNode" | "Gateway" | "Lane" | "StartEvent" | "EndEvent" | "Task"'.replace(
         '"FlowNode" | "Gateway" | "Lane" | "StartEvent" | "EndEvent" | "Task"',
@@ -127,8 +123,8 @@ describe('generateDeclarations', () => {
     );
   });
 
-  it('works for an empty tool', () => {
-    const empty = sampleTool();
+  it('works for an empty Kit', () => {
+    const empty = sampleKit();
     empty.classes = {};
     empty.relations = {};
     empty.modelTypes = {};
@@ -137,8 +133,8 @@ describe('generateDeclarations', () => {
     expect(out).toContain('export type AttributeKey = never;');
   });
 
-  it('escapes names so that a tool cannot inject code into the declarations', () => {
-    const t = sampleTool();
+  it('escapes names so that a Kit cannot inject code into the declarations', () => {
+    const t = sampleKit();
     t.manifest.name = 'Evil */ declare const x: 1; /*';
     expect(generateDeclarations(t)).not.toContain('*/ declare const x');
   });

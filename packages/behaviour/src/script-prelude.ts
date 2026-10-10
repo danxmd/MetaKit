@@ -171,7 +171,7 @@ export const PRELUDE = String.raw`
     attrs: attrsOf('model'),
   };
 
-  // -- the tool's own meta-model --------------------------------------------------------------
+  // -- the Kit's own meta-model ---------------------------------------------------------------
   const tool = {
     get name() { return call('t.info').name; },
     get version() { return call('t.info').version; },

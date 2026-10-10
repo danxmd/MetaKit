@@ -1,17 +1,17 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { basename, dirname, join } from 'node:path';
-import type { Model, ToolLibrary } from '@metakit-app/core';
+import type { Model, Kit } from '@metakit-app/core';
 import {
-  applyToolUpdate,
+  applyKitUpdate,
   exportBundle,
   exportCsv,
   exportCsvZip,
-  exportToolPackage,
-  exportToolPackageFrom,
+  exportKitPackage,
+  exportKitPackageFrom,
   importBundle,
   importMkModel,
   NodeFsAdapter,
-  prepareToolImport,
+  prepareKitImport,
   Workspace,
 } from '@metakit-app/storage/node-entry';
 import {
@@ -22,7 +22,7 @@ import {
   type ParsedArgs,
 } from './args';
 import type { Io } from './commands';
-import { CliError, findToolFor, readJsonFileAt, readToolFile } from './load';
+import { CliError, findKitFor, readJsonFileAt, readKitFile } from './load';
 
 function need(args: ParsedArgs, name: string, command: string): string {
   const value = stringFlag(args, name);
@@ -65,7 +65,7 @@ export async function exportBundleCommand(
   const name = stringFlag(args, 'name');
   const { bytes } = await exportBundle(ws, {
     models,
-    includeTool: !hasFlag(args, 'no-tool'),
+    includeKit: !hasFlag(args, 'no-tool'),
     ...(name ? { name } : {}),
   });
   await writeOut(out, bytes, io);
@@ -89,14 +89,14 @@ export async function importBundleCommand(
   return report.skipped.length > 0 ? 1 : 0;
 }
 
-export async function exportToolCommand(
+export async function exportKitCommand(
   args: ParsedArgs,
   io: Io,
 ): Promise<number> {
   checkFlags(args, ['workspace', 'out']);
   if (args.positionals.length !== 1)
     throw new UsageError(
-      'export-tool needs one tool library: its folder name together with --workspace, or the path of a tool library.',
+      'export-tool needs one Kit: its folder name together with --workspace, or the path of a Kit.',
     );
   const out = need(args, 'out', 'export-tool');
   const subject = args.positionals[0]!;
@@ -104,36 +104,35 @@ export async function exportToolCommand(
   let bytes: Uint8Array;
   if (workspace) {
     bytes = (
-      await exportToolPackageFrom(
-        await openWorkspace(workspace, false),
-        subject,
-      )
+      await exportKitPackageFrom(await openWorkspace(workspace, false), subject)
     ).bytes;
   } else {
-    const { tool, issues } = await readToolFile(subject);
+    const { kit, issues } = await readKitFile(subject);
     if (issues.length > 0)
       throw new CliError(
-        `The tool library "${subject}" has ${issues.length} problem(s); run "metakit validate ${subject}" to see them.`,
+        `The Kit "${subject}" has ${issues.length} problem(s); run "metakit validate ${subject}" to see them.`,
       );
-    bytes = exportToolPackage(tool).bytes;
+    bytes = exportKitPackage(kit).bytes;
   }
   await writeOut(out, bytes, io);
   return 0;
 }
 
-export async function importToolCommand(
+export async function importKitCommand(
   args: ParsedArgs,
   io: Io,
 ): Promise<number> {
   checkFlags(args, ['workspace', 'create', 'yes']);
   if (args.positionals.length !== 1)
-    throw new UsageError('import-tool needs exactly one .mktool file.');
+    throw new UsageError(
+      'import-tool needs exactly one .mkkit (or older .mktool) file.',
+    );
   const ws = await openWorkspace(
     need(args, 'workspace', 'import-tool'),
     hasFlag(args, 'create'),
   );
   const bytes = new Uint8Array(await readFile(args.positionals[0]!));
-  const prepared = await prepareToolImport(ws, bytes);
+  const prepared = await prepareKitImport(ws, bytes);
   for (const line of prepared.plan.lines) io.out(line);
   for (const warning of prepared.plan.warnings) io.out(`Warning: ${warning}`);
   // Replacing a library changes every model made with it, so it needs a yes.
@@ -143,11 +142,10 @@ export async function importToolCommand(
     );
     return 1;
   }
-  const { slug, created } = await applyToolUpdate(ws, prepared);
+  const { slug, created } = await applyKitUpdate(ws, prepared);
+  const folder = await ws.kitFolder(slug);
   io.out(
-    created
-      ? `Added the tool library as tools/${slug}.`
-      : `Updated the tool library tools/${slug}.`,
+    created ? `Added the Kit as ${folder}.` : `Updated the Kit ${folder}.`,
   );
   return 0;
 }
@@ -164,32 +162,32 @@ export async function exportCsvCommand(
   const out = need(args, 'out', 'export-csv');
   const subject = args.positionals[0]!;
   const workspace = stringFlag(args, 'workspace');
-  let tool: ToolLibrary;
+  let kit: Kit;
   let model: Model;
   if (workspace) {
     const ws = await openWorkspace(workspace, false);
     model = (await ws.loadModel(subject)).document;
-    const slug = await ws.findToolSlug(model.manifest.tool);
+    const slug = await ws.findKitSlug(model.manifest.kit);
     if (!slug)
       throw new CliError(
-        `The tool library ${model.manifest.tool} of this model is not in the workspace.`,
+        `The Kit ${model.manifest.kit} of this model is not in the workspace.`,
       );
-    tool = (await ws.loadTool(slug)).document;
+    kit = (await ws.loadKit(slug)).document;
   } else {
-    const toolPath = await findToolFor(subject, stringFlag(args, 'tool'));
-    const read = await readToolFile(toolPath);
+    const kitPath = await findKitFor(subject, stringFlag(args, 'tool'));
+    const read = await readKitFile(kitPath);
     if (read.issues.length > 0)
       throw new CliError(
-        `The tool library "${toolPath}" has ${read.issues.length} problem(s); run "metakit validate ${toolPath}" to see them.`,
+        `The Kit "${kitPath}" has ${read.issues.length} problem(s); run "metakit validate ${kitPath}" to see them.`,
       );
-    tool = read.tool;
-    model = importMkModel(tool, await readJsonFileAt(subject));
+    kit = read.kit;
+    model = importMkModel(kit, await readJsonFileAt(subject));
   }
   const options = { bom: hasFlag(args, 'bom') };
   if (out.endsWith('.zip')) {
-    await writeOut(out, exportCsvZip(tool, model, options), io);
+    await writeOut(out, exportCsvZip(kit, model, options), io);
   } else {
-    for (const [name, text] of Object.entries(exportCsv(tool, model, options)))
+    for (const [name, text] of Object.entries(exportCsv(kit, model, options)))
       await writeOut(join(out, name), text, io);
   }
   return 0;

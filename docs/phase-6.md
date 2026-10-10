@@ -1,6 +1,6 @@
 # Phase 6: exports and packages (lane A, weeks 13 to 14)
 
-Phase 6 lets people get their work out of MetaKit and move it between workspaces: images, editable model files, tool packages and data. It also adds auto-layout, a validation list and better find.
+Phase 6 lets people get their work out of MetaKit and move it between workspaces: images, editable model files, Kit packages and data. It also adds auto-layout, a validation list and better find.
 
 **Before starting:** plan section "Import and export".
 
@@ -21,20 +21,20 @@ Done when: screenshot tests show exports matching the screen for the sample mode
 
 Deliver:
 
-- `.mkmodel.json` export and import from the UI (the format exists since phase 1), naming the tool and version; unknown keys survive re-import.
-- `.mkbundle`: a zip of several models plus their tool, for sharing a whole case study.
+- `.mkmodel.json` export and import from the UI (the format exists since phase 1), naming the Kit and version; unknown keys survive re-import.
+- `.mkbundle`: a zip of several models plus their Kit, for sharing a whole case study.
 - CSV export, one file per class.
 
 Done when: export then import of each format gives an identical model.
 
-## 6.3 Tool packages (`packages/core`, `packages/ui`)
+## 6.3 Kit packages (`packages/core`, `packages/ui`)
 
 Deliver:
 
-- `.mktool`: a zip of the tool's definitions, shapes, panels, rules, scripts and assets, with its version.
-- Import that either adds a new tool or updates an existing one, keeping IDs so existing models follow the update; a summary of what changes before confirming.
+- `.mktool`: a zip of the Kit's definitions, shapes, panels, rules, scripts and assets, with its version.
+- Import that either adds a new Kit or updates an existing one, keeping IDs so existing models follow the update; a summary of what changes before confirming.
 
-Done when: a tool exported from one workspace and imported into another produces identical models, and an update keeps existing models working.
+Done when: a Kit exported from one workspace and imported into another produces identical models, and an update keeps existing models working.
 
 ## 6.4 Auto-layout, validation list, find
 

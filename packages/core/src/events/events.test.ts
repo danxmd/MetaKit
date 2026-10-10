@@ -2,19 +2,19 @@ import { describe, expect, it } from 'vitest';
 import type { ElementId } from '../ids';
 import { CANCELLABLE_EVENTS, EVENT_NAMES } from '../meta/rule-types';
 import { isA } from '../meta/inherit';
-import type { AttributeDef, ToolLibrary } from '../meta/types';
+import type { AttributeDef, Kit } from '../meta/types';
 import { createModelStore } from '../model/commands';
 import type { Model } from '../model/types';
 import { setAt, type Patch } from '../store/tx';
-import { SAMPLE, emptySampleModel, sampleTool } from '../testing/sample-tool';
+import { SAMPLE, emptySampleModel, sampleKit } from '../testing/sample-kit';
 import { attachEvents } from './bridge';
 import { EventBus, type EventPayload } from './bus';
 
 type Setup = ReturnType<typeof setup>;
 
 function setup() {
-  const base = sampleTool();
-  const tool: ToolLibrary = {
+  const base = sampleKit();
+  const kit: Kit = {
     ...base,
     classes: {
       ...base.classes,
@@ -32,9 +32,9 @@ function setup() {
       },
     },
   };
-  const store = createModelStore(emptySampleModel(), { tool });
-  const bus = new EventBus({ isA: (c, a) => isA(tool, c, a) });
-  attachEvents(store, bus, { tool: () => tool });
+  const store = createModelStore(emptySampleModel(), { kit });
+  const bus = new EventBus({ isA: (c, a) => isA(kit, c, a) });
+  attachEvents(store, bus, { kit: () => kit });
   const seen: EventPayload[] = [];
   bus.on('*', (p) => void seen.push(p));
   const exec = (command: Record<string, unknown>) =>
@@ -50,7 +50,7 @@ function setup() {
       }) as unknown as { value: ElementId }
     ).value;
   const names = () => seen.map((e) => e.event);
-  return { store, bus, seen, exec, task, names, tool };
+  return { store, bus, seen, exec, task, names, kit };
 }
 
 describe('the 24 events', () => {
@@ -367,10 +367,10 @@ describe('merged changes', () => {
 
 describe('the state an event was announced with', () => {
   it('shows the step in progress to handlers, and nothing for events the app emits', () => {
-    const base = sampleTool();
-    const store = createModelStore(emptySampleModel(), { tool: base });
+    const base = sampleKit();
+    const store = createModelStore(emptySampleModel(), { kit: base });
     const bus = new EventBus();
-    attachEvents(store, bus, { tool: () => base });
+    attachEvents(store, bus, { kit: () => base });
     const live: (number | undefined)[] = [];
     bus.on('object.created', () => {
       const m = bus.state as Model | undefined;

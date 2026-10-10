@@ -2,7 +2,7 @@
 id: shapes-section
 title: Shapes
 category: build
-summary: The Shapes section lists every shape and line shape of the tool library, shows who uses it, and lets you add from a starter, edit, duplicate or delete.
+summary: The Shapes section lists every shape and line shape of the Kit, shows who uses it, and lets you add from a starter, edit, duplicate or delete.
 keywords: [shapes section, shape list, starter shape, hand drawn shape, duplicate shape, line shape]
 contexts: [build.shapes]
 order: 160
@@ -12,7 +12,7 @@ A shape says how a class or a relation class is drawn on the canvas. The **Shape
 
 ## What it is
 
-The tool library has two kinds of shape:
+The Kit has two kinds of shape:
 
 - **Object shapes** (shown as "object") are the outlines and drawings of classes.
 - **Line shapes** (shown as "line") are the lines of relation classes.
@@ -57,7 +57,7 @@ An empty library says: "No shapes yet. Add one from a starter below, or create o
 
 ## Examples
 
-The Agent pipeline tool has twelve shapes. Six draw objects: **Agent (bot)**, **Human (person)**, **Task (status stripe)**, **Artifact (document)**, **Gate (hexagon)** and **Stage (horizontal band)**. Six are lines: **Performs (dotted)**, **Hand-over (arrow)**, **Produces (arrow)**, **Feeds (arrow)**, **Approves (arrow)** and **Delegates (arrow)**. Every card shows "Hand drawn" and which class or relation class uses it. Press **Edit** on **Task (status stripe)** to see how it is drawn with a stripe whose colour follows the Status.
+The Agent pipeline Kit has twelve shapes. Six draw objects: **Agent (bot)**, **Human (person)**, **Task (status stripe)**, **Artifact (document)**, **Gate (hexagon)** and **Stage (horizontal band)**. Six are lines: **Performs (dotted)**, **Hand-over (arrow)**, **Produces (arrow)**, **Feeds (arrow)**, **Approves (arrow)** and **Delegates (arrow)**. Every card shows "Hand drawn" and which class or relation class uses it. Press **Edit** on **Task (status stripe)** to see how it is drawn with a stripe whose colour follows the Status.
 
 ## Good to know
 
