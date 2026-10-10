@@ -173,6 +173,64 @@ export const BUILT_IN_KITS: readonly BuiltInKit[] = [
       import('../../../../kits/bpmn-lite/kit.json?raw').then((m) => m.default),
   },
   {
+    id: 'kit_capabilitymap' as KitId,
+    name: 'Business capability map',
+    version: '1.0.0',
+    domain: 'business',
+    description:
+      'Capabilities on three levels with maturity, target and strategic importance, a heat colour, and the applications that support them.',
+    load: () =>
+      import('../../../../kits/capability-map/kit.json?raw').then(
+        (m) => m.default,
+      ),
+  },
+  {
+    id: 'kit_bmcanvas' as KitId,
+    name: 'Business model canvas',
+    version: '1.0.0',
+    domain: 'business',
+    description:
+      'The nine blocks of a business model as containers, with items, how well each is tested, annual amounts and links between items.',
+    load: () =>
+      import('../../../../kits/business-model-canvas/kit.json?raw').then(
+        (m) => m.default,
+      ),
+  },
+  {
+    id: 'kit_valuejourneys' as KitId,
+    name: 'Value streams and customer journeys',
+    version: '1.0.0',
+    domain: 'business',
+    description:
+      'Value streams and customer journeys: stages, touchpoints scored by emotion, channels, pain points, opportunities and metrics.',
+    load: () =>
+      import('../../../../kits/value-streams-journeys/kit.json?raw').then(
+        (m) => m.default,
+      ),
+  },
+  {
+    id: 'kit_stakeholdermap' as KitId,
+    name: 'Stakeholder and organisation map',
+    version: '1.0.0',
+    domain: 'business',
+    description:
+      'Organisation units, roles and people, stakeholders on an interest and influence grid with their attitude, and RACI for activities and deliverables.',
+    load: () =>
+      import('../../../../kits/stakeholder-org-map/kit.json?raw').then(
+        (m) => m.default,
+      ),
+  },
+  {
+    id: 'kit_okrs' as KitId,
+    name: 'OKRs and goals',
+    version: '1.0.0',
+    domain: 'business',
+    description:
+      'Goals, objectives and key results per period, with progress from start, target and current values, initiatives and owners.',
+    load: () =>
+      import('../../../../kits/okrs-goals/kit.json?raw').then((m) => m.default),
+  },
+  {
     id: 'tool_erlite' as KitId,
     name: 'ER lite',
     version: '1.0.0',

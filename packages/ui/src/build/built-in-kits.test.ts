@@ -43,6 +43,11 @@ const INTENDED_WARNINGS: Record<string, number> = {
   'ml-lifecycle': 1,
   'genai-solution': 1,
   'ai-risk-compliance': 1,
+  'capability-map': 1,
+  'business-model-canvas': 1,
+  'value-streams-journeys': 1,
+  'stakeholder-org-map': 1,
+  'okrs-goals': 1,
 };
 
 /**

@@ -83,20 +83,25 @@ Press **F1** at any time for help on the page you are on.
 
 ### Built-in Kits
 
-| Kit                                 | What it is for                                                                                                    |
-| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| **Data and AI strategy**            | Vision, goals and objectives, value drivers, AI use cases and capabilities, a roadmap of initiatives and benefits |
-| **Data and AI maturity assessment** | Capabilities scored now and as a target, with the gap, a priority and the actions that close it                   |
-| **AI use-case portfolio**           | Use cases scored on value, feasibility, data readiness and risk, with a priority score and quadrants              |
-| **KPI and metric tree**             | Outcome KPIs explained by driver and operational metrics, with targets and an on-track colour                     |
-| **Data and AI architecture**        | Sources, pipelines, stores, datasets, ML models, AI services and consumers, with lineage and personal-data checks |
-| **Data governance and ownership**   | Domains, data products, owners and stewards, policies, classifications and quality rules                          |
-| **Agent pipeline**                  | AI agents and people performing tasks, handing over work and approving results                                    |
-| **ML lifecycle (MLOps)**            | Experiments and training runs, model versions with evaluations and approvals, deployments, monitors and incidents |
-| **Generative AI solution**          | Prompts and models, retrieval, agents and tools, guardrails and evaluations, with cost and latency per request    |
-| **AI risk and compliance**          | AI systems with a risk tier, risks and controls, obligations, assessments, incidents and evidence                 |
-| **BPMN lite**                       | Business processes with tasks, events, gateways and lanes                                                         |
-| **ER lite**                         | Entities, attributes and relationships                                                                            |
+| Kit                                     | What it is for                                                                                                    |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| **Data and AI strategy**                | Vision, goals and objectives, value drivers, AI use cases and capabilities, a roadmap of initiatives and benefits |
+| **Data and AI maturity assessment**     | Capabilities scored now and as a target, with the gap, a priority and the actions that close it                   |
+| **AI use-case portfolio**               | Use cases scored on value, feasibility, data readiness and risk, with a priority score and quadrants              |
+| **KPI and metric tree**                 | Outcome KPIs explained by driver and operational metrics, with targets and an on-track colour                     |
+| **Data and AI architecture**            | Sources, pipelines, stores, datasets, ML models, AI services and consumers, with lineage and personal-data checks |
+| **Data governance and ownership**       | Domains, data products, owners and stewards, policies, classifications and quality rules                          |
+| **Agent pipeline**                      | AI agents and people performing tasks, handing over work and approving results                                    |
+| **ML lifecycle (MLOps)**                | Experiments and training runs, model versions with evaluations and approvals, deployments, monitors and incidents |
+| **Generative AI solution**              | Prompts and models, retrieval, agents and tools, guardrails and evaluations, with cost and latency per request    |
+| **AI risk and compliance**              | AI systems with a risk tier, risks and controls, obligations, assessments, incidents and evidence                 |
+| **BPMN lite**                           | Business processes with tasks, events, gateways and lanes                                                         |
+| **Business capability map**             | Levels 1 to 3 with maturity, target and importance, a heat colour, and the applications that support them         |
+| **Business model canvas**               | The nine blocks as containers with their items, evidence, annual amounts and links                                |
+| **Value streams and customer journeys** | Stages, touchpoints with channel and emotion, pain points, opportunities and metrics                              |
+| **Stakeholder and organisation map**    | Org units, roles and people, stakeholders by interest and influence, and RACI                                     |
+| **OKRs and goals**                      | Goals, objectives and key results per period with progress, initiatives and owners                                |
+| **ER lite**                             | Entities, attributes and relationships                                                                            |
 
 ![The Kits page: the workspace's own Kits first, then the built-in Kits, which you can use as they are or copy and extend](docs/images/kits-page.png)
 

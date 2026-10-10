@@ -39,6 +39,11 @@ They are listed by domain, under one heading each:
 | Built-in Kit | What it is for |
 | --- | --- |
 | **BPMN lite** | Business processes: tasks, events, gateways and lanes connected by sequence flows. |
+| **Business capability map** | Capabilities on three levels with maturity, target and strategic importance, a heat colour, and the applications that support them. See [[capability-map]]. |
+| **Business model canvas** | The nine blocks of a business model as containers, with items, how well each is tested, annual amounts and links between items. See [[business-model-canvas]]. |
+| **Value streams and customer journeys** | Value streams and customer journeys: stages, touchpoints scored by emotion, channels, pain points, opportunities and metrics. See [[value-streams-journeys]]. |
+| **Stakeholder and organisation map** | Organisation units, roles and people, stakeholders on an interest and influence grid with their attitude, and RACI for activities and deliverables. See [[stakeholder-org-map]]. |
+| **OKRs and goals** | Goals, objectives and key results per period, with progress from start, target and current values, initiatives and owners. See [[okrs-goals]]. |
 
 **Architecture**
 
