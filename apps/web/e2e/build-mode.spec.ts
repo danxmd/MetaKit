@@ -38,9 +38,9 @@ test.describe('Build mode', () => {
   }) => {
     await bareWorkspace(page);
     await page.getByTestId('mode-build').click();
-    await page.getByTestId('new-tool').click();
-    await page.getByTestId('new-tool-name').fill('Mini ER');
-    await page.getByTestId('new-tool-create').click();
+    await page.getByTestId('new-kit').click();
+    await page.getByTestId('new-kit-name').fill('Mini ER');
+    await page.getByTestId('new-kit-create').click();
     await expect(page.getByTestId('build-view')).toBeVisible();
 
     // A class with two attributes.
@@ -75,7 +75,7 @@ test.describe('Build mode', () => {
     await page.getByTestId('mode-model').click();
     await page.getByTestId('new-model').click();
     await page
-      .getByTestId('new-model-tool')
+      .getByTestId('new-model-kit')
       .selectOption({ label: 'Mini ER (0.1.0)' });
     await page.getByTestId('new-model-name').fill('Customers');
     await page.getByTestId('new-model-create').click();
@@ -89,9 +89,9 @@ test.describe('Build mode', () => {
   test('refuses a key that is taken and says why', async ({ page }) => {
     await bareWorkspace(page);
     await page.getByTestId('mode-build').click();
-    await page.getByTestId('new-tool').click();
-    await page.getByTestId('new-tool-name').fill('Keys');
-    await page.getByTestId('new-tool-create').click();
+    await page.getByTestId('new-kit').click();
+    await page.getByTestId('new-kit-name').fill('Keys');
+    await page.getByTestId('new-kit-create').click();
     await addItem(page, 'classes', 'Alpha');
     await addItem(page, 'classes', 'Beta');
     const key = page.getByTestId('class-key');

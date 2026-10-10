@@ -29,7 +29,7 @@ test.describe('the app shell', () => {
     );
     for (const step of [
       'Open or create a workspace folder',
-      'Add a tool library, or build one',
+      'Add a Kit, or build one',
       'Model',
     ])
       await expect(
@@ -51,7 +51,7 @@ test.describe('the app shell', () => {
 
     // Switching to Build closes the model and shows the tool libraries.
     await page.getByTestId('mode-build').click();
-    await expect(page.getByTestId('tools-page')).toBeVisible();
+    await expect(page.getByTestId('kits-page')).toBeVisible();
     await expect(page.getByTestId('model-view')).toHaveCount(0);
     await expect(page.getByTestId('mode-build')).toHaveAttribute(
       'aria-current',
@@ -114,15 +114,15 @@ test.describe('the app shell', () => {
       'pick a built-in one in New model',
     );
     await page.getByTestId('go-build').click();
-    await expect(page.getByTestId('tools-page')).toBeVisible();
-    await expect(page.getByTestId('no-tools')).toContainText(
+    await expect(page.getByTestId('kits-page')).toBeVisible();
+    await expect(page.getByTestId('no-kits')).toContainText(
       'Use a built-in one',
     );
 
     // With a tool library the models page offers to make the first model.
-    await page.getByTestId('new-tool').click();
-    await page.getByTestId('new-tool-name').fill('Mini');
-    await page.getByTestId('new-tool-create').click();
+    await page.getByTestId('new-kit').click();
+    await page.getByTestId('new-kit-name').fill('Mini');
+    await page.getByTestId('new-kit-create').click();
     await expect(page.getByTestId('build-view')).toBeVisible();
     await page.getByTestId('mode-model').click();
     await expect(page.getByTestId('no-models')).toContainText('No models yet');

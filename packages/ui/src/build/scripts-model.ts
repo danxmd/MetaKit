@@ -29,7 +29,7 @@ export interface ScriptsApi {
 
 export const NEW_SCRIPT_TEMPLATE = `import { on, model, ui, commands } from "metakit";
 
-// This part runs when the tool is opened: say what should happen, and do the work
+// This part runs when the Kit is opened: say what should happen, and do the work
 // in handlers and commands.
 
 // on("object.created", { class: "Task" }, (event) => {

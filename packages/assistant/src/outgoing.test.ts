@@ -82,7 +82,7 @@ describe('what is sent', () => {
       messages: [{ role: 'user', content: 'use cls_abcdefghjk' }],
     };
     expect(() => assertNoModelContent(foreignId, tool)).toThrow(
-      /not in the tool library/,
+      /not in the Kit/,
     );
     expect(() =>
       assertNoModelContent({ ...ok, model: modelWithMarker() }, tool),

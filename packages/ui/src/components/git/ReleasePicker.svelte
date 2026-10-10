@@ -43,10 +43,10 @@
   data-testid="release-picker"
 >
   <div class="body">
-    <h2 id="release-title">Tool library versions</h2>
+    <h2 id="release-title">Kit versions</h2>
     <p>
       A version is a tag of the repository. Pick one to open that version of the
-      tool library to read or to follow.
+      Kit to read or to follow.
     </p>
 
     {#if sorted.length === 0}

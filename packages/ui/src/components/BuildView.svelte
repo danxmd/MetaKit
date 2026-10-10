@@ -85,7 +85,7 @@
     },
     { id: 'appearance', title: 'Appearance', sections: ['shapes'] },
     { id: 'behaviour', title: 'Behaviour', sections: ['rules', 'scripts'] },
-    { id: 'tool', title: 'Tool library', sections: ['settings'] },
+    { id: 'kit', title: 'Kit', sections: ['settings'] },
   ];
   // The topic the "?" button of the header opens for each page of Build mode.
   const HELP_TOPIC: Partial<Record<DocContext, string>> = {
@@ -95,7 +95,7 @@
     'build.shapes': 'shapes-section',
     'build.rules': 'rules',
     'build.scripts': 'scripts',
-    'build.settings': 'tool-settings',
+    'build.settings': 'kit-settings',
     'build.panel-layout': 'panel-layout',
     'build.appearance': 'appearance-editor',
     'build.shape-editor': 'shape-editor',
@@ -409,13 +409,13 @@
 <div class="build" data-testid="build-view">
   <header class="bar">
     <button type="button" class="ghost" onclick={back} data-testid="build-back"
-      >← Tool libraries</button
+      >← Kits</button
     >
     <input
       class="name"
       value={tool.manifest.name}
       onchange={(e) => rename(e.currentTarget.value)}
-      aria-label="Tool library name"
+      aria-label="Kit name"
       data-testid="build-name"
     />
     <label class="version"
@@ -551,7 +551,7 @@
     <details class="notice warning issues" data-testid="build-issues">
       <summary
         >{build.issues.length} problem{build.issues.length === 1 ? '' : 's'} in this
-        tool library</summary
+        Kit</summary
       >
       <ul>
         {#each build.issues.slice(0, 20) as issue (issue.path + issue.message)}<li
@@ -563,7 +563,7 @@
   {/if}
 
   <div class="body">
-    <nav aria-label="Tool library sections">
+    <nav aria-label="Kit sections">
       {#each GROUPS as group (group.id)}
         <div class="group" role="group" aria-labelledby="grp-{group.id}">
           <h3 id="grp-{group.id}" class="group-title">{group.title}</h3>

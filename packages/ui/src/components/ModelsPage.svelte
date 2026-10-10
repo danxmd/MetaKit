@@ -64,7 +64,7 @@
 
 <PageFrame
   title="Models"
-  help="Models are made with a tool library. Open one to draw and edit it."
+  help="Models are made with a Kit. Open one to draw and edit it."
   testid="models-page"
 >
   {#snippet actions()}
@@ -87,9 +87,9 @@
       {#if tools.length === 0}
         <h2>No models yet</h2>
         <p class="muted">
-          A model is made with a tool library, which says which kinds of objects
-          and connections it can have. This workspace has no tool library of its
-          own yet: pick a built-in one in New model, or build your own in Build.
+          A model is made with a Kit, which says which kinds of objects and
+          connections it can have. This workspace has no Kit of its own yet:
+          pick a built-in one in New model, or build your own in Build.
         </p>
         <div class="row">
           <button class="primary" onclick={onNew} data-testid="new-model-empty"
@@ -101,8 +101,7 @@
       {:else}
         <h2>No models yet</h2>
         <p class="muted">
-          Create one from a tool library, or import a model file with Import /
-          Export.
+          Create one from a Kit, or import a model file with Import / Export.
         </p>
         <div class="row">
           <button class="primary" onclick={onNew} data-testid="new-model-empty"

@@ -363,7 +363,7 @@ function validateRule(tool: ToolLibrary, draft: RuleDraft): string[] {
   const missing = (key: unknown, path: string) => {
     if (typeof key === 'string' && !known.has(key))
       errors.push(
-        `${path}: There is no attribute with the key "${key}" in this tool. Attributes: ${[...known].join(', ') || 'none'}.`,
+        `${path}: There is no attribute with the key "${key}" in this Kit. Attributes: ${[...known].join(', ') || 'none'}.`,
       );
   };
   missing(draft.when?.attribute, 'when.attribute');

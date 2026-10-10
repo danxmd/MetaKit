@@ -87,7 +87,7 @@ The properties panel: [[shape-properties]].
 
 ## Examples
 
-The shape **Task (status stripe)** in the Agent pipeline tool is 170 by 80 pixels, can be resized (at least 100 by 50) and has four parts:
+The shape **Task (status stripe)** in the Agent pipeline Kit is 170 by 80 pixels, can be resized (at least 100 by 50) and has four parts:
 
 1. A white rectangle with radius 8 and a dark border.
 2. A narrow rectangle 10 pixels wide down the left edge. Its fill is a formula that chooses a colour by Status.

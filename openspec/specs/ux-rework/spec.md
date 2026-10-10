@@ -5,15 +5,15 @@ A clear structure and a consistent look for MetaKit, with dark mode.
 
 ## Requirements
 
-### Requirement: Modelling and tool building are separate
+### Requirement: Modelling and Kit building are separate
 The app SHALL present Model and Build as two separate areas, switchable from the top bar at any time in a workspace, each with its own home page.
 
 #### Scenario: Switch area
 - **WHEN** a person is on the models page and chooses Build
-- **THEN** the tool libraries page opens, and Model returns to the models page
+- **THEN** the Kits page opens, and Model returns to the models page
 
 ### Requirement: Functions are grouped
-Commands in the model view and the tool library editor SHALL be grouped under labelled headings or menus, and no group SHALL show more than seven top-level controls.
+Commands in the model view and the Kit editor SHALL be grouped under labelled headings or menus, and no group SHALL show more than seven top-level controls.
 
 #### Scenario: Model toolbar
 - **WHEN** the model view opens

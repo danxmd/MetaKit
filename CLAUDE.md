@@ -1,6 +1,6 @@
 # MetaKit
 
-MetaKit is a browser-only metamodelling and modelling tool, without simulation, analysis, database or user management. Method engineers build modelling tools in **Build mode**; modellers use them in **Model mode**. Tool libraries and models are plain JSON files in a shared folder synced by OneDrive, SharePoint, Google Drive or Dropbox. Tool libraries can also live in GitHub or GitLab (Git mode).
+MetaKit is a browser-only metamodelling and modelling tool, without simulation, analysis, database or user management. Method engineers build Kits in **Build mode**; modellers use them in **Model mode**. Kits and models are plain JSON files in a shared folder synced by OneDrive, SharePoint, Google Drive or Dropbox. Kits can also live in GitHub or GitLab (Git mode).
 
 - Full plan: `docs/implementation-plan.md`. Read only the sections a task needs.
 - Current phase brief: `docs/phase-10.md` (phases 5 to 9 are in `docs/phase-5.md` to `docs/phase-9.md`; phase 10 waits for Danial's choices).
@@ -9,7 +9,7 @@ MetaKit is a browser-only metamodelling and modelling tool, without simulation, 
 ## Architecture rules (do not break these)
 
 1. **No server, no database, no accounts.** The app is static files served from GitHub Pages. Storage calls go straight from the browser to the folder or service. Never add a feature that needs a backend.
-2. **Everything is a document.** Tool libraries and models share one store, one command API, undo, sync and history.
+2. **Everything is a document.** Kits and models share one store, one command API, undo, sync and history.
 3. **Commands are the only way to change state.** UI actions, rules and scripts all go through the command API.
 4. **Drawing is derived, never stored.** Shapes compile to cached draw lists keyed by the attribute values they read.
 5. **`packages/core` has no DOM or UI dependency** and must run in Node.
@@ -27,14 +27,14 @@ If a task seems to require breaking a rule, stop and ask. Record agreed changes 
 - Sync lives in `packages/sync`; tests run it over `MemoryFolder` with several sessions. `docs/phase-3-test-protocol.md` is the real-service test Danial runs.
 - E2E tests use the `window.__METAKIT_TEST__` seam (`pickFolder`, `remember: false`, `profile`) because the headless browser crashes on handles stored in IndexedDB. Locally set `PW_CHROMIUM_PATH` to the installed Chromium.
 
-- Shapes and panel layouts live in the tool library (format 2, ADR 0004). `packages/formula` is the formula subset; phase 5.1 extends it. `packages/shapes` compiles shapes to draw lists; the canvas replays them.
+- Shapes and panel layouts live in the Kit (format 2, ADR 0004). `packages/formula` is the formula subset; phase 5.1 extends it. `packages/shapes` compiles shapes to draw lists; the canvas replays them.
 - Computed values are derived and never stored (ADR 0005). `ModelCalculator` (core) tracks dependencies; `packages/behaviour` holds the event bridge, the rule engine and the command registry. Events never fire for merged changes. Rules change the model only through `store.execute`.
-- Exports (SVG, PNG, PDF) replay the same draw lists as the screen; jsPDF and svg2pdf load lazily. Model files, bundles, CSV and tool packages live in `packages/storage`; auto-layout runs ELK in a worker through the `applyLayout` command.
-- Scripts (tool format 4, ADR 0006) are TypeScript run in QuickJS inside `packages/behaviour` (`ScriptEngine`, started by `attachScripts` only when a tool has scripts). They change the model only through commands (`store.transact` groups them into one undo step) and need the `files` and `network` permissions, which each browser grants in IndexedDB. The editor's TypeScript language service runs in a worker that loads only when an editor opens. Set `PW_PORT` to run Playwright on another port when several checkouts share a machine.
-- Git mode (ADR 0007): a Git tool library is a normal workspace tool library plus a `GitLink` in IndexedDB. `GitRemote` (`packages/storage/src/git/remote.ts`) is the only hosting interface; GitHub and GitLab implement it with their REST APIs and tests use `MemoryRemote`. Tokens live only in IndexedDB (`TokenStore`). Pulls merge per file and field and are applied as one batch of tool commands. E2E tests replace the services through `__METAKIT_TEST__.gitRemote`.
-- The assistant (ADR 0008, `packages/assistant`) is off by default, uses the person's own key from IndexedDB, sends tool definitions only, and loads `@anthropic-ai/sdk` lazily. Drafts are validated, then accepted as one undoable batch of tool commands.
+- Exports (SVG, PNG, PDF) replay the same draw lists as the screen; jsPDF and svg2pdf load lazily. Model files, bundles, CSV and Kit packages live in `packages/storage`; auto-layout runs ELK in a worker through the `applyLayout` command.
+- Scripts (Kit format 4, ADR 0006) are TypeScript run in QuickJS inside `packages/behaviour` (`ScriptEngine`, started by `attachScripts` only when a Kit has scripts). They change the model only through commands (`store.transact` groups them into one undo step) and need the `files` and `network` permissions, which each browser grants in IndexedDB. The editor's TypeScript language service runs in a worker that loads only when an editor opens. Set `PW_PORT` to run Playwright on another port when several checkouts share a machine.
+- Git mode (ADR 0007): a Git Kit is a normal workspace Kit plus a `GitLink` in IndexedDB. `GitRemote` (`packages/storage/src/git/remote.ts`) is the only hosting interface; GitHub and GitLab implement it with their REST APIs and tests use `MemoryRemote`. Tokens live only in IndexedDB (`TokenStore`). Pulls merge per file and field and are applied as one batch of Kit commands. E2E tests replace the services through `__METAKIT_TEST__.gitRemote`.
+- The assistant (ADR 0008, `packages/assistant`) is off by default, uses the person's own key from IndexedDB, sends the Kit definition only, and loads `@anthropic-ai/sdk` lazily. Drafts are validated, then accepted as one undoable batch of Kit commands.
 - Documentation (`packages/docs`, OpenSpec `in-app-documentation`): topics are Markdown files in `packages/docs/content/<category>/<id>.md`, shown in the Help side bar (F1, opens at the current page's topic) and the Docs area. Pages report their context through `setDocsContext`; every context in `contexts.ts` needs a topic and `pnpm test` fails on broken `[[links]]`. **When you change a page, a menu or a function, update its topic in the same change.** Tutorials go in `content/tutorials/`.
-- Build mode edits the tool library through tool commands (`putClass`, `putAttribute`, `renameKey`, ...); the editors never write state directly.
+- Build mode edits the Kit through Kit commands (`putClass`, `putAttribute`, `renameKey`, ...); the editors never write state directly.
 
 ## Performance budget
 
@@ -70,7 +70,7 @@ apps/
   web/             the static web app
   cli/             headless export and validation (Node.js)
 spikes/            phase-0 experiments; never imported by packages/ or apps/
-tools/             sample tool libraries used as test fixtures
+tools/             sample Kits used as test fixtures
 bench/             canvas and merge benchmarks
 ```
 
@@ -110,7 +110,7 @@ Keep this section current whenever scripts change.
 - Unit tests sit next to the code as `*.test.ts`. End-to-end tests live in `apps/web/e2e/`.
 - No `any` without a comment explaining why.
 - Comments explain why, not what.
-- User-facing text in plain English; labels in tool libraries can be translated.
+- User-facing text in plain English; labels in Kits can be translated.
 
 ## What needs Danial
 

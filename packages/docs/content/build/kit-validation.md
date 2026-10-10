@@ -1,27 +1,27 @@
 ---
-id: tool-validation
-title: Checking a tool library
+id: kit-validation
+title: Kit validation
 category: build
-summary: How the Build view tells you about problems in a tool library, what the common messages mean, and how to fix them.
-keywords: [tool library problems, problems banner, tool validation, validate tool library, tool library check]
+summary: How the Build view tells you about problems in a Kit, what the common messages mean, and how to fix them.
+keywords: [checking a kit, kit problems, problems banner, validate the kit, kit check]
 contexts: []
 order: 240
 ---
 
-MetaKit checks the whole tool library after every change. If something is wrong you see a yellow banner under the Build header with a list of what to fix. A tool library with problems still opens and can be edited, so you can fix it step by step.
+MetaKit checks the whole Kit after every change. If something is wrong you see a yellow banner under the Build header with a list of what to fix. A Kit with problems still opens and can be edited, so you can fix it step by step.
 
 ## What it is
 
 There are two layers of checking:
 
 1. **Refusals.** Many commands are checked before they are applied. A refused change shows a red message and changes nothing. Examples are a key that is already taken, an attribute that is not valid, or deleting a class that is still used.
-2. **The banner.** After each change the complete tool library is checked again. Problems that remain, for example ones that came from an older file, a hand edit, or a change that made something else invalid, are listed in the banner.
+2. **The banner.** After each change the complete Kit is checked again. Problems that remain, for example ones that came from an older file, a hand edit, or a change that made something else invalid, are listed in the banner.
 
-These checks are about the tool library. Problems in a model, such as a missing value, are shown in Model mode in the Problems list ([[problems-panel]]).
+These checks are about the Kit. Problems in a model, such as a missing value, are shown in Model mode in the Problems list ([[problems-panel]]).
 
 ## Where to find it
 
-Under the header of the [[page-build-view]]. The banner appears only when there is something to report. Its title reads **1 problem in this tool library** or **N problems in this tool library**. Click it to open the list. It shows the first 20 problems.
+Under the header of the [[page-build-view]]. The banner appears only when there is something to report. Its title reads **1 problem in this Kit** or **N problems in this Kit**. Click it to open the list. It shows the first 20 problems.
 
 ## How to use it
 
@@ -38,7 +38,7 @@ Under the header of the [[page-build-view]]. The banner appears only when there 
 | --- | --- | --- |
 | At least one FROM class is required, because the relation class has no parent to inherit them from. (or TO) | A new relation class has no classes at its ends. | Tick classes under **Connects** ([[relations]]). |
 | The class labels needs a label in at least one language. | A class, relation class, model type or view has no label. | Type a label ([[labels-and-help]]). |
-| The language "de" is not listed in the tool's languages (en). | A label exists in a language you removed. | Add the language again in **Settings**, or empty that label ([[tool-settings]]). |
+| The language "de" is not listed in the Kit's languages (en). | A label exists in a language you removed. | Add the language again in **Settings**, or empty that label ([[kit-settings]]). |
 | The class key "Task" is also used by cls_... | Two classes share a key. | Rename one ([[keys-and-renaming]]). |
 | The class "Task" has two attributes with the key "Name" ..., counting inherited attributes. | A child and a parent both have the key. | Rename one ([[abstract-classes]]). |
 | The classes "A" and "B" extend each other in a loop. | A loop in the parents. | Change **Extends** of one. |
@@ -73,12 +73,12 @@ The check looks at: the manifest (name, version, languages), the settings, every
 
 ## Examples
 
-You add a relation class **Reviews** in the Agent pipeline tool and forget to set its ends. The banner shows two entries: one for FROM and one for TO, each beginning `relations.rel_...`. You tick **Human** at From and **Artifact** at To. The banner disappears. In **Pipeline** you now tick **Reviews** under **Relation classes allowed**, and in the Try it preview the new tool button appears ([[try-it-preview]]).
+You add a relation class **Reviews** in the Agent pipeline Kit and forget to set its ends. The banner shows two entries: one for FROM and one for TO, each beginning `relations.rel_...`. You tick **Human** at From and **Artifact** at To. The banner disappears. In **Pipeline** you now tick **Reviews** under **Relation classes allowed**, and in the Try it preview the new tool button appears ([[try-it-preview]]).
 
 ## Good to know
 
-- You can check tool libraries without the browser: the command line tool validates a folder with `metakit validate <folder>` ([[file-formats]]).
-- A tool library with problems can still be opened and edited, so you can repair it in the Build view.
+- You can check Kits without the browser: the command line tool validates a folder with `metakit validate <folder>` ([[file-formats]]).
+- A Kit with problems can still be opened and edited, so you can repair it in the Build view.
 - The banner counts problems in the current state. **Undo** can remove a problem as well as a change that caused it ([[page-build-view]]).
 - After a Git pull the banner shows problems of the merged result ([[git-pull-conflicts]]).
 

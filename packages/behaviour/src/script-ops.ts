@@ -91,7 +91,7 @@ function classOf(tool: ToolLibrary, key: unknown): ClassDef {
     .filter((c) => !c.abstract)
     .map((c) => c.key);
   return fail(
-    `This tool has no class "${String(key)}".${names.length ? ` Classes: ${names.join(', ')}.` : ''}`,
+    `This Kit has no class "${String(key)}".${names.length ? ` Classes: ${names.join(', ')}.` : ''}`,
   );
 }
 
@@ -101,7 +101,7 @@ function relationOf(tool: ToolLibrary, key: unknown): RelationDef {
   if (found) return found;
   const names = Object.values(tool.relations).map((r) => r.key);
   return fail(
-    `This tool has no relation class "${String(key)}".${names.length ? ` Relation classes: ${names.join(', ')}.` : ''}`,
+    `This Kit has no relation class "${String(key)}".${names.length ? ` Relation classes: ${names.join(', ')}.` : ''}`,
   );
 }
 
@@ -691,7 +691,7 @@ export function createOps(c: OpsContext): (op: string, args: Args) => unknown {
         const found = findModelTypeByKey(tool, text(a[0], 'The model type'));
         return found
           ? modelTypeOut(tool, found)
-          : fail(`This tool has no model type "${String(a[0])}".`);
+          : fail(`This Kit has no model type "${String(a[0])}".`);
       }
       case 't.attribute': {
         const owner = text(a[0], 'The class');
@@ -705,7 +705,7 @@ export function createOps(c: OpsContext): (op: string, args: Args) => unknown {
             ? effectiveRelationAttributes(tool, rel.id)
             : (mt?.attributes ??
               fail(
-                `This tool has no class, relation class or model type "${owner}".`,
+                `This Kit has no class, relation class or model type "${owner}".`,
               ));
         const def = defs.find((d) => d.key === key);
         return def ? attributeOut(def) : null;

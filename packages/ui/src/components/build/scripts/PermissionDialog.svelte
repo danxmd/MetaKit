@@ -36,16 +36,16 @@
 >
   <h2 id="permission-title">"{toolName}" asks for more</h2>
   <p class="hint">
-    The scripts of this tool can always change the models you open with it and
+    The scripts of this Kit can always change the models you open with it and
     show dialogs. It also wants to:
   </p>
   <ul data-testid="permission-lines">
     {#each lines as line (line)}<li>{line}</li>{/each}
   </ul>
   <p class="hint">
-    Allow this only for tools you trust. Your answer is kept in this browser
-    only, and you are asked again if the tool later wants something else. If you
-    say no, the tool still opens; its scripts just cannot do this.
+    Allow this only for Kits you trust. Your answer is kept in this browser
+    only, and you are asked again if the Kit later wants something else. If you
+    say no, the Kit still opens; its scripts just cannot do this.
   </p>
   <div class="actions">
     <button type="button" onclick={onDeny} data-testid="permission-deny"

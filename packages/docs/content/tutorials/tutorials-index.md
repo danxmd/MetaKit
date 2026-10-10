@@ -8,7 +8,7 @@ contexts: []
 order: 360
 ---
 
-> **Note:** One tutorial is written so far: [[data-ai-architecture]]. The other tutorials in the list below are **planned** and not available today.
+> **Note:** Three tutorials are written so far, one for each data and AI built-in Kit: [[data-ai-architecture]], [[ai-use-case-portfolio]] and [[data-governance]]. The other tutorials in the list below are **planned** and not available today.
 
 Tutorials are guided, hands-on lessons. You follow numbered steps and end with something that works. They are different from the reference pages, which describe every control.
 
@@ -26,7 +26,7 @@ Start with a written tutorial, or, until the one you need exists:
 
 1. Start with the [[quick-tour]] for a first walk through the app.
 2. Read [[concepts-modes]] to see the difference between Model mode and Build mode.
-3. Try the sample tool libraries from the repository folder `tools/`. [[rule-examples]] and [[script-examples]] walk through the rules and scripts that come with them.
+3. Try the sample Kits from the repository folder `tools/`. [[rule-examples]] and [[script-examples]] walk through the rules and scripts that come with them.
 4. Use the reference topics for each page as you work. The Help side bar opens at the topic of the page you are on.
 
 ## Every option explained
@@ -36,6 +36,8 @@ Start with a written tutorial, or, until the one you need exists:
 | Tutorial | What you do | Reference pages it uses |
 | --- | --- | --- |
 | [[data-ai-architecture]] | Draw a data platform from a source system to a consumer, see the personal-data warning and list the lineage of a dataset. | [[connecting-objects]], [[problems-panel]], [[behaviour-commands]] |
+| [[ai-use-case-portfolio]] | Add the AI use-case portfolio Kit, model use cases, score them, see their quadrant colours and rank them. | [[computed-values]], [[constraints]], [[menu-commands]] |
+| [[data-governance]] | Give every data product an owner, protect sensitive data with policies, and read the quality score of each data asset. | [[model-types]], [[constraints]], [[behaviour-commands]] |
 
 ### Planned tutorials
 
@@ -43,11 +45,11 @@ All of these are **planned**, not written.
 
 | Planned tutorial | What you would do | Reference pages it would use |
 | --- | --- | --- |
-| Build your first tool | Make a tool library with two classes, a relation class and a model type; give them shapes; try it. | [[classes]], [[relations]], [[model-types]], [[appearance-editor]] |
+| Build your first Kit | Make a Kit with two classes, a relation class and a model type; give them shapes; try it. | [[classes]], [[relations]], [[model-types]], [[appearance-editor]] |
 | Model a process | Make a model, place and connect objects, edit attributes, check problems, export an image. | [[page-model-view]], [[palette]], [[connecting-objects]], [[export-image]] |
 | Add behaviour | Add a rule that warns about a missing owner, then a script that checks a whole model. | [[rules]], [[scripts]] |
 | Work together over OneDrive | Share a workspace folder, open it on two computers, see presence, and settle a clash. | [[sync-overview]], [[instances-and-presence]], [[conflicts-and-merging]] |
-| Publish through Git | Put a tool library in a repository, commit, pull, and tag a version. | [[git-mode]], [[git-commit]], [[git-releases]] |
+| Publish through Git | Put a Kit in a repository, commit, pull, and tag a version. | [[git-mode]], [[git-commit]], [[git-releases]] |
 
 ### How tutorials will look
 
@@ -61,7 +63,7 @@ Each tutorial is planned to have:
 
 ## Examples
 
-The Agent pipeline tool in the repository is a good example of a finished tool library: classes for agents, humans, tasks, artifacts and gates, a "Check pipeline" script and status commands. Reading how it is built is what a tutorial on "Add behaviour" would walk through.
+The Agent pipeline Kit in the repository is a good example of a finished Kit: classes for agents, humans, tasks, artifacts and gates, a "Check pipeline" script and status commands. Reading how it is built is what a tutorial on "Add behaviour" would walk through.
 
 ## Good to know
 

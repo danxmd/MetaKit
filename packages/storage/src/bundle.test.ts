@@ -161,7 +161,7 @@ describe('bundles', () => {
     expect(Object.keys(unzipFiles(bytes))).not.toContain('tool/tool.json');
     const target = await newWorkspace('Target', 'bbbb0002');
     await expect(importBundle(target, bytes)).rejects.toThrow(
-      /does not include its tool library/,
+      /does not include its Kit/,
     );
     await target.createTool(tool);
     expect((await importBundle(target, bytes)).added).toHaveLength(1);

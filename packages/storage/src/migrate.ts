@@ -29,6 +29,13 @@ export const CURRENT_FORMAT: Readonly<Record<FileKind, number>> = {
   'tool-package': 1,
 };
 
+/** How messages name each kind; the stored kind names stay as they are. */
+const KIND_WORDS: Partial<Record<FileKind, string>> = {
+  tool: 'Kit',
+  'tool-document': 'Kit document',
+  'tool-package': 'Kit package',
+};
+
 export interface Migration {
   from: number;
   to: number;
@@ -126,8 +133,9 @@ export function migrate(
   registry: MigrationRegistry = MIGRATIONS,
   current: Readonly<Record<FileKind, number>> = CURRENT_FORMAT,
 ): Migrated {
+  const word = KIND_WORDS[kind] ?? kind;
   if (input === null || typeof input !== 'object' || Array.isArray(input)) {
-    throw new FormatError(`This ${kind} file must contain an object.`);
+    throw new FormatError(`This ${word} file must contain an object.`);
   }
   const version = (input as { formatVersion?: unknown }).formatVersion;
   if (
@@ -136,13 +144,13 @@ export function migrate(
     version < 0
   ) {
     throw new FormatError(
-      `This ${kind} file has no format version (formatVersion), so it cannot be read safely.`,
+      `This ${word} file has no format version (formatVersion), so it cannot be read safely.`,
     );
   }
   const target = current[kind];
   if (version > target) {
     throw new NewerFormatError(
-      `This ${kind} file was written by a newer version of MetaKit (format ${version}; this version reads up to ${target}). Update MetaKit to open it. The file has not been changed.`,
+      `This ${word} file was written by a newer version of MetaKit (format ${version}; this version reads up to ${target}). Update MetaKit to open it. The file has not been changed.`,
     );
   }
   let value = input as Record<string, unknown>;

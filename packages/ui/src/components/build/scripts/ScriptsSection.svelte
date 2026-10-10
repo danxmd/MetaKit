@@ -252,7 +252,7 @@
   </div>
 
   <fieldset>
-    <legend>What the scripts of this tool may do</legend>
+    <legend>What the scripts of this Kit may do</legend>
     <p class="muted">
       Scripts can always change models and show dialogs. Say here what else they
       need. Each person is asked once, in their own browser, and again if you

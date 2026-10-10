@@ -235,9 +235,7 @@ describe('moving a tool between workspaces', () => {
     const to = await newWorkspace('B', 'bbbb0002');
     const prepared = await prepareToolImport(to, bytes);
     expect(prepared.plan.isNew).toBe(true);
-    expect(prepared.plan.lines[0]).toContain(
-      'will be added as a new tool library',
-    );
+    expect(prepared.plan.lines[0]).toContain('will be added as a new Kit');
     const applied = await applyToolUpdate(to, prepared);
     expect(applied.created).toBe(true);
     const toolBack = (await to.loadTool(applied.slug)).document;
@@ -389,7 +387,7 @@ describe('moving a tool between workspaces', () => {
     const plan = planToolUpdate(tool, clone(tool));
     expect(plan.changes).toEqual([]);
     expect(plan.version.direction).toBe('same');
-    expect(plan.lines).toContain('Nothing in the library changes.');
+    expect(plan.lines).toContain('Nothing in the Kit changes.');
   });
 
   it('will not update a different tool library', async () => {
@@ -399,6 +397,6 @@ describe('moving a tool between workspaces', () => {
     other.manifest.id = 'tool_other' as never;
     await expect(
       applyToolUpdate(ws, { incoming: other, existingSlug: slug, assets: {} }),
-    ).rejects.toThrow(/different tool library/);
+    ).rejects.toThrow(/different Kit/);
   });
 });

@@ -45,7 +45,7 @@ function listed<T>(items: T[], line: (item: T) => string): string[] {
  */
 export function summariseTool(tool: ToolLibrary): string {
   const out: string[] = [
-    `Tool: "${tool.manifest.name}". Languages: ${tool.manifest.languages.join(', ')}.`,
+    `Kit: "${tool.manifest.name}". Languages: ${tool.manifest.languages.join(', ')}.`,
   ];
   const classes = Object.values(tool.classes).sort((a, b) =>
     a.key.localeCompare(b.key),
@@ -257,9 +257,9 @@ commands.register({
   },
 });`;
 
-const SYSTEM_BASE = `You help a method engineer build a modelling tool in MetaKit. You draft one part of the tool from a plain description.
-You only know the tool definition below. You never see anyone's models and you must not invent model data.
-Use only class, relation class and attribute names that exist in the tool definition, unless the description asks for new ones.`;
+const SYSTEM_BASE = `You help a method engineer build a Kit (a modelling tool) in MetaKit. You draft one part of the Kit from a plain description.
+You only know the Kit definition below. You never see anyone's models and you must not invent model data.
+Use only class, relation class and attribute names that exist in the Kit definition, unless the description asks for new ones.`;
 
 export function systemPrompt(
   tool: ToolLibrary,
@@ -274,7 +274,7 @@ export function systemPrompt(
     SYSTEM_BASE,
     lang,
     '',
-    'TOOL DEFINITION',
+    'KIT DEFINITION',
     summariseTool(tool),
     '',
   ];
@@ -314,7 +314,7 @@ export function systemPrompt(
         'TARGET: a TypeScript script. It runs in a sandbox with no browser, no fetch and no timers.',
         'It can only import from "metakit" and can change models only through that module (assign task.attrs.X = value, model.create, and so on).',
         'The first line must be a comment "// Name: <short name of the script>". Register menu commands with commands.register and react to events with on(...).',
-        'The declarations of the "metakit" module for this tool:',
+        'The declarations of the "metakit" module for this Kit:',
         '```ts',
         generateDeclarations({ ...tool, scripts: {}, rules: {} }),
         '```',

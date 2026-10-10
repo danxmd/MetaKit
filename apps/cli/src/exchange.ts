@@ -96,7 +96,7 @@ export async function exportToolCommand(
   checkFlags(args, ['workspace', 'out']);
   if (args.positionals.length !== 1)
     throw new UsageError(
-      'export-tool needs one tool library: its folder name together with --workspace, or the path of a tool library.',
+      'export-tool needs one Kit: its folder name together with --workspace, or the path of a Kit.',
     );
   const out = need(args, 'out', 'export-tool');
   const subject = args.positionals[0]!;
@@ -113,7 +113,7 @@ export async function exportToolCommand(
     const { tool, issues } = await readToolFile(subject);
     if (issues.length > 0)
       throw new CliError(
-        `The tool library "${subject}" has ${issues.length} problem(s); run "metakit validate ${subject}" to see them.`,
+        `The Kit "${subject}" has ${issues.length} problem(s); run "metakit validate ${subject}" to see them.`,
       );
     bytes = exportToolPackage(tool).bytes;
   }
@@ -146,8 +146,8 @@ export async function importToolCommand(
   const { slug, created } = await applyToolUpdate(ws, prepared);
   io.out(
     created
-      ? `Added the tool library as tools/${slug}.`
-      : `Updated the tool library tools/${slug}.`,
+      ? `Added the Kit as tools/${slug}.`
+      : `Updated the Kit tools/${slug}.`,
   );
   return 0;
 }
@@ -172,7 +172,7 @@ export async function exportCsvCommand(
     const slug = await ws.findToolSlug(model.manifest.tool);
     if (!slug)
       throw new CliError(
-        `The tool library ${model.manifest.tool} of this model is not in the workspace.`,
+        `The Kit ${model.manifest.tool} of this model is not in the workspace.`,
       );
     tool = (await ws.loadTool(slug)).document;
   } else {
@@ -180,7 +180,7 @@ export async function exportCsvCommand(
     const read = await readToolFile(toolPath);
     if (read.issues.length > 0)
       throw new CliError(
-        `The tool library "${toolPath}" has ${read.issues.length} problem(s); run "metakit validate ${toolPath}" to see them.`,
+        `The Kit "${toolPath}" has ${read.issues.length} problem(s); run "metakit validate ${toolPath}" to see them.`,
       );
     tool = read.tool;
     model = importMkModel(tool, await readJsonFileAt(subject));

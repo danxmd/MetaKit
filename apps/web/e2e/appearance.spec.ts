@@ -24,9 +24,9 @@ async function newTool(page: Page, name: string) {
   await page.getByTestId('open-folder').click();
   await page.getByRole('button', { name: 'Create workspace' }).click();
   await page.getByTestId('mode-build').click();
-  await page.getByTestId('new-tool').click();
-  await page.getByTestId('new-tool-name').fill(name);
-  await page.getByTestId('new-tool-create').click();
+  await page.getByTestId('new-kit').click();
+  await page.getByTestId('new-kit-name').fill(name);
+  await page.getByTestId('new-kit-create').click();
   await expect(page.getByTestId('build-view')).toBeVisible();
 }
 
@@ -157,7 +157,7 @@ test('a first-time builder makes the Task look without a formula or a layer', as
   await page.getByTestId('mode-model').click();
   await page.getByTestId('new-model').click();
   await page
-    .getByTestId('new-model-tool')
+    .getByTestId('new-model-kit')
     .selectOption({ label: 'Pipeline (0.1.0)' });
   await page.getByTestId('new-model-name').fill('Run 1');
   await page.getByTestId('new-model-create').click();

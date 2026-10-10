@@ -221,11 +221,11 @@ export class ScriptEngine {
     const declared = this.options.tool().manifest.permissions?.[kind] === true;
     if (!declared)
       throw new Error(
-        `This script tries to ${what}, but the tool does not say it needs to. Add the "${kind}" permission to the tool in Build mode.`,
+        `This script tries to ${what}, but the Kit does not say it needs to. Add the "${kind}" permission to the Kit in Build mode.`,
       );
     if (!this.grant()[kind])
       throw new Error(
-        `This script tries to ${what}, but you have not allowed that for this tool in this browser. Open the tool's permissions and allow it.`,
+        `This script tries to ${what}, but you have not allowed that for this Kit in this browser. Open the Kit's permissions and allow it.`,
       );
   }
 

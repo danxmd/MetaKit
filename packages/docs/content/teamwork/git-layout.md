@@ -1,20 +1,20 @@
 ---
 id: git-layout
-title: Repository layout of a tool library
+title: Repository layout of a Kit
 category: teamwork
-summary: How a tool library is split into one file per part inside a Git repository, with file names and the messages for broken files.
+summary: How a Kit is split into one file per part inside a Git repository, with file names and the messages for broken files.
 keywords: [repository layout, one file per part, layout files, assets folder, tool.json in git, part files]
 contexts: []
 order: 195
 ---
 
-In your workspace a tool library is one document. In a Git repository it is spread over many small files, one for each class, relation class, model type, shape, panel layout, rule and script. This page describes that layout so that you can read a repository, review a pull request, or repair a file by hand.
+In your workspace a Kit is one document. In a Git repository it is spread over many small files, one for each class, relation class, model type, shape, panel layout, rule and script. This page describes that layout so that you can read a repository, review a pull request, or repair a file by hand.
 
 ## What it is
 
 Why many files? Git merges by file. Two people who edit different classes then touch different files, and their work never clashes. MetaKit goes further and merges inside a file field by field (see [[git-pull-conflicts]]).
 
-The layout is a second form of the same tool format. Reading it back gives the same tool library. The format version is stored in `tool.json`, and migrations apply on read (see [[format-versions]]).
+The layout is a second form of the same Kit format. Reading it back gives the same Kit. The format version is stored in `tool.json`, and migrations apply on read (see [[format-versions]]).
 
 ```text
 tool.json
@@ -83,7 +83,7 @@ When MetaKit reads a repository it reports each file it cannot use, with the pat
 | `The .ts file with the source of this script is missing.` | Only the `.json` of a script is there. |
 | `The id cls_x is already used by classes/task.json, so this file was left out.` | Two files claim the same part. |
 
-If `tool.json` is missing or unusable, opening fails with `This folder does not hold a tool library: ...`.
+If `tool.json` is missing or unusable, opening fails with `This folder does not hold a Kit: ...`.
 
 ## Examples
 
@@ -117,4 +117,4 @@ The `parts` list of `tool.json`:
 
 ## Related
 
-[[git-mode]] · [[git-commit]] · [[git-pull-conflicts]] · [[file-formats]] · [[concepts-tool-library]] · [[format-versions]]
+[[git-mode]] · [[git-commit]] · [[git-pull-conflicts]] · [[file-formats]] · [[concepts-kit]] · [[format-versions]]

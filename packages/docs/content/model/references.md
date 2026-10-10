@@ -12,13 +12,13 @@ A reference lets one object point to another object, even in a different model. 
 
 ## What it is
 
-A reference is an attribute of type *reference* (see [[attribute-types]]). Its value is a list of pointers. Each pointer names an object and the model it lives in. The tool builder can limit which kinds of object and which kinds of model may be chosen, and how many pointers are allowed.
+A reference is an attribute of type *reference* (see [[attribute-types]]). Its value is a list of pointers. Each pointer names an object and the model it lives in. The method engineer can limit which kinds of object and which kinds of model may be chosen, and how many pointers are allowed.
 
 References are not connections. A connection is drawn on the canvas between two objects of one model. A reference is shown only in the [[attribute-panel]].
 
 ## Where to find it
 
-In the attribute panel, as a field with a list of chosen objects and a search box beneath it. The Agent pipeline tool has none. A tool for a company could have an **Owner** reference to a department.
+In the attribute panel, as a field with a list of chosen objects and a search box beneath it. The Agent pipeline Kit has none. A Kit for a company could have an **Owner** reference to a department.
 
 ## How to use it
 
@@ -54,7 +54,7 @@ The search box disappears when the maximum number of references is reached. It i
 
 ## Examples
 
-Imagine a tool where **Task** has a reference **Owner** to class **Department** in the model type **Org chart**. Select a task, type `sal` into the search box, click **Sales · Org chart** in the list, and the task now points to the department. Click **Open** and you are in the org chart with **Sales** selected.
+Imagine a Kit where **Task** has a reference **Owner** to class **Department** in the model type **Org chart**. Select a task, type `sal` into the search box, click **Sales · Org chart** in the list, and the task now points to the department. Click **Open** and you are in the org chart with **Sales** selected.
 
 ## Good to know
 

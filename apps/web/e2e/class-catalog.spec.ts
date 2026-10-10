@@ -7,9 +7,9 @@ async function openNewTool(page: Page, name = 'Catalog tool') {
   await page.getByTestId('open-folder').click();
   await page.getByRole('button', { name: 'Create workspace' }).click();
   await page.getByTestId('mode-build').click();
-  await page.getByTestId('new-tool').click();
-  await page.getByTestId('new-tool-name').fill(name);
-  await page.getByTestId('new-tool-create').click();
+  await page.getByTestId('new-kit').click();
+  await page.getByTestId('new-kit-name').fill(name);
+  await page.getByTestId('new-kit-create').click();
   await expect(page.getByTestId('build-view')).toBeVisible();
 }
 
@@ -104,7 +104,7 @@ test.describe('Class catalog', () => {
     await expect(taken).toBeDisabled();
     await expect(taken).toBeChecked();
     await expect(dialog.locator('label', { has: taken })).toContainText(
-      'Already in this tool library',
+      'Already in this Kit',
     );
 
     // Escape closes the dialog without adding anything.

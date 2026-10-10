@@ -149,7 +149,7 @@ describe('tool packages', () => {
       '--create',
     ]);
     expect(added.code).toBe(0);
-    expect(added.out).toContain('will be added as a new tool library');
+    expect(added.out).toContain('will be added as a new Kit');
     expect((await readdir(join(target, 'tools'))).length).toBe(1);
   });
 
@@ -159,7 +159,7 @@ describe('tool packages', () => {
     await capture(['export-tool', bpmn, '--out', pkg]);
     const result = await capture(['import-tool', pkg, '--workspace', root]);
     expect(result.code).toBe(1);
-    expect(result.out).toContain('Nothing in the library changes.');
+    expect(result.out).toContain('Nothing in the Kit changes.');
     expect(result.err).toContain('--yes');
     const confirmed = await capture([
       'import-tool',
@@ -169,7 +169,7 @@ describe('tool packages', () => {
       '--yes',
     ]);
     expect(confirmed.code).toBe(0);
-    expect(confirmed.out).toContain('Updated the tool library');
+    expect(confirmed.out).toContain('Updated the Kit');
   });
 });
 

@@ -339,7 +339,7 @@ function applyModelCommand(
       if (tool) {
         if (!cls)
           throw new CommandError(
-            `The class ${command.class} does not exist in the tool library.`,
+            `The class ${command.class} does not exist in the Kit.`,
           );
         if (cls.abstract)
           throw new CommandError(
@@ -407,7 +407,7 @@ function applyModelCommand(
         const rel = tool.relations[command.relation];
         if (!rel)
           throw new CommandError(
-            `The relation class ${command.relation} does not exist in the tool library.`,
+            `The relation class ${command.relation} does not exist in the Kit.`,
           );
         if (rel.abstract)
           throw new CommandError(

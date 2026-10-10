@@ -201,7 +201,7 @@ export function snapshotV1ToState(file: Record<string, unknown>): {
   const kind = file['kind'];
   if (kind !== 'tool' && kind !== 'model')
     throw new SyncFormatError(
-      'The snapshot does not say whether it holds a tool library or a model.',
+      'The snapshot does not say whether it holds a Kit or a model.',
     );
   const doc = file['document'];
   if (doc === null || typeof doc !== 'object' || Array.isArray(doc))

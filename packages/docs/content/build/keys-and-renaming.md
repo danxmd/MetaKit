@@ -8,7 +8,7 @@ contexts: []
 order: 70
 ---
 
-A key is the short, exact name of a thing in the tool library. A label is the friendly text a person reads. Keys are for formulas, rules and scripts; labels are for people and can be translated.
+A key is the short, exact name of a thing in the Kit. A label is the friendly text a person reads. Keys are for formulas, rules and scripts; labels are for people and can be translated.
 
 ## What it is
 
@@ -73,7 +73,7 @@ Before you delete an attribute, the confirmation lists the places that read it: 
 
 ## Examples
 
-In the Agent pipeline tool, rename the attribute `Status` of Task to `State`. The constraints "A finished task should say how much effort it took." and "Say in the description why the task failed.", the rules that set the status, the status stripe of the Task shape and the Status select in the Overview tab of the panel all follow the new key. A script that reads `Status` is not changed.
+In the Agent pipeline Kit, rename the attribute `Status` of Task to `State`. The constraints "A finished task should say how much effort it took." and "Say in the description why the task failed.", the rules that set the status, the status stripe of the Task shape and the Status select in the Overview tab of the panel all follow the new key. A script that reads `Status` is not changed.
 
 To try to reuse a key: rename `ActualEffort` to `Effort`. MetaKit refuses: The key "Effort" is already used by an attribute of "Task" or a parent.
 
@@ -91,4 +91,4 @@ To try to reuse a key: rename `ActualEffort` to `Effort`. MetaKit refuses: The k
 
 ## Related
 
-[[classes]], [[attributes]], [[labels-and-help]], [[tool-validation]], [[formula-reference]], [[rules]], [[scripts]]
+[[classes]], [[attributes]], [[labels-and-help]], [[kit-validation]], [[formula-reference]], [[rules]], [[scripts]]

@@ -238,7 +238,7 @@ export function validateModel(
       id: 'model',
       severity: 'warning',
       code: 'tool-mismatch',
-      message: `This model was made with the tool ${model.manifest.tool}, but it is being checked against ${tool.manifest.id}.`,
+      message: `This model was made with the Kit ${model.manifest.tool}, but it is being checked against ${tool.manifest.id}.`,
     });
   }
   if (!modelType) {
@@ -246,7 +246,7 @@ export function validateModel(
       id: 'model',
       severity: 'error',
       code: 'unknown-model-type',
-      message: `The model type ${model.manifest.modelType} does not exist in the tool library, so the model cannot be checked against its rules.`,
+      message: `The model type ${model.manifest.modelType} does not exist in the Kit, so the model cannot be checked against its rules.`,
     });
   } else {
     checkValues(
@@ -347,7 +347,7 @@ export function validateModel(
         id: el.id,
         severity: 'info',
         code: 'unknown-class',
-        message: `Element ${el.id} uses the class ${el.class}, which the tool library no longer has. It is kept and shown as a placeholder.`,
+        message: `Element ${el.id} uses the class ${el.class}, which the Kit no longer has. It is kept and shown as a placeholder.`,
       });
       continue;
     }
@@ -443,7 +443,7 @@ export function validateModel(
         id: cn.id,
         severity: 'info',
         code: 'unknown-relation',
-        message: `Connector ${cn.id} uses the relation class ${cn.relation}, which the tool library no longer has. It is kept.`,
+        message: `Connector ${cn.id} uses the relation class ${cn.relation}, which the Kit no longer has. It is kept.`,
       });
       continue;
     }

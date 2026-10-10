@@ -412,9 +412,7 @@ describe('AppController.addToolLibrary', () => {
     const broken = JSON.parse(JSON.stringify(bpmn)) as ToolLibrary;
     broken.classes['cls_task']!.extends = 'cls_missing00';
     expect(await app.addToolLibrary(JSON.stringify(broken))).toBeUndefined();
-    expect(app.state.error).toMatch(
-      /not a valid tool library[\s\S]*cls_missing00/,
-    );
+    expect(app.state.error).toMatch(/not a valid Kit[\s\S]*cls_missing00/);
     expect(app.state.tools).toEqual([]);
   });
 });

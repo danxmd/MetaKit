@@ -20,7 +20,7 @@ There are three choices, shown as a group of three buttons labelled "Appearance"
 | **Light** | Always light. |
 | **Dark** | Always dark. |
 
-The whole app follows the choice: bars, lists, dialogs, menus, the canvas background and grid, the selection colour and the minimap. Shapes keep the colours that the tool library gives them, so a blue Task stays blue in dark mode.
+The whole app follows the choice: bars, lists, dialogs, menus, the canvas background and grid, the selection colour and the minimap. Shapes keep the colours that the Kit gives them, so a blue Task stays blue in dark mode.
 
 ## Where to find it
 
@@ -49,7 +49,7 @@ Anna works late. She picks **Dark**. The next morning she opens MetaKit in the s
 - **Contrast.** Both themes are designed to keep text readable and the keyboard focus visible.
 - **If storage is blocked** (for example in a private window), the choice still applies until you close the page, but MetaKit then forgets it and follows the system again next time.
 - Dark mode does not change how a model is saved or exported.
-- If a shape looks too dark or too light on the canvas in one theme, adjust its colours in the tool library ([[appearance-forms]], [[shape-colour-helper]]).
+- If a shape looks too dark or too light on the canvas in one theme, adjust its colours in the Kit ([[appearance-forms]], [[shape-colour-helper]]).
 
 ## Related
 

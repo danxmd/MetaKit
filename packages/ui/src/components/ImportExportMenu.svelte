@@ -72,8 +72,8 @@
       disabled={slug === ''}
       onclick={() => onExportBundle(slug)}
       data-testid="export-bundle"
-      title="Save the model and its tool library in one .mkbundle file"
-      >Bundle (model and tool library)</button
+      title="Save the model and its Kit in one .mkbundle file"
+      >Bundle (model and Kit)</button
     >
     <button
       type="button"

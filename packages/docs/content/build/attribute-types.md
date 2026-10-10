@@ -146,7 +146,7 @@ A web address or a file.
 
 ## Examples
 
-In the Agent pipeline tool: **Name** is Text (required, default "New task"); **Status** is a Choice with Planned, Ready, Running, Waiting for human, Done and Failed; **Effort** is a Number; **Version** on Artifact is a Whole number with default 1; **Location** on Artifact is a Link; **Checks** on Task is a Table; **Variance** is a Formula; **AgentKind** and **Autonomy** on Agent are Choices shown as segmented buttons by the panel layout.
+In the Agent pipeline Kit: **Name** is Text (required, default "New task"); **Status** is a Choice with Planned, Ready, Running, Waiting for human, Done and Failed; **Effort** is a Number; **Version** on Artifact is a Whole number with default 1; **Location** on Artifact is a Link; **Checks** on Task is a Table; **Variance** is a Formula; **AgentKind** and **Autonomy** on Agent are Choices shown as segmented buttons by the panel layout.
 
 ## Good to know
 

@@ -565,7 +565,7 @@ export class AppController {
         const toolSlug = await ws.findToolSlug(header.document.manifest.tool);
         if (!toolSlug)
           throw new Error(
-            `This model was made with a tool library that is not in this workspace (${header.document.manifest.tool}).`,
+            `This model was made with a Kit that is not in this workspace (${header.document.manifest.tool}).`,
           );
         const toolOpened = await ws.openTool(toolSlug, this.sessionOptions());
         const tool = toolOpened.store.state;
@@ -886,7 +886,7 @@ export class AppController {
       const existing = await ws.findToolSlug(tool.manifest.id);
       if (existing)
         throw new Error(
-          `The tool library "${tool.manifest.name}" is already in this workspace.`,
+          `The Kit "${tool.manifest.name}" is already in this workspace.`,
         );
       const slug = await ws.createTool(tool);
       await this.refresh();
@@ -900,7 +900,7 @@ export class AppController {
     try {
       value = JSON.parse(text);
     } catch {
-      throw new Error('That file is not a tool library: it is not valid JSON.');
+      throw new Error('That file is not a Kit: it is not valid JSON.');
     }
     let upgraded: unknown = value;
     try {
@@ -916,7 +916,7 @@ export class AppController {
     const parsed = parseToolLibrary(upgraded);
     if (!parsed.ok)
       throw new Error(
-        `That file is not a valid tool library.\n${formatIssues(parsed.issues)}`,
+        `That file is not a valid Kit.\n${formatIssues(parsed.issues)}`,
       );
     return parsed.value;
   }
@@ -998,8 +998,7 @@ export class AppController {
       const ws = this.need();
       const model = (await ws.loadModel(slug)).document;
       const toolSlug = await ws.findToolSlug(model.manifest.tool);
-      if (!toolSlug)
-        throw new Error('The tool library of this model is missing.');
+      if (!toolSlug) throw new Error('The Kit of this model is missing.');
       const tool = (await ws.loadTool(toolSlug)).document;
       downloadFile(
         `${slug}.csv.zip`,
@@ -1034,7 +1033,7 @@ export class AppController {
       this.set({
         toolImport: null,
         notes: [
-          `${created ? 'Added' : 'Updated'} the tool library "${prepared.incoming.manifest.name}".`,
+          `${created ? 'Added' : 'Updated'} the Kit "${prepared.incoming.manifest.name}".`,
         ],
       });
       await this.refresh();
@@ -1159,7 +1158,7 @@ export class AppController {
       const { tool, issues, assets } = fromLayout(snapshot.files);
       if (!tool)
         throw new Error(
-          `This folder does not hold a tool library: ${issues.map((i) => i.message).join('; ') || 'tool.json is missing'}.`,
+          `This folder does not hold a Kit: ${issues.map((i) => i.message).join('; ') || 'tool.json is missing'}.`,
         );
       const slug = await ws.createTool(tool);
       // Asset names get a hash in the workspace, so shapes that name them by their old file name show a gap until fixed.
@@ -1238,7 +1237,7 @@ export class AppController {
       const { link } = this.current.git;
       const build = this.current.build;
       if (!link || !build)
-        throw new Error('This tool library is not linked to a repository.');
+        throw new Error('This Kit is not linked to a repository.');
       const remote = await this.remoteFor(link);
       const done = await commitPending({
         remote,
@@ -1280,7 +1279,7 @@ export class AppController {
       const { link } = this.current.git;
       const build = this.current.build;
       if (!link || !build)
-        throw new Error('This tool library is not linked to a repository.');
+        throw new Error('This Kit is not linked to a repository.');
       const remote = await this.remoteFor(link);
       const outcome = await pull({
         remote,
@@ -1318,8 +1317,7 @@ export class AppController {
   gitLoadReleases(): Promise<void | undefined> {
     return this.gitRun(async () => {
       const { link } = this.current.git;
-      if (!link)
-        throw new Error('This tool library is not linked to a repository.');
+      if (!link) throw new Error('This Kit is not linked to a repository.');
       this.setGit({ releases: await listReleases(await this.remoteFor(link)) });
     });
   }
@@ -1332,8 +1330,7 @@ export class AppController {
   gitUseRelease(tag: GitTag): Promise<void | undefined> {
     return this.gitRun(async () => {
       const { link } = this.current.git;
-      if (!link)
-        throw new Error('This tool library is not linked to a repository.');
+      if (!link) throw new Error('This Kit is not linked to a repository.');
       const opened = await openRelease(await this.remoteFor(link), tag.name);
       const build = this.current.build;
       if (!build) return;
@@ -1427,7 +1424,7 @@ export class AppController {
   ): Promise<string | undefined> {
     return this.attempt(async () => {
       const trimmed = name.trim();
-      if (trimmed === '') throw new Error('Give the tool library a name.');
+      if (trimmed === '') throw new Error('Give the Kit a name.');
       const slug = await this.need().createTool(
         createEmptyTool({ name: trimmed, ...(languages ? { languages } : {}) }),
       );
@@ -1446,7 +1443,7 @@ export class AppController {
   ): Promise<string | undefined> {
     return this.attempt(async () => {
       const trimmed = name.trim();
-      if (trimmed === '') throw new Error('Give the tool library a name.');
+      if (trimmed === '') throw new Error('Give the Kit a name.');
       const ws = this.need();
       const source =
         'slug' in from
@@ -1534,7 +1531,7 @@ export class AppController {
    */
   runBuild(command: ToolCommandOrBatch): CommandResult {
     const build = this.current.build;
-    if (!build) return { ok: false, error: 'No tool library is open.' };
+    if (!build) return { ok: false, error: 'No Kit is open.' };
     try {
       const result = build.store.execute(command);
       if (!result.ok)

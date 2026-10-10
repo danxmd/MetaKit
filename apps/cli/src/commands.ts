@@ -64,7 +64,7 @@ async function kindOf(
   if (await has('workspace.json')) return 'workspace';
   if (await has('tool.json')) return 'tool-folder';
   throw new CliError(
-    `"${path}" is neither a MetaKit workspace (no workspace.json) nor a tool library folder (no tool.json).`,
+    `"${path}" is neither a MetaKit workspace (no workspace.json) nor a Kit folder (no tool.json).`,
   );
 }
 
@@ -130,7 +130,7 @@ async function validateWorkspace(root: string): Promise<DocumentReport[]> {
         issues.push({
           severity: 'error',
           location: 'manifest.tool',
-          message: `The tool library ${loaded.document.manifest.tool} is not in this workspace, so the model cannot be checked.`,
+          message: `The Kit ${loaded.document.manifest.tool} is not in this workspace, so the model cannot be checked.`,
         });
       else if (loaded.issues.length === 0)
         issues.push(...modelIssues(tool, loaded.document));
@@ -163,8 +163,8 @@ async function validateModelFile(
   if (toolIssues.length > 0) {
     issues.push({
       severity: 'error',
-      location: '(tool)',
-      message: `The tool library has ${toolIssues.length} problem${toolIssues.length === 1 ? '' : 's'}, so the model was not checked.`,
+      location: '(Kit)',
+      message: `The Kit has ${toolIssues.length} problem${toolIssues.length === 1 ? '' : 's'}, so the model was not checked.`,
     });
   } else {
     try {
@@ -206,7 +206,7 @@ export async function validateCommand(
   checkFlags(args, ['strict', 'json', 'tool']);
   if (args.positionals.length !== 1)
     throw new UsageError(
-      'validate needs exactly one path: a workspace folder, a tool library, or a model file.',
+      'validate needs exactly one path: a workspace folder, a Kit, or a model file.',
     );
   const path = args.positionals[0]!;
   const strict = hasFlag(args, 'strict');
@@ -281,7 +281,7 @@ export async function exportCommand(args: ParsedArgs, io: Io): Promise<number> {
     const { tool, issues } = await readToolFile(toolPath);
     if (issues.length > 0)
       throw new CliError(
-        `The tool library "${toolPath}" has ${issues.length} problem(s); run "metakit validate ${toolPath}" to see them.`,
+        `The Kit "${toolPath}" has ${issues.length} problem(s); run "metakit validate ${toolPath}" to see them.`,
       );
     text = exportMkModel(
       tool,

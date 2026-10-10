@@ -445,7 +445,7 @@ describe('the model API', () => {
     ]);
     await r.engine.runScript(Object.keys(r.tool.scripts)[0]!, null);
     const out = lines(r);
-    expect(out[0]).toMatch(/This tool has no class "Nope"\. Classes: /);
+    expect(out[0]).toMatch(/This Kit has no class "Nope"\. Classes: /);
     expect(out[1]).toMatch(/The class "FlowNode" is abstract/);
     expect(out[2]).toMatch(
       /Nope is not an attribute of the class "Task"\. Attributes: /,
@@ -560,7 +560,7 @@ describe('files and web services need a permission', () => {
     const r = await rig([script(READ)], { files: FILES });
     await r.engine.runScript(Object.keys(r.tool.scripts)[0]!, null);
     expect(lines(r)[0]).toMatch(
-      /^error: This script tries to use files, but the tool does not say it needs to\. Add the "files" permission/,
+      /^error: This script tries to use files, but the Kit does not say it needs to\. Add the "files" permission/,
     );
   });
 
@@ -571,7 +571,7 @@ describe('files and web services need a permission', () => {
     });
     await r.engine.runScript(Object.keys(r.tool.scripts)[0]!, null);
     expect(lines(r)[0]).toMatch(
-      /^error: This script tries to use files, but you have not allowed that for this tool in this browser\./,
+      /^error: This script tries to use files, but you have not allowed that for this Kit in this browser\./,
     );
   });
 

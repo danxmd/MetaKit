@@ -164,7 +164,7 @@ export class Checker {
       else if (languages.length > 0 && !languages.includes(lang)) {
         this.add(
           `${path}.${lang}`,
-          `The language "${lang}" is not listed in the tool's languages (${languages.join(', ')}).`,
+          `The language "${lang}" is not listed in the Kit's languages (${languages.join(', ')}).`,
         );
       }
       if (typeof text !== 'string')
@@ -561,7 +561,7 @@ export function validateToolLibrary(value: unknown): Issue[] {
       'rules',
       'scripts',
     ],
-    'The tool library',
+    'The Kit',
   );
   if (!root) return c.issues;
 
@@ -582,7 +582,7 @@ export function validateToolLibrary(value: unknown): Issue[] {
         manifest.basedOn,
         'manifest.basedOn',
         ['id', 'name', 'version'],
-        'The library this one is based on',
+        'The Kit this one is based on',
       );
       if (origin) {
         c.id('tool', origin.id, 'manifest.basedOn.id', 'Its id');
@@ -590,8 +590,8 @@ export function validateToolLibrary(value: unknown): Issue[] {
         c.string(origin.version, 'manifest.basedOn.version', 'Its version');
       }
     }
-    c.id('tool', manifest.id, 'manifest.id', 'The tool id');
-    c.string(manifest.name, 'manifest.name', 'The tool name');
+    c.id('tool', manifest.id, 'manifest.id', 'The Kit id');
+    c.string(manifest.name, 'manifest.name', 'The Kit name');
     if (
       c.string(manifest.version, 'manifest.version', 'The version') !== null &&
       !VERSION.test(manifest.version as string)
@@ -624,7 +624,7 @@ export function validateToolLibrary(value: unknown): Issue[] {
     c.issues.pop();
     c.add(
       'manifest',
-      'The manifest is missing. It holds the id, name, version and languages of the tool.',
+      'The manifest is missing. It holds the id, name, version and languages of the Kit.',
     );
   }
 

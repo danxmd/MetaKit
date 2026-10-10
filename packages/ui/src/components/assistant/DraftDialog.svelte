@@ -96,8 +96,7 @@
               : 'Draft'}
         </button>
         <span class="muted"
-          >Only the tool definition and your description are sent, never a
-          model.</span
+          >Only the Kit definition and your description are sent, never a model.</span
         >
       </div>
     </form>

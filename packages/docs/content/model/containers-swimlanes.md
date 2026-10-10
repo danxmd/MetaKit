@@ -8,13 +8,13 @@ contexts: []
 order: 160
 ---
 
-Some object kinds in a tool library are *containers* or *swimlanes*. They can hold other objects, like a frame around a group.
+Some object kinds in a Kit are *containers* or *swimlanes*. They can hold other objects, like a frame around a group.
 
 ## What it is
 
 A container (or swimlane, which is a container drawn as a lane) is an ordinary object with a size and attributes. An object placed or dropped inside it becomes its *child*. The child stays attached: if the container moves, the child moves with it.
 
-The tool library decides which kinds a container accepts. In the Agent pipeline, the **Stage** swimlane accepts **Agent**, **Human**, **Task**, **Gate** and **Artifact**. Another **Stage** is not accepted inside a stage.
+The Kit decides which kinds a container accepts. In the Agent pipeline, the **Stage** swimlane accepts **Agent**, **Human**, **Task**, **Gate** and **Artifact**. Another **Stage** is not accepted inside a stage.
 
 ## Where to find it
 

@@ -120,6 +120,11 @@ const IDENTITY_FILE: Record<DocumentKind, string> = {
   tool: 'tool.json',
   model: 'model.json',
 };
+/** How messages name each kind. */
+const KIND_WORDS: Record<DocumentKind, string> = {
+  tool: 'Kit',
+  model: 'model',
+};
 
 export { slugify };
 
@@ -288,7 +293,7 @@ export class Workspace {
     ).catch(newerAsStorageError);
     if (state.size === 0)
       throw new NotFoundError(
-        `The ${kind} "${slug}" has no saved content yet.${warnings.length ? ` ${warnings.join(' ')}` : ''}`,
+        `The ${KIND_WORDS[kind]} "${slug}" has no saved content yet.${warnings.length ? ` ${warnings.join(' ')}` : ''}`,
       );
     // Tool libraries from earlier formats are brought up to date in memory; saving writes the new one.
     const stored = materialize(state);
@@ -373,7 +378,7 @@ export class Workspace {
   async saveTool(slug: string, tool: ToolLibrary): Promise<void> {
     await this.readIdentity('tool', slug).catch(() => {
       throw new NotFoundError(
-        `There is no tool "${slug}" in this workspace. Use createTool first.`,
+        `There is no Kit "${slug}" in this workspace. Use createTool first.`,
       );
     });
     await replaceDocument(
@@ -546,8 +551,8 @@ export class Workspace {
       } catch (error) {
         const note =
           error instanceof Error && error.name === 'NewerFormatError'
-            ? `The trash marker of instance ${entry.name} for ${kind} "${slug}" is from a newer version of MetaKit and was ignored.`
-            : `The trash marker of instance ${entry.name} for ${kind} "${slug}" could not be read and was ignored: ${(error as Error).message}`;
+            ? `The trash marker of instance ${entry.name} for ${KIND_WORDS[kind]} "${slug}" is from a newer version of MetaKit and was ignored.`
+            : `The trash marker of instance ${entry.name} for ${KIND_WORDS[kind]} "${slug}" could not be read and was ignored: ${(error as Error).message}`;
         if (!this.warnings.includes(note)) this.warnings.push(note);
       }
     }
@@ -627,7 +632,7 @@ export class Workspace {
     const toolSlug = await this.findToolSlug(model.manifest.tool);
     if (!toolSlug)
       throw new NotFoundError(
-        `The tool library ${model.manifest.tool} that this model was made with is not in this workspace.`,
+        `The Kit ${model.manifest.tool} that this model was made with is not in this workspace.`,
       );
     return exportMkModel((await this.loadTool(toolSlug)).document, model);
   }

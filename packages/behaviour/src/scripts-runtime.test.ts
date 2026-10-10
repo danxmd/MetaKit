@@ -166,7 +166,7 @@ commands.register({ id: "f", label: "F", run: async () => { console.log(await fi
       behaviour.dispose();
     });
     await handle.runScript('scr_f', null);
-    expect(handle.log.at(-1)?.text).toMatch(/not allowed that for this tool/);
+    expect(handle.log.at(-1)?.text).toMatch(/not allowed that for this Kit/);
     await permissions.request(tool.manifest.id, { files: true });
     handle.clearLog();
     await handle.runScript('scr_f', null);

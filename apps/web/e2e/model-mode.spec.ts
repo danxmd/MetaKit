@@ -57,9 +57,9 @@ test.describe('start and explorer', () => {
     await page.getByRole('button', { name: 'Create workspace' }).click();
     await page.getByTestId('new-model').click();
     await expect(
-      page.getByTestId('new-model-tool').locator('optgroup'),
+      page.getByTestId('new-model-kit').locator('optgroup'),
     ).toHaveAttribute('label', /Built-in/);
-    await expect(page.getByTestId('new-model-tool')).toContainText('ER lite');
+    await expect(page.getByTestId('new-model-kit')).toContainText('ER lite');
   });
 
   test('adds a tool library from a file, refuses a broken one, and then makes a model', async ({
@@ -81,26 +81,26 @@ test.describe('start and explorer', () => {
     await page.getByRole('button', { name: 'Create workspace' }).click();
     // The models page points to Build, where the tool library is added.
     await expect(page.getByTestId('no-models')).toContainText(
-      'no tool library of its own yet',
+      'no Kit of its own yet',
     );
     await page.getByTestId('go-build').click();
-    await expect(page.getByTestId('no-tools')).toBeVisible();
+    await expect(page.getByTestId('no-kits')).toBeVisible();
 
-    await page.getByTestId('tool-file').setInputFiles({
+    await page.getByTestId('kit-file').setInputFiles({
       name: 'broken.json',
       mimeType: 'application/json',
       buffer: Buffer.from('{ "nope": true }'),
     });
     await expect(page.getByTestId('explorer-error')).toContainText(
-      'not a valid tool library',
+      'not a valid Kit',
     );
 
-    await page.getByTestId('tool-file').setInputFiles({
+    await page.getByTestId('kit-file').setInputFiles({
       name: 'tool.json',
       mimeType: 'application/json',
       buffer: Buffer.from(toolJson),
     });
-    await expect(page.getByTestId('no-tools')).toHaveCount(0);
+    await expect(page.getByTestId('no-kits')).toHaveCount(0);
     await page.getByTestId('mode-model').click();
     await page.getByTestId('new-model').click();
     await page.getByTestId('new-model-name').fill('From a file');

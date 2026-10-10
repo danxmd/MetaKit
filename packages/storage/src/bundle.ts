@@ -85,12 +85,12 @@ export async function exportBundle(
   const other = loaded.find((m) => m.manifest.tool !== toolId);
   if (other)
     throw new FormatError(
-      `A bundle holds one tool library, but "${loaded[0]!.manifest.name}" and "${other.manifest.name}" were made with different ones. Make one bundle for each tool library.`,
+      `A bundle holds one Kit, but "${loaded[0]!.manifest.name}" and "${other.manifest.name}" were made with different ones. Make one bundle for each Kit.`,
     );
   const toolSlug = await workspace.findToolSlug(toolId);
   if (!toolSlug)
     throw new FormatError(
-      `The tool library ${toolId} that these models were made with is not in this workspace.`,
+      `The Kit ${toolId} that these models were made with is not in this workspace.`,
     );
   const tool = (await workspace.loadTool(toolSlug)).document;
 
@@ -193,7 +193,7 @@ export function readBundleManifest(
     )
   )
     throw new FormatError(
-      'bundle.json is incomplete: it needs the tool and a list of models with their files.',
+      'bundle.json is incomplete: it needs the Kit and a list of models with their files.',
     );
   return m;
 }
@@ -222,7 +222,7 @@ export async function importBundle(
     const issues = validateToolLibrary(migrated);
     if (issues.length > 0)
       throw new FormatError(
-        `The tool library in this bundle has ${issues.length} problem${issues.length === 1 ? '' : 's'}, so nothing was imported: ${issues
+        `The Kit in this bundle has ${issues.length} problem${issues.length === 1 ? '' : 's'}, so nothing was imported: ${issues
           .slice(0, 3)
           .map((i) => `${i.path || '(top level)'}: ${i.message}`)
           .join('; ')}.`,
@@ -230,7 +230,7 @@ export async function importBundle(
     bundledTool = migrated as unknown as ToolLibrary;
     if (bundledTool.manifest.id !== manifest.tool.id)
       throw new FormatError(
-        'The tool library in this bundle is not the one bundle.json names, so nothing was imported.',
+        'The Kit in this bundle is not the one bundle.json names, so nothing was imported.',
       );
   }
 
@@ -240,23 +240,23 @@ export async function importBundle(
   if (toolSlug === null) {
     if (!bundledTool)
       throw new FormatError(
-        `This bundle does not include its tool library "${manifest.tool.name}" (${manifest.tool.id}), and the workspace does not have it. Import the tool package first.`,
+        `This bundle does not include its Kit "${manifest.tool.name}" (${manifest.tool.id}), and the workspace does not have it. Import the Kit package first.`,
       );
     toolSlug = await workspace.createTool(bundledTool);
     toolAdded = true;
     messages.push(
-      `Added the tool library "${bundledTool.manifest.name}" (version ${bundledTool.manifest.version}).`,
+      `Added the Kit "${bundledTool.manifest.name}" (version ${bundledTool.manifest.version}).`,
     );
   } else {
     const have = (await workspace.loadTool(toolSlug)).document;
     const offered = bundledTool?.manifest.version ?? manifest.tool.version;
     toolVersionDiffers = offered !== have.manifest.version;
     messages.push(
-      `The workspace already has the tool library "${have.manifest.name}", so that one was used.`,
+      `The workspace already has the Kit "${have.manifest.name}", so that one was used.`,
     );
     if (toolVersionDiffers)
       messages.push(
-        `The bundle was made with version ${offered} of the tool library, but the workspace has version ${have.manifest.version}. The models were read with the version in the workspace; check them for changes.`,
+        `The bundle was made with version ${offered} of the Kit, but the workspace has version ${have.manifest.version}. The models were read with the version in the workspace; check them for changes.`,
       );
   }
   const tool = (await workspace.loadTool(toolSlug)).document;

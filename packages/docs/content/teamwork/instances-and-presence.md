@@ -24,7 +24,7 @@ A window of MetaKit is called an instance. Each instance shows itself to the oth
 | `instance` | The tab's id |
 | `name`, `colour` | From your profile |
 | `at` | When the file was written |
-| `document` | `{kind, slug}` of the model or tool open, or empty |
+| `document` | `{kind, slug}` of the model or Kit open, or empty |
 | `selection` | Ids of the objects selected |
 | `editing` | The id of the object whose text you are editing, or empty |
 | `hash` | A short fingerprint of the state of the open document |
