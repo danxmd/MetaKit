@@ -92,6 +92,9 @@ Press **F1** at any time for help on the page you are on.
 | **Data and AI architecture**        | Sources, pipelines, stores, datasets, ML models, AI services and consumers, with lineage and personal-data checks |
 | **Data governance and ownership**   | Domains, data products, owners and stewards, policies, classifications and quality rules                          |
 | **Agent pipeline**                  | AI agents and people performing tasks, handing over work and approving results                                    |
+| **ML lifecycle (MLOps)**            | Experiments and training runs, model versions with evaluations and approvals, deployments, monitors and incidents |
+| **Generative AI solution**          | Prompts and models, retrieval, agents and tools, guardrails and evaluations, with cost and latency per request    |
+| **AI risk and compliance**          | AI systems with a risk tier, risks and controls, obligations, assessments, incidents and evidence                 |
 | **BPMN lite**                       | Business processes with tasks, events, gateways and lanes                                                         |
 | **ER lite**                         | Entities, attributes and relationships                                                                            |
 

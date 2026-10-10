@@ -30,6 +30,9 @@ They are listed by domain, under one heading each:
 | **Data and AI architecture** | Data platforms: sources, pipelines, stores, datasets, ML models, AI services and consumers, with data lineage and personal-data checks. See [[data-ai-architecture]]. |
 | **Data governance and ownership** | Data ownership and governance: domains, data products, assets, owners and stewards, policies, classifications and quality rules. See [[data-governance]]. |
 | **Agent pipeline** | Pipelines in which AI agents and people perform tasks, hand over work and approve results. |
+| **ML lifecycle (MLOps)** | Datasets and features, experiments and training runs, model versions in a registry with evaluations and approvals, deployments per environment, monitors and incidents. See [[ml-lifecycle]]. |
+| **Generative AI solution** | Use cases, flows, prompts and foundation models, a retrieval pipeline, agents and tools, guardrails, evaluations and human review, with the cost and latency of each request. See [[genai-solution]]. |
+| **AI risk and compliance** | AI systems with their intended purpose and a risk tier, risks and controls, obligations, assessments, incidents, owners and evidence. See [[ai-risk-compliance]]. |
 
 **Business and strategy**
 

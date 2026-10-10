@@ -127,6 +127,42 @@ export const BUILT_IN_KITS: readonly BuiltInKit[] = [
       ),
   },
   {
+    id: 'kit_mllifecycle' as KitId,
+    name: 'ML lifecycle (MLOps)',
+    version: '1.0.0',
+    domain: 'data-ai',
+    description:
+      'Datasets and features, experiments and training runs, model versions in a registry with evaluations and approvals, deployments per environment, monitors and incidents.',
+    load: () =>
+      import('../../../../kits/ml-lifecycle/kit.json?raw').then(
+        (m) => m.default,
+      ),
+  },
+  {
+    id: 'kit_genaisolution' as KitId,
+    name: 'Generative AI solution',
+    version: '1.0.0',
+    domain: 'data-ai',
+    description:
+      'Use cases, flows, prompts and foundation models, a retrieval pipeline, agents and tools, guardrails, evaluations and human review, with the cost and latency of each request.',
+    load: () =>
+      import('../../../../kits/genai-solution/kit.json?raw').then(
+        (m) => m.default,
+      ),
+  },
+  {
+    id: 'kit_airiskcompliance' as KitId,
+    name: 'AI risk and compliance',
+    version: '1.0.0',
+    domain: 'data-ai',
+    description:
+      'AI systems with their intended purpose and a risk tier, risks and controls, obligations, assessments, incidents, owners and evidence.',
+    load: () =>
+      import('../../../../kits/ai-risk-compliance/kit.json?raw').then(
+        (m) => m.default,
+      ),
+  },
+  {
     id: 'tool_bpmnlite' as KitId,
     name: 'BPMN lite',
     version: '1.0.0',

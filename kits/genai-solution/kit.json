@@ -1,0 +1,3684 @@
+{
+  "formatVersion": 7,
+  "manifest": {
+    "id": "kit_genaisolution",
+    "name": "Generative AI solution",
+    "version": "1.0.0",
+    "languages": ["en"]
+  },
+  "settings": {
+    "grid": {
+      "size": 10,
+      "snap": true,
+      "visible": true
+    },
+    "layers": [],
+    "numbering": {
+      "enabled": false,
+      "prefix": "",
+      "start": 1
+    }
+  },
+  "classes": {
+    "cls_aiusecase": {
+      "id": "cls_aiusecase",
+      "key": "AIUseCase",
+      "kind": "node",
+      "labels": {
+        "en": "AI use case"
+      },
+      "help": {
+        "en": "A user journey the solution serves, rated by the value it brings and how feasible it is."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "AI use case",
+          "id": "att_aiusecase_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_aiusecase_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "Value",
+          "min": 1,
+          "max": 5,
+          "id": "att_aiusecase_value",
+          "labels": {
+            "en": "Value (1 to 5)"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "Feasibility",
+          "min": 1,
+          "max": 5,
+          "id": "att_aiusecase_feasibility",
+          "labels": {
+            "en": "Feasibility (1 to 5)"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Status",
+          "options": ["Idea", "Assessed", "Pilot", "In production", "Stopped"],
+          "id": "att_aiusecase_status",
+          "labels": {
+            "en": "Status"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Persona",
+          "id": "att_aiusecase_persona",
+          "labels": {
+            "en": "Persona"
+          },
+          "help": {
+            "en": "Who asks, such as \"customer\" or \"agent\"."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Channel",
+          "options": [
+            "Web chat",
+            "Mobile app",
+            "Email",
+            "Phone",
+            "Internal tool"
+          ],
+          "id": "att_aiusecase_channel",
+          "labels": {
+            "en": "Channel"
+          }
+        },
+        {
+          "type": "text",
+          "key": "SuccessMeasure",
+          "id": "att_aiusecase_successmeasure",
+          "labels": {
+            "en": "Success measure"
+          }
+        }
+      ],
+      "shape": "shp_aiusecase"
+    },
+    "cls_foundationmodel": {
+      "id": "cls_foundationmodel",
+      "key": "FoundationModel",
+      "kind": "node",
+      "labels": {
+        "en": "Foundation model"
+      },
+      "help": {
+        "en": "A large pre-trained model used through prompts, with its price and speed."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Foundation model",
+          "id": "att_foundationmodel_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_foundationmodel_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Provider",
+          "id": "att_foundationmodel_provider",
+          "labels": {
+            "en": "Provider"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "ContextWindow",
+          "min": 0,
+          "id": "att_foundationmodel_contextwindow",
+          "labels": {
+            "en": "Context window (tokens)"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Hosting",
+          "options": ["Provider service", "Private cloud", "On-premises"],
+          "id": "att_foundationmodel_hosting",
+          "labels": {
+            "en": "Hosting"
+          }
+        },
+        {
+          "type": "number",
+          "key": "CostPer1kTokens",
+          "min": 0,
+          "id": "att_foundationmodel_costper1ktokens",
+          "labels": {
+            "en": "Cost per 1,000 tokens"
+          }
+        },
+        {
+          "type": "number",
+          "key": "TimeToFirstToken",
+          "min": 0,
+          "id": "att_foundationmodel_timetofirsttoken",
+          "labels": {
+            "en": "Time to first token (ms)"
+          }
+        },
+        {
+          "type": "number",
+          "key": "OutputTokensPerSecond",
+          "min": 0,
+          "id": "att_foundationmodel_outputtokenspersecond",
+          "labels": {
+            "en": "Output tokens per second"
+          }
+        }
+      ],
+      "shape": "shp_foundationmodel"
+    },
+    "cls_prompt": {
+      "id": "cls_prompt",
+      "key": "Prompt",
+      "kind": "node",
+      "labels": {
+        "en": "Prompt"
+      },
+      "help": {
+        "en": "The instructions given to a model, with the tokens it uses, so its cost and latency can be calculated."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Prompt",
+          "id": "att_prompt_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_prompt_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Template",
+          "multiline": true,
+          "id": "att_prompt_template",
+          "labels": {
+            "en": "Template"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Version",
+          "id": "att_prompt_version",
+          "labels": {
+            "en": "Version"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_prompt_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "InputTokens",
+          "min": 0,
+          "id": "att_prompt_inputtokens",
+          "labels": {
+            "en": "Input tokens"
+          },
+          "help": {
+            "en": "Tokens sent per call: instructions, context and question."
+          }
+        },
+        {
+          "type": "integer",
+          "key": "OutputTokens",
+          "min": 0,
+          "id": "att_prompt_outputtokens",
+          "labels": {
+            "en": "Output tokens"
+          },
+          "help": {
+            "en": "Tokens of a typical answer."
+          }
+        },
+        {
+          "type": "number",
+          "key": "CallsPerRequest",
+          "min": 0,
+          "id": "att_prompt_callsperrequest",
+          "labels": {
+            "en": "Calls per request"
+          },
+          "help": {
+            "en": "How often it runs per request, on average: 3 for three times, 0.2 for one request in five."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "CostPerCall",
+          "formula": "IFERROR(round((InputTokens + OutputTokens) / 1000 * outgoing('UsesModel')[0].CostPer1kTokens, 5), null)",
+          "result": "number",
+          "id": "att_prompt_costpercall",
+          "labels": {
+            "en": "Cost per call"
+          },
+          "help": {
+            "en": "Input and output tokens times the price of its model."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "LatencyPerCall",
+          "formula": "IFERROR(round(outgoing('UsesModel')[0].TimeToFirstToken + OutputTokens / outgoing('UsesModel')[0].OutputTokensPerSecond * 1000, 0), null)",
+          "result": "number",
+          "id": "att_prompt_latencypercall",
+          "labels": {
+            "en": "Latency per call (ms)"
+          },
+          "help": {
+            "en": "Time to first token plus the time to write the output, in milliseconds."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "CostPerRequest",
+          "formula": "CostPerCall == null ? null : round(CostPerCall * (CallsPerRequest ?? 1), 5)",
+          "result": "number",
+          "id": "att_prompt_costperrequest",
+          "labels": {
+            "en": "Cost per request"
+          },
+          "help": {
+            "en": "Cost per call times calls per request."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "LatencyPerRequest",
+          "formula": "LatencyPerCall == null ? null : round(LatencyPerCall * (CallsPerRequest ?? 1), 0)",
+          "result": "number",
+          "id": "att_prompt_latencyperrequest",
+          "labels": {
+            "en": "Latency per request (ms)"
+          },
+          "help": {
+            "en": "Latency per call times calls per request."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Summary",
+          "formula": "'Version ' + (Version ?? '-') + ', ' + (CostPerRequest == null ? '-' : text(CostPerRequest)) + ' per request'",
+          "result": "text",
+          "id": "att_prompt_summary",
+          "labels": {
+            "en": "Summary"
+          },
+          "help": {
+            "en": "The version and the cost per request, shown on the diagram."
+          }
+        }
+      ],
+      "shape": "shp_prompt",
+      "constraints": [
+        {
+          "id": "k_prompt_model",
+          "formula": "count(outgoing('UsesModel')) > 0",
+          "message": "= 'Prompt \"' + Name + '\" runs on no model: connect it to one with \"Uses model\".'",
+          "severity": "warning"
+        }
+      ]
+    },
+    "cls_aiagent": {
+      "id": "cls_aiagent",
+      "key": "AIAgent",
+      "kind": "node",
+      "labels": {
+        "en": "AI agent"
+      },
+      "help": {
+        "en": "A program that uses a model to plan and take actions with tools, within the autonomy it is given."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "AI agent",
+          "id": "att_aiagent_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_aiagent_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Autonomy",
+          "options": ["Suggests", "Acts with approval", "Acts alone"],
+          "id": "att_aiagent_autonomy",
+          "labels": {
+            "en": "Autonomy"
+          }
+        },
+        {
+          "type": "number",
+          "key": "CostLimit",
+          "min": 0,
+          "id": "att_aiagent_costlimit",
+          "labels": {
+            "en": "Cost limit"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "MaxSteps",
+          "min": 1,
+          "id": "att_aiagent_maxsteps",
+          "labels": {
+            "en": "Max steps"
+          },
+          "help": {
+            "en": "The most steps it may take for one request."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "ToolCount",
+          "formula": "count(outgoing('CanUse'))",
+          "result": "number",
+          "id": "att_aiagent_toolcount",
+          "labels": {
+            "en": "Tools"
+          },
+          "help": {
+            "en": "How many tools it can use."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Guardrails",
+          "formula": "count(incoming('Protects'))",
+          "result": "number",
+          "id": "att_aiagent_guardrails",
+          "labels": {
+            "en": "Guardrails"
+          },
+          "help": {
+            "en": "How many guardrails protect it."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "CostPerRequest",
+          "formula": "round(sum(outgoing('Calls').CostPerRequest, outgoing('Retrieves').CostPerQuery), 5)",
+          "result": "number",
+          "id": "att_aiagent_costperrequest",
+          "labels": {
+            "en": "Cost per request"
+          },
+          "help": {
+            "en": "The cost of its prompts and retrieval per request."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "LatencyPerRequest",
+          "formula": "round(sum(outgoing('Calls').LatencyPerRequest, outgoing('Retrieves').LatencyMs), 0)",
+          "result": "number",
+          "id": "att_aiagent_latencyperrequest",
+          "labels": {
+            "en": "Latency per request (ms)"
+          },
+          "help": {
+            "en": "The time its prompts and retrieval take per request, in milliseconds."
+          }
+        }
+      ],
+      "shape": "shp_aiagent",
+      "constraints": [
+        {
+          "id": "k_agent_guardrail",
+          "formula": "ToolCount == 0 || Guardrails > 0",
+          "message": "= 'Agent \"' + Name + '\" can use tools, but no guardrail protects it.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_agent_review",
+          "formula": "Autonomy != 'Acts alone' || count(incoming('Reviews')) > 0",
+          "message": "= 'Agent \"' + Name + '\" acts alone, and no person reviews it.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_agent_cost",
+          "formula": "CostLimit == null || CostPerRequest == null || CostPerRequest <= CostLimit",
+          "message": "= 'Agent \"' + Name + '\" costs ' + CostPerRequest + ' per request, more than its limit of ' + CostLimit + '.'",
+          "severity": "warning"
+        }
+      ]
+    },
+    "cls_guardrail": {
+      "id": "cls_guardrail",
+      "key": "Guardrail",
+      "kind": "node",
+      "labels": {
+        "en": "Guardrail"
+      },
+      "help": {
+        "en": "A check on what goes into or comes out of a model, or a policy it must follow."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Guardrail",
+          "id": "att_guardrail_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_guardrail_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Type",
+          "options": ["Input", "Output", "Policy"],
+          "id": "att_guardrail_type",
+          "labels": {
+            "en": "Type"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Rule",
+          "multiline": true,
+          "id": "att_guardrail_rule",
+          "labels": {
+            "en": "Rule"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Action",
+          "options": ["Block", "Rewrite", "Flag for review"],
+          "id": "att_guardrail_action",
+          "labels": {
+            "en": "Action"
+          },
+          "help": {
+            "en": "What happens when the check fails."
+          }
+        }
+      ],
+      "shape": "shp_guardrail"
+    },
+    "cls_evaluation": {
+      "id": "cls_evaluation",
+      "key": "Evaluation",
+      "kind": "node",
+      "labels": {
+        "en": "Evaluation"
+      },
+      "help": {
+        "en": "A measured test of a flow, agent, prompt, model or retriever on a test set. Passed compares the score with the threshold."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Evaluation",
+          "id": "att_evaluation_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_evaluation_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "TestSet",
+          "id": "att_evaluation_testset",
+          "labels": {
+            "en": "Test dataset"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Metric",
+          "id": "att_evaluation_metric",
+          "labels": {
+            "en": "Metric"
+          }
+        },
+        {
+          "type": "number",
+          "key": "Score",
+          "id": "att_evaluation_score",
+          "labels": {
+            "en": "Score"
+          }
+        },
+        {
+          "type": "number",
+          "key": "Threshold",
+          "id": "att_evaluation_threshold",
+          "labels": {
+            "en": "Threshold"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Passed",
+          "formula": "Score == null || Threshold == null ? null : Score >= Threshold",
+          "result": "boolean",
+          "id": "att_evaluation_passed",
+          "labels": {
+            "en": "Passed"
+          },
+          "help": {
+            "en": "Yes when the score reached the threshold."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Reading",
+          "formula": "(Metric ?? 'Score') + ' ' + (Score == null ? '-' : text(Score)) + ', at least ' + (Threshold == null ? '-' : text(Threshold))",
+          "result": "text",
+          "id": "att_evaluation_reading",
+          "labels": {
+            "en": "Reading"
+          },
+          "help": {
+            "en": "The score and the threshold, shown on the diagram."
+          }
+        }
+      ],
+      "shape": "shp_evaluation",
+      "constraints": [
+        {
+          "id": "k_evaluation_target",
+          "formula": "count(outgoing('Evaluates')) > 0",
+          "message": "= 'Evaluation \"' + Name + '\" tests nothing: connect it with \"Evaluates\".'",
+          "severity": "warning"
+        }
+      ]
+    },
+    "cls_orchestration": {
+      "id": "cls_orchestration",
+      "key": "Orchestration",
+      "kind": "node",
+      "labels": {
+        "en": "Orchestration flow"
+      },
+      "help": {
+        "en": "The flow that handles a request: which prompts it calls, what it retrieves and which agents it hands work to. Cost and latency per request are added up from them."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Orchestration flow",
+          "id": "att_orchestration_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_orchestration_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Pattern",
+          "options": [
+            "Single call",
+            "Chain",
+            "Retrieval and answer",
+            "Router",
+            "Agent loop",
+            "Several agents"
+          ],
+          "id": "att_orchestration_pattern",
+          "labels": {
+            "en": "Pattern"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "RequestsPerDay",
+          "min": 0,
+          "id": "att_orchestration_requestsperday",
+          "labels": {
+            "en": "Requests per day"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "CostPerRequest",
+          "formula": "round(sum(outgoing('Calls').CostPerRequest, outgoing('Coordinates').CostPerRequest, outgoing('Retrieves').CostPerQuery), 4)",
+          "result": "number",
+          "id": "att_orchestration_costperrequest",
+          "labels": {
+            "en": "Cost per request"
+          },
+          "help": {
+            "en": "The average cost of one request: its prompts, its agents and its retrieval."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "LatencyPerRequest",
+          "formula": "round(sum(outgoing('Calls').LatencyPerRequest, outgoing('Coordinates').LatencyPerRequest, outgoing('Retrieves').LatencyMs), 0)",
+          "result": "number",
+          "id": "att_orchestration_latencyperrequest",
+          "labels": {
+            "en": "Latency per request (ms)"
+          },
+          "help": {
+            "en": "The average time to answer one request in milliseconds, when the steps run one after the other."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "DailyCost",
+          "formula": "RequestsPerDay == null ? null : round(CostPerRequest * RequestsPerDay, 2)",
+          "result": "number",
+          "id": "att_orchestration_dailycost",
+          "labels": {
+            "en": "Daily cost"
+          },
+          "help": {
+            "en": "Cost per request times requests per day."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "MonthlyCost",
+          "formula": "DailyCost == null ? null : round(DailyCost * 30, 0)",
+          "result": "number",
+          "id": "att_orchestration_monthlycost",
+          "labels": {
+            "en": "Monthly cost"
+          },
+          "help": {
+            "en": "The daily cost times 30."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_flow_usecase",
+          "formula": "count(outgoing('Handles')) > 0",
+          "message": "= 'Flow \"' + Name + '\" handles no use case: connect it to one with \"Handles\".'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_flow_guardrails",
+          "formula": "contains(join(incoming('Protects').Type, ','), 'Input') && contains(join(incoming('Protects').Type, ','), 'Output')",
+          "message": "= 'Flow \"' + Name + '\" needs an input guardrail and an output guardrail.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_flow_evaluated",
+          "formula": "count(incoming('Evaluates')) > 0",
+          "message": "= 'Flow \"' + Name + '\" has no evaluation.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_orchestration"
+    },
+    "cls_tool": {
+      "id": "cls_tool",
+      "key": "Tool",
+      "kind": "node",
+      "labels": {
+        "en": "Tool"
+      },
+      "help": {
+        "en": "A function a flow or agent can call, such as looking up an order. Tools that change data or act outside need an approval."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Tool",
+          "id": "att_tool_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_tool_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "System",
+          "id": "att_tool_system",
+          "labels": {
+            "en": "System"
+          },
+          "help": {
+            "en": "The system the tool calls."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "SideEffects",
+          "options": ["Read only", "Changes data", "Acts outside"],
+          "id": "att_tool_sideeffects",
+          "labels": {
+            "en": "Side effects"
+          },
+          "help": {
+            "en": "Acts outside: sends messages, pays money or does anything else beyond the own data."
+          }
+        },
+        {
+          "type": "boolean",
+          "key": "RequiresApproval",
+          "id": "att_tool_requiresapproval",
+          "labels": {
+            "en": "Requires approval"
+          },
+          "help": {
+            "en": "A person confirms each call before it runs."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_tool_approval",
+          "formula": "SideEffects == 'Read only' || RequiresApproval == true",
+          "message": "= 'Tool \"' + Name + '\" changes data or acts outside, but needs no approval.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_tool_used",
+          "formula": "count(incoming('CanUse')) > 0",
+          "message": "= 'No flow or agent uses tool \"' + Name + '\".'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_tool"
+    },
+    "cls_retrievalpipeline": {
+      "id": "cls_retrievalpipeline",
+      "key": "RetrievalPipeline",
+      "kind": "container",
+      "labels": {
+        "en": "Retrieval pipeline"
+      },
+      "help": {
+        "en": "The steps that find the right passages for a request: sources, chunking, embedding, the index, the retriever and the re-ranker. Place them inside it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Retrieval pipeline",
+          "id": "att_retrievalpipeline_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_retrievalpipeline_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "LatencyMs",
+          "formula": "sum(children().LatencyMs)",
+          "result": "number",
+          "id": "att_retrievalpipeline_latencyms",
+          "labels": {
+            "en": "Latency (ms)"
+          },
+          "help": {
+            "en": "The latency of the steps inside, in milliseconds."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "CostPerQuery",
+          "formula": "round(sum(children().CostPerQuery), 4)",
+          "result": "number",
+          "id": "att_retrievalpipeline_costperquery",
+          "labels": {
+            "en": "Cost per query"
+          },
+          "help": {
+            "en": "The cost of one search through the steps inside."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Heading",
+          "formula": "Name + (LatencyMs > 0 ? ', ' + LatencyMs + ' ms' : '')",
+          "result": "text",
+          "id": "att_retrievalpipeline_heading",
+          "labels": {
+            "en": "Heading"
+          },
+          "help": {
+            "en": "The name and the latency, shown as the heading on the diagram."
+          }
+        }
+      ],
+      "shape": "shp_retrievalpipeline"
+    },
+    "cls_knowledgesource": {
+      "id": "cls_knowledgesource",
+      "key": "KnowledgeSource",
+      "kind": "node",
+      "labels": {
+        "en": "Knowledge source"
+      },
+      "help": {
+        "en": "Content the solution searches, such as help articles, policies or past tickets."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Knowledge source",
+          "id": "att_knowledgesource_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_knowledgesource_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "SourceType",
+          "options": ["Documents", "Web pages", "Tickets", "Database", "Wiki"],
+          "id": "att_knowledgesource_sourcetype",
+          "labels": {
+            "en": "Source type"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_knowledgesource_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Refresh",
+          "options": ["Real time", "Daily", "Weekly", "Monthly"],
+          "id": "att_knowledgesource_refresh",
+          "labels": {
+            "en": "Refresh"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "DocumentCount",
+          "min": 0,
+          "id": "att_knowledgesource_documentcount",
+          "labels": {
+            "en": "Document count"
+          }
+        },
+        {
+          "type": "boolean",
+          "key": "ContainsPersonalData",
+          "id": "att_knowledgesource_containspersonaldata",
+          "labels": {
+            "en": "Contains personal data"
+          }
+        }
+      ],
+      "shape": "shp_knowledgesource"
+    },
+    "cls_chunking": {
+      "id": "cls_chunking",
+      "key": "Chunking",
+      "kind": "node",
+      "labels": {
+        "en": "Chunking"
+      },
+      "help": {
+        "en": "How the content is split into passages before it is embedded."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Chunking",
+          "id": "att_chunking_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Strategy",
+          "options": ["Fixed size", "By heading", "By sentence", "By meaning"],
+          "id": "att_chunking_strategy",
+          "labels": {
+            "en": "Strategy"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "ChunkSize",
+          "min": 1,
+          "id": "att_chunking_chunksize",
+          "labels": {
+            "en": "Chunk size (tokens)"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "Overlap",
+          "min": 0,
+          "id": "att_chunking_overlap",
+          "labels": {
+            "en": "Overlap (tokens)"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Settings",
+          "formula": "(Strategy ?? 'Chunks') + (ChunkSize == null ? '' : ', ' + ChunkSize + ' tokens')",
+          "result": "text",
+          "id": "att_chunking_settings",
+          "labels": {
+            "en": "Settings"
+          },
+          "help": {
+            "en": "The strategy and the size, shown on the diagram."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_chunk_overlap",
+          "formula": "ChunkSize == null || Overlap == null || Overlap < ChunkSize",
+          "message": "= 'The overlap of \"' + Name + '\" is not smaller than its chunk size.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_chunking"
+    },
+    "cls_embeddingmodel": {
+      "id": "cls_embeddingmodel",
+      "key": "EmbeddingModel",
+      "kind": "node",
+      "labels": {
+        "en": "Embedding model"
+      },
+      "help": {
+        "en": "The model that turns passages and questions into vectors, so similar meanings lie close together."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Embedding model",
+          "id": "att_embeddingmodel_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Provider",
+          "id": "att_embeddingmodel_provider",
+          "labels": {
+            "en": "Provider"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "Dimensions",
+          "min": 1,
+          "id": "att_embeddingmodel_dimensions",
+          "labels": {
+            "en": "Dimensions"
+          },
+          "help": {
+            "en": "The length of each vector."
+          }
+        },
+        {
+          "type": "number",
+          "key": "CostPer1kTokens",
+          "min": 0,
+          "id": "att_embeddingmodel_costper1ktokens",
+          "labels": {
+            "en": "Cost per 1,000 tokens"
+          }
+        },
+        {
+          "type": "number",
+          "key": "LatencyMs",
+          "min": 0,
+          "id": "att_embeddingmodel_latencyms",
+          "labels": {
+            "en": "Latency per query (ms)"
+          }
+        }
+      ],
+      "shape": "shp_embeddingmodel"
+    },
+    "cls_vectorindex": {
+      "id": "cls_vectorindex",
+      "key": "VectorIndex",
+      "kind": "node",
+      "labels": {
+        "en": "Vector index"
+      },
+      "help": {
+        "en": "Where the vectors of all passages are stored and searched."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Vector index",
+          "id": "att_vectorindex_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Technology",
+          "id": "att_vectorindex_technology",
+          "labels": {
+            "en": "Technology"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "SimilarityMeasure",
+          "options": ["Cosine", "Dot product", "Distance"],
+          "id": "att_vectorindex_similaritymeasure",
+          "labels": {
+            "en": "Similarity measure"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "Dimensions",
+          "min": 1,
+          "id": "att_vectorindex_dimensions",
+          "labels": {
+            "en": "Dimensions"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "ChunkCount",
+          "min": 0,
+          "id": "att_vectorindex_chunkcount",
+          "labels": {
+            "en": "Chunk count"
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_index_dimensions",
+          "formula": "Dimensions == null || IFERROR(incoming('Feeds')[0].Dimensions, null) == null || Dimensions == incoming('Feeds')[0].Dimensions",
+          "message": "= 'Vector index \"' + Name + '\" has ' + Dimensions + ' dimensions, but the embedding model that feeds it makes ' + incoming('Feeds')[0].Dimensions + '.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_vectorindex"
+    },
+    "cls_retriever": {
+      "id": "cls_retriever",
+      "key": "Retriever",
+      "kind": "node",
+      "labels": {
+        "en": "Retriever"
+      },
+      "help": {
+        "en": "Finds the passages that match a question, by meaning, by keywords or both."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Retriever",
+          "id": "att_retriever_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "SearchType",
+          "options": ["By meaning", "By keywords", "Hybrid"],
+          "id": "att_retriever_searchtype",
+          "labels": {
+            "en": "Search type"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "TopK",
+          "min": 1,
+          "id": "att_retriever_topk",
+          "labels": {
+            "en": "Passages returned"
+          },
+          "help": {
+            "en": "How many passages it returns."
+          }
+        },
+        {
+          "type": "number",
+          "key": "MinScore",
+          "min": 0,
+          "max": 1,
+          "id": "att_retriever_minscore",
+          "labels": {
+            "en": "Minimum similarity"
+          }
+        },
+        {
+          "type": "number",
+          "key": "LatencyMs",
+          "min": 0,
+          "id": "att_retriever_latencyms",
+          "labels": {
+            "en": "Latency (ms)"
+          }
+        }
+      ],
+      "shape": "shp_retriever"
+    },
+    "cls_reranker": {
+      "id": "cls_reranker",
+      "key": "Reranker",
+      "kind": "node",
+      "labels": {
+        "en": "Re-ranker"
+      },
+      "help": {
+        "en": "Puts the passages found in a better order and keeps the best few."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Re-ranker",
+          "id": "att_reranker_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Model",
+          "id": "att_reranker_model",
+          "labels": {
+            "en": "Model"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "TopN",
+          "min": 1,
+          "id": "att_reranker_topn",
+          "labels": {
+            "en": "Passages kept"
+          },
+          "help": {
+            "en": "How many passages it keeps."
+          }
+        },
+        {
+          "type": "number",
+          "key": "LatencyMs",
+          "min": 0,
+          "id": "att_reranker_latencyms",
+          "labels": {
+            "en": "Latency (ms)"
+          }
+        },
+        {
+          "type": "number",
+          "key": "CostPerQuery",
+          "min": 0,
+          "id": "att_reranker_costperquery",
+          "labels": {
+            "en": "Cost per query"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Keeps",
+          "formula": "TopN == null ? '' : 'Keeps the best ' + TopN",
+          "result": "text",
+          "id": "att_reranker_keeps",
+          "labels": {
+            "en": "Keeps"
+          },
+          "help": {
+            "en": "Shown on the diagram."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_reranker_topn",
+          "formula": "TopN == null || IFERROR(incoming('Feeds')[0].TopK, null) == null || TopN <= incoming('Feeds')[0].TopK",
+          "message": "= 'Re-ranker \"' + Name + '\" keeps more passages than the retriever returns.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_reranker"
+    },
+    "cls_humanreview": {
+      "id": "cls_humanreview",
+      "key": "HumanReview",
+      "kind": "node",
+      "labels": {
+        "en": "Human review"
+      },
+      "help": {
+        "en": "A person who checks what a flow, agent or tool does, before or after it happens."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Human review",
+          "id": "att_humanreview_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Reviewer",
+          "id": "att_humanreview_reviewer",
+          "labels": {
+            "en": "Reviewer"
+          },
+          "help": {
+            "en": "The role that reviews."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "When",
+          "options": [
+            "Before it happens",
+            "On escalation",
+            "Sample afterwards"
+          ],
+          "id": "att_humanreview_when",
+          "labels": {
+            "en": "When"
+          }
+        },
+        {
+          "type": "number",
+          "key": "SamplePercent",
+          "min": 0,
+          "max": 100,
+          "id": "att_humanreview_samplepercent",
+          "labels": {
+            "en": "Sample (%)"
+          }
+        }
+      ],
+      "shape": "shp_humanreview"
+    }
+  },
+  "relations": {
+    "rel_usesmodel": {
+      "id": "rel_usesmodel",
+      "key": "UsesModel",
+      "labels": {
+        "en": "Uses model"
+      },
+      "help": {
+        "en": "A use case, agent or application relies on a model."
+      },
+      "from": ["cls_prompt"],
+      "to": ["cls_foundationmodel"],
+      "attributes": [],
+      "shape": "shp_rel_usesmodel"
+    },
+    "rel_evaluates": {
+      "id": "rel_evaluates",
+      "key": "Evaluates",
+      "labels": {
+        "en": "Evaluates"
+      },
+      "help": {
+        "en": "An evaluation tests a model or a prompt."
+      },
+      "from": ["cls_evaluation"],
+      "to": [
+        "cls_foundationmodel",
+        "cls_prompt",
+        "cls_orchestration",
+        "cls_aiagent",
+        "cls_retriever"
+      ],
+      "attributes": [],
+      "shape": "shp_rel_evaluates"
+    },
+    "rel_handles": {
+      "id": "rel_handles",
+      "key": "Handles",
+      "labels": {
+        "en": "Handles"
+      },
+      "help": {
+        "en": "The flow serves the use case."
+      },
+      "from": ["cls_orchestration"],
+      "to": ["cls_aiusecase"],
+      "attributes": [],
+      "shape": "shp_rel_handles"
+    },
+    "rel_calls": {
+      "id": "rel_calls",
+      "key": "Calls",
+      "labels": {
+        "en": "Calls"
+      },
+      "help": {
+        "en": "The flow or agent sends the prompt to its model."
+      },
+      "from": ["cls_orchestration", "cls_aiagent"],
+      "to": ["cls_prompt"],
+      "attributes": [],
+      "shape": "shp_rel_calls"
+    },
+    "rel_coordinates": {
+      "id": "rel_coordinates",
+      "key": "Coordinates",
+      "labels": {
+        "en": "Coordinates"
+      },
+      "help": {
+        "en": "The flow hands part of the work to the agent."
+      },
+      "from": ["cls_orchestration"],
+      "to": ["cls_aiagent"],
+      "attributes": [],
+      "shape": "shp_rel_coordinates"
+    },
+    "rel_canuse": {
+      "id": "rel_canuse",
+      "key": "CanUse",
+      "labels": {
+        "en": "Can use"
+      },
+      "help": {
+        "en": "The flow or agent may call the tool."
+      },
+      "from": ["cls_orchestration", "cls_aiagent"],
+      "to": ["cls_tool"],
+      "attributes": [],
+      "shape": "shp_rel_canuse"
+    },
+    "rel_retrieves": {
+      "id": "rel_retrieves",
+      "key": "Retrieves",
+      "labels": {
+        "en": "Retrieves from"
+      },
+      "help": {
+        "en": "The flow or agent finds context through the retrieval pipeline."
+      },
+      "from": ["cls_orchestration", "cls_aiagent"],
+      "to": ["cls_retrievalpipeline"],
+      "attributes": [],
+      "shape": "shp_rel_retrieves"
+    },
+    "rel_feeds": {
+      "id": "rel_feeds",
+      "key": "Feeds",
+      "labels": {
+        "en": "Feeds"
+      },
+      "help": {
+        "en": "One retrieval step passes its result to the next."
+      },
+      "from": [
+        "cls_knowledgesource",
+        "cls_chunking",
+        "cls_embeddingmodel",
+        "cls_vectorindex",
+        "cls_retriever"
+      ],
+      "to": [
+        "cls_chunking",
+        "cls_embeddingmodel",
+        "cls_vectorindex",
+        "cls_retriever",
+        "cls_reranker"
+      ],
+      "attributes": [],
+      "shape": "shp_rel_feeds"
+    },
+    "rel_protects": {
+      "id": "rel_protects",
+      "key": "Protects",
+      "labels": {
+        "en": "Protects"
+      },
+      "help": {
+        "en": "The guardrail checks what goes into or comes out of the flow, agent, prompt or tool."
+      },
+      "from": ["cls_guardrail"],
+      "to": ["cls_orchestration", "cls_aiagent", "cls_prompt", "cls_tool"],
+      "attributes": [],
+      "shape": "shp_rel_protects"
+    },
+    "rel_reviews": {
+      "id": "rel_reviews",
+      "key": "Reviews",
+      "labels": {
+        "en": "Reviews"
+      },
+      "help": {
+        "en": "A person checks what the flow, agent or tool does."
+      },
+      "from": ["cls_humanreview"],
+      "to": ["cls_orchestration", "cls_aiagent", "cls_tool"],
+      "attributes": [],
+      "shape": "shp_rel_reviews"
+    }
+  },
+  "modelTypes": {
+    "mt_genaisolution": {
+      "id": "mt_genaisolution",
+      "key": "GenAISolution",
+      "labels": {
+        "en": "Generative AI solution"
+      },
+      "classes": [
+        "cls_aiusecase",
+        "cls_foundationmodel",
+        "cls_prompt",
+        "cls_aiagent",
+        "cls_guardrail",
+        "cls_evaluation",
+        "cls_orchestration",
+        "cls_tool",
+        "cls_retrievalpipeline",
+        "cls_knowledgesource",
+        "cls_chunking",
+        "cls_embeddingmodel",
+        "cls_vectorindex",
+        "cls_retriever",
+        "cls_reranker",
+        "cls_humanreview"
+      ],
+      "relations": [
+        "rel_usesmodel",
+        "rel_evaluates",
+        "rel_handles",
+        "rel_calls",
+        "rel_coordinates",
+        "rel_canuse",
+        "rel_retrieves",
+        "rel_feeds",
+        "rel_protects",
+        "rel_reviews"
+      ],
+      "views": [
+        {
+          "id": "vw_flow",
+          "key": "Flow",
+          "labels": {
+            "en": "Flow"
+          },
+          "classes": [
+            "cls_aiusecase",
+            "cls_orchestration",
+            "cls_prompt",
+            "cls_foundationmodel",
+            "cls_aiagent",
+            "cls_tool",
+            "cls_retrievalpipeline"
+          ],
+          "relations": [
+            "rel_handles",
+            "rel_calls",
+            "rel_coordinates",
+            "rel_usesmodel",
+            "rel_canuse",
+            "rel_retrieves"
+          ]
+        },
+        {
+          "id": "vw_retrieval",
+          "key": "Retrieval",
+          "labels": {
+            "en": "Retrieval"
+          },
+          "classes": [
+            "cls_retrievalpipeline",
+            "cls_knowledgesource",
+            "cls_chunking",
+            "cls_embeddingmodel",
+            "cls_vectorindex",
+            "cls_retriever",
+            "cls_reranker",
+            "cls_evaluation"
+          ],
+          "relations": ["rel_feeds", "rel_evaluates"]
+        },
+        {
+          "id": "vw_safety",
+          "key": "Safety",
+          "labels": {
+            "en": "Guardrails and evaluation"
+          },
+          "classes": [
+            "cls_orchestration",
+            "cls_aiagent",
+            "cls_tool",
+            "cls_prompt",
+            "cls_guardrail",
+            "cls_humanreview",
+            "cls_evaluation"
+          ],
+          "relations": ["rel_protects", "rel_reviews", "rel_evaluates"]
+        }
+      ],
+      "cardinalities": [],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Title",
+          "required": true,
+          "maxLength": 100,
+          "id": "att_mtgenaisolution_title",
+          "labels": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Organisation",
+          "id": "att_mtgenaisolution_organisation",
+          "labels": {
+            "en": "Organisation"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_mtgenaisolution_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "TotalMonthlyCost",
+          "formula": "sum(objects('Orchestration').MonthlyCost)",
+          "result": "number",
+          "id": "att_mtgenaisolution_totalmonthlycost",
+          "labels": {
+            "en": "Total monthly cost"
+          },
+          "help": {
+            "en": "The monthly cost of all flows."
+          }
+        }
+      ],
+      "help": {
+        "en": "Use cases, the flow that handles them, prompts and foundation models, a retrieval pipeline, agents and tools, guardrails, evaluations and human review."
+      },
+      "containers": {
+        "cls_retrievalpipeline": [
+          "cls_knowledgesource",
+          "cls_chunking",
+          "cls_embeddingmodel",
+          "cls_vectorindex",
+          "cls_retriever",
+          "cls_reranker"
+        ]
+      }
+    }
+  },
+  "shapes": {
+    "shp_aiusecase": {
+      "id": "shp_aiusecase",
+      "name": "AIUseCase look",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 4,
+          "fill": "#ffffff",
+          "stroke": "#9c36b5",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": 28,
+          "radius": 4,
+          "fill": "#eebefa",
+          "stroke": "#9c36b5"
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 2,
+          "width": "100% - 36",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 34,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Value: ' + Value",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 50,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Feasibility: ' + Feasibility",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 66,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Status: ' + Status",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z",
+          "viewBox": [0, 0, 24, 24],
+          "x": "100% - 26",
+          "y": 4,
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "header-box",
+        "fill": "#eebefa",
+        "border": "#9c36b5",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 170,
+          "height": 110,
+          "resizable": true
+        },
+        "icon": {
+          "name": "star"
+        },
+        "fields": ["Value", "Feasibility", "Status"]
+      }
+    },
+    "shp_foundationmodel": {
+      "id": "shp_foundationmodel",
+      "name": "FoundationModel look",
+      "kind": "node",
+      "size": {
+        "width": 180,
+        "height": 80,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          ["15%", 0],
+          ["85%", 0],
+          ["100%", "50%"],
+          ["85%", "100%"],
+          ["15%", "100%"],
+          [0, "50%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            ["15%", 0],
+            ["85%", 0],
+            ["100%", "50%"],
+            ["85%", "100%"],
+            ["15%", "100%"],
+            [0, "50%"]
+          ],
+          "fill": "#eebefa",
+          "stroke": "#9c36b5",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": "18% + 26",
+          "y": 4,
+          "width": "64% - 26",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": "18% + 26",
+          "y": "100% - 22",
+          "width": "64% - 26",
+          "height": 18,
+          "text": "= Hosting",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 2v3 M5 7h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z M8.5 12.5h.01 M15.5 12.5h.01 M9 16h6",
+          "viewBox": [0, 0, 24, 24],
+          "x": "18% + 4",
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "hexagon",
+        "fill": "#eebefa",
+        "border": "#9c36b5",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 180,
+          "height": 80,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Hosting"
+        },
+        "icon": {
+          "name": "bot"
+        }
+      }
+    },
+    "shp_prompt": {
+      "id": "shp_prompt",
+      "name": "Prompt look",
+      "kind": "node",
+      "size": {
+        "width": 150,
+        "height": 80,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          [0, 0],
+          ["100% - 18", 0],
+          ["100%", 18],
+          ["100%", "100%"],
+          [0, "100%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            [0, 0],
+            ["100% - 18", 0],
+            ["100%", 18],
+            ["100%", "100%"],
+            [0, "100%"]
+          ],
+          "fill": "#eebefa",
+          "stroke": "#9c36b5",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "polygon",
+          "points": [
+            ["100% - 18", 0],
+            ["100% - 18", 18],
+            ["100%", 18]
+          ],
+          "fill": "#00000022",
+          "stroke": "#9c36b5",
+          "strokeWidth": 1
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 20,
+          "width": "100% - 16",
+          "height": "100% - 46",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 24",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= Summary",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "document",
+        "fill": "#eebefa",
+        "border": "#9c36b5",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 150,
+          "height": 80,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Summary"
+        }
+      }
+    },
+    "shp_aiagent": {
+      "id": "shp_aiagent",
+      "name": "AIAgent look",
+      "kind": "node",
+      "size": {
+        "width": 90,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "ellipse",
+          "x": "50% - 16",
+          "y": 4,
+          "width": 32,
+          "height": 32,
+          "fill": "#eebefa",
+          "stroke": "#9c36b5",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 6,
+          "y": 42,
+          "width": "100% - 12",
+          "height": "100% - 46",
+          "radius": 18,
+          "fill": "#eebefa",
+          "stroke": "#9c36b5",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 10,
+          "y": 46,
+          "width": "100% - 20",
+          "height": "100% - 72",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 10,
+          "y": "100% - 24",
+          "width": "100% - 20",
+          "height": 18,
+          "text": "= Autonomy",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 2v3 M5 7h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z M8.5 12.5h.01 M15.5 12.5h.01 M9 16h6",
+          "viewBox": [0, 0, 24, 24],
+          "x": "50% - 10",
+          "y": 10,
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "person",
+        "fill": "#eebefa",
+        "border": "#9c36b5",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 90,
+          "height": 110,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Autonomy"
+        },
+        "icon": {
+          "name": "bot"
+        }
+      }
+    },
+    "shp_guardrail": {
+      "id": "shp_guardrail",
+      "name": "Guardrail look",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          ["15%", 0],
+          ["85%", 0],
+          ["100%", "50%"],
+          ["85%", "100%"],
+          ["15%", "100%"],
+          [0, "50%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            ["15%", 0],
+            ["85%", 0],
+            ["100%", "50%"],
+            ["85%", "100%"],
+            ["15%", "100%"],
+            [0, "50%"]
+          ],
+          "fill": "#ffc9c9",
+          "stroke": "#e03131",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": "18% + 26",
+          "y": 4,
+          "width": "64% - 26",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": "18% + 26",
+          "y": "100% - 22",
+          "width": "64% - 26",
+          "height": 18,
+          "text": "= Type",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M6 11h12v10H6z M8 11V8a4 4 0 0 1 8 0v3",
+          "viewBox": [0, 0, 24, 24],
+          "x": "18% + 4",
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "hexagon",
+        "fill": "#ffc9c9",
+        "border": "#e03131",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 170,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Type"
+        },
+        "icon": {
+          "name": "lock"
+        }
+      }
+    },
+    "shp_evaluation": {
+      "id": "shp_evaluation",
+      "name": "Evaluation look",
+      "kind": "node",
+      "size": {
+        "width": 200,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "#f8f0fc",
+          "stroke": "= Passed == true ? '#2f9e44' : Passed == false ? '#e03131' : '#9c36b5'",
+          "strokeWidth": 2
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= Reading",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M4 12.5l5 5L20 6.5",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": "#f8f0fc",
+        "border": {
+          "by": "Passed",
+          "values": {
+            "true": "#2f9e44",
+            "false": "#e03131"
+          },
+          "fallback": "#9c36b5"
+        },
+        "borderWidth": 2,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 200,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Reading"
+        },
+        "icon": {
+          "name": "check"
+        }
+      }
+    },
+    "shp_rel_usesmodel": {
+      "id": "shp_rel_usesmodel",
+      "name": "UsesModel look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#9c36b5",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#9c36b5",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_evaluates": {
+      "id": "shp_rel_evaluates",
+      "name": "Evaluates look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#9c36b5",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [2, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#9c36b5",
+        "width": 1.5,
+        "style": "dotted",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_orchestration": {
+      "id": "shp_orchestration",
+      "name": "Orchestration look",
+      "kind": "node",
+      "size": {
+        "width": 230,
+        "height": 126,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 4,
+          "fill": "#ffffff",
+          "stroke": "#9c36b5",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": 28,
+          "radius": 4,
+          "fill": "#eebefa",
+          "stroke": "#9c36b5"
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 2,
+          "width": "100% - 36",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 34,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Pattern: ' + Pattern",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 50,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'CostPerRequest: ' + CostPerRequest",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 66,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'LatencyPerRequest: ' + LatencyPerRequest",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 82,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'MonthlyCost: ' + MonthlyCost",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M19 12l2-1-1-3-2 .5-1.5-1.5.5-2-3-1-1 2h-2l-1-2-3 1 .5 2L6 8.5 4 8l-1 3 2 1v2l-2 1 1 3 2-.5L7.5 19l-.5 2 3 1 1-2h2l1 2 3-1-.5-2 1.5-1.5 2 .5 1-3-2-1z",
+          "viewBox": [0, 0, 24, 24],
+          "x": "100% - 26",
+          "y": 4,
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "header-box",
+        "fill": "#eebefa",
+        "border": "#9c36b5",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 230,
+          "height": 126,
+          "resizable": true
+        },
+        "icon": {
+          "name": "gear"
+        },
+        "fields": [
+          "Pattern",
+          "CostPerRequest",
+          "LatencyPerRequest",
+          "MonthlyCost"
+        ]
+      }
+    },
+    "shp_tool": {
+      "id": "shp_tool",
+      "name": "Tool look",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 50,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 999,
+          "fill": "= SideEffects == 'Read only' ? '#d3f9d8' : SideEffects == 'Changes data' ? '#ffec99' : SideEffects == 'Acts outside' ? '#ffc9c9' : '#e9ecef'",
+          "stroke": "#495057",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 42,
+          "y": 4,
+          "width": "100% - 58",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 42,
+          "y": "100% - 22",
+          "width": "100% - 58",
+          "height": 18,
+          "text": "= SideEffects",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M19 12l2-1-1-3-2 .5-1.5-1.5.5-2-3-1-1 2h-2l-1-2-3 1 .5 2L6 8.5 4 8l-1 3 2 1v2l-2 1 1 3 2-.5L7.5 19l-.5 2 3 1 1-2h2l1 2 3-1-.5-2 1.5-1.5 2 .5 1-3-2-1z",
+          "viewBox": [0, 0, 24, 24],
+          "x": 14,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "pill",
+        "fill": {
+          "by": "SideEffects",
+          "values": {
+            "Read only": "#d3f9d8",
+            "Changes data": "#ffec99",
+            "Acts outside": "#ffc9c9"
+          },
+          "fallback": "#e9ecef"
+        },
+        "border": "#495057",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 170,
+          "height": 50,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "SideEffects"
+        },
+        "icon": {
+          "name": "gear"
+        }
+      }
+    },
+    "shp_retrievalpipeline": {
+      "id": "shp_retrievalpipeline",
+      "name": "RetrievalPipeline look",
+      "kind": "node",
+      "size": {
+        "width": 280,
+        "height": 620,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 6,
+          "fill": "#e7f5ff66",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5,
+          "dash": [7, 4]
+        },
+        {
+          "type": "text",
+          "x": 12,
+          "y": 4,
+          "width": "100% - 48",
+          "height": 24,
+          "text": "= Heading",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "container",
+        "fill": "#e7f5ff66",
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "dashed",
+        "title": {
+          "attribute": "Heading",
+          "bold": true
+        },
+        "size": {
+          "width": 280,
+          "height": 620,
+          "resizable": true
+        }
+      }
+    },
+    "shp_knowledgesource": {
+      "id": "shp_knowledgesource",
+      "name": "KnowledgeSource look",
+      "kind": "node",
+      "size": {
+        "width": 120,
+        "height": 80,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          [0, 0],
+          ["100% - 18", 0],
+          ["100%", 18],
+          ["100%", "100%"],
+          [0, "100%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            [0, 0],
+            ["100% - 18", 0],
+            ["100%", 18],
+            ["100%", "100%"],
+            [0, "100%"]
+          ],
+          "fill": "#a5d8ff",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "polygon",
+          "points": [
+            ["100% - 18", 0],
+            ["100% - 18", 18],
+            ["100%", 18]
+          ],
+          "fill": "#00000022",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 20,
+          "width": "100% - 16",
+          "height": "100% - 46",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 24",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= SourceType",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "document",
+        "fill": "#a5d8ff",
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 120,
+          "height": 80,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "SourceType"
+        }
+      }
+    },
+    "shp_chunking": {
+      "id": "shp_chunking",
+      "name": "Chunking look",
+      "kind": "node",
+      "size": {
+        "width": 210,
+        "height": 50,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 999,
+          "fill": "#a5d8ff",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 16,
+          "y": 4,
+          "width": "100% - 32",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 16,
+          "y": "100% - 22",
+          "width": "100% - 32",
+          "height": 18,
+          "text": "= Settings",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "pill",
+        "fill": "#a5d8ff",
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 210,
+          "height": 50,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Settings"
+        }
+      }
+    },
+    "shp_embeddingmodel": {
+      "id": "shp_embeddingmodel",
+      "name": "EmbeddingModel look",
+      "kind": "node",
+      "size": {
+        "width": 210,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          ["15%", 0],
+          ["85%", 0],
+          ["100%", "50%"],
+          ["85%", "100%"],
+          ["15%", "100%"],
+          [0, "50%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            ["15%", 0],
+            ["85%", 0],
+            ["100%", "50%"],
+            ["85%", "100%"],
+            ["15%", "100%"],
+            [0, "50%"]
+          ],
+          "fill": "#eebefa",
+          "stroke": "#9c36b5",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": "18% + 26",
+          "y": 4,
+          "width": "64% - 26",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": "18% + 26",
+          "y": "100% - 22",
+          "width": "64% - 26",
+          "height": 18,
+          "text": "= Dimensions",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 2v3 M5 7h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z M8.5 12.5h.01 M15.5 12.5h.01 M9 16h6",
+          "viewBox": [0, 0, 24, 24],
+          "x": "18% + 4",
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "hexagon",
+        "fill": "#eebefa",
+        "border": "#9c36b5",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 210,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Dimensions"
+        },
+        "icon": {
+          "name": "bot"
+        }
+      }
+    },
+    "shp_vectorindex": {
+      "id": "shp_vectorindex",
+      "name": "VectorIndex look",
+      "kind": "node",
+      "size": {
+        "width": 210,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 0,
+          "fill": "#a5d8ff",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= SimilarityMeasure",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6 M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "box",
+        "fill": "#a5d8ff",
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 210,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "SimilarityMeasure"
+        },
+        "icon": {
+          "name": "database"
+        }
+      }
+    },
+    "shp_retriever": {
+      "id": "shp_retriever",
+      "name": "Retriever look",
+      "kind": "node",
+      "size": {
+        "width": 210,
+        "height": 50,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 999,
+          "fill": "#a5d8ff",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 16,
+          "y": 4,
+          "width": "100% - 32",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 16,
+          "y": "100% - 22",
+          "width": "100% - 32",
+          "height": 18,
+          "text": "= SearchType",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "pill",
+        "fill": "#a5d8ff",
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 210,
+          "height": 50,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "SearchType"
+        }
+      }
+    },
+    "shp_reranker": {
+      "id": "shp_reranker",
+      "name": "Reranker look",
+      "kind": "node",
+      "size": {
+        "width": 210,
+        "height": 50,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 999,
+          "fill": "#a5d8ff",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 16,
+          "y": 4,
+          "width": "100% - 32",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 16,
+          "y": "100% - 22",
+          "width": "100% - 32",
+          "height": 18,
+          "text": "= Keeps",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "pill",
+        "fill": "#a5d8ff",
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 210,
+          "height": 50,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Keeps"
+        }
+      }
+    },
+    "shp_humanreview": {
+      "id": "shp_humanreview",
+      "name": "HumanReview look",
+      "kind": "node",
+      "size": {
+        "width": 90,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "ellipse",
+          "x": "50% - 16",
+          "y": 4,
+          "width": 32,
+          "height": 32,
+          "fill": "#ffd8a8",
+          "stroke": "#f08c00",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 6,
+          "y": 42,
+          "width": "100% - 12",
+          "height": "100% - 46",
+          "radius": 18,
+          "fill": "#ffd8a8",
+          "stroke": "#f08c00",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 10,
+          "y": 46,
+          "width": "100% - 20",
+          "height": "100% - 72",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 10,
+          "y": "100% - 24",
+          "width": "100% - 20",
+          "height": 18,
+          "text": "= When",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "person",
+        "fill": "#ffd8a8",
+        "border": "#f08c00",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 90,
+          "height": 110,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "When"
+        }
+      }
+    },
+    "shp_rel_handles": {
+      "id": "shp_rel_handles",
+      "name": "Handles look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#2f9e44",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#2f9e44",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_calls": {
+      "id": "shp_rel_calls",
+      "name": "Calls look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#9c36b5",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#9c36b5",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_coordinates": {
+      "id": "shp_rel_coordinates",
+      "name": "Coordinates look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#9c36b5",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "triangle"
+      },
+      "look": {
+        "colour": "#9c36b5",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "triangle",
+        "label": null
+      }
+    },
+    "shp_rel_canuse": {
+      "id": "shp_rel_canuse",
+      "name": "CanUse look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#495057",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#495057",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_retrieves": {
+      "id": "shp_rel_retrieves",
+      "name": "Retrieves look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#1c7ed6",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#1c7ed6",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_feeds": {
+      "id": "shp_rel_feeds",
+      "name": "Feeds look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#1c7ed6",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#1c7ed6",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_protects": {
+      "id": "shp_rel_protects",
+      "name": "Protects look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#e03131",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "bar"
+      },
+      "look": {
+        "colour": "#e03131",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "bar",
+        "label": null
+      }
+    },
+    "shp_rel_reviews": {
+      "id": "shp_rel_reviews",
+      "name": "Reviews look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#f08c00",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#f08c00",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    }
+  },
+  "panels": {
+    "cls_orchestration": {
+      "class": "cls_orchestration",
+      "tabs": [
+        {
+          "label": "Flow",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Pattern",
+              "control": "select"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            }
+          ]
+        },
+        {
+          "label": "Cost and latency",
+          "items": [
+            {
+              "attribute": "RequestsPerDay"
+            },
+            {
+              "attribute": "CostPerRequest"
+            },
+            {
+              "attribute": "LatencyPerRequest"
+            },
+            {
+              "attribute": "DailyCost"
+            },
+            {
+              "attribute": "MonthlyCost"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_prompt": {
+      "class": "cls_prompt",
+      "tabs": [
+        {
+          "label": "Prompt",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Version"
+            },
+            {
+              "attribute": "Owner"
+            },
+            {
+              "attribute": "Template",
+              "control": "textarea"
+            }
+          ]
+        },
+        {
+          "label": "Cost and latency",
+          "items": [
+            {
+              "attribute": "InputTokens"
+            },
+            {
+              "attribute": "OutputTokens"
+            },
+            {
+              "attribute": "CallsPerRequest"
+            },
+            {
+              "attribute": "CostPerCall"
+            },
+            {
+              "attribute": "LatencyPerCall"
+            },
+            {
+              "attribute": "CostPerRequest"
+            },
+            {
+              "attribute": "LatencyPerRequest"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_aiagent": {
+      "class": "cls_aiagent",
+      "tabs": [
+        {
+          "label": "Agent",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Autonomy",
+              "control": "segmented"
+            },
+            {
+              "attribute": "MaxSteps"
+            },
+            {
+              "attribute": "CostLimit"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            }
+          ]
+        },
+        {
+          "label": "Checks",
+          "items": [
+            {
+              "attribute": "ToolCount"
+            },
+            {
+              "attribute": "Guardrails"
+            },
+            {
+              "attribute": "CostPerRequest"
+            },
+            {
+              "attribute": "LatencyPerRequest"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    }
+  },
+  "rules": {},
+  "scripts": {}
+}

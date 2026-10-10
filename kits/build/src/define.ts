@@ -125,6 +125,19 @@ export const date = (key: string, extra: Common = {}): CatalogAttribute => ({
   label: words(key),
   ...extra,
 });
+export const bool = (key: string, extra: Common = {}): CatalogAttribute => ({
+  type: 'boolean',
+  key,
+  label: words(key),
+  ...extra,
+});
+export const link = (key: string, extra: Common = {}): CatalogAttribute => ({
+  type: 'link',
+  key,
+  label: words(key),
+  target: 'any',
+  ...extra,
+});
 /** A whole number from 1 to 5. */
 export const scale = (key: string, extra: Common = {}): CatalogAttribute => ({
   type: 'integer',
@@ -349,7 +362,11 @@ export interface KitSpec {
   folder: string;
   id: KitId;
   name: string;
-  catalog: { keys: string[]; generic?: string[] };
+  /**
+   * Catalog classes to pick. Their relation classes come along; `skipRelations` leaves out the
+   * ones that do not fit this Kit.
+   */
+  catalog: { keys: string[]; generic?: string[]; skipRelations?: string[] };
   amend?: Record<string, AmendSpec>;
   classes?: ClassSpec[];
   relations?: RelationSpec[];
@@ -448,7 +465,30 @@ export function buildKit(spec: KitSpec): Kit {
     throw new Error(
       `${spec.folder}: not in the catalog: ${missing.join(', ')}`,
     );
-  run(withStableIds(picked.batch.commands));
+  const skip = new Set(spec.catalog.skipRelations ?? []);
+  const unknown = [...skip].filter(
+    (k) => !picked.added.relations.some((r) => r.key === k),
+  );
+  if (unknown.length > 0)
+    throw new Error(
+      `${spec.folder}: these relation classes do not come with the picks: ${unknown.join(', ')}`,
+    );
+  const skippedShapes = new Set(
+    picked.batch.commands.flatMap((c) =>
+      c.type === 'putRelation' && skip.has(c.def.key) && c.def.shape
+        ? [c.def.shape]
+        : [],
+    ),
+  );
+  run(
+    withStableIds(
+      picked.batch.commands.filter(
+        (c) =>
+          !(c.type === 'putRelation' && skip.has(c.def.key)) &&
+          !(c.type === 'putShape' && skippedShapes.has(c.def.id)),
+      ),
+    ),
+  );
 
   // 2. Classes of this Kit, parents first.
   for (const c of spec.classes ?? []) {
