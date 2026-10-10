@@ -1,6 +1,7 @@
 import type { Json } from '@metakit-app/core';
 import { stringifyCanonical } from '../json';
-import { isLayoutPath, LAYOUT_PARTS, TOOL_FILE } from './layout';
+import { GIT_KIT_FILE } from '../names';
+import { isKitFile, isLayoutPath, kitFileOf, LAYOUT_PARTS } from './layout';
 import type { GitChange, GitFile } from './remote';
 
 /**
@@ -99,8 +100,13 @@ function parseJson(text: string): Json | undefined {
 }
 
 function unitsOf(files: readonly GitFile[]): Unit[] {
+  // `kit.json` and the `tool.json` of an older repository are one unit, so that the rename to
+  // `kit.json` is a move, not a removal and an addition. Only one of them is used (ADR 0011).
+  const head = kitFileOf(files);
   const byPath = new Map(
-    files.filter((f) => isLayoutPath(f.path)).map((f) => [f.path, f]),
+    files
+      .filter((f) => isLayoutPath(f.path) && (!isKitFile(f.path) || f === head))
+      .map((f) => [f.path, f]),
   );
   const units: Unit[] = [];
   const used = new Set<string>();
@@ -127,11 +133,16 @@ function unitsOf(files: readonly GitFile[]): Unit[] {
       });
       continue;
     }
-    if (
-      file.path === TOOL_FILE ||
-      !isObject(parsed) ||
-      DIR_KEY[dir] === undefined
-    ) {
+    if (isKitFile(file.path)) {
+      units.push({
+        identity: GIT_KIT_FILE,
+        path: file.path,
+        doc: parsed,
+        kind: 'json',
+      });
+      continue;
+    }
+    if (!isObject(parsed) || DIR_KEY[dir] === undefined) {
       units.push({
         identity: file.path,
         path: file.path,
@@ -283,7 +294,7 @@ function mergeValue(
     return out;
   }
 
-  // The lists of part ids in tool.json: adding on one side and removing on the other both count.
+  // The lists of part ids in kit.json: adding on one side and removing on the other both count.
   const isIdList = (v: Json | undefined): v is string[] =>
     Array.isArray(v) && v.every((x) => typeof x === 'string');
   if (
@@ -347,7 +358,7 @@ function nameOf(unit: Unit | undefined): string {
   if (!unit) return 'file';
   const dir = unit.path.split('/')[0] ?? '';
   const part = LAYOUT_PARTS.find((p) => p.dir === dir);
-  if (unit.path === TOOL_FILE) return 'tool settings';
+  if (isKitFile(unit.path)) return 'Kit settings';
   if (!part || !isObject(unit.doc)) return `file ${unit.path}`;
   const d = unit.doc;
   const pick = (k: string) =>
@@ -524,7 +535,7 @@ export interface PartChange {
   /** The file of the changed part (the new path for a rename). */
   path: string;
   change: 'added' | 'changed' | 'removed';
-  /** `class`, `shape`, `script`, `tool settings`, `asset`, ... */
+  /** `class`, `shape`, `script`, `Kit settings`, `asset`, ... */
   part: string;
   /** The key or name, empty if the part has none. */
   name: string;
@@ -538,7 +549,7 @@ const PART_WORDS: Record<string, string> = Object.fromEntries(
 
 function unitName(u: Unit): { part: string; name: string } {
   const dir = u.path.split('/')[0] ?? '';
-  if (u.path === TOOL_FILE) return { part: 'tool settings', name: '' };
+  if (isKitFile(u.path)) return { part: 'Kit settings', name: '' };
   if (dir === 'assets') return { part: 'asset', name: u.path.slice(7) };
   const part = PART_WORDS[dir];
   if (part === undefined || !isObject(u.doc))
@@ -596,16 +607,20 @@ export function describeChanges(
       jsonEqual(old.doc, u.doc) &&
       old.encoding === u.encoding;
     if (same) continue;
-    let detail = '';
+    const details: string[] = [];
+    if (old.path !== u.path) details.push(`renamed from ${old.path}`);
     if (isObject(old.doc) && isObject(u.doc)) {
       const o = old.doc;
       const n = u.doc;
-      const keys = [...new Set([...Object.keys(o), ...Object.keys(n)])]
-        .filter((k) => !jsonEqual(o[k], n[k]))
-        .sort();
-      if (keys.length > 0) detail = ` (${keys.join(', ')})`;
+      details.push(
+        ...[...new Set([...Object.keys(o), ...Object.keys(n)])]
+          .filter((k) => !jsonEqual(o[k], n[k]))
+          .sort(),
+      );
     }
-    out.push(make(u, 'changed', detail));
+    out.push(
+      make(u, 'changed', details.length > 0 ? ` (${details.join(', ')})` : ''),
+    );
   }
   for (const [id, u] of [...a].sort(([x], [y]) => (x < y ? -1 : 1)))
     if (!b.has(id)) out.push(make(u, 'removed'));

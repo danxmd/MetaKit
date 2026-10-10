@@ -8,7 +8,7 @@ import {
   type ModelStore,
   type Patch,
 } from '@metakit-app/core';
-import { emptySampleModel, sampleTool } from '@metakit-app/core/testing';
+import { emptySampleModel, sampleKit } from '@metakit-app/core/testing';
 import { HybridClock } from './clock';
 import { updateDocument } from './doc';
 import { patchesToOps, type StampedOp } from './ops';
@@ -48,7 +48,7 @@ export class Peer {
   ) {
     this.clock = new HybridClock(wall);
     const doc = freezeCopy(materialize(this.state)) as unknown as Model;
-    this.store = createModelStore(doc, { tool: sampleTool() });
+    this.store = createModelStore(doc, { kit: sampleKit() });
     this.store.subscribe((e) => {
       if (e.origin === 'remote') return;
       const patches =

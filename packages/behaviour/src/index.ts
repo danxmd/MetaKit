@@ -8,7 +8,7 @@ export * from './script-services';
 export * from './scripts-runtime';
 export * from './types-gen';
 // The engine itself (with the sandbox host and the script API) is imported by `attachScripts` only
-// when a tool has a script, so the main bundle holds types only.
+// when a Kit has a script, so the main bundle holds types only.
 export type {
   ConsoleLevel,
   ConsoleLine,

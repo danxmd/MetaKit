@@ -1,15 +1,15 @@
 import { expect, test, type Page } from '@playwright/test';
 import { newModel, prepare } from './app';
 
-/** A fresh workspace with one new tool library open in Build mode. */
-async function openNewTool(page: Page) {
+/** A fresh workspace with one new Kit open in Build mode. */
+async function openNewKit(page: Page) {
   await prepare(page, { seed: false });
   await page.getByTestId('open-folder').click();
   await page.getByRole('button', { name: 'Create workspace' }).click();
   await page.getByTestId('mode-build').click();
-  await page.getByTestId('new-tool').click();
-  await page.getByTestId('new-tool-name').fill('Coherent');
-  await page.getByTestId('new-tool-create').click();
+  await page.getByTestId('new-kit').click();
+  await page.getByTestId('new-kit-name').fill('Coherent');
+  await page.getByTestId('new-kit-create').click();
   await expect(page.getByTestId('build-view')).toBeVisible();
 }
 
@@ -21,7 +21,7 @@ async function addClass(page: Page, name: string) {
 
 test.describe('Deleting', () => {
   test('a class goes at once and Undo brings it back', async ({ page }) => {
-    await openNewTool(page);
+    await openNewKit(page);
     await addClass(page, 'Task');
     await page.getByTestId('build-item-Task').hover();
     await page.getByTestId('build-delete-Task').click();
@@ -38,7 +38,7 @@ test.describe('Deleting', () => {
   test('the Undo offer goes away once something else changes', async ({
     page,
   }) => {
-    await openNewTool(page);
+    await openNewKit(page);
     await addClass(page, 'Task');
     await page.getByTestId('build-item-Task').hover();
     await page.getByTestId('build-delete-Task').click();

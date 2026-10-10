@@ -3,13 +3,13 @@ import { ModelCalculator } from '../calc/calculator';
 import { createModelStore } from '../model/commands';
 import type { Model } from '../model/types';
 import type { Constraint } from '../meta/rule-types';
-import type { ToolLibrary } from '../meta/types';
-import { SAMPLE, emptySampleModel, sampleTool } from '../testing/sample-tool';
+import type { Kit } from '../meta/types';
+import { SAMPLE, emptySampleModel, sampleKit } from '../testing/sample-kit';
 import { validateModel } from './validate';
 
 function setup(taskConstraints: Constraint[]) {
-  const base = sampleTool();
-  const tool: ToolLibrary = {
+  const base = sampleKit();
+  const kit: Kit = {
     ...base,
     classes: {
       ...base.classes,
@@ -52,8 +52,8 @@ function setup(taskConstraints: Constraint[]) {
       },
     },
   };
-  const store = createModelStore(emptySampleModel(), { tool });
-  const calc = new ModelCalculator(tool, () => store.state as Model);
+  const store = createModelStore(emptySampleModel(), { kit });
+  const calc = new ModelCalculator(kit, () => store.state as Model);
   calc.attach(store);
   const task = (attrs: Record<string, unknown>) =>
     (
@@ -65,7 +65,7 @@ function setup(taskConstraints: Constraint[]) {
         attrs,
       } as never) as unknown as { value: string }
     ).value;
-  return { tool, store, calc, task };
+  return { kit, store, calc, task };
 }
 
 describe('constraints in validation', () => {
@@ -76,9 +76,9 @@ describe('constraints in validation', () => {
   };
 
   it('reports a violated constraint with its message on the object', () => {
-    const { tool, store, calc, task } = setup([effortConstraint]);
+    const { kit, store, calc, task } = setup([effortConstraint]);
     const t = task({ [SAMPLE.attEffort]: 0 });
-    const issues = validateModel(tool, store.state as Model, calc).filter(
+    const issues = validateModel(kit, store.state as Model, calc).filter(
       (i) => i.code === 'constraint',
     );
     expect(issues).toEqual([
@@ -94,10 +94,10 @@ describe('constraints in validation', () => {
   });
 
   it('is silent when the constraint holds, and without a calculator', () => {
-    const { tool, store, calc, task } = setup([effortConstraint]);
+    const { kit, store, calc, task } = setup([effortConstraint]);
     task({ [SAMPLE.attEffort]: 0 });
     expect(
-      validateModel(tool, store.state as Model).some(
+      validateModel(kit, store.state as Model).some(
         (i) => i.code === 'constraint',
       ),
     ).toBe(false);
@@ -108,14 +108,14 @@ describe('constraints in validation', () => {
       value: 3,
     } as never);
     expect(
-      validateModel(tool, store.state as Model, calc).some(
+      validateModel(kit, store.state as Model, calc).some(
         (i) => i.code === 'constraint',
       ),
     ).toBe(false);
   });
 
   it('evaluates a formula message and takes the severity of the constraint', () => {
-    const { tool, store, calc, task } = setup([
+    const { kit, store, calc, task } = setup([
       {
         id: 'k_msg',
         formula: 'Effort > 5',
@@ -124,7 +124,7 @@ describe('constraints in validation', () => {
       },
     ]);
     task({ [SAMPLE.attEffort]: 2 });
-    const found = validateModel(tool, store.state as Model, calc).find(
+    const found = validateModel(kit, store.state as Model, calc).find(
       (i) => i.constraint === 'k_msg',
     )!;
     expect(found.message).toBe('Effort 2 is too low');
@@ -132,7 +132,7 @@ describe('constraints in validation', () => {
   });
 
   it('checks inherited, relation and model type constraints', () => {
-    const { tool, store, calc, task } = setup([]);
+    const { kit, store, calc, task } = setup([]);
     const a = task({ [SAMPLE.attName]: '' });
     task({ [SAMPLE.attName]: 'B' });
     store.execute({
@@ -141,7 +141,7 @@ describe('constraints in validation', () => {
       from: a,
       to: a,
     } as never);
-    const codes = validateModel(tool, store.state as Model, calc)
+    const codes = validateModel(kit, store.state as Model, calc)
       .filter((i) => i.code === 'constraint')
       .map((i) => i.constraint)
       .sort();
@@ -149,11 +149,11 @@ describe('constraints in validation', () => {
   });
 
   it('reports a formula that cannot be evaluated as a warning', () => {
-    const { tool, store, calc, task } = setup([
+    const { kit, store, calc, task } = setup([
       { id: 'k_bad', formula: 'Nope > 1', message: 'Nope.' },
     ]);
     task({});
-    const issue = validateModel(tool, store.state as Model, calc).find(
+    const issue = validateModel(kit, store.state as Model, calc).find(
       (i) => i.constraint === 'k_bad',
     )!;
     expect(issue.code).toBe('formula-error');
@@ -163,21 +163,21 @@ describe('constraints in validation', () => {
   });
 
   it('names a formula attribute that fails', () => {
-    const { tool, store, calc, task } = setup([]);
+    const { kit, store, calc, task } = setup([]);
     task({ [SAMPLE.attEffort]: 1 });
-    const broken: ToolLibrary = {
-      ...tool,
+    const broken: Kit = {
+      ...kit,
       classes: {
-        ...tool.classes,
+        ...kit.classes,
         [SAMPLE.task]: {
-          ...tool.classes[SAMPLE.task]!,
-          attributes: tool.classes[SAMPLE.task]!.attributes.map((a) =>
+          ...kit.classes[SAMPLE.task]!,
+          attributes: kit.classes[SAMPLE.task]!.attributes.map((a) =>
             a.key === 'Cost' ? { ...a, formula: 'Effort / 0' } : a,
           ),
         },
       },
     };
-    calc.setTool(broken);
+    calc.setKit(broken);
     const issue = validateModel(broken, store.state as Model, calc).find(
       (i) => i.code === 'formula-error' && i.attr === SAMPLE.attCost,
     )!;

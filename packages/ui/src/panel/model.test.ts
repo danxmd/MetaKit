@@ -3,10 +3,10 @@ import {
   validateModel,
   type AttributeDef,
   type ElementId,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 import { buildPanel, type Field } from './model';
-import { loadTool, makeStore } from './testing';
+import { loadKit, makeStore } from './testing';
 
 const fieldsOf = (sections: ReturnType<typeof buildPanel>): Field[] =>
   sections.flatMap((s) => s.fields);
@@ -16,12 +16,12 @@ const byKey = (fields: Field[], key: string): Field => {
   return f;
 };
 
-describe('buildPanel with the sample tools', () => {
+describe('buildPanel with the sample Kits', () => {
   it('picks a control for every attribute type of a task', () => {
-    const { tool, store, create } = makeStore('bpmn-lite');
+    const { kit, store, create } = makeStore('bpmn-lite');
     const task = create('cls_task', { att_name: 'Write' } as never);
     const model = store.state;
-    const sections = buildPanel(tool, model, [{ id: task }], []);
+    const sections = buildPanel(kit, model, [{ id: task }], []);
     expect(sections).toHaveLength(1);
     expect(sections[0]!.title).toBeUndefined();
     const f = fieldsOf(sections);
@@ -58,60 +58,60 @@ describe('buildPanel with the sample tools', () => {
   });
 
   it('uses the language for labels and falls back to English', () => {
-    const { tool, store, create } = makeStore('bpmn-lite');
+    const { kit, store, create } = makeStore('bpmn-lite');
     const task = create('cls_task');
-    const f = fieldsOf(buildPanel(tool, store.state, [{ id: task }], [], 'de'));
+    const f = fieldsOf(buildPanel(kit, store.state, [{ id: task }], [], 'de'));
     expect(byKey(f, 'Owner').label).toBe('Verantwortlich');
     expect(byKey(f, 'Effort').label).toBe(
-      tool.classes['cls_task']!.attributes.find((a) => a.key === 'Effort')
+      kit.classes['cls_task']!.attributes.find((a) => a.key === 'Effort')
         ?.labels?.['de'] ?? 'Effort',
     );
   });
 
   it('covers the er-lite types', () => {
-    const { tool, store, create } = makeStore('er-lite');
+    const { kit, store, create } = makeStore('er-lite');
     const a = create('cls_attribute');
-    const f = fieldsOf(buildPanel(tool, store.state, [{ id: a }], []));
+    const f = fieldsOf(buildPanel(kit, store.state, [{ id: a }], []));
     expect(f.map((x) => x.control)).toEqual(['text', 'segmented', 'switch']);
   });
 
   it('shows a dash for differing values and the value when equal', () => {
-    const { tool, store, create } = makeStore('bpmn-lite');
+    const { kit, store, create } = makeStore('bpmn-lite');
     const a = create('cls_task', { att_priority: 'High' } as never);
     const b = create('cls_task', { att_priority: 'Low' } as never);
     const c = create('cls_task', { att_priority: 'High' } as never);
     const mixed = byKey(
-      fieldsOf(buildPanel(tool, store.state, [{ id: a }, { id: b }], [])),
+      fieldsOf(buildPanel(kit, store.state, [{ id: a }, { id: b }], [])),
       'Priority',
     );
     expect(mixed).toMatchObject({ mixed: true, value: undefined });
     const same = byKey(
-      fieldsOf(buildPanel(tool, store.state, [{ id: a }, { id: c }], [])),
+      fieldsOf(buildPanel(kit, store.state, [{ id: a }, { id: c }], [])),
       'Priority',
     );
     expect(same).toMatchObject({ mixed: false, value: 'High' });
   });
 
   it('treats set and unset as different', () => {
-    const { tool, store, create } = makeStore('bpmn-lite');
+    const { kit, store, create } = makeStore('bpmn-lite');
     const a = create('cls_task', { att_priority: 'High' } as never);
     const b = create('cls_task');
     const f = byKey(
-      fieldsOf(buildPanel(tool, store.state, [{ id: a }, { id: b }], [])),
+      fieldsOf(buildPanel(kit, store.state, [{ id: a }, { id: b }], [])),
       'Priority',
     );
     expect(f.mixed).toBe(true);
   });
 
   it('shows only attributes common to all classes', () => {
-    const { tool, store, create } = makeStore('bpmn-lite');
+    const { kit, store, create } = makeStore('bpmn-lite');
     const task = create('cls_task');
     const gw = create('cls_gateway');
     const lane = create('cls_lane');
     const keys = (ids: ElementId[]) =>
       fieldsOf(
         buildPanel(
-          tool,
+          kit,
           store.state,
           ids.map((id) => ({ id })),
           [],
@@ -120,12 +120,12 @@ describe('buildPanel with the sample tools', () => {
     expect(keys([task, gw])).toEqual(['Name', 'Description']);
     expect(keys([task, lane])).toEqual([]);
     expect(
-      buildPanel(tool, store.state, [{ id: task }, { id: lane }], []),
+      buildPanel(kit, store.state, [{ id: task }, { id: lane }], []),
     ).toEqual([]);
   });
 
   it('puts validation messages on the right field', () => {
-    const { tool, store, create } = makeStore('bpmn-lite');
+    const { kit, store, create } = makeStore('bpmn-lite');
     const a = create('cls_task');
     const b = create('cls_task', { att_name: 'ok' } as never);
     // New tasks get the default name, so clear it to make the required rule fire.
@@ -135,16 +135,16 @@ describe('buildPanel with the sample tools', () => {
       attr: 'att_name',
       value: null,
     });
-    const issues = validateModel(tool, store.state);
-    const f = fieldsOf(buildPanel(tool, store.state, [{ id: a }], issues));
+    const issues = validateModel(kit, store.state);
+    const f = fieldsOf(buildPanel(kit, store.state, [{ id: a }], issues));
     expect(byKey(f, 'Name').issues).toHaveLength(1);
     expect(byKey(f, 'Name').issues[0]).toContain('required');
     expect(byKey(f, 'Description').issues).toEqual([]);
-    const other = fieldsOf(buildPanel(tool, store.state, [{ id: b }], issues));
+    const other = fieldsOf(buildPanel(kit, store.state, [{ id: b }], issues));
     expect(byKey(other, 'Name').issues).toEqual([]);
     // Issues without an attribute never show on a field.
     const loose = buildPanel(
-      tool,
+      kit,
       store.state,
       [{ id: a }],
       [{ id: a, severity: 'error', code: 'x', message: 'general' }],
@@ -153,7 +153,7 @@ describe('buildPanel with the sample tools', () => {
   });
 
   it('supports connectors, and rejects mixing with elements', () => {
-    const { tool, store, create } = makeStore('bpmn-lite');
+    const { kit, store, create } = makeStore('bpmn-lite');
     const a = create('cls_task');
     const b = create('cls_task');
     const r = store.execute({
@@ -164,21 +164,21 @@ describe('buildPanel with the sample tools', () => {
     });
     if (!r.ok) throw new Error('cancelled');
     const cn = r.value as never;
-    const f = fieldsOf(buildPanel(tool, store.state, [{ id: cn }], []));
+    const f = fieldsOf(buildPanel(kit, store.state, [{ id: cn }], []));
     expect(f.map((x) => x.attr.key)).toEqual(['Condition']);
-    expect(buildPanel(tool, store.state, [{ id: cn }, { id: a }], [])).toEqual(
+    expect(buildPanel(kit, store.state, [{ id: cn }, { id: a }], [])).toEqual(
       [],
     );
   });
 
   it('is empty for no targets, missing targets and unknown classes', () => {
-    const { tool, store, create } = makeStore('bpmn-lite');
-    expect(buildPanel(tool, store.state, [], [])).toEqual([]);
-    expect(buildPanel(tool, store.state, [{ id: 'el_nothere' }], [])).toEqual(
+    const { kit, store, create } = makeStore('bpmn-lite');
+    expect(buildPanel(kit, store.state, [], [])).toEqual([]);
+    expect(buildPanel(kit, store.state, [{ id: 'el_nothere' }], [])).toEqual(
       [],
     );
     const a = create('cls_task');
-    const other = loadTool('er-lite');
+    const other = loadKit('er-lite');
     expect(buildPanel(other, store.state, [{ id: a }], [])).toEqual([]);
   });
 });
@@ -212,12 +212,12 @@ describe('buildPanel controls and sections', () => {
     },
     { id: 'att_h', key: 'H', type: 'boolean' },
   ];
-  const tool = loadTool('bpmn-lite');
-  const custom: ToolLibrary = {
-    ...tool,
+  const kit = loadKit('bpmn-lite');
+  const custom: Kit = {
+    ...kit,
     classes: {
-      ...tool.classes,
-      cls_task: { ...tool.classes['cls_task']!, attributes: attrs },
+      ...kit.classes,
+      cls_task: { ...kit.classes['cls_task']!, attributes: attrs },
     },
   };
 

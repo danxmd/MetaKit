@@ -1,0 +1,457 @@
+{
+  "attributes": {
+    "Architect": "Enterprise architect",
+    "Organisation": "A regional food wholesaler",
+    "Title": "Online ordering"
+  },
+  "connectors": [
+    {
+      "from": "el_act_customer",
+      "id": "cn_001",
+      "relation": "Triggers",
+      "to": "el_p_take"
+    },
+    {
+      "from": "el_p_take",
+      "id": "cn_002",
+      "relation": "Triggers",
+      "to": "el_p_pick"
+    },
+    {
+      "from": "el_p_pick",
+      "id": "cn_003",
+      "relation": "Triggers",
+      "to": "el_p_deliver"
+    },
+    {
+      "from": "el_p_take",
+      "id": "cn_004",
+      "relation": "Realises",
+      "to": "el_svc_ordering"
+    },
+    {
+      "from": "el_svc_ordering",
+      "id": "cn_005",
+      "relation": "Serves",
+      "to": "el_act_customer"
+    },
+    {
+      "from": "el_act_warehouse",
+      "id": "cn_006",
+      "relation": "AssignedTo",
+      "to": "el_role_picker"
+    },
+    {
+      "from": "el_role_picker",
+      "id": "cn_007",
+      "relation": "AssignedTo",
+      "to": "el_p_pick"
+    },
+    {
+      "from": "el_as_orders",
+      "id": "cn_008",
+      "relation": "Serves",
+      "to": "el_p_take"
+    },
+    {
+      "from": "el_ac_orders",
+      "id": "cn_009",
+      "relation": "Realises",
+      "to": "el_as_orders"
+    },
+    {
+      "from": "el_ac_orders",
+      "id": "cn_010",
+      "relation": "Realises",
+      "to": "el_if_api"
+    },
+    {
+      "from": "el_if_api",
+      "id": "cn_011",
+      "relation": "Serves",
+      "to": "el_ac_shop"
+    },
+    {
+      "from": "el_ac_warehouse",
+      "id": "cn_012",
+      "relation": "Serves",
+      "to": "el_p_pick"
+    },
+    {
+      "attributes": {
+        "What": "Orders to pick"
+      },
+      "from": "el_ac_orders",
+      "id": "cn_013",
+      "relation": "FlowsTo",
+      "to": "el_ac_warehouse"
+    },
+    {
+      "attributes": {
+        "Access": "Writes"
+      },
+      "from": "el_ac_orders",
+      "id": "cn_014",
+      "relation": "Accesses",
+      "to": "el_do_order"
+    },
+    {
+      "attributes": {
+        "Access": "Reads and writes"
+      },
+      "from": "el_ac_warehouse",
+      "id": "cn_015",
+      "relation": "Accesses",
+      "to": "el_do_stock"
+    },
+    {
+      "from": "el_n_cloud",
+      "id": "cn_016",
+      "relation": "AssignedTo",
+      "to": "el_ac_shop"
+    },
+    {
+      "from": "el_n_cloud",
+      "id": "cn_017",
+      "relation": "AssignedTo",
+      "to": "el_ac_orders"
+    },
+    {
+      "from": "el_ss_db",
+      "id": "cn_018",
+      "relation": "Serves",
+      "to": "el_ac_orders"
+    },
+    {
+      "from": "el_n_cloud",
+      "id": "cn_019",
+      "relation": "AssignedTo",
+      "to": "el_ss_db"
+    },
+    {
+      "from": "el_n_server",
+      "id": "cn_020",
+      "relation": "AssignedTo",
+      "to": "el_ac_warehouse"
+    },
+    {
+      "from": "el_n_cloud",
+      "id": "cn_021",
+      "relation": "ConnectedTo",
+      "to": "el_net_internet"
+    },
+    {
+      "from": "el_n_server",
+      "id": "cn_022",
+      "relation": "ConnectedTo",
+      "to": "el_net_lan"
+    }
+  ],
+  "elements": [
+    {
+      "attributes": {
+        "Kind": "Business",
+        "Name": "Business"
+      },
+      "class": "Layer",
+      "h": 250,
+      "id": "el_lay_business",
+      "w": 1300,
+      "x": 20,
+      "y": 20
+    },
+    {
+      "attributes": {
+        "Kind": "Outside party",
+        "Name": "Customer"
+      },
+      "class": "BusinessActor",
+      "h": 110,
+      "id": "el_act_customer",
+      "parent": "el_lay_business",
+      "w": 90,
+      "x": 80,
+      "y": 90
+    },
+    {
+      "attributes": {
+        "Consumers": "Shops and restaurants",
+        "Name": "Online ordering"
+      },
+      "class": "BusinessService",
+      "h": 50,
+      "id": "el_svc_ordering",
+      "parent": "el_lay_business",
+      "w": 170,
+      "x": 240,
+      "y": 50
+    },
+    {
+      "attributes": {
+        "Name": "Take order",
+        "Owner": "Sales manager"
+      },
+      "class": "BusinessProcess",
+      "h": 70,
+      "id": "el_p_take",
+      "parent": "el_lay_business",
+      "w": 150,
+      "x": 260,
+      "y": 160
+    },
+    {
+      "attributes": {
+        "Name": "Pick and pack",
+        "Owner": "Warehouse manager"
+      },
+      "class": "BusinessProcess",
+      "h": 70,
+      "id": "el_p_pick",
+      "parent": "el_lay_business",
+      "w": 150,
+      "x": 560,
+      "y": 160
+    },
+    {
+      "attributes": {
+        "Name": "Deliver order",
+        "Owner": "Transport manager"
+      },
+      "class": "BusinessProcess",
+      "h": 70,
+      "id": "el_p_deliver",
+      "parent": "el_lay_business",
+      "w": 150,
+      "x": 860,
+      "y": 160
+    },
+    {
+      "attributes": {
+        "Name": "Order picker"
+      },
+      "class": "Role",
+      "h": 44,
+      "id": "el_role_picker",
+      "parent": "el_lay_business",
+      "w": 160,
+      "x": 565,
+      "y": 50
+    },
+    {
+      "attributes": {
+        "Kind": "Team",
+        "Name": "Warehouse team"
+      },
+      "class": "BusinessActor",
+      "h": 110,
+      "id": "el_act_warehouse",
+      "parent": "el_lay_business",
+      "w": 90,
+      "x": 800,
+      "y": 30
+    },
+    {
+      "attributes": {
+        "Kind": "Application",
+        "Name": "Application"
+      },
+      "class": "Layer",
+      "h": 250,
+      "id": "el_lay_app",
+      "w": 1300,
+      "x": 20,
+      "y": 300
+    },
+    {
+      "attributes": {
+        "Name": "Order handling"
+      },
+      "class": "ApplicationService",
+      "h": 50,
+      "id": "el_as_orders",
+      "parent": "el_lay_app",
+      "w": 170,
+      "x": 260,
+      "y": 320
+    },
+    {
+      "attributes": {
+        "Hosting": "Cloud",
+        "Lifecycle": "Invest",
+        "Name": "Web shop",
+        "Owner": "Head of e-commerce",
+        "Users": 1200
+      },
+      "class": "ApplicationComponent",
+      "h": 70,
+      "id": "el_ac_shop",
+      "parent": "el_lay_app",
+      "w": 170,
+      "x": 60,
+      "y": 430
+    },
+    {
+      "attributes": {
+        "Direction": "Inbound",
+        "Format": "JSON over HTTPS",
+        "Name": "Order API"
+      },
+      "class": "Interface",
+      "h": 56,
+      "id": "el_if_api",
+      "parent": "el_lay_app",
+      "w": 150,
+      "x": 280,
+      "y": 440
+    },
+    {
+      "attributes": {
+        "Hosting": "Cloud",
+        "Lifecycle": "Invest",
+        "Name": "Order management",
+        "Owner": "Head of sales operations",
+        "Users": 60
+      },
+      "class": "ApplicationComponent",
+      "h": 70,
+      "id": "el_ac_orders",
+      "parent": "el_lay_app",
+      "w": 170,
+      "x": 490,
+      "y": 430
+    },
+    {
+      "attributes": {
+        "Hosting": "On-premises",
+        "Lifecycle": "Retire",
+        "Name": "Old warehouse system",
+        "Owner": "Warehouse manager",
+        "Users": 40
+      },
+      "class": "ApplicationComponent",
+      "h": 70,
+      "id": "el_ac_warehouse",
+      "parent": "el_lay_app",
+      "w": 170,
+      "x": 860,
+      "y": 430
+    },
+    {
+      "attributes": {
+        "Classification": "Internal",
+        "Name": "Order"
+      },
+      "class": "DataObject",
+      "h": 80,
+      "id": "el_do_order",
+      "parent": "el_lay_app",
+      "w": 140,
+      "x": 700,
+      "y": 350
+    },
+    {
+      "attributes": {
+        "Classification": "Internal",
+        "Name": "Stock level"
+      },
+      "class": "DataObject",
+      "h": 80,
+      "id": "el_do_stock",
+      "parent": "el_lay_app",
+      "w": 140,
+      "x": 1110,
+      "y": 430
+    },
+    {
+      "attributes": {
+        "Kind": "Technology",
+        "Name": "Technology"
+      },
+      "class": "Layer",
+      "h": 230,
+      "id": "el_lay_tech",
+      "w": 1300,
+      "x": 20,
+      "y": 580
+    },
+    {
+      "attributes": {
+        "Environment": "Production",
+        "Kind": "Cloud service",
+        "Name": "Cloud hosting"
+      },
+      "class": "Node",
+      "h": 70,
+      "id": "el_n_cloud",
+      "parent": "el_lay_tech",
+      "w": 170,
+      "x": 260,
+      "y": 610
+    },
+    {
+      "attributes": {
+        "Kind": "Database",
+        "Name": "Order database",
+        "Version": "16"
+      },
+      "class": "SystemSoftware",
+      "h": 70,
+      "id": "el_ss_db",
+      "parent": "el_lay_tech",
+      "w": 170,
+      "x": 490,
+      "y": 610
+    },
+    {
+      "attributes": {
+        "Environment": "Production",
+        "Kind": "Physical server",
+        "Location": "Main warehouse",
+        "Name": "Warehouse server"
+      },
+      "class": "Node",
+      "h": 70,
+      "id": "el_n_server",
+      "parent": "el_lay_tech",
+      "w": 170,
+      "x": 860,
+      "y": 610
+    },
+    {
+      "attributes": {
+        "Kind": "Internet",
+        "Name": "Internet"
+      },
+      "class": "Network",
+      "h": 54,
+      "id": "el_net_internet",
+      "parent": "el_lay_tech",
+      "w": 180,
+      "x": 255,
+      "y": 735
+    },
+    {
+      "attributes": {
+        "Kind": "Local network",
+        "Name": "Warehouse network"
+      },
+      "class": "Network",
+      "h": 54,
+      "id": "el_net_lan",
+      "parent": "el_lay_tech",
+      "w": 180,
+      "x": 855,
+      "y": 735
+    }
+  ],
+  "formatVersion": 2,
+  "id": "mdl_onlineordering",
+  "kind": "mkmodel",
+  "kit": {
+    "id": "kit_enterprisearch",
+    "name": "Enterprise architecture",
+    "version": "1.0.0"
+  },
+  "modelType": "Architecture",
+  "name": "Online ordering"
+}

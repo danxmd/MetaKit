@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { generateDeclarations } from '@metakit-app/behaviour';
-import { sampleTool } from '@metakit-app/core/testing';
+import { sampleKit } from '@metakit-app/core/testing';
 import {
   createLanguageClient,
   type LanguageRequest,
@@ -63,7 +63,7 @@ describe('the language client', () => {
       }
     });
     const client = createLanguageClient(worker);
-    await client.declarations(generateDeclarations(sampleTool()));
+    await client.declarations(generateDeclarations(sampleKit()));
     expect(
       await client.diagnostics(
         'import { model } from "metakit";\nmodel.objects("Nope");',

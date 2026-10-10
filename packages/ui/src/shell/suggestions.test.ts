@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import type { ElementId, Model, ToolLibrary } from '@metakit-app/core';
+import type { ElementId, Model, Kit } from '@metakit-app/core';
 import { importMkModel } from '@metakit-app/storage';
 import { hintFor } from './interaction-hints';
 import {
@@ -14,18 +14,18 @@ import {
 const file = (name: string) =>
   readFileSync(
     fileURLToPath(
-      new URL(`../../../../tools/agent-pipeline/${name}`, import.meta.url),
+      new URL(`../../../../kits/agent-pipeline/${name}`, import.meta.url),
     ),
     'utf8',
   );
-const tool = JSON.parse(file('tool.json')) as ToolLibrary;
-const model: Model = importMkModel(tool, file('code-review.mkmodel.json'));
-const modelType = tool.modelTypes[model.manifest.modelType]!;
+const kit = JSON.parse(file('kit.json')) as Kit;
+const model: Model = importMkModel(kit, file('code-review.mkmodel.json'));
+const modelType = kit.modelTypes[model.manifest.modelType]!;
 
 const cls = (key: string) =>
-  Object.values(tool.classes).find((c) => c.key === key)!;
+  Object.values(kit.classes).find((c) => c.key === key)!;
 const rel = (key: string) =>
-  Object.values(tool.relations).find((r) => r.key === key)!;
+  Object.values(kit.relations).find((r) => r.key === key)!;
 const elementNamed = (name: string): ElementId =>
   Object.values(model.elements).find((e) =>
     Object.values(e.attrs).includes(name as never),
@@ -33,7 +33,7 @@ const elementNamed = (name: string): ElementId =>
 
 describe('suggestConnections', () => {
   const groups = suggestConnections(
-    tool,
+    kit,
     modelType,
     model,
     elementNamed('Implement'),
@@ -68,9 +68,9 @@ describe('suggestConnections', () => {
     ).not.toContain(elementNamed('Implement'));
   });
 
-  it('follows the tool: an artifact connects to a task or a gate, not to another artifact', () => {
+  it('follows the Kit: an artifact connects to a task or a gate, not to another artifact', () => {
     const forArtifact = suggestConnections(
-      tool,
+      kit,
       modelType,
       model,
       elementNamed('Patch'),
@@ -91,7 +91,7 @@ describe('suggestConnections', () => {
   it('respects the relations of a view', () => {
     const only = new Set([rel('Produces').id]);
     const limited = suggestConnections(
-      tool,
+      kit,
       modelType,
       model,
       elementNamed('Implement'),
@@ -102,19 +102,17 @@ describe('suggestConnections', () => {
 
   it('gives nothing for an element that is not there', () => {
     expect(
-      suggestConnections(tool, modelType, model, 'el_missing' as ElementId),
+      suggestConnections(kit, modelType, model, 'el_missing' as ElementId),
     ).toEqual([]);
   });
 });
 
 describe('describeEnds', () => {
   it('says what a relation connects', () => {
-    expect(describeEnds(tool, rel('Performs'))).toBe(
+    expect(describeEnds(kit, rel('Performs'))).toBe(
       'Performs connects an Actor to a Task.',
     );
-    expect(describeEnds(tool, rel('HandsOverTo'))).toContain(
-      'a Task or a Gate',
-    );
+    expect(describeEnds(kit, rel('HandsOverTo'))).toContain('a Task or a Gate');
   });
 });
 
@@ -145,27 +143,27 @@ describe('spotBeside', () => {
 describe('hintFor', () => {
   it('says what a chosen relation connects and why a drop was refused', () => {
     expect(
-      hintFor(tool, {
+      hintFor(kit, {
         kind: 'connect',
         relation: rel('Performs'),
         picked: false,
       }),
     ).toContain('Performs connects an Actor to a Task');
     expect(
-      hintFor(tool, {
+      hintFor(kit, {
         kind: 'connect',
         relation: rel('Performs'),
         picked: true,
       }),
     ).toContain('where the Performs should end');
-    expect(hintFor(tool, { kind: 'refused', reason: 'Not allowed.' })).toBe(
+    expect(hintFor(kit, { kind: 'refused', reason: 'Not allowed.' })).toBe(
       'Not allowed.',
     );
-    expect(hintFor(tool, { kind: 'place', class: cls('Task') })).toContain(
+    expect(hintFor(kit, { kind: 'place', class: cls('Task') })).toContain(
       'place a Task',
     );
     expect(
-      hintFor(tool, { kind: 'palette-class', class: cls('Gate') }),
+      hintFor(kit, { kind: 'palette-class', class: cls('Gate') }),
     ).toContain('Gate can be connected with');
   });
 });

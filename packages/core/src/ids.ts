@@ -1,6 +1,6 @@
 /** Kind prefixes of stable identifiers. `mdl_` and `vw_` extend the list in CLAUDE.md. */
 export const ID_PREFIXES = {
-  tool: 'tool',
+  kit: 'kit',
   class: 'cls',
   relation: 'rel',
   attribute: 'att',
@@ -16,7 +16,18 @@ export const ID_PREFIXES = {
 
 export type IdKind = keyof typeof ID_PREFIXES;
 
-export type ToolId = `tool_${string}`;
+/**
+ * Prefixes that ids of a kind had in earlier releases. They stay valid forever, because ids are
+ * never rewritten: a Kit made before the Kit rename keeps its `tool_` id (ADR 0011).
+ */
+export const OLDER_ID_PREFIXES: Readonly<
+  Partial<Record<IdKind, readonly string[]>>
+> = {
+  kit: ['tool'],
+};
+
+/** A Kit id: `kit_…`, or `tool_…` for a Kit made before the Kit rename. */
+export type KitId = `kit_${string}` | `tool_${string}`;
 export type ClassId = `cls_${string}`;
 export type RelationId = `rel_${string}`;
 export type AttributeId = `att_${string}`;
@@ -63,14 +74,16 @@ export function idKind(id: string): IdKind | null {
   for (const [kind, p] of Object.entries(ID_PREFIXES)) {
     if (p === prefix) return kind as IdKind;
   }
+  for (const [kind, older] of Object.entries(OLDER_ID_PREFIXES)) {
+    if (older.includes(prefix)) return kind as IdKind;
+  }
   return null;
 }
 
-/** True when `id` has the prefix of `kind` and something after it. */
+/** True when `id` has the prefix of `kind` (or one it had earlier) and something after it. */
 export function isId(kind: IdKind, id: unknown): boolean {
-  return (
-    typeof id === 'string' &&
-    id.startsWith(`${ID_PREFIXES[kind]}_`) &&
-    id.length > ID_PREFIXES[kind].length + 1
+  if (typeof id !== 'string') return false;
+  return [ID_PREFIXES[kind], ...(OLDER_ID_PREFIXES[kind] ?? [])].some(
+    (prefix) => id.startsWith(`${prefix}_`) && id.length > prefix.length + 1,
   );
 }

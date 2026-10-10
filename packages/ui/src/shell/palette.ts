@@ -5,7 +5,7 @@ import {
   type ClassDef,
   type ModelTypeDef,
   type RelationDef,
-  type ToolLibrary,
+  type Kit,
   type ViewDef,
   type ViewId,
 } from '@metakit-app/core';
@@ -38,7 +38,7 @@ export function labelOf(
  * type without views, everything the model type allows is offered.
  */
 export function paletteFor(
-  tool: ToolLibrary,
+  kit: Kit,
   modelType: ModelTypeDef,
   viewId: ViewId | null = null,
   language = 'en',
@@ -46,22 +46,22 @@ export function paletteFor(
   const view = viewId
     ? modelType.views.find((v) => v.id === viewId)
     : undefined;
-  const classes = Object.values(tool.classes)
+  const classes = Object.values(kit.classes)
     .filter(
       (c) =>
         !c.abstract &&
-        modelTypeAllowsClass(tool, modelType, c.id) &&
-        (!view || view.classes.some((listed) => isA(tool, c.id, listed))),
+        modelTypeAllowsClass(kit, modelType, c.id) &&
+        (!view || view.classes.some((listed) => isA(kit, c.id, listed))),
     )
     .sort((a, b) => labelOf(a, language).localeCompare(labelOf(b, language)));
-  const relations = Object.values(tool.relations)
+  const relations = Object.values(kit.relations)
     .filter(
       (r) =>
         !r.abstract &&
-        modelTypeAllowsRelation(tool, modelType, r.id) &&
+        modelTypeAllowsRelation(kit, modelType, r.id) &&
         (!view ||
           view.relations.includes(r.id) ||
-          view.relations.some((v) => isRelationOf(tool, r, v))),
+          view.relations.some((v) => isRelationOf(kit, r, v))),
     )
     .sort((a, b) => labelOf(a, language).localeCompare(labelOf(b, language)));
   return {
@@ -73,14 +73,14 @@ export function paletteFor(
 }
 
 function isRelationOf(
-  tool: ToolLibrary,
+  kit: Kit,
   relation: RelationDef,
   ancestor: string,
 ): boolean {
   let current: RelationDef | undefined = relation;
   for (let depth = 0; current && depth < 50; depth++) {
     if (current.id === ancestor) return true;
-    current = current.extends ? tool.relations[current.extends] : undefined;
+    current = current.extends ? kit.relations[current.extends] : undefined;
   }
   return false;
 }

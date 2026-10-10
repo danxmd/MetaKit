@@ -6,11 +6,7 @@ import {
   type Model,
   type ModelStore,
 } from '@metakit-app/core';
-import {
-  SAMPLE,
-  emptySampleModel,
-  sampleTool,
-} from '@metakit-app/core/testing';
+import { SAMPLE, emptySampleModel, sampleKit } from '@metakit-app/core/testing';
 import { MemoryFolder } from './memory-adapter';
 import { loadDocument } from './scanner';
 import { SyncSession, writeNewDocument } from './session';
@@ -116,7 +112,7 @@ describe('sessions on one folder', () => {
                 snapshotMs: 1_000_000,
               },
               (d) =>
-                createModelStore(d as unknown as Model, { tool: sampleTool() }),
+                createModelStore(d as unknown as Model, { kit: sampleKit() }),
             );
           const live: { session: SyncSession; store: ModelStore }[] = [];
           for (const id of IDS) live.push(await open(id));

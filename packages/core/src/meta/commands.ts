@@ -6,7 +6,7 @@ import {
   type AttributeId,
   type ShapeId,
 } from '../ids';
-import { formatIssues, validateAttribute, validateToolLibrary } from './guards';
+import { formatIssues, validateAttribute, validateKit } from './guards';
 import {
   keyProblem,
   ownerDef,
@@ -18,7 +18,7 @@ import {
 } from './keys';
 import type { Constraint, Rule, RuleId } from './rule-types';
 import { MAX_SCRIPT_CHARS } from './script-guards';
-import type { Script, ScriptId, ToolPermissions } from './script-types';
+import type { Script, ScriptId, KitPermissions } from './script-types';
 import type { PanelLayout, ShapeDef } from './shape-types';
 import {
   DocumentStore,
@@ -31,24 +31,24 @@ import type {
   ClassDef,
   ModelTypeDef,
   RelationDef,
-  ToolLibrary,
-  ToolManifest,
-  ToolSettings,
+  Kit,
+  KitManifest,
+  KitSettings,
 } from './types';
 
-export type ToolCommand =
+export type KitCommand =
   | {
       type: 'updateManifest';
       name?: string;
       version?: string;
       languages?: string[];
-      permissions?: ToolPermissions;
+      permissions?: KitPermissions;
     }
   | {
       type: 'updateSettings';
-      grid?: Partial<ToolSettings['grid']>;
-      layers?: ToolSettings['layers'];
-      numbering?: Partial<ToolSettings['numbering']>;
+      grid?: Partial<KitSettings['grid']>;
+      layers?: KitSettings['layers'];
+      numbering?: Partial<KitSettings['numbering']>;
     }
   | { type: 'putClass'; def: ClassDef }
   | { type: 'putRelation'; def: RelationDef }
@@ -82,22 +82,22 @@ export type ToolCommand =
   | { type: 'putPanel'; layout: PanelLayout }
   | { type: 'removePanel'; id: ClassId | RelationId };
 
-export type ToolCommandOrBatch = ToolCommand | BatchCommand<ToolCommand>;
+export type KitCommandOrBatch = KitCommand | BatchCommand<KitCommand>;
 
 const nameOf = (x: { key: string }) => `"${x.key}"`;
 
 /** Who still uses a class, so that removing it can be refused with a useful message. */
-function classUsers(tool: ToolLibrary, id: ClassId): string[] {
+function classUsers(kit: Kit, id: ClassId): string[] {
   const users: string[] = [];
-  for (const c of Object.values(tool.classes))
+  for (const c of Object.values(kit.classes))
     if (c.extends === id) users.push(`class ${nameOf(c)} extends it`);
-  for (const r of Object.values(tool.relations)) {
+  for (const r of Object.values(kit.relations)) {
     if (r.from.includes(id))
       users.push(`relation class ${nameOf(r)} allows it at FROM`);
     if (r.to.includes(id))
       users.push(`relation class ${nameOf(r)} allows it at TO`);
   }
-  for (const m of Object.values(tool.modelTypes)) {
+  for (const m of Object.values(kit.modelTypes)) {
     if (m.classes.includes(id)) users.push(`model type ${nameOf(m)} allows it`);
     for (const v of m.views)
       if (v.classes.includes(id))
@@ -112,11 +112,11 @@ function classUsers(tool: ToolLibrary, id: ClassId): string[] {
   return users;
 }
 
-function relationUsers(tool: ToolLibrary, id: RelationId): string[] {
+function relationUsers(kit: Kit, id: RelationId): string[] {
   const users: string[] = [];
-  for (const r of Object.values(tool.relations))
+  for (const r of Object.values(kit.relations))
     if (r.extends === id) users.push(`relation class ${nameOf(r)} extends it`);
-  for (const m of Object.values(tool.modelTypes)) {
+  for (const m of Object.values(kit.modelTypes)) {
     if (m.relations.includes(id))
       users.push(`model type ${nameOf(m)} allows it`);
     for (const v of m.views)
@@ -130,13 +130,13 @@ function relationUsers(tool: ToolLibrary, id: RelationId): string[] {
 }
 
 /** Who still uses a shape, so that removing it can be refused with a useful message. */
-function shapeUsers(tool: ToolLibrary, id: ShapeId): string[] {
+function shapeUsers(kit: Kit, id: ShapeId): string[] {
   const users: string[] = [];
-  for (const c of Object.values(tool.classes))
+  for (const c of Object.values(kit.classes))
     if (c.shape === id) users.push(`class ${nameOf(c)} draws with it`);
-  for (const r of Object.values(tool.relations))
+  for (const r of Object.values(kit.relations))
     if (r.shape === id) users.push(`relation class ${nameOf(r)} draws with it`);
-  for (const m of Object.values(tool.modelTypes))
+  for (const m of Object.values(kit.modelTypes))
     if (m.background === id)
       users.push(`model type ${nameOf(m)} uses it as background`);
   const uses = (
@@ -147,7 +147,7 @@ function shapeUsers(tool: ToolLibrary, id: ShapeId): string[] {
         (p.type === 'use' && p.shape === id) ||
         (p.type === 'group' && uses((p.parts ?? []) as never)),
     );
-  for (const s of Object.values(tool.shapes ?? {}))
+  for (const s of Object.values(kit.shapes ?? {}))
     if (
       s.kind === 'node' &&
       (uses(s.parts as never) ||
@@ -181,7 +181,7 @@ function pruneItems(nodes: PanelNode[], key: string): PanelNode[] {
 }
 
 function put<D extends { id: string }>(
-  tx: Tx<ToolLibrary>,
+  tx: Tx<Kit>,
   table: 'classes' | 'relations' | 'modelTypes' | 'shapes',
   prefix: 'class' | 'relation' | 'modelType' | 'shape',
   def: D,
@@ -194,11 +194,11 @@ function put<D extends { id: string }>(
   tx.set([table, def.id], def);
 }
 
-function applyToolCommand(tx: Tx<ToolLibrary>, command: ToolCommand): unknown {
-  const tool = tx.view;
+function applyKitCommand(tx: Tx<Kit>, command: KitCommand): unknown {
+  const kit = tx.view;
   switch (command.type) {
     case 'updateManifest': {
-      const patch: Partial<ToolManifest> = {};
+      const patch: Partial<KitManifest> = {};
       if (command.name !== undefined) patch.name = command.name;
       if (command.version !== undefined) patch.version = command.version;
       if (command.languages !== undefined) patch.languages = command.languages;
@@ -226,10 +226,10 @@ function applyToolCommand(tx: Tx<ToolLibrary>, command: ToolCommand): unknown {
       put(tx, 'modelTypes', 'modelType', command.def, 'model type');
       return command.def.id;
     case 'removeClass': {
-      const def = tool.classes[command.id];
+      const def = kit.classes[command.id];
       if (!def)
         throw new CommandError(`The class ${command.id} does not exist.`);
-      const users = classUsers(tool, command.id);
+      const users = classUsers(kit, command.id);
       if (users.length > 0)
         throw new CommandError(
           `The class ${nameOf(def)} is still in use: ${users.join('; ')}.`,
@@ -238,12 +238,12 @@ function applyToolCommand(tx: Tx<ToolLibrary>, command: ToolCommand): unknown {
       return undefined;
     }
     case 'removeRelation': {
-      const def = tool.relations[command.id];
+      const def = kit.relations[command.id];
       if (!def)
         throw new CommandError(
           `The relation class ${command.id} does not exist.`,
         );
-      const users = relationUsers(tool, command.id);
+      const users = relationUsers(kit, command.id);
       if (users.length > 0)
         throw new CommandError(
           `The relation class ${nameOf(def)} is still in use: ${users.join('; ')}.`,
@@ -252,25 +252,25 @@ function applyToolCommand(tx: Tx<ToolLibrary>, command: ToolCommand): unknown {
       return undefined;
     }
     case 'removeModelType': {
-      if (!tool.modelTypes[command.id])
+      if (!kit.modelTypes[command.id])
         throw new CommandError(`The model type ${command.id} does not exist.`);
       tx.remove(['modelTypes', command.id]);
       return undefined;
     }
     case 'renameKey': {
-      const plan = planKeyRename(tool, command.scope, command.newKey);
+      const plan = planKeyRename(kit, command.scope, command.newKey);
       if ('error' in plan) throw new CommandError(plan.error);
       for (const change of plan.changes) tx.set(change.path, change.value);
       return plan.usages;
     }
     case 'putAttribute': {
-      const def = ownerDef(tool, command.owner);
+      const def = ownerDef(kit, command.owner);
       if (!def)
         throw new CommandError(
           'That class, relation class or model type does not exist.',
         );
       const attr = command.def;
-      const issues = validateAttribute(attr, tool.manifest.languages);
+      const issues = validateAttribute(attr, kit.manifest.languages);
       if (issues.length > 0)
         throw new CommandError(
           `The attribute is not valid.\n${formatIssues(issues)}`,
@@ -281,7 +281,7 @@ function applyToolCommand(tx: Tx<ToolLibrary>, command: ToolCommand): unknown {
           'To change the key of an attribute, rename it, so that the formulas that use it are rewritten.',
         );
       if (at < 0) {
-        const clash = relatedKeys(tool, command.owner, attr.id).get(attr.key);
+        const clash = relatedKeys(kit, command.owner, attr.id).get(attr.key);
         if (clash)
           throw new CommandError(
             `The key "${attr.key}" is already used by an attribute of ${clash}.`,
@@ -304,7 +304,7 @@ function applyToolCommand(tx: Tx<ToolLibrary>, command: ToolCommand): unknown {
       return attr.id;
     }
     case 'removeAttribute': {
-      const def = ownerDef(tool, command.owner);
+      const def = ownerDef(kit, command.owner);
       const attr = def?.attributes.find((a) => a.id === command.id);
       if (!def || !attr)
         throw new CommandError('That attribute does not exist.');
@@ -313,8 +313,8 @@ function applyToolCommand(tx: Tx<ToolLibrary>, command: ToolCommand): unknown {
         def.attributes.filter((a) => a.id !== command.id),
       );
       // A panel layout cannot list an attribute that is gone.
-      for (const o of scopeOwners(tool, command.owner)) {
-        const layout = o.kind === 'modelType' ? undefined : tool.panels?.[o.id];
+      for (const o of scopeOwners(kit, command.owner)) {
+        const layout = o.kind === 'modelType' ? undefined : kit.panels?.[o.id];
         if (!layout) continue;
         const pruned = pruneItems(
           layout.tabs as unknown as PanelNode[],
@@ -325,7 +325,7 @@ function applyToolCommand(tx: Tx<ToolLibrary>, command: ToolCommand): unknown {
       return undefined;
     }
     case 'moveAttribute': {
-      const def = ownerDef(tool, command.owner);
+      const def = ownerDef(kit, command.owner);
       const from = def?.attributes.findIndex((a) => a.id === command.id) ?? -1;
       if (!def || from < 0)
         throw new CommandError('That attribute does not exist.');
@@ -344,9 +344,9 @@ function applyToolCommand(tx: Tx<ToolLibrary>, command: ToolCommand): unknown {
         throw new CommandError(
           `The rule needs an id of the form rule_something (it is ${JSON.stringify((rule as { id?: unknown } | null)?.id)}).`,
         );
-      // Checked here so that a rule the engine could not run never reaches the tool library.
-      const probe = { ...tool, rules: { ...tool.rules, [rule.id]: rule } };
-      const issues = validateToolLibrary(probe).filter((i) =>
+      // Checked here so that a rule the engine could not run never reaches the Kit.
+      const probe = { ...kit, rules: { ...kit.rules, [rule.id]: rule } };
+      const issues = validateKit(probe).filter((i) =>
         i.path.startsWith(`rules.${rule.id}`),
       );
       if (issues.length > 0)
@@ -357,7 +357,7 @@ function applyToolCommand(tx: Tx<ToolLibrary>, command: ToolCommand): unknown {
       return rule.id;
     }
     case 'removeRule': {
-      if (!tool.rules?.[command.id])
+      if (!kit.rules?.[command.id])
         throw new CommandError(`The rule ${command.id} does not exist.`);
       tx.remove(['rules', command.id]);
       return undefined;
@@ -384,13 +384,13 @@ function applyToolCommand(tx: Tx<ToolLibrary>, command: ToolCommand): unknown {
       return script.id;
     }
     case 'removeScript': {
-      if (!tool.scripts?.[command.id])
+      if (!kit.scripts?.[command.id])
         throw new CommandError(`The script ${command.id} does not exist.`);
       tx.remove(['scripts', command.id]);
       return undefined;
     }
     case 'putConstraint': {
-      const def = ownerDef(tool, command.owner) as
+      const def = ownerDef(kit, command.owner) as
         { constraints?: Constraint[] } | undefined;
       if (!def)
         throw new CommandError(
@@ -412,7 +412,7 @@ function applyToolCommand(tx: Tx<ToolLibrary>, command: ToolCommand): unknown {
       return command.constraint.id;
     }
     case 'removeConstraint': {
-      const def = ownerDef(tool, command.owner) as
+      const def = ownerDef(kit, command.owner) as
         { constraints?: Constraint[] } | undefined;
       if (!def?.constraints?.some((k) => k.id === command.id))
         throw new CommandError('That constraint does not exist.');
@@ -427,10 +427,10 @@ function applyToolCommand(tx: Tx<ToolLibrary>, command: ToolCommand): unknown {
       put(tx, 'shapes', 'shape', command.def, 'shape');
       return command.def.id;
     case 'removeShape': {
-      const def = tool.shapes?.[command.id];
+      const def = kit.shapes?.[command.id];
       if (!def)
         throw new CommandError(`The shape ${command.id} does not exist.`);
-      const users = shapeUsers(tool, command.id);
+      const users = shapeUsers(kit, command.id);
       if (users.length > 0)
         throw new CommandError(
           `The shape ${def.name ?? def.id} is still in use: ${users.join('; ')}.`,
@@ -440,10 +440,7 @@ function applyToolCommand(tx: Tx<ToolLibrary>, command: ToolCommand): unknown {
     }
     case 'putPanel': {
       const id = command.layout?.class;
-      if (
-        typeof id !== 'string' ||
-        !(id in tool.classes || id in tool.relations)
-      )
+      if (typeof id !== 'string' || !(id in kit.classes || id in kit.relations))
         throw new CommandError(
           `The panel layout needs the id of an existing class or relation class (it is ${JSON.stringify(id)}).`,
         );
@@ -451,7 +448,7 @@ function applyToolCommand(tx: Tx<ToolLibrary>, command: ToolCommand): unknown {
       return id;
     }
     case 'removePanel': {
-      if (!tool.panels?.[command.id])
+      if (!kit.panels?.[command.id])
         throw new CommandError(`There is no panel layout for ${command.id}.`);
       tx.remove(['panels', command.id]);
       return undefined;
@@ -463,19 +460,19 @@ function applyToolCommand(tx: Tx<ToolLibrary>, command: ToolCommand): unknown {
   }
 }
 
-export const toolKind: DocumentKind<ToolLibrary, ToolCommand, undefined> = {
-  apply: (tx, command) => applyToolCommand(tx, command),
+export const kitKind: DocumentKind<Kit, KitCommand, undefined> = {
+  apply: (tx, command) => applyKitCommand(tx, command),
 };
 
-export type ToolStore = DocumentStore<ToolLibrary, ToolCommand, undefined>;
+export type KitStore = DocumentStore<Kit, KitCommand, undefined>;
 
-export function createToolStore(
-  tool: ToolLibrary,
+export function createKitStore(
+  kit: Kit,
   options: { user?: string; historyLimit?: number } = {},
-): ToolStore {
-  return new DocumentStore<ToolLibrary, ToolCommand, undefined>({
-    kind: toolKind,
-    initial: tool,
+): KitStore {
+  return new DocumentStore<Kit, KitCommand, undefined>({
+    kind: kitKind,
+    initial: kit,
     context: undefined,
     ...(options.user ? { user: options.user } : {}),
     ...(options.historyLimit ? { historyLimit: options.historyLimit } : {}),

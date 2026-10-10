@@ -2,17 +2,17 @@
 id: data-ai-architecture
 title: Map a data and AI platform
 category: tutorials
-summary: Draw a data platform from source to consumer with the Data and AI architecture tool library, see the personal-data warning, and list the lineage of a dataset.
+summary: Draw a data platform from source to consumer with the Data and AI architecture Kit, see the personal-data warning, and list the lineage of a dataset.
 keywords: [data architecture tutorial, ai architecture, data lineage, show lineage, personal data warning, data flow, lakehouse, ml model, ai service, customer 360]
 contexts: []
 order: 370
 ---
 
-In this tutorial you draw how data moves from a source system to the people and applications that use it, with the **Data and AI architecture** tool library. You see a warning when personal data lands in a store that is not approved for it, and you list everything upstream and downstream of a dataset. It takes about fifteen minutes.
+In this tutorial you draw how data moves from a source system to the people and applications that use it, with the **Data and AI architecture** Kit. You see a warning when personal data lands in a store that is not approved for it, and you list everything upstream and downstream of a dataset. It takes about fifteen minutes.
 
 ## What it is
 
-**Data and AI architecture** is a tool library that comes with MetaKit, in the repository folder `tools/data-ai-architecture`. Its model type **Architecture** has these classes:
+**Data and AI architecture** is a Kit that comes with MetaKit, in the repository folder `kits/data-ai-architecture`. Its model type **Architecture** has these classes:
 
 | Class | What it stands for | Look |
 | --- | --- | --- |
@@ -30,12 +30,12 @@ The relation classes are **Flows to** (with Frequency, Format and Contains perso
 
 ## Where to find it
 
-The tool library is built in ([[built-in-tools]]). On the **Tool libraries** page ([[page-tool-libraries]]) its card is in the **Built-in** section. The finished example of this tutorial is the sample model `customer-360.mkmodel.json` in the same folder, "Customer 360 and churn model".
+The Kit is built in ([[built-in-kits]]). On the **Kits** page ([[page-kits]]) its card is in the **Built-in Kits** section. The finished example of this tutorial is the sample model `customer-360.mkmodel.json` in the same folder, "Customer 360 and churn model".
 
 ## How to use it
 
-1. **Add the tool library.** On the **Data and AI architecture** card under **Built-in**, choose **Use in this workspace**. A card with **Version 1.0.0** appears under **In this workspace**. (Choose **Copy and extend…** instead if you want to change it for your team.)
-2. **Make a model.** Choose **Model** in the top bar, then **New model** ([[dialog-new-model]]). Pick the tool library "Data and AI architecture (1.0.0)", the model type "Architecture", name it `My data platform` and choose **Create**.
+1. **Add the Kit.** On the **Data and AI architecture** card under **Built-in Kits**, choose **Use in this workspace**. A card with **Version 1.0.0** appears under **In this workspace**. (Choose **Copy and extend…** instead if you want to change it for your team.)
+2. **Make a model.** Choose **Model** in the top bar, then **New model** ([[dialog-new-model]]). Pick the Kit "Data and AI architecture (1.0.0)", the model type "Architecture", name it `My data platform` and choose **Create**.
 3. **Place a zone.** In the palette, click **Zone** and click on the canvas. In the attribute panel set **Name** to `Raw zone` and **Layer** to "Raw" ([[containers-swimlanes]]).
 4. **Draw the chain.** Place one object of each kind, from left to right ([[placing-objects]]):
    - a **Source system** named `CRM`, outside the zone;
@@ -95,7 +95,7 @@ The sample "Customer 360 and churn model" has three zones. CRM, web events and b
 
 - **Lineage follows the lines you draw.** An object that is only inside a zone, without flows, has no lineage.
 - **Words are your own.** Technology, Engine, Format and Endpoint are free text. Write what your team calls things.
-- **Change the tool.** Open it with **Edit** on its card to add attributes or change a look in the simple look editor ([[appearance-editor]]).
+- **Change the Kit.** Open it with **Edit** on its card to add attributes or change a look in the simple look editor ([[appearance-editor]]).
 
 ## Related
 

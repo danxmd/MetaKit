@@ -363,7 +363,7 @@ export function copyStarter(id: string, newId: ShapeId): ShapeDef | undefined {
     : undefined;
 }
 
-/** What an element of a class that the tool no longer has looks like: a grey, dashed box (phase 4). */
+/** What an element of a class that the Kit no longer has looks like: a grey, dashed box (phase 4). */
 export const PLACEHOLDER_SHAPE: NodeShape = {
   id: 'shp_starter_placeholder',
   name: 'Missing class',
