@@ -241,7 +241,7 @@ export function importMkModel(
   if (file.tool?.id !== undefined && file.tool.id !== tool.manifest.id) {
     add(
       'tool.id',
-      `The file was written for the tool ${file.tool.id}, but it is being read with ${tool.manifest.id} ("${tool.manifest.name}").`,
+      `The file was written for the Kit ${file.tool.id}, but it is being read with ${tool.manifest.id} ("${tool.manifest.name}").`,
     );
   }
 
@@ -605,15 +605,15 @@ export function describeMkModelImport(
     fileTool?.version !== undefined &&
     fileTool.version !== tool.manifest.version;
   const messages = [
-    `Read with the tool library "${tool.manifest.name}" (version ${tool.manifest.version}).`,
+    `Read with the Kit "${tool.manifest.name}" (version ${tool.manifest.version}).`,
   ];
   if (toolVersionDiffers)
     messages.push(
-      `The file was written with version ${fileTool?.version} of the tool library, but this workspace has version ${tool.manifest.version}. The model was imported as it is; check it for changes.`,
+      `The file was written with version ${fileTool?.version} of the Kit, but this workspace has version ${tool.manifest.version}. The model was imported as it is; check it for changes.`,
     );
   if (unknownAttributes > 0)
     messages.push(
-      `${unknownAttributes} value${unknownAttributes === 1 ? '' : 's'} belong${unknownAttributes === 1 ? 's' : ''} to attributes that this version of the tool library does not have. They are kept and shown under "Unknown attributes".`,
+      `${unknownAttributes} value${unknownAttributes === 1 ? '' : 's'} belong${unknownAttributes === 1 ? 's' : ''} to attributes that this version of the Kit does not have. They are kept and shown under "Unknown attributes".`,
     );
   if (idChanged)
     messages.push(
@@ -683,12 +683,12 @@ export async function importModelFile(
     const wanted = file.tool?.id;
     if (typeof wanted !== 'string')
       throw new FormatError(
-        'The model file does not say which tool library it was made with, so choose one.',
+        'The model file does not say which Kit it was made with, so choose one.',
       );
     toolSlug = await workspace.findToolSlug(wanted as ToolId);
     if (toolSlug === null)
       throw new FormatError(
-        `The model file was made with the tool library ${file.tool?.name ? `"${file.tool.name}" ` : ''}(${wanted}), which is not in this workspace. Import the tool package or the bundle first.`,
+        `The model file was made with the Kit ${file.tool?.name ? `"${file.tool.name}" ` : ''}(${wanted}), which is not in this workspace. Import the Kit package or the bundle first.`,
       );
   }
   const tool = (await workspace.loadTool(toolSlug)).document;

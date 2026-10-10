@@ -611,19 +611,19 @@ export function checkShapeReferences(c: Checker, tool: ToolLibrary): void {
     if (cls.shape !== undefined && !known(cls.shape))
       c.add(
         `classes.${cls.id}.shape`,
-        `The shape ${cls.shape} does not exist in this tool library.`,
+        `The shape ${cls.shape} does not exist in this Kit.`,
       );
   for (const rel of Object.values(tool.relations))
     if (rel.shape !== undefined && !known(rel.shape))
       c.add(
         `relations.${rel.id}.shape`,
-        `The shape ${rel.shape} does not exist in this tool library.`,
+        `The shape ${rel.shape} does not exist in this Kit.`,
       );
   for (const mt of Object.values(tool.modelTypes)) {
     if (mt.background !== undefined && !known(mt.background))
       c.add(
         `modelTypes.${mt.id}.background`,
-        `The shape ${mt.background} does not exist in this tool library.`,
+        `The shape ${mt.background} does not exist in this Kit.`,
       );
   }
   for (const shape of Object.values(shapes)) {

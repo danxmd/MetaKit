@@ -219,7 +219,7 @@
           : app.phase === 'model' && app.open
             ? 'model'
             : area === 'build'
-              ? 'tool-libraries'
+              ? 'kits'
               : 'models',
     );
   });
@@ -267,7 +267,7 @@
     const name = app.tools.find((t) => t.slug === slug)?.name ?? slug;
     await controller.trashTool(slug);
     if (app.trashedTools.some((t) => t.slug === slug))
-      toasts.show(`Deleted tool library ${name}`, {
+      toasts.show(`Deleted Kit ${name}`, {
         undo: () => void controller.restoreTool(slug),
       });
   }

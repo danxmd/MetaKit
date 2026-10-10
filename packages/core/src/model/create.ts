@@ -28,8 +28,7 @@ export function createEmptyModel(
   options: { name: string; folder?: string; random?: RandomSource },
 ): Model {
   const type = tool.modelTypes[modelType];
-  if (!type)
-    throw new Error(`The tool library has no model type ${modelType}.`);
+  if (!type) throw new Error(`The Kit has no model type ${modelType}.`);
   const name = options.name.trim();
   if (name === '') throw new Error('The model needs a name.');
   return {

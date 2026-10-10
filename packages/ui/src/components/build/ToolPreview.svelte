@@ -98,7 +98,7 @@
   };
 </script>
 
-<section class="preview" data-testid="tool-preview">
+<section class="preview" data-testid="kit-preview">
   <header>
     <h2>Try it</h2>
     {#if modelTypes.length > 1}
@@ -123,7 +123,7 @@
       >
     {/if}
   </header>
-  <p class="muted hint">A live model of your tool. Nothing here is saved.</p>
+  <p class="muted hint">A live model of your Kit. Nothing here is saved.</p>
   {#if !modelType}
     <div class="empty" data-testid="preview-empty">
       <strong>Nothing to try yet</strong>

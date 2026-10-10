@@ -80,7 +80,7 @@ describe('create element', () => {
     fails(
       store,
       { type: 'createElement', class: 'cls_nope', x: 0, y: 0 },
-      /does not exist in the tool library/,
+      /does not exist in the Kit/,
     );
   });
 
@@ -470,7 +470,7 @@ describe('connectors', () => {
     fails(
       store,
       { type: 'createConnector', relation: 'rel_nope', from: a, to: a },
-      /does not exist in the tool library/,
+      /does not exist in the Kit/,
     );
     const cn = created(store, {
       type: 'createConnector',

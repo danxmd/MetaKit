@@ -1,6 +1,6 @@
 # Phase 4: Build mode and Shapes (lane A, weeks 8 to 12)
 
-Phase 4 builds Build mode, where method engineers create modelling tools without writing code, and the Shapes system that describes notation as data. At the end of this phase MetaKit reaches the usable v0.5 milestone (week 12): a tool can be built, used for modelling, and shared through a synced folder.
+Phase 4 builds Build mode, where method engineers create Kits without writing code, and the Shapes system that describes notation as data. At the end of this phase MetaKit reaches the usable v0.5 milestone (week 12): a Kit can be built, used for modelling, and shared through a synced folder.
 
 **Before starting:** plan sections "Notation: Shapes", "Attribute panels", "Meta-model and file formats".
 
@@ -25,15 +25,15 @@ Done when: the two complete shape examples in the plan render correctly in scree
 
 Deliver:
 
-- Tool library list: create, rename, version, delete.
+- Kit list: create, rename, version, delete.
 - Class editor: key, labels per language, kind, parent, abstract, help text, attributes with type, options, default and constraints.
 - Relation class editor: FROM/TO lists, attributes, line shape.
 - Model type editor: allowed classes and relations, views, cardinalities, model attributes, background shape.
 - Renaming a key rewrites the formulas and rules that use it.
 - Hot reload: saving any definition refreshes open models within 1 second.
-- Tool changes and existing models: removed attributes keep their values in an "Unknown attributes" group; removed classes render as grey placeholders.
+- Kit changes and existing models: removed attributes keep their values in an "Unknown attributes" group; removed classes render as grey placeholders.
 
-Done when: the sample tools from phase 1 can be recreated entirely in Build mode.
+Done when: the sample Kits from phase 1 can be recreated entirely in Build mode.
 
 ## 4.3 Shape editor (`packages/ui`)
 
@@ -54,8 +54,8 @@ Deliver:
 - A panel layout editor: tabs, groups, order, control overrides, and `visible`, `readOnly`, `required` as fixed values or formulas; `showRelations`.
 - Containers and swimlanes in Model mode: dropping an object inside sets its parent, moving the container moves its children, swimlanes resize to fit, and a model type can limit which classes a container accepts.
 
-Done when: a non-programmer builds a small ER tool, with notation and panels, in under an hour in a usability test that Danial runs.
+Done when: a non-programmer builds a small ER Kit, with notation and panels, in under an hour in a usability test that Danial runs.
 
 ## Out of scope
 
-Rules and scripts (phases 5 and 7), exports and tool packages (phase 6).
+Rules and scripts (phases 5 and 7), exports and Kit packages (phase 6).

@@ -92,18 +92,18 @@
   <form onsubmit={submit}>
     <div class="head">
       <h2>New model</h2>
-      <p class="muted">A model is made with a tool library.</p>
+      <p class="muted">A model is made with a Kit.</p>
     </div>
     {#if tools.length === 0 && builtIns.length === 0}
       <p class="notice warning">
-        This workspace has no tool library yet. Add one in Build mode, or copy a
-        tool library folder into <code>tools/</code>.
+        This workspace has no Kit yet. Add one in Build mode, or copy a Kit
+        folder into <code>tools/</code>.
       </p>
     {:else}
       <label>
-        Tool library
-        <select bind:value={toolSlug} data-testid="new-model-tool">
-          <option value="" disabled>Choose a tool library</option>
+        Kit
+        <select bind:value={toolSlug} data-testid="new-model-kit">
+          <option value="" disabled>Choose a Kit</option>
           {#if builtIns.length > 0 && tools.length > 0}
             <optgroup label="In this workspace">
               {#each tools as tool (tool.slug)}

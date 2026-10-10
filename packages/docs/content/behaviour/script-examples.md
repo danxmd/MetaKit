@@ -2,17 +2,17 @@
 id: script-examples
 title: Script examples
 category: behaviour
-summary: Walk through the scripts that ship with the sample tool libraries, including the Check pipeline command.
+summary: Walk through the scripts that ship with the sample Kits, including the Check pipeline command.
 keywords: [script examples, example scripts, check pipeline, check gateways, total effort by lane, export sql schema]
 contexts: []
 order: 55
 ---
 
-Four scripts ship with the sample tool libraries in the repository folder `tools/`. They are small, they only read the model (the last one also writes a file), and each one is a good starting point.
+Four scripts ship with the sample Kits in the repository folder `tools/`. They are small, they only read the model (the last one also writes a file), and each one is a good starting point.
 
 ## What it is
 
-| Script | Tool | Command | What it does |
+| Script | Kit | Command | What it does |
 | --- | --- | --- | --- |
 | `check-pipeline.script.ts` | Agent pipeline | **Check pipeline** | Looks for work nobody owns, artifacts from nowhere, hand-overs to a human who is not there, output of autonomous agents that no gate approves, and loops. |
 | `gateway-check.script.ts` | BPMN lite | **Check gateways** | Finds gateways with nothing after them and exclusive gateways whose ways out have no condition. |
@@ -21,12 +21,12 @@ Four scripts ship with the sample tool libraries in the repository folder `tools
 
 ## Where to find it
 
-The files are in `tools/behaviour-examples/` and `tools/agent-pipeline/` of the MetaKit repository. The Agent pipeline script is already part of that tool library. The others are added to BPMN lite and ER lite by the repository's tests. To use one, add a script in Build mode and paste the code. See [[scripts]].
+The files are in `tools/behaviour-examples/` and `tools/agent-pipeline/` of the MetaKit repository. The Agent pipeline script is already part of that Kit. The others are added to BPMN lite and ER lite by the repository's tests. To use one, add a script in Build mode and paste the code. See [[scripts]].
 
 ## How to use it
 
-1. Add the Agent pipeline tool library to your workspace (see [[dialog-tool-import]]).
-2. Import the sample model `code-review.mkmodel.json` (see [[import-export]]), or make a new model of the tool (see [[dialog-new-model]]).
+1. Add the Agent pipeline Kit to your workspace (see [[dialog-kit-import]]).
+2. Import the sample model `code-review.mkmodel.json` (see [[import-export]]), or make a new model of the Kit (see [[dialog-new-model]]).
 3. Open **Commands** in the toolbar and choose **Check pipeline**.
 4. Read the message. It is either `The pipeline looks sound.` or a warning with one line per problem.
 5. Change the model so that a problem goes away and run the command again.
@@ -74,7 +74,7 @@ const name = task.parent?.attrs.LaneName ?? 'No lane';
 
 ### Export SQL schema
 
-It builds the SQL text, then calls `await files.save('schema.sql', text)`. The tool declares the `files` permission for it, see [[script-permissions]].
+It builds the SQL text, then calls `await files.save('schema.sql', text)`. The Kit declares the `files` permission for it, see [[script-permissions]].
 
 > **Note:** The web app does not yet show the save-as dialog for scripts. In this version `files.save` fails with `This app cannot show a save-file dialog.` The script is a good example of the code. To save a file today, use `files.write` with a new name inside the workspace.
 

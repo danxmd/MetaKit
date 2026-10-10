@@ -8,13 +8,13 @@ contexts: []
 order: 220
 ---
 
-A draft is the assistant's answer: a rule, a script, a shape or a class that is not in your tool library yet. You read it in a dialog. You accept it, throw it away, or ask again with better words.
+A draft is the assistant's answer: a rule, a script, a shape or a class that is not in your Kit yet. You read it in a dialog. You accept it, throw it away, or ask again with better words.
 
 ## What it is
 
 Every draft goes through four steps before you see it.
 
-1. **Ask.** Your sentence and the tool summary go to the service (see [[assistant-privacy]]).
+1. **Ask.** Your sentence and the Kit summary go to the service (see [[assistant-privacy]]).
 2. **Read.** MetaKit extracts the JSON, or the TypeScript, from the reply. A reply without one gives the problem `The reply contains no script.` or a JSON error.
 3. **Check.** The draft is checked in the same way as if you had typed it in the editor.
    - A **rule**: the structure, the event names, the action types, that classes and relation classes exist, and every formula (it must parse, call only known functions and use only names that are attributes here).
@@ -36,7 +36,7 @@ Press **Draft with assistant** in the Rules section, the Scripts section, the Sh
 3. Read **The change**. It lists what would be added, in plain words.
 4. Read the raw text below it. It is read only. Its label is **JSON (read only)** or **TypeScript (read only)**.
 5. If a red box says **The draft still has problems**, read the list. **Accept** is off. Change your sentence and press **Draft again**.
-6. If all is well, press **Accept**. The dialog closes and the new part is in your tool library. A new rule or script is opened in its list.
+6. If all is well, press **Accept**. The dialog closes and the new part is in your Kit. A new rule or script is opened in its list.
 7. Press **Discard** to close without any change.
 8. Check the result. Use **Undo** if you do not like it.
 
@@ -63,14 +63,14 @@ If Priority == 'High' && Owner == null.
 Then: Show a warning: the result of = 'Task "' + Name + '" is high priority but has no owner.'.
 ```
 
-For a script: the name and size, which events it reacts to, which commands it adds, and warnings such as "It contacts web services: turn on that permission for the tool in the Scripts section." For a shape: its size and parts, and "Choose it for a class in the class editor to use it." For a class: the key, a parent if any, the attributes with types and choices, and checks.
+For a script: the name and size, which events it reacts to, which commands it adds, and warnings such as "It contacts web services: turn on that permission for the Kit in the Scripts section." For a shape: its size and parts, and "Choose it for a class in the class editor to use it." For a class: the key, a parent if any, the attributes with types and choices, and checks.
 
 ### What Accept does
 
-- It turns the draft into the usual tool commands (`putRule`, `putScript`, `putShape` or `putClass`), with new ids.
+- It turns the draft into the usual Kit commands (`putRule`, `putScript`, `putShape` or `putClass`), with new ids.
 - If a name or key is already taken, a free one is chosen: a script `Renumber tasks` becomes `Renumber tasks 2`, and the class key gets a number.
 - All of it is one undo step in Build mode.
-- The tool store checks the commands as it checks anything. A draft that slipped through is refused and nothing changes.
+- The Kit store checks the commands as it checks anything. A draft that slipped through is refused and nothing changes.
 
 ### Things Accept does not do
 

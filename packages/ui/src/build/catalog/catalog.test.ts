@@ -252,7 +252,7 @@ describe('catalogCommands', () => {
     ).toHaveLength(1);
     expect(relationByKey(tool, 'WritesTo')?.to).toEqual([existing]);
     expect(catalogResultText(result)).toContain(
-      'Already in this tool library, so not added again: Dataset.',
+      'Already in this Kit, so not added again: Dataset.',
     );
     expect(errors(tool)).toEqual([]);
   });

@@ -84,7 +84,7 @@ function parse(bytes: Uint8Array, what: string): unknown {
     return JSON.parse(new TextDecoder('utf-8').decode(bytes));
   } catch (error) {
     throw new FormatError(
-      `${what} in this tool package is not valid JSON: ${(error as Error).message}`,
+      `${what} in this Kit package is not valid JSON: ${(error as Error).message}`,
     );
   }
 }
@@ -100,11 +100,11 @@ export function readToolPackage(bytes: Uint8Array): ReadToolPackage {
   const toolFile = files['tool.json'];
   if (!infoFile)
     throw new FormatError(
-      'This is not a MetaKit tool package: there is no package.json in it.',
+      'This is not a Kit package: there is no package.json in it.',
     );
   if (!toolFile)
     throw new FormatError(
-      'This tool package is incomplete: there is no tool.json in it.',
+      'This Kit package is incomplete: there is no tool.json in it.',
     );
   let info: ToolPackageInfo;
   let tool: ToolLibrary;
@@ -113,21 +113,21 @@ export function readToolPackage(bytes: Uint8Array): ReadToolPackage {
       .value as unknown as ToolPackageInfo;
     if (info.kind !== 'mktool')
       throw new FormatError(
-        'This is not a MetaKit tool package (package.json has the wrong kind).',
+        'This is not a Kit package (package.json has the wrong kind).',
       );
     tool = migrate('tool-document', parse(toolFile, 'tool.json'))
       .value as unknown as ToolLibrary;
   } catch (error) {
     if (error instanceof NewerFormatError)
       throw new NewerFormatError(
-        `This tool package was made with a newer version of MetaKit than this one, so it cannot be imported safely. Update MetaKit and try again. (${error.message})`,
+        `This Kit package was made with a newer version of MetaKit than this one, so it cannot be imported safely. Update MetaKit and try again. (${error.message})`,
       );
     throw error;
   }
   const issues = validateToolLibrary(tool);
   if (issues.length === 0 && info.tool?.id !== tool.manifest.id)
     throw new FormatError(
-      'This tool package is damaged: package.json and tool.json name different tool libraries.',
+      'This Kit package is damaged: package.json and tool.json name different Kits.',
     );
   const scripts: Record<string, string> = {};
   const assets: Record<string, Uint8Array> = {};
@@ -454,15 +454,15 @@ export function planToolUpdate(
       changes.push({ area: 'settings', change: 'changed', name: 'Settings' });
     if (existing.manifest.id !== incoming.manifest.id)
       warnings.push(
-        'The package is for a different tool library than the one in the workspace.',
+        'The package is for a different Kit than the one in the workspace.',
       );
     if (direction === 'older')
       warnings.push(
-        `The package has version ${to}, which is older than the version ${from} in the workspace. Importing it replaces the newer library.`,
+        `The package has version ${to}, which is older than the version ${from} in the workspace. Importing it replaces the newer Kit.`,
       );
     if (direction === 'same' && changes.length > 0)
       warnings.push(
-        `The version number (${to}) is the same, but the content differs. Consider giving the changed library a new version number.`,
+        `The version number (${to}) is the same, but the content differs. Consider giving the changed Kit a new version number.`,
       );
   }
 
@@ -477,7 +477,7 @@ export function planToolUpdate(
   const lines: string[] = [];
   if (!existing)
     lines.push(
-      `"${incoming.manifest.name}" (version ${to}) is not in this workspace yet. It will be added as a new tool library, with ${Object.keys(incoming.classes).length} classes, ${Object.keys(incoming.relations).length} relation classes and ${Object.keys(incoming.modelTypes).length} model types.`,
+      `"${incoming.manifest.name}" (version ${to}) is not in this workspace yet. It will be added as a new Kit, with ${Object.keys(incoming.classes).length} classes, ${Object.keys(incoming.relations).length} relation classes and ${Object.keys(incoming.modelTypes).length} model types.`,
     );
   else {
     lines.push(
@@ -485,7 +485,7 @@ export function planToolUpdate(
         ? `"${incoming.manifest.name}" will be updated. The version stays ${to}.`
         : `"${incoming.manifest.name}" will be updated from version ${from} to version ${to}.`,
     );
-    if (changes.length === 0) lines.push('Nothing in the library changes.');
+    if (changes.length === 0) lines.push('Nothing in the Kit changes.');
     for (const c of changes)
       lines.push(
         `${c.change === 'added' ? 'Added' : c.change === 'removed' ? 'Removed' : 'Changed'} ${c.area} ${c.name}${c.detail ? ` (${c.detail})` : ''}.`,
@@ -542,7 +542,7 @@ export async function prepareToolImport(
   const { tool, issues, scripts, assets } = readToolPackage(bytes);
   if (issues.length > 0)
     throw new FormatError(
-      `The tool library in this package has ${issues.length} problem${issues.length === 1 ? '' : 's'}, so it was not imported: ${issues
+      `The Kit in this package has ${issues.length} problem${issues.length === 1 ? '' : 's'}, so it was not imported: ${issues
         .slice(0, 3)
         .map((i) => `${i.path || '(top level)'}: ${i.message}`)
         .join('; ')}${issues.length > 3 ? '; and more' : ''}.`,
@@ -580,7 +580,7 @@ export async function applyToolUpdate(
     const current = (await workspace.loadTool(existingSlug)).document;
     if (current.manifest.id !== incoming.manifest.id)
       throw new FormatError(
-        'The package is for a different tool library than the one it should update, so nothing was changed.',
+        'The package is for a different Kit than the one it should update, so nothing was changed.',
       );
     await workspace.saveTool(existingSlug, incoming);
     slug = existingSlug;

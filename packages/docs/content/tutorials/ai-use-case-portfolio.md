@@ -2,7 +2,7 @@
 id: ai-use-case-portfolio
 title: Score an AI use-case portfolio
 category: tutorials
-summary: Add the AI use-case portfolio tool, model a few use cases, score them, see their quadrant colours and rank them with one command.
+summary: Add the AI use-case portfolio Kit, model a few use cases, score them, see their quadrant colours and rank them with one command.
 keywords: [ai use-case portfolio, use case scoring, priority score, quadrant, quick win, strategic bet, rank use cases, ai portfolio tutorial]
 contexts: []
 order: 370
@@ -12,7 +12,7 @@ Goal: collect the ways your team could use AI, score each one, and see at a glan
 
 ## What it is
 
-The **AI use-case portfolio** tool library ships in the repository folder `tools/ai-use-case-portfolio/`. It has these classes:
+The **AI use-case portfolio** Kit ships in the repository folder `tools/ai-use-case-portfolio/`. It has these classes:
 
 | Class | What it is |
 | --- | --- |
@@ -40,16 +40,16 @@ The use case is drawn in the colour of its quadrant and shows its priority score
 
 ## Where to find it
 
-The tool library is built in ([[built-in-tools]]): its card is in the **Built-in** section of the [[page-tool-libraries|Tool libraries page]], and the New model dialog lists it too. The folder also holds a finished sample, `customer-operations.mkmodel.json`, with eight use cases in all four quadrants.
+The Kit is built in ([[built-in-kits]]): its card is in the **Built-in Kits** section of the [[page-kits|Kits page]], and the New model dialog lists it too. The folder also holds a finished sample, `customer-operations.mkmodel.json`, with eight use cases in all four quadrants.
 
 ## How to use it
 
-**1. Add the tool and make a model**
+**1. Add the Kit and make a model**
 
 1. On the Models page choose **New model** ([[dialog-new-model]]).
-2. Choose the tool library **AI use-case portfolio (1.0.0)**, listed under **Built-in** until your workspace has it. Choose the model type **Portfolio** and a name such as "Our AI portfolio". Choose **Create**. The tool library is added to the workspace and the model opens.
+2. Choose the Kit **AI use-case portfolio (1.0.0)**, listed under **Built-in** until your workspace has it. Choose the model type **Portfolio** and a name such as "Our AI portfolio". Choose **Create**. The Kit is added to the workspace and the model opens.
 
-The tool has a second model type, **Use case canvas**, for working out one use case in detail. It holds exactly one use case.
+The Kit has a second model type, **Use case canvas**, for working out one use case in detail. It holds exactly one use case.
 
 **2. Add use cases**
 
@@ -85,7 +85,7 @@ The tool has a second model type, **Use case canvas**, for working out one use c
 | **Mark approved** | Toolbar | Sets the status of the selected use case from Assessed to Approved. |
 | **Start delivery** | Right-click menu | Sets the status of an approved use case to In delivery. |
 
-The [[problems-panel]] shows two warnings from the tool's [[constraints]]:
+The [[problems-panel]] shows two warnings from the Kit's [[constraints]]:
 
 - "A high-risk use case needs a mitigation." when the risk level is High and **Mitigation** is empty.
 - "An approved, delivered or live use case needs a stakeholder who sponsors it." when the status is Approved, In delivery or Live and no **Sponsors** connector ends at the use case.

@@ -8,7 +8,7 @@ import {
 
 /** The short statement the settings page shows next to the sample. */
 export const WHAT_IS_SENT =
-  'What is sent: tool definitions, never models. Each request holds your description and a summary of the tool you are editing (class, relation class and attribute names and types, existing rule and shape names) and the format the draft must follow. It never holds the objects, attribute values or names of any model.';
+  'What is sent: Kit definitions, never models. Each request holds your description and a summary of the Kit you are editing (class, relation class and attribute names and types, existing rule and shape names) and the format the draft must follow. It never holds the objects, attribute values or names of any model.';
 
 export const KEY_STATEMENT =
   'Your key stays in this browser. It is kept in this browser profile only (IndexedDB), never in the shared folder, a repository or a log. The requests go straight from this page to the service you chose, with your key; there is no server in between. Anyone who can run code on this page could read the key, so use a key with a spending limit and remove it when you no longer need it.';
@@ -18,7 +18,7 @@ export const COST_NOTE =
 
 /** A small tool for the sample: shows what a request looks like without any real tool. */
 export function sampleToolForNotice(): ToolLibrary {
-  const tool = createEmptyTool({ name: 'Example tool' });
+  const tool = createEmptyTool({ name: 'Example Kit' });
   const id = newId('class');
   const task: ClassDef = {
     id,

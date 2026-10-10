@@ -68,7 +68,7 @@ export async function findToolFor(
   const sibling = join(dirname(modelPath), 'tool.json');
   if ((await exists(sibling)) === 'file') return sibling;
   throw new CliError(
-    `Cannot find the tool library for "${modelPath}": there is no tool.json next to it. Give one with --tool <path>.`,
+    `Cannot find the Kit for "${modelPath}": there is no tool.json next to it. Give one with --tool <path>.`,
   );
 }
 

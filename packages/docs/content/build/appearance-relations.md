@@ -89,7 +89,7 @@ A line shape that was drawn with the form in **Shapes** instead of the simple ed
 
 ## Examples
 
-In the Agent pipeline tool the relation class **Performs** is drawn dotted, so that it reads differently from the arrows of **Produces** and **Feeds**. To make that line with the editor: open **Performs**, choose **Dotted** under **Style**, leave **Route** on **Right angles** and choose **Arrow** at the end. For **HandsOverTo**, set **Show** to **Handoff** so the line says Automatic or Needs human. For **DelegatesTo** show **Scope**.
+In the Agent pipeline Kit the relation class **Performs** is drawn dotted, so that it reads differently from the arrows of **Produces** and **Feeds**. To make that line with the editor: open **Performs**, choose **Dotted** under **Style**, leave **Route** on **Right angles** and choose **Arrow** at the end. For **HandsOverTo**, set **Show** to **Handoff** so the line says Automatic or Needs human. For **DelegatesTo** show **Scope**.
 
 ## Good to know
 

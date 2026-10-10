@@ -2,7 +2,7 @@
 id: data-governance
 title: Set up data ownership and governance
 category: tutorials
-summary: Use the Data governance and ownership tool to record who owns and looks after your data, check it for gaps, and read the quality score of each data asset.
+summary: Use the Data governance and ownership Kit to record who owns and looks after your data, check it for gaps, and read the quality score of each data asset.
 keywords: [data governance tutorial, data ownership, data steward, data custodian, check governance, quality score, raci view]
 contexts: []
 order: 370
@@ -12,7 +12,7 @@ order: 370
 
 ## What it is
 
-**Data governance and ownership** is a tool library that comes with MetaKit, in the repository folder `tools/data-governance/`. It describes who is responsible for which data, which rules apply to it and how good it is.
+**Data governance and ownership** is a Kit that comes with MetaKit, in the repository folder `tools/data-governance/`. It describes who is responsible for which data, which rules apply to it and how good it is.
 
 | Class | What it stands for |
 | --- | --- |
@@ -29,13 +29,13 @@ The relation classes are **Owns**, **Stewards** and **Custodian of** (the three 
 
 ## Where to find it
 
-The tool library is built in ([[built-in-tools]]): its card is in the **Built-in** section of the Tool libraries page. The sample model "Sales and finance domains" is `tools/data-governance/sales-finance.mkmodel.json`.
+The Kit is built in ([[built-in-kits]]): its card is in the **Built-in Kits** section of the Kits page. The sample model "Sales and finance domains" is `tools/data-governance/sales-finance.mkmodel.json`.
 
 ## How to use it
 
 **Before you start:** a workspace folder is open (see [[concepts-workspace]]).
 
-1. On the Tool libraries page, on the **Data governance and ownership** card under **Built-in**, choose **Use in this workspace** ([[page-tool-libraries]]).
+1. On the Kits page, on the **Data governance and ownership** card under **Built-in Kits**, choose **Use in this workspace** ([[page-kits]]).
 2. On the Models page choose **Import / Export**, then **Import file(s)…**, and pick `sales-finance.mkmodel.json` ([[import-export]]). Open the model.
 3. Open the Problems panel ([[problems-panel]]). It shows two warnings:
    - "Data product "Sales pipeline" has 0 Owns entering it, but needs at least 1." The model type asks for exactly one owner per data product.

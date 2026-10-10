@@ -17,9 +17,7 @@
 
   onMount(() => dialog?.showModal());
 
-  const title = $derived(
-    plan.isNew ? 'Add tool library' : 'Update tool library',
-  );
+  const title = $derived(plan.isNew ? 'Add Kit' : 'Update Kit');
   const versionText = $derived(
     plan.isNew
       ? `Version ${plan.version.to}`
@@ -30,28 +28,28 @@
   const verb = { added: 'Added', removed: 'Removed', changed: 'Changed' };
 
   // Tells Help which dialog is open.
-  $effect(() => pushDocsContext('dialog.tool-import', DocsLayer.dialog));
+  $effect(() => pushDocsContext('dialog.kit-import', DocsLayer.dialog));
 </script>
 
 <dialog
   bind:this={dialog}
   onclose={onCancel}
-  aria-labelledby="tool-import-title"
-  data-testid="tool-import-dialog"
+  aria-labelledby="kit-import-title"
+  data-testid="kit-import-dialog"
 >
   <div class="body">
-    <h2 id="tool-import-title">{title}: {plan.tool.name}</h2>
-    <p class="version" data-testid="tool-import-version">{versionText}</p>
+    <h2 id="kit-import-title">{title}: {plan.tool.name}</h2>
+    <p class="version" data-testid="kit-import-version">{versionText}</p>
 
     {#if plan.isNew}
       <p>
-        This tool library is not in your workspace yet. It will be added, and
-        you can then make models with it.
+        This Kit is not in your workspace yet. It will be added, and you can
+        then make models with it.
       </p>
     {:else if plan.changes.length === 0}
-      <p data-testid="tool-import-nochange">Nothing in the library changes.</p>
+      <p data-testid="kit-import-nochange">Nothing in the Kit changes.</p>
     {:else}
-      <ul class="changes" data-testid="tool-import-changes">
+      <ul class="changes" data-testid="kit-import-changes">
         {#each plan.changes as change (`${change.area}:${change.change}:${change.name}`)}
           <li class={change.change}>
             <strong>{verb[change.change]}</strong>
@@ -66,7 +64,7 @@
     {/if}
 
     {#if plan.warnings.length > 0}
-      <div role="alert" class="warnings" data-testid="tool-import-warnings">
+      <div role="alert" class="warnings" data-testid="kit-import-warnings">
         <h3>Please check</h3>
         <ul>
           {#each plan.warnings as warning (warning)}<li>{warning}</li>{/each}
@@ -75,7 +73,7 @@
     {/if}
 
     {#if plan.affectedModels.length > 0}
-      <div data-testid="tool-import-models">
+      <div data-testid="kit-import-models">
         <h3>Models affected</h3>
         <ul>
           {#each plan.affectedModels as model (model.slug)}
@@ -91,7 +89,7 @@
       <button
         type="button"
         onclick={() => dialog?.close()}
-        data-testid="tool-import-cancel"
+        data-testid="kit-import-cancel"
       >
         Cancel
       </button>
@@ -104,7 +102,7 @@
           dialog?.close();
           onConfirm();
         }}
-        data-testid="tool-import-confirm"
+        data-testid="kit-import-confirm"
       >
         {plan.isNew ? 'Add' : 'Update'}
       </button>

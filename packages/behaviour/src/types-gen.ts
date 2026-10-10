@@ -140,7 +140,7 @@ export function generateDeclarations(tool: ToolLibrary): string {
   ].sort();
 
   return `declare module "metakit" {
-  /** Every class of the tool "${tool.manifest.name.replace(/\*\//g, '')}". */
+  /** Every class of the Kit "${tool.manifest.name.replace(/\*\//g, '')}". */
   export type ClassName = ${union(classes.map((c) => c.key))};
   /** The classes you can create objects of. */
   export type ConcreteClassName = ${union(classes.filter((c) => !c.abstract).map((c) => c.key))};
@@ -285,7 +285,7 @@ ${modelType ? members(modelType.attributes) : ''}
     attributes: AttributeInfo[];
   }
 
-  /** The meta-model of the tool: read-only. */
+  /** The meta-model of the Kit: read-only. */
   export const tool: {
     readonly name: string;
     readonly version: string;
@@ -323,7 +323,7 @@ ${modelType ? members(modelType.attributes) : ''}
     progress<T>(label: string, work: (progress: Progress) => T): T;
   };
 
-  /** Needs the "files" permission of the tool. Paths are inside the workspace folder. */
+  /** Needs the "files" permission of the Kit. Paths are inside the workspace folder. */
   export const files: {
     read(path: string): Promise<string>;
     write(path: string, text: string): Promise<void>;
@@ -345,7 +345,7 @@ ${modelType ? members(modelType.attributes) : ''}
   export interface HttpOptions {
     headers?: Record<string, string>;
   }
-  /** Needs the "network" permission of the tool. Only web services that accept requests from web pages answer. */
+  /** Needs the "network" permission of the Kit. Only web services that accept requests from web pages answer. */
   export const http: {
     get(url: string, options?: HttpOptions): Promise<HttpResponse>;
     post(url: string, body?: unknown, options?: HttpOptions): Promise<HttpResponse>;

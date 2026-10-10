@@ -1,18 +1,18 @@
 ---
-id: tool-settings
-title: Tool library settings
+id: kit-settings
+title: Kit settings
 category: build
-summary: The tool library's name, version, languages and canvas grid, and where the other settings that live in its file are changed.
-keywords: [tool library settings, tool library name, tool library version, tool languages, canvas grid, default snap setting]
+summary: The Kit's name, version, languages and canvas grid, and where the other settings that live in its file are changed.
+keywords: [kit settings, kit name, kit version, kit languages, canvas grid, default snap setting]
 contexts: [build.settings]
 order: 220
 ---
 
-Settings hold what belongs to the whole tool library and not to one class: its name and version, the languages of its labels and the grid on the canvas. Most are in the **Settings** section. The name and version are in the header of the Build view.
+Settings hold what belongs to the whole Kit and not to one class: its name and version, the languages of its labels and the grid on the canvas. Most are in the **Settings** section. The name and version are in the header of the Build view.
 
 ## What it is
 
-The tool library file has a **manifest** (its id, name, version, languages and script permissions) and **settings** (grid, layers and numbering). This topic covers every one of them and where you change it.
+The Kit file has a **manifest** (its id, name, version, languages and script permissions) and **settings** (grid, layers and numbering). This topic covers every one of them and where you change it.
 
 | Part | Where you change it |
 | --- | --- |
@@ -21,16 +21,16 @@ The tool library file has a **manifest** (its id, name, version, languages and s
 | Languages | **Settings > Languages** |
 | Grid size, snap, visible | **Settings > Grid** |
 | Script permissions | **Scripts** section ([[scripts]], [[script-permissions]]) |
-| Tool id | Never changed. It identifies the tool library for models and Git. |
+| Kit id | Never changed. It identifies the Kit for models and Git. |
 | Layers, numbering | Stored in the file; there is no editor for them yet. |
 
 ## Where to find it
 
-Build mode, **Tool library** group, **Settings**. The heading is **Settings** and it has two blocks, **Languages** and **Grid**. For name and version see the top of [[page-build-view]].
+Build mode, **Kit** group, **Settings**. The heading is **Settings** and it has two blocks, **Languages** and **Grid**. For name and version see the top of [[page-build-view]].
 
 ## How to use it
 
-1. Name the tool library in the box labelled "Tool library name" at the top of the Build view. Press Enter or click away.
+1. Name the Kit in the box labelled "Kit name" at the top of the Build view. Press Enter or click away.
 2. Set the **Version** next to it before you share a new release.
 3. Open **Settings**. Under **Languages**, add every language you want to write labels in.
 4. Under **Grid**, choose the grid that modellers see.
@@ -41,8 +41,8 @@ Build mode, **Tool library** group, **Settings**. The heading is **Settings** an
 
 | Field | What it does |
 | --- | --- |
-| Tool library name | The name shown in lists and in the new-model dialog. An empty name is ignored and the old one stays. |
-| **Version** | Three numbers with dots, such as `1.2.0`, optionally followed by `-beta.1` or `+build5`. Otherwise the message is "A version looks like 1.0.0." and nothing changes. Models record the version of the tool library they were made with. |
+| Kit name | The name shown in lists and in the new-model dialog. An empty name is ignored and the old one stays. |
+| **Version** | Three numbers with dots, such as `1.2.0`, optionally followed by `-beta.1` or `+build5`. Otherwise the message is "A version looks like 1.0.0." and nothing changes. Models record the version of the Kit they were made with. |
 
 ### Languages
 
@@ -58,9 +58,9 @@ Messages:
 
 - `"xx1" is not a language code such as en or de.` A code is two or three small letters, optionally followed by parts after a dash, for example `en`, `de`, `fr`, `pt-BR`. Capital letters in the first part are not allowed.
 - `de is already listed.`
-- `A tool library needs at least one language.` The last language cannot be removed.
+- `A Kit needs at least one language.` The last language cannot be removed.
 
-Removing a language does not delete the texts that were written in it. They stay in the file, and the problems banner then reports each of them: The language "de" is not listed in the tool's languages (en). Add the language again to make the report go away ([[tool-validation]]).
+Removing a language does not delete the texts that were written in it. They stay in the file, and the problems banner then reports each of them: The language "de" is not listed in the Kit's languages (en). Add the language again to make the report go away ([[kit-validation]]).
 
 ### Grid
 
@@ -80,12 +80,12 @@ The file format has room for named layers (key, labels, visible) and for automat
 
 ## Examples
 
-The Agent pipeline tool has the version `1.0.0`, one language (`en`), a 10 pixel grid with snapping and the grid shown, and one stored layer named Main. To offer it in German too, open **Settings**, type `de` and press **Add language**. Every label box of every class, relation class and model type now has a second box for German ([[labels-and-help]]).
+The Agent pipeline Kit has the version `1.0.0`, one language (`en`), a 10 pixel grid with snapping and the grid shown, and one stored layer named Main. To offer it in German too, open **Settings**, type `de` and press **Add language**. Every label box of every class, relation class and model type now has a second box for German ([[labels-and-help]]).
 
 ## Good to know
 
 - Name and version changes are commands, so they can be undone like everything else.
-- The tool id is fixed once the tool library exists.
+- The Kit id is fixed once the Kit exists.
 - Changing the grid does not move objects that already exist.
 - The first language decides what you see in the Build view lists, so choose it first.
 - With Git mode, bump the version before you make a release ([[git-releases]], [[git-mode]]).
@@ -98,4 +98,4 @@ The Agent pipeline tool has the version `1.0.0`, one language (`en`), a 10 pixel
 
 ## Related
 
-[[page-build-view]], [[labels-and-help]], [[scripts]], [[script-permissions]], [[git-mode]], [[tool-validation]], [[moving-resizing]]
+[[page-build-view]], [[labels-and-help]], [[scripts]], [[script-permissions]], [[git-mode]], [[kit-validation]], [[moving-resizing]]

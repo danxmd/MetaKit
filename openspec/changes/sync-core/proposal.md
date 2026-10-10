@@ -2,7 +2,7 @@
 
 ## Why
 
-Work packages 3.1 and 3.2 in `docs/phase-3.md`: several people must be able to edit the same tool libraries and models through a shared synced folder. Phase 1 saves one snapshot per instance and loads the newest, so concurrent edits are lost. Phase 3 replaces that with write-once change files, a merge that gives every instance the same state, and snapshots that keep opening fast.
+Work packages 3.1 and 3.2 in `docs/phase-3.md`: several people must be able to edit the same Kits and models through a shared synced folder. Phase 1 saves one snapshot per instance and loads the newest, so concurrent edits are lost. Phase 3 replaces that with write-once change files, a merge that gives every instance the same state, and snapshots that keep opening fast.
 
 ## What Changes
 

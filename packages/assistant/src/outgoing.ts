@@ -67,7 +67,7 @@ export function assertNoModelContent(
       fail('it looks like a model file');
     for (const m of text.matchAll(ANY_ID))
       if (!known.has(m[0]))
-        fail(`it contains the id ${m[0]}, which is not in the tool library`);
+        fail(`it contains the id ${m[0]}, which is not in the Kit`);
   }
 }
 

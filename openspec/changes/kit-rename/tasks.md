@@ -4,10 +4,10 @@ Starts after PRs #17 and #18 are merged.
 
 ## 1. PR 1: words people read (`feat/kit-rename-words`)
 
-- [ ] 1.1 UI text in `packages/ui` and `apps/web`: Kit, Kits, New Kit, Built-in Kits, Kit settings.
-- [ ] 1.2 Help topics, tutorials, glossary; rename topic ids and docs contexts; fix every `[[link]]`.
-- [ ] 1.3 README, CLAUDE.md, plans, phase briefs and open OpenSpec changes.
-- [ ] 1.4 Test ids and e2e specs.
+- [x] 1.1 UI text in `packages/ui` and `apps/web`: Kit, Kits, New Kit, Built-in Kits, Kit settings.
+- [x] 1.2 Help topics, tutorials, glossary; rename topic ids and docs contexts; fix every `[[link]]`.
+- [x] 1.3 README, CLAUDE.md, plans, phase briefs and open OpenSpec changes.
+- [x] 1.4 Test ids and e2e specs.
 
 ## 2. PR 2: code names (`feat/kit-rename-code`)
 

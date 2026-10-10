@@ -199,11 +199,11 @@ export function describeDraftChange<K extends DraftKind>(
         lines.push(`It adds the commands: ${commands.join(', ')}.`);
       if (/\bhttp\b/.test(s.source.replace(/["'`][^"'`]*["'`]/g, '')))
         lines.push(
-          'It contacts web services: turn on that permission for the tool in the Scripts section.',
+          'It contacts web services: turn on that permission for the Kit in the Scripts section.',
         );
       if (/\bfiles\b/.test(s.source.replace(/["'`][^"'`]*["'`]/g, '')))
         lines.push(
-          'It reads or writes files: turn on that permission for the tool in the Scripts section.',
+          'It reads or writes files: turn on that permission for the Kit in the Scripts section.',
         );
       lines.push(
         'Scripts change models only through commands, so each can be undone.',

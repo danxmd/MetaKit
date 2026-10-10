@@ -97,7 +97,7 @@ describe('structure', () => {
     const tool = base();
     delete tool.manifest.id;
     expect(messageAt(tool, 'manifest.id')[0]).toMatch(
-      /tool id must be an id of the form tool_/,
+      /Kit id must be an id of the form tool_/,
     );
   });
 
@@ -135,7 +135,7 @@ describe('structure', () => {
       /language code/,
     );
     expect(messageAt(tool, `classes.${SAMPLE.task}.labels.fr`)[0]).toMatch(
-      /not listed in the tool's languages/,
+      /not listed in the Kit's languages/,
     );
   });
 
@@ -496,7 +496,7 @@ describe('reporting', () => {
     const tool = base();
     delete tool.manifest.name;
     expect(formatIssues(issuesOf(tool))).toMatch(
-      /^manifest\.name: The tool name must be text\./,
+      /^manifest\.name: The Kit name must be text\./,
     );
     const parsed = parseToolLibrary(tool);
     expect(parsed.ok).toBe(false);

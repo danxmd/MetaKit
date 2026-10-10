@@ -26,7 +26,7 @@ There are eleven actions. Every change an action makes goes through the same com
 | Cancel the action | `cancel` | Stops the change that a "before" event announced. |
 | Open a model | `openModel` | Opens another model of the workspace. |
 | Run a command | `runCommand` | Starts a command from a rule or script. |
-| Run a script | `runScript` | Starts a script of the tool library. |
+| Run a script | `runScript` | Starts a script of the Kit. |
 
 ## Where to find it
 
@@ -124,7 +124,7 @@ The browser shows a box listing the choices as numbers. You type the number or t
 
 ### Run a script
 
-**Script** starts a script of the tool library. The engine finds a script by its id (it starts with `scr_`), and the editor does not show ids. If you type a name, the result is `The script X does not exist.` A dependable alternative: make the script register a command, then use **Run a command** with the command's label.
+**Script** starts a script of the Kit. The engine finds a script by its id (it starts with `scr_`), and the editor does not show ids. If you type a name, the result is `The script X does not exist.` A dependable alternative: make the script register a command, then use **Run a command** with the command's label.
 
 ## Examples
 

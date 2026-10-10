@@ -221,7 +221,7 @@ export function fromLayout(files: readonly GitFile[]): LayoutResult {
     issues.push({
       path: TOOL_FILE,
       message:
-        'This file is missing, so the tool library cannot be read. It holds the name, settings and order of the parts.',
+        'This file is missing, so the Kit cannot be read. It holds the name, settings and order of the parts.',
     });
     return { tool: null, issues, assets };
   }

@@ -50,8 +50,8 @@ export function validateModelDocument(value: unknown): Issue[] {
   if (m) {
     c.id('model', m.id, 'manifest.id', 'The model id');
     c.string(m.name, 'manifest.name', 'The model name');
-    c.id('tool', m.tool, 'manifest.tool', 'The tool id');
-    c.string(m.toolVersion, 'manifest.toolVersion', 'The tool version');
+    c.id('tool', m.tool, 'manifest.tool', 'The Kit id');
+    c.string(m.toolVersion, 'manifest.toolVersion', 'The Kit version');
     c.id('modelType', m.modelType, 'manifest.modelType', 'The model type id');
     if (m.folder !== undefined)
       c.string(m.folder, 'manifest.folder', 'The folder', { empty: true });

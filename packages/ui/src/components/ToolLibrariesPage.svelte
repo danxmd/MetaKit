@@ -102,9 +102,9 @@
 </script>
 
 <PageFrame
-  title="Tool libraries"
-  help="Tool libraries define the notation and rules models use."
-  testid="tools-page"
+  title="Kits"
+  help="Kits define the notation and rules models use."
+  testid="kits-page"
 >
   {#snippet actions()}
     <details class="menu" use:menuBehaviour data-testid="add-menu">
@@ -113,7 +113,7 @@
         <button
           type="button"
           onclick={() => fileInput?.click()}
-          data-testid="add-tool">From file…</button
+          data-testid="add-kit">From file…</button
         >
         <button type="button" onclick={onGit} data-testid="open-git"
           >From Git…</button
@@ -123,7 +123,7 @@
     <button
       class="primary"
       onclick={() => (creating = { kind: 'empty' })}
-      data-testid="new-tool">New tool library</button
+      data-testid="new-kit">New Kit</button
     >
   {/snippet}
 
@@ -133,28 +133,28 @@
     accept=".json,application/json"
     class="visually-hidden"
     tabindex="-1"
-    aria-label="Tool library file"
+    aria-label="Kit file"
     onchange={chosen}
-    data-testid="tool-file"
+    data-testid="kit-file"
   />
 
   <WorkspaceNotices {error} {warnings} {notes} {health} />
 
   <section
     class="section"
-    aria-labelledby="workspace-tools"
-    data-testid="workspace-tools"
+    aria-labelledby="workspace-kits"
+    data-testid="workspace-kits"
   >
     <div class="section-head">
-      <h2 id="workspace-tools">In this workspace</h2>
+      <h2 id="workspace-kits">In this workspace</h2>
       <p class="muted">
-        The tool libraries your team uses and edits. Everyone with the folder
-        sees the same ones.
+        The Kits your team uses and edits. Everyone with the folder sees the
+        same ones.
       </p>
     </div>
     {#if tools.length === 0}
-      <div class="card empty" data-testid="no-tools">
-        <h3>No tool library in this workspace yet</h3>
+      <div class="card empty" data-testid="no-kits">
+        <h3>No Kit in this workspace yet</h3>
         <p class="muted">
           Without one there is nothing to model with. To start:
         </p>
@@ -164,10 +164,10 @@
           </li>
           <li>
             <strong>Copy one and extend it</strong> with “Copy and extend”, or with
-            “New tool library”.
+            “New Kit”.
           </li>
           <li>
-            <strong>Build one from scratch</strong> with “New tool library”.
+            <strong>Build one from scratch</strong> with “New Kit”.
           </li>
           <li>
             <strong>Bring one in</strong> with Add, from a file or a Git repository.
@@ -177,7 +177,7 @@
     {:else}
       <ul class="grid">
         {#each tools as tool (tool.slug)}
-          <li class="card tool" data-testid="tool-{tool.slug}">
+          <li class="card tool" data-testid="kit-{tool.slug}">
             <div class="head">
               <h3>{tool.name}</h3>
               <span class="badge">Version {tool.version}</span>
@@ -202,7 +202,7 @@
                 class="primary"
                 onclick={() => onEditTool(tool.slug)}
                 aria-label="Edit {tool.name}"
-                data-testid="edit-tool-{tool.slug}">Edit</button
+                data-testid="edit-kit-{tool.slug}">Edit</button
               >
               <details class="menu more" use:menuBehaviour>
                 <summary aria-label="More actions for {tool.name}">…</summary>
@@ -211,12 +211,12 @@
                     type="button"
                     onclick={() =>
                       (creating = { kind: 'workspace', slug: tool.slug })}
-                    data-testid="copy-tool-{tool.slug}">Copy and extend…</button
+                    data-testid="copy-kit-{tool.slug}">Copy and extend…</button
                   >
                   <button
                     type="button"
                     onclick={() => onExportTool(tool.slug)}
-                    data-testid="export-tool-{tool.slug}">Export package</button
+                    data-testid="export-kit-{tool.slug}">Export package</button
                   >
                   <div class="menu-sep"></div>
                   <button
@@ -235,14 +235,14 @@
 
   <section
     class="section"
-    aria-labelledby="built-in-tools"
-    data-testid="built-in-tools"
+    aria-labelledby="built-in-kits"
+    data-testid="built-in-kits"
   >
     <div class="section-head">
-      <h2 id="built-in-tools">Built-in</h2>
+      <h2 id="built-in-kits">Built-in Kits</h2>
       <p class="muted">
-        Ready-made tool libraries that come with MetaKit. They cannot be changed
-        here: use one as it is, or copy it to make it your own.
+        Ready-made Kits that come with MetaKit. They cannot be changed here: use
+        one as it is, or copy it to make it your own.
       </p>
     </div>
     <ul class="grid">
@@ -251,9 +251,7 @@
         <li class="card tool built-in" data-testid="built-in-{b.id}">
           <div class="head">
             <h3>{b.name}</h3>
-            <span
-              class="badge lock"
-              title="Built-in tool libraries are read-only"
+            <span class="badge lock" title="Built-in Kits are read-only"
               ><svg
                 viewBox="0 0 20 20"
                 width="11"
@@ -315,10 +313,8 @@
   </section>
 
   {#if trashedTools.length > 0}
-    <details class="trash" data-testid="trash-tools">
-      <summary
-        >Deleted tool libraries ({trashedTools.length}), kept for 30 days</summary
-      >
+    <details class="trash" data-testid="trash-kits">
+      <summary>Deleted Kits ({trashedTools.length}), kept for 30 days</summary>
       <ul>
         {#each trashedTools as tool (tool.slug)}
           <li>

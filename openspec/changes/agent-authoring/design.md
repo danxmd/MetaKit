@@ -5,7 +5,7 @@
 This is a new package that depends only on `core`, `formula`, `shapes` and `storage` types. It has no DOM and runs in the browser, in a worker and in Node.
 
 **Session**
-- A session is a working copy of one or more documents: in-memory tool and model stores that are copies of the real ones, plus the workspace listing.
+- A session is a working copy of one or more documents: in-memory Kit and model stores that are copies of the real ones, plus the workspace listing.
 - `execute(op)` runs one operation against the copies and returns `{ ok, result | error, issues }`.
 - Each document's changes are collected as one batch.
 - `diff()` describes what was added, changed and removed per document, for the review.
@@ -15,7 +15,7 @@ This is a new package that depends only on `core`, `formula`, `shapes` and `stor
 | Group | Operations |
 | --- | --- |
 | Read | `list_tool_libraries`, `read_tool_library` (summary or full), `list_models`, `read_model`, `format_guide`, `validate` |
-| Tool library | `create_tool_library` (`from?`), `put_class`, `put_relation_class`, `remove_class`, `remove_relation_class`, `put_attribute`, `remove_attribute`, `set_look`, `put_model_type`, `put_rule`, `put_script`, `add_from_catalog` |
+| Kit | `create_tool_library` (`from?`), `put_class`, `put_relation_class`, `remove_class`, `remove_relation_class`, `put_attribute`, `remove_attribute`, `set_look`, `put_model_type`, `put_rule`, `put_script`, `add_from_catalog` |
 | Model | `create_model`, `add_objects`, `connect`, `set_attributes`, `remove`, `move`, `auto_layout` |
 
 **How operations take their inputs**
@@ -29,12 +29,12 @@ This is a new package that depends only on `core`, `formula`, `shapes` and `stor
 - `runPlan(session, plan)` executes the steps in order and stops at the first failure, keeping the earlier steps.
 
 **Translation to commands**
-- Each operation maps to existing commands: `putClass`, `putAttribute`, `putShape`, `putRelation`, `putModelType`, `putRule` and `putScript` for tool libraries; the model commands for models; `applyLayout` for layout.
+- Each operation maps to existing commands: `putClass`, `putAttribute`, `putShape`, `putRelation`, `putModelType`, `putRule` and `putScript` for Kits; the model commands for models; `applyLayout` for layout.
 - `create_tool_library` with `from` uses `cloneToolLibrary` from `ai-data-catalog`. `add_from_catalog` uses `catalogCommands`.
 
 **Tests (Node)**
 - Every operation, and its errors.
-- A plan that builds each of the three new built-in tools from scratch and validates the result.
+- A plan that builds each of the three new built-in Kits from scratch and validates the result.
 - A model plan for each, then `validateModel`.
 
 ## Built-in agent
@@ -47,7 +47,7 @@ This is a new package that depends only on `core`, `formula`, `shapes` and `stor
 - It stops at `finish`, at 30 steps, at a cost or token limit shown to the person, or on **Stop**.
 
 **Prompts**
-- The system prompt holds the format guide, the catalog topics, and a summary of the tool library.
+- The system prompt holds the format guide, the catalog topics, and a summary of the Kit.
 - In Model mode it also holds the model, after the notice.
 
 **Privacy**
@@ -56,17 +56,17 @@ This is a new package that depends only on `core`, `formula`, `shapes` and `stor
 
 **UI** (`components/assistant/AgentPanel.svelte`, a side panel that opens from the entry points)
 - **Entry points:**
-  - On the Tool libraries page, **Create with assistant**: a goal box, plus Start from (*From scratch* or *Extend …*).
+  - On the Kits page, **Create with assistant**: a goal box, plus Start from (*From scratch* or *Extend …*).
   - In Build mode, **Ask the assistant** in the bar.
   - In Model mode, **Ask the assistant** in the Edit menu and on the toolbar.
 - **Progress:** each step is a line, such as "Added class Data contract", with a live count and **Stop**.
 - **Review:**
   - grouped lists of added, changed and removed items
   - the problems, with a link to each
-  - for tool libraries, **Try it**, which opens the existing preview on the working copy
+  - for Kits, **Try it**, which opens the existing preview on the working copy
   - **Accept**, **Discard**, and **Keep going…** to send a follow-up instruction on the same working copy
 
-  Accepting runs one batch per document on the real stores. A new tool library is created first.
+  Accepting runs one batch per document on the real stores. A new Kit is created first.
 
 ## MCP bridge
 
@@ -78,7 +78,7 @@ This is a new package that depends only on `core`, `formula`, `shapes` and `stor
   - `initialize`, `notifications/initialized`, `ping`
   - `tools/list`: the operations and their schemas
   - `tools/call`
-  - `resources/list` and `resources/read`: the format guide, plus each tool library and model as JSON
+  - `resources/list` and `resources/read`: the format guide, plus each Kit and model as JSON
 - Logs go to stderr only.
 
 **How it works on the folder**
@@ -106,7 +106,7 @@ This is a new package that depends only on `core`, `formula`, `shapes` and `stor
   - the goal
   - the plan format with its JSON schema and one worked example
   - the operations and their arguments
-  - the current tool library summary, plus the model after the notice
+  - the current Kit summary, plus the model after the notice
   - "Answer with one JSON code block"
 
 **2. Paste the AI's answer**
@@ -117,7 +117,7 @@ This is a new package that depends only on `core`, `formula`, `shapes` and `stor
 ## ADR 0011
 
 ADR 0011 records four things:
-- The assistant may now send model content after a per-model notice, and may build whole tool libraries. This replaces decision 3 and "cannot touch models" in ADR 0008.
+- The assistant may now send model content after a per-model notice, and may build whole Kits. This replaces decision 3 and "cannot touch models" in ADR 0008.
 - Plans and operations are the single agent interface.
 - The MCP bridge is a local program started by the person, so rule 1 (no server) holds.
 - The bridge writes as its own instance (rule 6), and secrets are not involved (rule 9).

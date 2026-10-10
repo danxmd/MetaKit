@@ -219,6 +219,6 @@ export function catalogResultText(result: CatalogAddResult): string {
       ? `Added ${n(classes.length, 'class', 'classes')} and ${n(relations.length, 'relation class', 'relation classes')}.`
       : `Added ${n(classes.length, 'class', 'classes')}.`;
   if (result.skipped.length > 0)
-    text += ` Already in this tool library, so not added again: ${result.skipped.join(', ')}.`;
+    text += ` Already in this Kit, so not added again: ${result.skipped.join(', ')}.`;
   return text;
 }

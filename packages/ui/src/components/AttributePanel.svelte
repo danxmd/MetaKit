@@ -163,7 +163,7 @@
       <details class="unknown" data-testid="unknown-attributes">
         <summary>Unknown attributes ({unknown.length})</summary>
         <p class="note">
-          The tool no longer has these attributes. The values are kept until you
+          The Kit no longer has these attributes. The values are kept until you
           remove them.
         </p>
         {#each unknown as entry (entry.id)}

@@ -133,7 +133,7 @@ function read(files: GitFile[]): {
   const r = fromLayout(files);
   if (!r.tool)
     throw new GitSyncError(
-      `The merged tool library cannot be read: ${r.issues.map((i) => `${i.path}: ${i.message}`).join('; ')}`,
+      `The merged Kit cannot be read: ${r.issues.map((i) => `${i.path}: ${i.message}`).join('; ')}`,
     );
   return { tool: r.tool, assets: r.assets, issues: r.issues };
 }
@@ -347,7 +347,7 @@ export async function openRelease(
   const r = fromLayout(layoutOnly(snapshot.files));
   if (!r.tool)
     throw new GitSyncError(
-      `The tool library at "${tag}" cannot be read: ${r.issues.map((i) => `${i.path}: ${i.message}`).join('; ')}`,
+      `The Kit at "${tag}" cannot be read: ${r.issues.map((i) => `${i.path}: ${i.message}`).join('; ')}`,
     );
   return {
     tag,

@@ -37,7 +37,7 @@ In the folder you picked with **Open workspace folder**, outside the app (see [[
 
 ```text
 workspace.json
-tools/<tool-folder>/
+tools/<kit-folder>/
   tool.json
   assets/<name>.<hash>.<ext>
   _state/<instanceId>/
@@ -50,7 +50,7 @@ models/<model-folder>/
 _presence/<instanceId>.json
 ```
 
-A tool folder is named after the tool (`bpmn-lite`). A model folder is named after the model plus four random characters (`order-process-9xk2`). Folder names match `[a-z0-9][a-z0-9-]*`, at most 61 characters. They never change when you rename the thing inside.
+A Kit folder is named after the Kit (`bpmn-lite`). A model folder is named after the model plus four random characters (`order-process-9xk2`). Folder names match `[a-z0-9][a-z0-9-]*`, at most 61 characters. They never change when you rename the thing inside.
 
 ### workspace.json
 
@@ -127,15 +127,15 @@ The header comes first so a reader can skip a snapshot that another one covers. 
 { "at": "2026-10-07T10:00:00.000Z", "formatVersion": 1, "trashed": true }
 ```
 
-Deleting a model or tool writes this marker in your own folder. The newest marker of all instances decides. After 30 days the item is no longer offered for restoring. See [[trash-and-restore]].
+Deleting a model or Kit writes this marker in your own folder. The newest marker of all instances decides. After 30 days the item is no longer offered for restoring. See [[trash-and-restore]].
 
 ### Presence: `_presence/<instanceId>.json`
 
 Name, colour, time, open document, selection, hash and `seen`. See [[instances-and-presence]].
 
-### The tool library document
+### The Kit document
 
-The content of a tool library, as you see it in a snapshot, an export or a Git checkout, is one JSON object (tool format 4):
+The content of a Kit, as you see it in a snapshot, an export or a Git checkout, is one JSON object (Kit format 4):
 
 | Key | Holds |
 | --- | --- |
@@ -150,7 +150,7 @@ The content of a tool library, as you see it in a snapshot, an export or a Git c
 | `rules` | Rules by id (format 3 and later) |
 | `scripts` | Scripts by id: id, name, source, enabled (format 4) |
 
-See [[concepts-tool-library]], [[rules]] and [[scripts]]. In Git it is split into many files: [[git-layout]].
+See [[concepts-kit]], [[rules]] and [[scripts]]. In Git it is split into many files: [[git-layout]].
 
 ### The model document
 
@@ -161,8 +161,8 @@ One JSON object (model format 1): `formatVersion`, `manifest` (id, name, tool, t
 | File | What it is | Shape |
 | --- | --- | --- |
 | `.mkmodel.json` | One model as a person would write it, with class and attribute names instead of ids | `formatVersion`, `kind: "mkmodel"`, `name`, `tool`, `modelType`, `attributes`, `elements`, `connectors` |
-| `.mkbundle` | A zip with models and their tool library | `bundle.json` (`kind: "mkbundle"`, tool, `includesTool`, models), `models/*.mkmodel.json`, optional `tool/tool.json` |
-| `.mktool` | A zip with a tool library | `package.json` (`kind: "mktool"`, tool, contents), `tool.json`, `scripts/`, `assets/` |
+| `.mkbundle` | A zip with models and their Kit | `bundle.json` (`kind: "mkbundle"`, tool, `includesTool`, models), `models/*.mkmodel.json`, optional `tool/tool.json` |
+| `.mktool` | A zip with a Kit | `package.json` (`kind: "mktool"`, tool, contents), `tool.json`, `scripts/`, `assets/` |
 | CSV | One file per class and relation class, for spreadsheets | `<ClassKey>.csv`, `<RelationKey>.csv`; zipped when you export several |
 
 Zip files are limited in size and number of files, and files with unsafe names are refused. See [[import-export]].
@@ -174,7 +174,7 @@ In the browser's database `metakit`, store `kv`: the workspace folder handle, yo
 ## Examples
 
 - Anna's tab `7f3a1b2c` edits the model `order-process-9xk2`. It writes `models/order-process-9xk2/_state/7f3a1b2c/000001.jsonl`, and later `snapshot.json`.
-- The workspace has two tool libraries and ten models. The folder has 12 document folders and one `_state/` folder per instance inside each.
+- The workspace has two Kits and ten models. The folder has 12 document folders and one `_state/` folder per instance inside each.
 
 ## Good to know
 

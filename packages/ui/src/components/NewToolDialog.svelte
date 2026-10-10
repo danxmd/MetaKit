@@ -69,12 +69,12 @@
 <dialog
   bind:this={dialog}
   onclose={onCancel}
-  aria-labelledby="new-tool-title"
-  data-testid="new-tool-dialog"
+  aria-labelledby="new-kit-title"
+  data-testid="new-kit-dialog"
 >
   <form onsubmit={submit}>
     <div class="head">
-      <h2 id="new-tool-title">New tool library</h2>
+      <h2 id="new-kit-title">New Kit</h2>
       <p class="muted">
         Start with an empty one, or copy an existing one and extend it. A copy
         is yours: the original does not change.
@@ -87,7 +87,7 @@
         bind:value={name}
         autofocus
         placeholder="For example: Order process"
-        data-testid="new-tool-name"
+        data-testid="new-kit-name"
       />
     </label>
     <fieldset>
@@ -107,7 +107,7 @@
           >
         </label>
         {#if tools.length > 0}
-          <p class="group">A copy of a tool library in this workspace</p>
+          <p class="group">A copy of a Kit in this workspace</p>
           {#each tools as tool (tool.slug)}
             <label class="option">
               <input
@@ -125,7 +125,7 @@
             </label>
           {/each}
         {/if}
-        <p class="group">A copy of a built-in tool library</p>
+        <p class="group">A copy of a built-in Kit</p>
         {#each builtIns as tool (tool.id)}
           <label class="option">
             <input
@@ -144,9 +144,9 @@
       </div>
     </fieldset>
     {#if sourceName}
-      <p class="muted note" data-testid="new-tool-note">
-        The new library starts with everything in {sourceName}, at version
-        1.0.0, and shows “Based on {sourceName}”.
+      <p class="muted note" data-testid="new-kit-note">
+        The new Kit starts with everything in {sourceName}, at version 1.0.0,
+        and shows “Based on {sourceName}”.
       </p>
     {/if}
     <div class="actions">
@@ -155,7 +155,7 @@
         class="primary"
         type="submit"
         disabled={name.trim() === '' || busy}
-        data-testid="new-tool-create">Create and edit</button
+        data-testid="new-kit-create">Create and edit</button
       >
     </div>
   </form>

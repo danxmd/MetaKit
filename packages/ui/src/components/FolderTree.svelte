@@ -86,8 +86,8 @@
         >
         <span class="meta muted">
           {#if toolOf(model)}{toolOf(model)!.name}
-            <span class="badge">{toolOf(model)!.version}</span>{:else}Tool
-            library not found{/if}
+            <span class="badge">{toolOf(model)!.version}</span>{:else}Kit not
+            found{/if}
         </span>
         <details
           class="menu more"

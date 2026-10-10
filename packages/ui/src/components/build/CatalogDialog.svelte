@@ -227,7 +227,7 @@
             <span>{entry.labels.en}</span>
             <small class="muted"
               >{taken
-                ? 'Already in this tool library'
+                ? 'Already in this Kit'
                 : searching
                   ? topicLabel(entry.topic)
                   : entry.key !== entry.labels.en

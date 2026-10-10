@@ -34,7 +34,7 @@
   }
   function removeLanguage(code: string) {
     if (tool.manifest.languages.length === 1) {
-      error = 'A tool library needs at least one language.';
+      error = 'A Kit needs at least one language.';
       return;
     }
     exec({
