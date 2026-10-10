@@ -161,6 +161,54 @@ export const BUILT_IN_KITS: readonly BuiltInKit[] = [
       ),
   },
   {
+    id: 'kit_masterdata' as KitId,
+    name: 'Master data management',
+    version: '1.0.0',
+    domain: 'data-ai',
+    description:
+      'Master data domains with golden records, the source systems that supply them, match and survivorship rules, MDM hubs in the registry, consolidation, coexistence or centralised style, and data stewards.',
+    load: () =>
+      import('../../../../kits/master-data/kit.json?raw').then(
+        (m) => m.default,
+      ),
+  },
+  {
+    id: 'kit_analyticsbi' as KitId,
+    name: 'Analytics and BI landscape',
+    version: '1.0.0',
+    domain: 'data-ai',
+    description:
+      'Reports and dashboards with their owners, usage and refresh, the semantic models and metrics they are built on and the audiences they serve, with checks for metrics defined twice.',
+    load: () =>
+      import('../../../../kits/analytics-bi/kit.json?raw').then(
+        (m) => m.default,
+      ),
+  },
+  {
+    id: 'kit_privacyropa' as KitId,
+    name: 'Privacy and records of processing',
+    version: '1.0.0',
+    domain: 'data-ai',
+    description:
+      'Records of processing: activities with purposes and legal bases, data categories, data subjects, recipients and transfers with safeguards, retention, systems and an impact assessment indication.',
+    load: () =>
+      import('../../../../kits/privacy-ropa/kit.json?raw').then(
+        (m) => m.default,
+      ),
+  },
+  {
+    id: 'kit_clouddatamigration' as KitId,
+    name: 'Cloud data migration',
+    version: '1.0.0',
+    domain: 'data-ai',
+    description:
+      'Workloads moving from source systems to cloud target services in migration waves, with dependencies, cut-over plans, status, risks and the readiness of each wave.',
+    load: () =>
+      import('../../../../kits/cloud-data-migration/kit.json?raw').then(
+        (m) => m.default,
+      ),
+  },
+  {
     id: 'tool_agentpipeline' as KitId,
     name: 'Agent pipeline',
     version: '1.0.0',

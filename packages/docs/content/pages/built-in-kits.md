@@ -33,6 +33,10 @@ They are listed by domain, under one heading each:
 | **Data modelling** | Conceptual, logical and physical data models: subject areas, entities with attributes and keys, relationships with cardinality, and tables with typed columns and foreign keys. See [[data-modelling]]. |
 | **Data pipelines and lineage** | Sources, jobs, schedules, datasets, reports and target applications, with lineage down to the field, upstream and downstream counts and checks for unscheduled jobs and orphan datasets. See [[data-pipelines-lineage]]. |
 | **Data quality management** | Quality rules with thresholds and results on data assets, quality dimensions, issues with severity, status and owner, and the actions that resolve them, with pass rates and quality scores. See [[data-quality]]. |
+| **Master data management** | Master data domains with golden records, the source systems that supply them, match and survivorship rules, MDM hubs in the registry, consolidation, coexistence or centralised style, and data stewards. See [[master-data]]. |
+| **Analytics and BI landscape** | Reports and dashboards with their owners, usage and refresh, the semantic models and metrics they are built on and the audiences they serve, with checks for metrics defined twice. See [[analytics-bi]]. |
+| **Privacy and records of processing** | Records of processing: activities with purposes and legal bases, data categories, data subjects, recipients and transfers with safeguards, retention, systems and an impact assessment indication. See [[privacy-ropa]]. |
+| **Cloud data migration** | Workloads moving from source systems to cloud target services in migration waves, with dependencies, cut-over plans, status, risks and the readiness of each wave. See [[cloud-data-migration]]. |
 | **Agent pipeline** | Pipelines in which AI agents and people perform tasks, hand over work and approve results. |
 
 **Business and strategy**

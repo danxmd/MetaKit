@@ -44,6 +44,10 @@ const INTENDED_WARNINGS: Record<string, number> = {
   'data-modelling': 1,
   'data-pipelines-lineage': 2,
   'data-quality': 1,
+  'master-data': 1,
+  'analytics-bi': 2,
+  'privacy-ropa': 2,
+  'cloud-data-migration': 1,
 };
 
 /**

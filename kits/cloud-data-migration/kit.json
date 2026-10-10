@@ -1,0 +1,1798 @@
+{
+  "formatVersion": 7,
+  "manifest": {
+    "id": "kit_clouddatamigration",
+    "name": "Cloud data migration",
+    "version": "1.0.0",
+    "languages": ["en"]
+  },
+  "settings": {
+    "grid": {
+      "size": 10,
+      "snap": true,
+      "visible": true
+    },
+    "layers": [],
+    "numbering": {
+      "enabled": false,
+      "prefix": "",
+      "start": 1
+    }
+  },
+  "classes": {
+    "cls_sourcesystem": {
+      "id": "cls_sourcesystem",
+      "key": "SourceSystem",
+      "kind": "node",
+      "labels": {
+        "en": "Source system"
+      },
+      "help": {
+        "en": "A system or database where the data lives today."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Source system",
+          "id": "att_sourcesystem_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_sourcesystem_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Technology",
+          "id": "att_sourcesystem_technology",
+          "labels": {
+            "en": "Technology"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_sourcesystem_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Hosting",
+          "options": ["On-premises", "Cloud", "Software as a service"],
+          "id": "att_sourcesystem_hosting",
+          "labels": {
+            "en": "Hosting"
+          }
+        },
+        {
+          "type": "date",
+          "key": "Decommission",
+          "id": "att_sourcesystem_decommission",
+          "labels": {
+            "en": "Switch off"
+          },
+          "help": {
+            "en": "When it can be switched off after the move."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Workloads",
+          "formula": "count(incoming('MovesFrom'))",
+          "result": "number",
+          "id": "att_sourcesystem_workloads",
+          "labels": {
+            "en": "Workloads"
+          },
+          "help": {
+            "en": "How many workloads move away from it."
+          }
+        }
+      ],
+      "shape": "shp_sourcesystem"
+    },
+    "cls_cloudplatform": {
+      "id": "cls_cloudplatform",
+      "key": "CloudPlatform",
+      "kind": "container",
+      "labels": {
+        "en": "Cloud platform"
+      },
+      "help": {
+        "en": "The cloud account or region the data moves to. Place the target services inside it. The provider is free text."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Cloud platform",
+          "id": "att_cloudplatform_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_cloudplatform_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Provider",
+          "id": "att_cloudplatform_provider",
+          "labels": {
+            "en": "Provider"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Region",
+          "id": "att_cloudplatform_region",
+          "labels": {
+            "en": "Region"
+          }
+        }
+      ],
+      "shape": "shp_cloudplatform"
+    },
+    "cls_risk": {
+      "id": "cls_risk",
+      "key": "Risk",
+      "kind": "node",
+      "labels": {
+        "en": "Risk"
+      },
+      "help": {
+        "en": "Something that may go wrong. Score is likelihood times impact; Rating turns it into Low, Medium or High and colours the shape."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Risk",
+          "id": "att_risk_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_risk_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "Likelihood",
+          "min": 1,
+          "max": 5,
+          "id": "att_risk_likelihood",
+          "labels": {
+            "en": "Likelihood (1 to 5)"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "Impact",
+          "min": 1,
+          "max": 5,
+          "id": "att_risk_impact",
+          "labels": {
+            "en": "Impact (1 to 5)"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_risk_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Status",
+          "options": ["Open", "Mitigated", "Accepted", "Closed"],
+          "id": "att_risk_status",
+          "labels": {
+            "en": "Status"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Score",
+          "formula": "Likelihood == null || Impact == null ? null : Likelihood * Impact",
+          "result": "number",
+          "id": "att_risk_score",
+          "labels": {
+            "en": "Score"
+          },
+          "help": {
+            "en": "Likelihood times impact, from 1 to 25."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Rating",
+          "formula": "Score == null ? null : (Score >= 15 ? 'High' : (Score >= 8 ? 'Medium' : 'Low'))",
+          "result": "text",
+          "id": "att_risk_rating",
+          "labels": {
+            "en": "Rating"
+          },
+          "help": {
+            "en": "High from 15, Medium from 8, otherwise Low."
+          }
+        }
+      ],
+      "shape": "shp_risk"
+    },
+    "cls_migrationwave": {
+      "id": "cls_migrationwave",
+      "key": "MigrationWave",
+      "kind": "container",
+      "labels": {
+        "en": "Migration wave"
+      },
+      "help": {
+        "en": "A group of workloads that move together, in a fixed order. Place its workloads and its cut-over plan inside it. The border shows how ready the wave is."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Migration wave",
+          "id": "att_migrationwave_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_migrationwave_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "Sequence",
+          "min": 1,
+          "id": "att_migrationwave_sequence",
+          "labels": {
+            "en": "Sequence"
+          },
+          "help": {
+            "en": "The order of the wave: 1 moves first."
+          }
+        },
+        {
+          "type": "date",
+          "key": "Start",
+          "id": "att_migrationwave_start",
+          "labels": {
+            "en": "Start"
+          }
+        },
+        {
+          "type": "date",
+          "key": "End",
+          "id": "att_migrationwave_end",
+          "labels": {
+            "en": "Cut-over date"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Workloads",
+          "formula": "count(children().Readiness)",
+          "result": "number",
+          "id": "att_migrationwave_workloads",
+          "labels": {
+            "en": "Workloads"
+          },
+          "help": {
+            "en": "How many workloads it holds."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "SizeGB",
+          "formula": "sum(children().SizeGB)",
+          "result": "number",
+          "id": "att_migrationwave_sizegb",
+          "labels": {
+            "en": "Size (GB)"
+          },
+          "help": {
+            "en": "The size of its workloads together, in gigabytes."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Readiness",
+          "formula": "IFERROR(round(avg(children().Readiness), 0), null)",
+          "result": "number",
+          "id": "att_migrationwave_readiness",
+          "labels": {
+            "en": "Readiness (%)"
+          },
+          "help": {
+            "en": "The average readiness of its workloads, in percent."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Progress",
+          "formula": "IFERROR(round(avg(children().Progress), 0), null)",
+          "result": "number",
+          "id": "att_migrationwave_progress",
+          "labels": {
+            "en": "Progress (%)"
+          },
+          "help": {
+            "en": "The average progress of its workloads, in percent."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "ReadinessLevel",
+          "formula": "Readiness == null ? null : Readiness == 100 ? 'Ready' : Readiness >= 75 ? 'Nearly ready' : 'Not ready'",
+          "result": "text",
+          "id": "att_migrationwave_readinesslevel",
+          "labels": {
+            "en": "Readiness level"
+          },
+          "help": {
+            "en": "Ready when every workload is ready, Nearly ready from 75%, otherwise Not ready. The border shows it."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Summary",
+          "formula": "Name + (Readiness == null ? '' : ' (' + text(Readiness) + '% ready)')",
+          "result": "text",
+          "id": "att_migrationwave_summary",
+          "labels": {
+            "en": "Summary"
+          },
+          "help": {
+            "en": "The name and the readiness, shown as the heading."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_wave_dates",
+          "formula": "Start == null || End == null || Start <= End",
+          "message": "= 'Wave \"' + Name + '\" ends before it starts.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_migrationwave"
+    },
+    "cls_workload": {
+      "id": "cls_workload",
+      "key": "Workload",
+      "kind": "node",
+      "labels": {
+        "en": "Workload"
+      },
+      "help": {
+        "en": "Something that moves to the cloud: a database, a warehouse, files, loading jobs or reports. The fill shows its status."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Workload",
+          "id": "att_workload_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_workload_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "WorkloadType",
+          "options": [
+            "Database",
+            "Data warehouse",
+            "Files",
+            "Loading jobs",
+            "Reports",
+            "Application data"
+          ],
+          "id": "att_workload_workloadtype",
+          "labels": {
+            "en": "Type"
+          }
+        },
+        {
+          "type": "number",
+          "key": "SizeGB",
+          "min": 0,
+          "id": "att_workload_sizegb",
+          "labels": {
+            "en": "Size (GB)"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Approach",
+          "options": ["Rehost", "Replatform", "Refactor", "Retire", "Retain"],
+          "id": "att_workload_approach",
+          "labels": {
+            "en": "Approach"
+          },
+          "help": {
+            "en": "Rehost moves it as it is, replatform changes the platform a little, refactor rebuilds it, retire switches it off and retain keeps it where it is."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Complexity",
+          "options": ["Low", "Medium", "High"],
+          "id": "att_workload_complexity",
+          "labels": {
+            "en": "Complexity"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Status",
+          "options": [
+            "Not started",
+            "Assessed",
+            "Ready",
+            "Migrating",
+            "Migrated",
+            "Validated"
+          ],
+          "default": "Not started",
+          "id": "att_workload_status",
+          "labels": {
+            "en": "Status"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_workload_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Wave",
+          "formula": "parent ? parent.Name : null",
+          "result": "text",
+          "id": "att_workload_wave",
+          "labels": {
+            "en": "Wave"
+          },
+          "help": {
+            "en": "The wave it is planned in."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "WaveNumber",
+          "formula": "parent ? parent.Sequence : null",
+          "result": "number",
+          "id": "att_workload_wavenumber",
+          "labels": {
+            "en": "Wave number"
+          },
+          "help": {
+            "en": "The sequence of its wave."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "LatestDependency",
+          "formula": "max(outgoing('DependsOn').WaveNumber)",
+          "result": "number",
+          "id": "att_workload_latestdependency",
+          "labels": {
+            "en": "Latest wave it depends on"
+          },
+          "help": {
+            "en": "The latest wave among the workloads it depends on."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Readiness",
+          "formula": "Status == 'Not started' || Status == null ? 0 : Status == 'Assessed' ? 50 : 100",
+          "result": "number",
+          "id": "att_workload_readiness",
+          "labels": {
+            "en": "Readiness (%)"
+          },
+          "help": {
+            "en": "Not started 0%, assessed 50%, ready or later 100%."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Progress",
+          "formula": "Status == 'Validated' ? 100 : Status == 'Migrated' ? 80 : Status == 'Migrating' ? 60 : Status == 'Ready' ? 40 : Status == 'Assessed' ? 20 : 0",
+          "result": "number",
+          "id": "att_workload_progress",
+          "labels": {
+            "en": "Progress (%)"
+          },
+          "help": {
+            "en": "From 0% (not started) to 100% (validated after the move)."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "StatusText",
+          "formula": "(Status ?? 'Not started') + (Approach ? ' · ' + Approach : '')",
+          "result": "text",
+          "id": "att_workload_statustext",
+          "labels": {
+            "en": "Status text"
+          },
+          "help": {
+            "en": "The status and the approach, shown under the name."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_workload_order",
+          "formula": "WaveNumber == null || LatestDependency == null || LatestDependency <= WaveNumber",
+          "message": "= 'Workload \"' + Name + '\" moves in wave ' + text(WaveNumber) + ' but depends on a workload of wave ' + text(LatestDependency) + '.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_workload_wave",
+          "formula": "parent != null",
+          "message": "= 'Workload \"' + Name + '\" is not planned in a wave: place it inside one.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_workload_target",
+          "formula": "Approach == 'Retire' || Approach == 'Retain' || count(outgoing('MovesTo')) > 0",
+          "message": "= 'Workload \"' + Name + '\" has no target: connect the service it moves to with \"Moves to\".'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_workload"
+    },
+    "cls_targetservice": {
+      "id": "cls_targetservice",
+      "key": "TargetService",
+      "kind": "node",
+      "labels": {
+        "en": "Target service"
+      },
+      "help": {
+        "en": "A cloud service that receives workloads, such as object storage or a managed database. Technology is free text."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Target service",
+          "id": "att_targetservice_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_targetservice_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "ServiceType",
+          "options": [
+            "Object storage",
+            "Managed database",
+            "Data warehouse",
+            "Lakehouse",
+            "Integration service",
+            "Analytics service"
+          ],
+          "id": "att_targetservice_servicetype",
+          "labels": {
+            "en": "Type"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Technology",
+          "id": "att_targetservice_technology",
+          "labels": {
+            "en": "Technology"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Region",
+          "id": "att_targetservice_region",
+          "labels": {
+            "en": "Region"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Workloads",
+          "formula": "count(incoming('MovesTo'))",
+          "result": "number",
+          "id": "att_targetservice_workloads",
+          "labels": {
+            "en": "Workloads"
+          },
+          "help": {
+            "en": "How many workloads move to it."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "IncomingGB",
+          "formula": "sum(incoming('MovesTo').SizeGB)",
+          "result": "number",
+          "id": "att_targetservice_incominggb",
+          "labels": {
+            "en": "Incoming (GB)"
+          },
+          "help": {
+            "en": "The size of the workloads that move to it, in gigabytes."
+          }
+        }
+      ],
+      "shape": "shp_targetservice"
+    },
+    "cls_cutoverplan": {
+      "id": "cls_cutoverplan",
+      "key": "CutoverPlan",
+      "kind": "node",
+      "labels": {
+        "en": "Cut-over plan"
+      },
+      "help": {
+        "en": "How a wave switches over: the window, the go or no-go decision and how to go back if it fails. Place it inside its wave."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Cut-over plan",
+          "id": "att_cutoverplan_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Window",
+          "id": "att_cutoverplan_window",
+          "labels": {
+            "en": "Window"
+          },
+          "help": {
+            "en": "When the switch happens, such as \"Saturday 22:00 to Sunday 06:00\"."
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_cutoverplan_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Decision",
+          "options": ["Not decided", "Go", "No go"],
+          "default": "Not decided",
+          "id": "att_cutoverplan_decision",
+          "labels": {
+            "en": "Go or no go"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Steps",
+          "multiline": true,
+          "id": "att_cutoverplan_steps",
+          "labels": {
+            "en": "Steps"
+          }
+        },
+        {
+          "type": "text",
+          "key": "RollbackPlan",
+          "multiline": true,
+          "id": "att_cutoverplan_rollbackplan",
+          "labels": {
+            "en": "Rollback plan"
+          },
+          "help": {
+            "en": "How to switch back to the old systems if the cut-over fails."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Wave",
+          "formula": "parent ? parent.Name : null",
+          "result": "text",
+          "id": "att_cutoverplan_wave",
+          "labels": {
+            "en": "Wave"
+          },
+          "help": {
+            "en": "The wave it belongs to."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_cutover_rollback",
+          "formula": "!isEmpty(RollbackPlan)",
+          "message": "= 'Cut-over plan \"' + Name + '\" has no rollback plan.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_cutoverplan"
+    }
+  },
+  "relations": {
+    "rel_movesfrom": {
+      "id": "rel_movesfrom",
+      "key": "MovesFrom",
+      "labels": {
+        "en": "Moves from"
+      },
+      "help": {
+        "en": "The workload leaves this source system."
+      },
+      "from": ["cls_workload"],
+      "to": ["cls_sourcesystem"],
+      "attributes": [],
+      "shape": "shp_rel_movesfrom"
+    },
+    "rel_movesto": {
+      "id": "rel_movesto",
+      "key": "MovesTo",
+      "labels": {
+        "en": "Moves to"
+      },
+      "help": {
+        "en": "The workload lands in this target service."
+      },
+      "from": ["cls_workload"],
+      "to": ["cls_targetservice"],
+      "attributes": [],
+      "shape": "shp_rel_movesto"
+    },
+    "rel_dependson": {
+      "id": "rel_dependson",
+      "key": "DependsOn",
+      "labels": {
+        "en": "Depends on"
+      },
+      "help": {
+        "en": "The workload needs the other one to move first, or in the same wave."
+      },
+      "from": ["cls_workload"],
+      "to": ["cls_workload"],
+      "attributes": [],
+      "shape": "shp_rel_dependson"
+    },
+    "rel_hasrisk": {
+      "id": "rel_hasrisk",
+      "key": "HasRisk",
+      "labels": {
+        "en": "Has risk"
+      },
+      "help": {
+        "en": "The workload or the wave is exposed to the risk."
+      },
+      "from": ["cls_workload", "cls_migrationwave"],
+      "to": ["cls_risk"],
+      "attributes": [],
+      "shape": "shp_rel_hasrisk"
+    }
+  },
+  "modelTypes": {
+    "mt_migration": {
+      "id": "mt_migration",
+      "key": "Migration",
+      "labels": {
+        "en": "Cloud data migration"
+      },
+      "classes": [
+        "cls_sourcesystem",
+        "cls_cloudplatform",
+        "cls_risk",
+        "cls_migrationwave",
+        "cls_workload",
+        "cls_targetservice",
+        "cls_cutoverplan"
+      ],
+      "relations": [
+        "rel_movesfrom",
+        "rel_movesto",
+        "rel_dependson",
+        "rel_hasrisk"
+      ],
+      "views": [
+        {
+          "id": "vw_plan",
+          "key": "Plan",
+          "labels": {
+            "en": "Waves and dependencies"
+          },
+          "classes": [
+            "cls_migrationwave",
+            "cls_workload",
+            "cls_cutoverplan",
+            "cls_risk"
+          ],
+          "relations": ["rel_dependson", "rel_hasrisk"]
+        },
+        {
+          "id": "vw_systems",
+          "key": "Systems",
+          "labels": {
+            "en": "From and to"
+          },
+          "classes": [
+            "cls_sourcesystem",
+            "cls_workload",
+            "cls_cloudplatform",
+            "cls_targetservice"
+          ],
+          "relations": ["rel_movesfrom", "rel_movesto"]
+        }
+      ],
+      "cardinalities": [],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Title",
+          "required": true,
+          "maxLength": 100,
+          "id": "att_mtmigration_title",
+          "labels": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Organisation",
+          "id": "att_mtmigration_organisation",
+          "labels": {
+            "en": "Organisation"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "TotalGB",
+          "formula": "sum(objects('Workload').SizeGB)",
+          "result": "number",
+          "id": "att_mtmigration_totalgb",
+          "labels": {
+            "en": "Total size (GB)"
+          },
+          "help": {
+            "en": "The size of all workloads, in gigabytes."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "OverallProgress",
+          "formula": "IFERROR(round(avg(objects('Workload').Progress), 0), null)",
+          "result": "number",
+          "id": "att_mtmigration_overallprogress",
+          "labels": {
+            "en": "Overall progress (%)"
+          },
+          "help": {
+            "en": "The average progress of all workloads, in percent."
+          }
+        }
+      ],
+      "help": {
+        "en": "Source systems, workloads planned in migration waves with cut-over plans, target services in a cloud platform, dependencies and risks."
+      },
+      "containers": {
+        "cls_migrationwave": ["cls_workload", "cls_cutoverplan"],
+        "cls_cloudplatform": ["cls_targetservice"]
+      }
+    }
+  },
+  "shapes": {
+    "shp_sourcesystem": {
+      "id": "shp_sourcesystem",
+      "name": "SourceSystem look",
+      "kind": "node",
+      "size": {
+        "width": 150,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 0,
+          "fill": "#a5d8ff",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= Technology",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6 M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "box",
+        "fill": "#a5d8ff",
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 150,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Technology"
+        },
+        "icon": {
+          "name": "database"
+        }
+      }
+    },
+    "shp_cloudplatform": {
+      "id": "shp_cloudplatform",
+      "name": "CloudPlatform look",
+      "kind": "node",
+      "size": {
+        "width": 1240,
+        "height": 150,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 6,
+          "fill": "#ffffff00",
+          "stroke": "#0c8599",
+          "strokeWidth": 1.5,
+          "dash": [7, 4]
+        },
+        {
+          "type": "text",
+          "x": 12,
+          "y": 4,
+          "width": "100% - 48",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "path",
+          "d": "M7 18a4 4 0 0 1-.5-8A5.5 5.5 0 0 1 17 8.5 4.5 4.5 0 0 1 17.5 18z",
+          "viewBox": [0, 0, 24, 24],
+          "x": "100% - 30",
+          "y": 6,
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "container",
+        "fill": "#ffffff00",
+        "border": "#0c8599",
+        "borderWidth": 1.5,
+        "borderStyle": "dashed",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 1240,
+          "height": 150,
+          "resizable": true
+        },
+        "icon": {
+          "name": "cloud"
+        }
+      }
+    },
+    "shp_risk": {
+      "id": "shp_risk",
+      "name": "Risk look",
+      "kind": "node",
+      "size": {
+        "width": 90,
+        "height": 90,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          ["50%", 0],
+          ["100%", "50%"],
+          ["50%", "100%"],
+          [0, "50%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            ["50%", 0],
+            ["100%", "50%"],
+            ["50%", "100%"],
+            [0, "50%"]
+          ],
+          "fill": "= Rating == 'Low' ? '#b2f2bb' : Rating == 'Medium' ? '#ffec99' : Rating == 'High' ? '#ffc9c9' : '#e9ecef'",
+          "stroke": "#e03131",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": "24%",
+          "y": "24% + 18",
+          "width": "52%",
+          "height": "52% - 38",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": "24%",
+          "y": "76% - 18",
+          "width": "52%",
+          "height": 18,
+          "text": "= Rating",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 3L2 20h20z M12 10v5 M12 18h.01",
+          "viewBox": [0, 0, 24, 24],
+          "x": "50% - 10",
+          "y": "14%",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "diamond",
+        "fill": {
+          "by": "Rating",
+          "values": {
+            "Low": "#b2f2bb",
+            "Medium": "#ffec99",
+            "High": "#ffc9c9"
+          },
+          "fallback": "#e9ecef"
+        },
+        "border": "#e03131",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 90,
+          "height": 90,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Rating"
+        },
+        "icon": {
+          "name": "warning"
+        }
+      }
+    },
+    "shp_migrationwave": {
+      "id": "shp_migrationwave",
+      "name": "MigrationWave look",
+      "kind": "node",
+      "size": {
+        "width": 400,
+        "height": 300,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 6,
+          "fill": "#ffffff00",
+          "stroke": "= ReadinessLevel == 'Ready' ? '#2f9e44' : ReadinessLevel == 'Nearly ready' ? '#f08c00' : ReadinessLevel == 'Not ready' ? '#e03131' : '#495057'",
+          "strokeWidth": 2,
+          "dash": [7, 4]
+        },
+        {
+          "type": "text",
+          "x": 12,
+          "y": 4,
+          "width": "100% - 48",
+          "height": 24,
+          "text": "= Summary",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "container",
+        "fill": "#ffffff00",
+        "border": {
+          "by": "ReadinessLevel",
+          "values": {
+            "Ready": "#2f9e44",
+            "Nearly ready": "#f08c00",
+            "Not ready": "#e03131"
+          },
+          "fallback": "#495057"
+        },
+        "borderWidth": 2,
+        "borderStyle": "dashed",
+        "title": {
+          "attribute": "Summary",
+          "bold": true
+        },
+        "size": {
+          "width": 400,
+          "height": 300,
+          "resizable": true
+        }
+      }
+    },
+    "shp_workload": {
+      "id": "shp_workload",
+      "name": "Workload look",
+      "kind": "node",
+      "size": {
+        "width": 200,
+        "height": 60,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "= Status == 'Not started' ? '#e9ecef' : Status == 'Assessed' ? '#fff3bf' : Status == 'Ready' ? '#d0ebff' : Status == 'Migrating' ? '#a5d8ff' : Status == 'Migrated' ? '#d3f9d8' : Status == 'Validated' ? '#b2f2bb' : '#e9ecef'",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 4,
+          "width": "100% - 16",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 22",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= StatusText",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": {
+          "by": "Status",
+          "values": {
+            "Not started": "#e9ecef",
+            "Assessed": "#fff3bf",
+            "Ready": "#d0ebff",
+            "Migrating": "#a5d8ff",
+            "Migrated": "#d3f9d8",
+            "Validated": "#b2f2bb"
+          },
+          "fallback": "#e9ecef"
+        },
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 200,
+          "height": 60,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "StatusText"
+        }
+      }
+    },
+    "shp_targetservice": {
+      "id": "shp_targetservice",
+      "name": "TargetService look",
+      "kind": "node",
+      "size": {
+        "width": 180,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 0,
+          "fill": "#c3fae8",
+          "stroke": "#0c8599",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= ServiceType",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M7 18a4 4 0 0 1-.5-8A5.5 5.5 0 0 1 17 8.5 4.5 4.5 0 0 1 17.5 18z",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "box",
+        "fill": "#c3fae8",
+        "border": "#0c8599",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 180,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "ServiceType"
+        },
+        "icon": {
+          "name": "cloud"
+        }
+      }
+    },
+    "shp_cutoverplan": {
+      "id": "shp_cutoverplan",
+      "name": "CutoverPlan look",
+      "kind": "node",
+      "size": {
+        "width": 140,
+        "height": 90,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          [0, 0],
+          ["100% - 18", 0],
+          ["100%", 18],
+          ["100%", "100%"],
+          [0, "100%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            [0, 0],
+            ["100% - 18", 0],
+            ["100%", 18],
+            ["100%", "100%"],
+            [0, "100%"]
+          ],
+          "fill": "= Decision == 'Go' ? '#b2f2bb' : Decision == 'No go' ? '#ffc9c9' : '#fff9db'",
+          "stroke": "#f08c00",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "polygon",
+          "points": [
+            ["100% - 18", 0],
+            ["100% - 18", 18],
+            ["100%", 18]
+          ],
+          "fill": "#00000022",
+          "stroke": "#f08c00",
+          "strokeWidth": 1
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 20,
+          "width": "100% - 16",
+          "height": "100% - 46",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 24",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= Window",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M5 21V3 M5 4h12l-2 4 2 4H5",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": 4,
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "document",
+        "fill": {
+          "by": "Decision",
+          "values": {
+            "Go": "#b2f2bb",
+            "No go": "#ffc9c9"
+          },
+          "fallback": "#fff9db"
+        },
+        "border": "#f08c00",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 140,
+          "height": 90,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Window"
+        },
+        "icon": {
+          "name": "flag"
+        }
+      }
+    },
+    "shp_rel_movesfrom": {
+      "id": "shp_rel_movesfrom",
+      "name": "MovesFrom look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#868e96",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "open-arrow"
+      },
+      "look": {
+        "colour": "#868e96",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "open-arrow",
+        "label": null
+      }
+    },
+    "shp_rel_movesto": {
+      "id": "shp_rel_movesto",
+      "name": "MovesTo look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#0c8599",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#0c8599",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_dependson": {
+      "id": "shp_rel_dependson",
+      "name": "DependsOn look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#e03131",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "open-arrow"
+      },
+      "look": {
+        "colour": "#e03131",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "open-arrow",
+        "label": null
+      }
+    },
+    "shp_rel_hasrisk": {
+      "id": "shp_rel_hasrisk",
+      "name": "HasRisk look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#e03131",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [2, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#e03131",
+        "width": 1.5,
+        "style": "dotted",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    }
+  },
+  "panels": {
+    "cls_workload": {
+      "class": "cls_workload",
+      "tabs": [
+        {
+          "label": "Workload",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "WorkloadType",
+              "control": "select"
+            },
+            {
+              "attribute": "SizeGB"
+            },
+            {
+              "attribute": "Approach",
+              "control": "select"
+            },
+            {
+              "attribute": "Complexity",
+              "control": "segmented"
+            },
+            {
+              "attribute": "Owner"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            }
+          ]
+        },
+        {
+          "label": "Status",
+          "items": [
+            {
+              "attribute": "Status",
+              "control": "select"
+            },
+            {
+              "attribute": "Readiness"
+            },
+            {
+              "attribute": "Progress"
+            },
+            {
+              "attribute": "Wave"
+            },
+            {
+              "attribute": "WaveNumber"
+            },
+            {
+              "attribute": "LatestDependency"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_migrationwave": {
+      "class": "cls_migrationwave",
+      "tabs": [
+        {
+          "label": "Wave",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Sequence"
+            },
+            {
+              "attribute": "Start"
+            },
+            {
+              "attribute": "End"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            }
+          ]
+        },
+        {
+          "label": "Readiness",
+          "items": [
+            {
+              "attribute": "Workloads"
+            },
+            {
+              "attribute": "SizeGB"
+            },
+            {
+              "attribute": "Readiness"
+            },
+            {
+              "attribute": "ReadinessLevel"
+            },
+            {
+              "attribute": "Progress"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "rules": {},
+  "scripts": {}
+}
