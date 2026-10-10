@@ -10,12 +10,12 @@
 **A catalog class** has:
 - `key`, `labels.en`, `theme`, `help`, `kind` (`node` or `container`)
 - `look`: base, fill, border, icon, plus which attributes show as title, subtitle and fields
-- `attributes`: written like tool-library attributes but without ids; ids are made when added
+- `attributes`: written like Kit attributes but without ids; ids are made when added
 
 **A catalog relation class** has `key`, label, `from` and `to` (catalog class keys), attributes and a line look.
 
 `catalogCommands(tool, picks, { withRelations })` returns `{ batch, skipped, added }`:
-1. It skips a pick whose key the tool library already has, and reports it.
+1. It skips a pick whose key the Kit already has, and reports it.
 2. For each new class it makes a look shape with `nodeShapeFromLook`, plus `putShape` and `putClass` with fresh ids.
 3. If asked, it adds every catalog relation class whose two ends are both picked or already present by key. Its `from` and `to` use the new or existing class ids, and its line shape comes from `relationShapeFromLook`.
 4. Attribute keys inside a class never clash, because each entry is checked by a test.
@@ -153,7 +153,7 @@ The risk also has formulas **Score** (Likelihood × Impact) and **Rating** (Low,
 | Monitors | Monitor | Model deployment, Data pipeline |
 | Defines | Glossary term | Data entity, Dataset |
 
-"Any class" is an empty end in the catalog. The tool library format needs at least one class at each end of a relation class without a parent, so when added such an end lists every class the tool library has after the add.
+"Any class" is an empty end in the catalog. The Kit format needs at least one class at each end of a relation class without a parent, so when added such an end lists every class the Kit has after the add.
 
 A relation class comes along only when a picked class sits on one of its named ends, so Owns comes with Person, Team or Data owner, not with every pick. A relation class with any class at both ends (Depends on) never comes along by itself; the dialog offers it as its own checkbox, off by default.
 
@@ -172,45 +172,45 @@ Test ids:
 - `catalog-tab-<id>`, `catalog-item-<key>`
 - `catalog-relations`, `catalog-add`
 
-## Built-in tool libraries
+## Built-in Kits
 
 `packages/ui/src/build/built-in.ts` lists the built-in set: id, name, version, one-line description, icon, and a `load()` that imports `tools/<id>/tool.json` with `import()`, so each is its own chunk.
 
-**Tool libraries page**
+**Kits page**
 - The page has two sections. **In this workspace** comes first, because it is what people work on; **Built-in** comes second.
 - Built-in cards are drawn differently: a "Built-in" badge, a lock icon and "Read-only".
 - Built-in card actions:
   - **Use in this workspace** calls the existing `onAddTool(text)`, so duplicates and migration behave as they do for files. Once added, the card shows "In this workspace" instead.
-  - **Copy and extend** opens the New tool library dialog with this library preselected.
+  - **Copy and extend** opens the New Kit dialog with this Kit preselected.
   - **Preview** shows its classes and looks, using the same `ShapePreview` as the palette.
 - Workspace cards show "Based on X 1.0.0" when `manifest.basedOn` is set.
 - **Add → From file…** and **From Git…** stay.
 
-**New tool library dialog** (`NewToolDialog.svelte`, replacing the inline name form)
-- Fields: **Name** and **Start from**. Start from is a radio list: *Empty*, then the workspace's libraries, then the built-in ones.
+**New Kit dialog** (`NewToolDialog.svelte`, replacing the inline name form)
+- Fields: **Name** and **Start from**. Start from is a radio list: *Empty*, then the workspace's Kits, then the built-in ones.
 - **Create** calls `controller.createToolLibrary(name, { from })`:
   - For *Empty*, it does what it does today.
-  - Otherwise it runs `cloneToolLibrary(source, name)` from core. That makes a new `tool_` id, sets the name, version 1.0.0 and `basedOn { id, name, version }`, and keeps every other id. Class ids are per library, so they cannot clash.
-- The new library opens in Build mode, as today.
+  - Otherwise it runs `cloneToolLibrary(source, name)` from core. That makes a new `tool_` id, sets the name, version 1.0.0 and `basedOn { id, name, version }`, and keeps every other id. Class ids are per Kit, so they cannot clash.
+- The new Kit opens in Build mode, as today.
 
 **Format 6**
 - `ToolManifest.basedOn?: { id: string; name: string; version: string }`.
 - `TOOL_FORMAT_VERSION` becomes 6. The `tool-document` migration from 5 to 6 changes nothing but the number. The guard checks the shape of `basedOn`. ADR 0010 records this.
-- The sample tools are written as format 6.
+- The sample Kits are written as format 6.
 
 **New model dialog**
-- Built-in libraries are listed after the workspace's own, under a "Built-in" heading. Choosing one adds it (`onAddTool`) before the model is created.
+- Built-in Kits are listed after the workspace's own, under a "Built-in" heading. Choosing one adds it (`onAddTool`) before the model is created.
 
-## Tools
+## Kits
 
-Each tool lives in `tools/<id>/` with `tool.json`, a sample `*.mkmodel.json` and an optional `*.script.ts`. A test file `packages/ui/src/build/<id>.test.ts` follows `agent-pipeline.test.ts`:
-- the tool is valid
+Each Kit lives in `tools/<id>/` with `tool.json`, a sample `*.mkmodel.json` and an optional `*.script.ts`. A test file `packages/ui/src/build/<id>.test.ts` follows `agent-pipeline.test.ts`:
+- the Kit is valid
 - every formula parses
 - the script equals its file and type-checks
 - the sample model builds and validates
 - each rule or script's specific behaviour
 
-Each tool is also added to the CLI `validate` sample test. Looks are simple looks (format 5), so the tool can be edited with the simple look editor.
+Each Kit is also added to the CLI `validate` sample test. Looks are simple looks (format 5), so the Kit can be edited with the simple look editor.
 
 ### Data and AI architecture
 

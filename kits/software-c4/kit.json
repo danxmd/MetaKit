@@ -1,0 +1,1159 @@
+{
+  "formatVersion": 7,
+  "manifest": {
+    "id": "kit_c4",
+    "name": "Software architecture (C4-style)",
+    "version": "1.0.0",
+    "languages": ["en"]
+  },
+  "settings": {
+    "grid": {
+      "size": 10,
+      "snap": true,
+      "visible": true
+    },
+    "layers": [],
+    "numbering": {
+      "enabled": false,
+      "prefix": "",
+      "start": 1
+    }
+  },
+  "classes": {
+    "cls_person": {
+      "id": "cls_person",
+      "key": "Person",
+      "kind": "node",
+      "labels": {
+        "en": "Person"
+      },
+      "help": {
+        "en": "A user of the software, inside or outside the organisation."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Person",
+          "id": "att_person_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_person_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Location",
+          "options": ["Internal", "External"],
+          "default": "External",
+          "id": "att_person_location",
+          "labels": {
+            "en": "Location"
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_person_used",
+          "formula": "count(outgoing('Uses')) + count(incoming('Uses')) > 0",
+          "message": "= 'Person \"' + Name + '\" has no relationships: connect it with \"Uses\".'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_person"
+    },
+    "cls_softwaresystem": {
+      "id": "cls_softwaresystem",
+      "key": "SoftwareSystem",
+      "kind": "node",
+      "labels": {
+        "en": "Software system"
+      },
+      "help": {
+        "en": "Software that delivers value to its users, built and owned by one team or organisation. The highest level of the model."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Software system",
+          "id": "att_softwaresystem_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_softwaresystem_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_softwaresystem_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Tag",
+          "formula": "'[Software system]'",
+          "result": "text",
+          "id": "att_softwaresystem_tag",
+          "labels": {
+            "en": "Tag"
+          },
+          "help": {
+            "en": "The kind, shown under the name."
+          }
+        }
+      ],
+      "shape": "shp_softwaresystem"
+    },
+    "cls_externalsystem": {
+      "id": "cls_externalsystem",
+      "key": "ExternalSystem",
+      "kind": "node",
+      "labels": {
+        "en": "External system"
+      },
+      "help": {
+        "en": "A software system outside the scope of the model that yours depends on or talks to, such as a payment service."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "External system",
+          "id": "att_externalsystem_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_externalsystem_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Provider",
+          "id": "att_externalsystem_provider",
+          "labels": {
+            "en": "Provider"
+          },
+          "help": {
+            "en": "Who runs it."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Tag",
+          "formula": "'[External system]'",
+          "result": "text",
+          "id": "att_externalsystem_tag",
+          "labels": {
+            "en": "Tag"
+          },
+          "help": {
+            "en": "The kind, shown under the name."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_externalsystem_used",
+          "formula": "count(outgoing('Uses')) + count(incoming('Uses')) > 0",
+          "message": "= 'External system \"' + Name + '\" has no relationships: connect it with \"Uses\".'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_externalsystem"
+    },
+    "cls_systemboundary": {
+      "id": "cls_systemboundary",
+      "key": "SystemBoundary",
+      "kind": "swimlane",
+      "labels": {
+        "en": "System boundary"
+      },
+      "help": {
+        "en": "The edge of one software system on a container diagram. Place its containers inside it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "System boundary",
+          "id": "att_systemboundary_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_systemboundary_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Parts",
+          "formula": "count(children())",
+          "result": "number",
+          "id": "att_systemboundary_parts",
+          "labels": {
+            "en": "Parts"
+          },
+          "help": {
+            "en": "How many containers it holds."
+          }
+        }
+      ],
+      "shape": "shp_systemboundary"
+    },
+    "cls_container": {
+      "id": "cls_container",
+      "key": "Container",
+      "kind": "node",
+      "labels": {
+        "en": "Container"
+      },
+      "help": {
+        "en": "Something that runs or stores data on its own inside a software system: a web application, a mobile app, an API, a database, a queue or a background job."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Container",
+          "id": "att_container_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_container_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Kind",
+          "options": [
+            "Web application",
+            "Mobile app",
+            "Desktop app",
+            "API",
+            "Database",
+            "Message queue",
+            "File store",
+            "Background job"
+          ],
+          "id": "att_container_kind",
+          "labels": {
+            "en": "Kind"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Technology",
+          "id": "att_container_technology",
+          "labels": {
+            "en": "Technology"
+          },
+          "help": {
+            "en": "What it is built with, such as \"TypeScript, single-page app\" or \"relational database\"."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Tag",
+          "formula": "'[' + (Kind ?? 'Container') + (isEmpty(Technology) ? '' : ': ' + Technology) + ']'",
+          "result": "text",
+          "id": "att_container_tag",
+          "labels": {
+            "en": "Tag"
+          },
+          "help": {
+            "en": "The kind and the technology, shown under the name."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_container_technology",
+          "formula": "!isEmpty(Technology)",
+          "message": "= 'Container \"' + Name + '\" does not say what it is built with: fill in Technology.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_container"
+    },
+    "cls_containerboundary": {
+      "id": "cls_containerboundary",
+      "key": "ContainerBoundary",
+      "kind": "swimlane",
+      "labels": {
+        "en": "Container boundary"
+      },
+      "help": {
+        "en": "The edge of one container on a component diagram. Place its components inside it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Container boundary",
+          "id": "att_containerboundary_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_containerboundary_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Parts",
+          "formula": "count(children())",
+          "result": "number",
+          "id": "att_containerboundary_parts",
+          "labels": {
+            "en": "Parts"
+          },
+          "help": {
+            "en": "How many components it holds."
+          }
+        }
+      ],
+      "shape": "shp_containerboundary"
+    },
+    "cls_component": {
+      "id": "cls_component",
+      "key": "Component",
+      "kind": "node",
+      "labels": {
+        "en": "Component"
+      },
+      "help": {
+        "en": "A group of related code inside a container, behind a clear interface, such as a booking controller."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Component",
+          "id": "att_component_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_component_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Technology",
+          "id": "att_component_technology",
+          "labels": {
+            "en": "Technology"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Tag",
+          "formula": "'[' + 'Component' + (isEmpty(Technology) ? '' : ': ' + Technology) + ']'",
+          "result": "text",
+          "id": "att_component_tag",
+          "labels": {
+            "en": "Tag"
+          },
+          "help": {
+            "en": "The kind and the technology, shown under the name."
+          }
+        }
+      ],
+      "shape": "shp_component"
+    }
+  },
+  "relations": {
+    "rel_uses": {
+      "id": "rel_uses",
+      "key": "Uses",
+      "labels": {
+        "en": "Uses"
+      },
+      "help": {
+        "en": "One element uses another: a person uses a system, a container calls an API or reads a database. Say what for, and how."
+      },
+      "from": [
+        "cls_person",
+        "cls_softwaresystem",
+        "cls_externalsystem",
+        "cls_container",
+        "cls_component"
+      ],
+      "to": [
+        "cls_person",
+        "cls_softwaresystem",
+        "cls_externalsystem",
+        "cls_container",
+        "cls_component"
+      ],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Description",
+          "id": "att_uses_description",
+          "labels": {
+            "en": "Description"
+          },
+          "help": {
+            "en": "What the relationship is for, such as \"Makes bookings\"."
+          }
+        },
+        {
+          "type": "text",
+          "key": "Technology",
+          "id": "att_uses_technology",
+          "labels": {
+            "en": "Technology"
+          },
+          "help": {
+            "en": "How it talks, such as \"JSON over HTTPS\"."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Label",
+          "formula": "(Description ?? '') + (isEmpty(Technology) ? '' : ' [' + Technology + ']')",
+          "result": "text",
+          "id": "att_uses_label",
+          "labels": {
+            "en": "Label"
+          },
+          "help": {
+            "en": "The description and the technology, shown on the line."
+          }
+        }
+      ],
+      "shape": "shp_rel_uses",
+      "constraints": [
+        {
+          "id": "k_uses_description",
+          "formula": "!isEmpty(Description)",
+          "message": "= 'The relationship from \"' + from.Name + '\" to \"' + to.Name + '\" has no description: say what it is for.'",
+          "severity": "warning"
+        }
+      ]
+    }
+  },
+  "modelTypes": {
+    "mt_context": {
+      "id": "mt_context",
+      "key": "Context",
+      "labels": {
+        "en": "System context"
+      },
+      "classes": ["cls_person", "cls_softwaresystem", "cls_externalsystem"],
+      "relations": ["rel_uses"],
+      "views": [],
+      "cardinalities": [],
+      "attributes": [],
+      "help": {
+        "en": "One software system in its setting: the people who use it and the other systems it works with."
+      }
+    },
+    "mt_containers": {
+      "id": "mt_containers",
+      "key": "Containers",
+      "labels": {
+        "en": "Containers"
+      },
+      "classes": [
+        "cls_person",
+        "cls_softwaresystem",
+        "cls_externalsystem",
+        "cls_systemboundary",
+        "cls_container"
+      ],
+      "relations": ["rel_uses"],
+      "views": [],
+      "cardinalities": [],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Title",
+          "required": true,
+          "maxLength": 100,
+          "id": "att_mtcontainers_title",
+          "labels": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_mtcontainers_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Containers",
+          "formula": "count(objects('Container'))",
+          "result": "number",
+          "id": "att_mtcontainers_containers",
+          "labels": {
+            "en": "Containers"
+          },
+          "help": {
+            "en": "How many containers the diagram shows."
+          }
+        }
+      ],
+      "help": {
+        "en": "The containers inside one software system, inside its boundary, with the people and systems around it."
+      },
+      "containers": {
+        "cls_systemboundary": ["cls_container"]
+      }
+    },
+    "mt_components": {
+      "id": "mt_components",
+      "key": "Components",
+      "labels": {
+        "en": "Components"
+      },
+      "classes": [
+        "cls_person",
+        "cls_softwaresystem",
+        "cls_externalsystem",
+        "cls_container",
+        "cls_containerboundary",
+        "cls_component"
+      ],
+      "relations": ["rel_uses"],
+      "views": [],
+      "cardinalities": [],
+      "attributes": [],
+      "help": {
+        "en": "The components inside one container, inside its boundary, with the containers and systems they talk to."
+      },
+      "containers": {
+        "cls_containerboundary": ["cls_component"]
+      }
+    }
+  },
+  "shapes": {
+    "shp_person": {
+      "id": "shp_person",
+      "name": "Person look",
+      "kind": "node",
+      "size": {
+        "width": 90,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "ellipse",
+          "x": "50% - 16",
+          "y": 4,
+          "width": 32,
+          "height": 32,
+          "fill": "= Location == 'Internal' ? '#a5d8ff' : Location == 'External' ? '#dee2e6' : '#a5d8ff'",
+          "stroke": "#1864ab",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 6,
+          "y": 42,
+          "width": "100% - 12",
+          "height": "100% - 46",
+          "radius": 18,
+          "fill": "= Location == 'Internal' ? '#a5d8ff' : Location == 'External' ? '#dee2e6' : '#a5d8ff'",
+          "stroke": "#1864ab",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 10,
+          "y": 46,
+          "width": "100% - 20",
+          "height": "100% - 52",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "person",
+        "fill": {
+          "by": "Location",
+          "values": {
+            "Internal": "#a5d8ff",
+            "External": "#dee2e6"
+          },
+          "fallback": "#a5d8ff"
+        },
+        "border": "#1864ab",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 90,
+          "height": 110,
+          "resizable": true
+        }
+      }
+    },
+    "shp_softwaresystem": {
+      "id": "shp_softwaresystem",
+      "name": "SoftwareSystem look",
+      "kind": "node",
+      "size": {
+        "width": 200,
+        "height": 90,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "#74c0fc",
+          "stroke": "#1864ab",
+          "strokeWidth": 2
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 4,
+          "width": "100% - 16",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 22",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= Tag",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": "#74c0fc",
+        "border": "#1864ab",
+        "borderWidth": 2,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 200,
+          "height": 90,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Tag"
+        }
+      }
+    },
+    "shp_externalsystem": {
+      "id": "shp_externalsystem",
+      "name": "ExternalSystem look",
+      "kind": "node",
+      "size": {
+        "width": 200,
+        "height": 80,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "#dee2e6",
+          "stroke": "#868e96",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 4,
+          "width": "100% - 16",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 22",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= Tag",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": "#dee2e6",
+        "border": "#868e96",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 200,
+          "height": 80,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Tag"
+        }
+      }
+    },
+    "shp_systemboundary": {
+      "id": "shp_systemboundary",
+      "name": "SystemBoundary look",
+      "kind": "node",
+      "size": {
+        "width": 960,
+        "height": 380,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "fill": "#ffffff00",
+          "stroke": "#1864ab",
+          "strokeWidth": 1.5,
+          "dash": [7, 4]
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": 28,
+          "height": "100%",
+          "fill": "#e7f5ff",
+          "stroke": "#1864ab",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": -66,
+          "y": "50% - 14",
+          "width": 160,
+          "height": 28,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          },
+          "transform": {
+            "rotate": -90
+          }
+        }
+      ],
+      "look": {
+        "base": "swimlane",
+        "fill": "#e7f5ff",
+        "border": "#1864ab",
+        "borderWidth": 1.5,
+        "borderStyle": "dashed",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 960,
+          "height": 380,
+          "resizable": true
+        }
+      }
+    },
+    "shp_container": {
+      "id": "shp_container",
+      "name": "Container look",
+      "kind": "node",
+      "size": {
+        "width": 230,
+        "height": 80,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "#d0ebff",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 4,
+          "width": "100% - 16",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 22",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= Tag",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": "#d0ebff",
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 230,
+          "height": 80,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Tag"
+        }
+      }
+    },
+    "shp_containerboundary": {
+      "id": "shp_containerboundary",
+      "name": "ContainerBoundary look",
+      "kind": "node",
+      "size": {
+        "width": 960,
+        "height": 380,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "fill": "#ffffff00",
+          "stroke": "#1864ab",
+          "strokeWidth": 1.5,
+          "dash": [7, 4]
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": 28,
+          "height": "100%",
+          "fill": "#e7f5ff",
+          "stroke": "#1864ab",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": -66,
+          "y": "50% - 14",
+          "width": 160,
+          "height": 28,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          },
+          "transform": {
+            "rotate": -90
+          }
+        }
+      ],
+      "look": {
+        "base": "swimlane",
+        "fill": "#e7f5ff",
+        "border": "#1864ab",
+        "borderWidth": 1.5,
+        "borderStyle": "dashed",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 960,
+          "height": 380,
+          "resizable": true
+        }
+      }
+    },
+    "shp_component": {
+      "id": "shp_component",
+      "name": "Component look",
+      "kind": "node",
+      "size": {
+        "width": 190,
+        "height": 76,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "#e7f5ff",
+          "stroke": "#4dabf7",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 4,
+          "width": "100% - 16",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 22",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= Tag",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": "#e7f5ff",
+        "border": "#4dabf7",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 190,
+          "height": 76,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Tag"
+        }
+      }
+    },
+    "shp_rel_uses": {
+      "id": "shp_rel_uses",
+      "name": "Uses look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#495057",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "labels": [
+        {
+          "at": "middle",
+          "text": "= Label",
+          "font": {
+            "size": 11
+          },
+          "background": "#ffffff",
+          "visible": "= Label != null"
+        }
+      ],
+      "look": {
+        "colour": "#495057",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": {
+          "attribute": "Label"
+        }
+      }
+    }
+  },
+  "panels": {},
+  "rules": {},
+  "scripts": {}
+}

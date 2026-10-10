@@ -1,0 +1,1453 @@
+{
+  "formatVersion": 7,
+  "manifest": {
+    "id": "kit_datamodelling",
+    "name": "Data modelling",
+    "version": "1.0.0",
+    "languages": ["en"]
+  },
+  "settings": {
+    "grid": {
+      "size": 10,
+      "snap": true,
+      "visible": true
+    },
+    "layers": [],
+    "numbering": {
+      "enabled": false,
+      "prefix": "",
+      "start": 1
+    }
+  },
+  "classes": {
+    "cls_subjectarea": {
+      "id": "cls_subjectarea",
+      "key": "SubjectArea",
+      "kind": "container",
+      "labels": {
+        "en": "Subject area"
+      },
+      "help": {
+        "en": "A part of the business the data is about, such as customer or sales. Place its entities inside it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Subject area",
+          "id": "att_subjectarea_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_subjectarea_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_subjectarea_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        }
+      ],
+      "shape": "shp_subjectarea"
+    },
+    "cls_businessentity": {
+      "id": "cls_businessentity",
+      "key": "BusinessEntity",
+      "kind": "node",
+      "labels": {
+        "en": "Business entity"
+      },
+      "help": {
+        "en": "A thing the business needs to know about, named in its own words, such as Customer or Order. Used in conceptual models, without attributes."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Business entity",
+          "id": "att_businessentity_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_businessentity_description",
+          "labels": {
+            "en": "Definition"
+          },
+          "help": {
+            "en": "What one of these is, in one sentence that everyone agrees on."
+          }
+        },
+        {
+          "type": "text",
+          "key": "Examples",
+          "id": "att_businessentity_examples",
+          "labels": {
+            "en": "Examples"
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_businessentity_definition",
+          "formula": "!isEmpty(Description)",
+          "message": "= 'Business entity \"' + Name + '\" has no definition.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_businessentity"
+    },
+    "cls_entity": {
+      "id": "cls_entity",
+      "key": "Entity",
+      "kind": "container",
+      "labels": {
+        "en": "Entity"
+      },
+      "help": {
+        "en": "A thing the data describes, with its attributes and keys, independent of any database. Place its attributes inside it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Entity",
+          "id": "att_entity_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_entity_description",
+          "labels": {
+            "en": "Definition"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "SubjectArea",
+          "formula": "parent ? parent.Name : null",
+          "result": "text",
+          "id": "att_entity_subjectarea",
+          "labels": {
+            "en": "Subject area"
+          },
+          "help": {
+            "en": "The subject area it sits in."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "AttributeCount",
+          "formula": "count(children())",
+          "result": "number",
+          "id": "att_entity_attributecount",
+          "labels": {
+            "en": "Attributes"
+          },
+          "help": {
+            "en": "How many attributes it has."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "KeyCount",
+          "formula": "count(children().Key)",
+          "result": "number",
+          "id": "att_entity_keycount",
+          "labels": {
+            "en": "Key parts"
+          },
+          "help": {
+            "en": "How many of its attributes are part of a key."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "HasPrimaryKey",
+          "formula": "contains(join(children().Key, '|'), 'PK')",
+          "result": "boolean",
+          "id": "att_entity_hasprimarykey",
+          "labels": {
+            "en": "Has primary key"
+          },
+          "help": {
+            "en": "Yes when at least one of its attributes is part of the primary key."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "IsSubtype",
+          "formula": "count(outgoing('SubtypeOf')) > 0",
+          "result": "boolean",
+          "id": "att_entity_issubtype",
+          "labels": {
+            "en": "Is subtype"
+          },
+          "help": {
+            "en": "Yes when it is a subtype of another entity, whose key it shares."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_entity_key",
+          "formula": "HasPrimaryKey || IsSubtype",
+          "message": "= 'Entity \"' + Name + '\" has no primary key: mark the attributes that identify it as PK.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_entity"
+    },
+    "cls_entityattribute": {
+      "id": "cls_entityattribute",
+      "key": "EntityAttribute",
+      "kind": "node",
+      "labels": {
+        "en": "Attribute"
+      },
+      "help": {
+        "en": "One property of an entity, with its logical data type and whether it is part of a key. Place it inside its entity."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Attribute",
+          "id": "att_entityattribute_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "DataType",
+          "options": [
+            "Identifier",
+            "Text",
+            "Code",
+            "Integer",
+            "Decimal",
+            "Money",
+            "Date",
+            "Date and time",
+            "Yes or no"
+          ],
+          "id": "att_entityattribute_datatype",
+          "labels": {
+            "en": "Data type"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Key",
+          "options": ["PK", "FK", "PK and FK"],
+          "id": "att_entityattribute_key",
+          "labels": {
+            "en": "Key"
+          },
+          "help": {
+            "en": "PK when it is part of the primary key, FK when it refers to another entity."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Required",
+          "options": ["Yes", "No"],
+          "default": "No",
+          "id": "att_entityattribute_required",
+          "labels": {
+            "en": "Required"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_entityattribute_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Label",
+          "formula": "Name + (DataType ? ': ' + DataType : '') + (Key ? '  [' + Key + ']' : '')",
+          "result": "text",
+          "id": "att_entityattribute_label",
+          "labels": {
+            "en": "Label"
+          },
+          "help": {
+            "en": "The name, the data type and the key, shown on the diagram."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_attribute_entity",
+          "formula": "parent != null",
+          "message": "= 'Attribute \"' + Name + '\" is not inside an entity.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_entityattribute"
+    },
+    "cls_schema": {
+      "id": "cls_schema",
+      "key": "Schema",
+      "kind": "container",
+      "labels": {
+        "en": "Schema"
+      },
+      "help": {
+        "en": "A group of tables in one database. Place its tables inside it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Schema",
+          "id": "att_schema_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_schema_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Database",
+          "id": "att_schema_database",
+          "labels": {
+            "en": "Database"
+          }
+        }
+      ],
+      "shape": "shp_schema"
+    },
+    "cls_table": {
+      "id": "cls_table",
+      "key": "Table",
+      "kind": "container",
+      "labels": {
+        "en": "Table"
+      },
+      "help": {
+        "en": "A table of a database, with its columns. Place its columns inside it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Table",
+          "id": "att_table_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_table_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Implements",
+          "id": "att_table_implements",
+          "labels": {
+            "en": "Implements"
+          },
+          "help": {
+            "en": "The logical entities the table stores."
+          }
+        },
+        {
+          "type": "text",
+          "key": "RowEstimate",
+          "id": "att_table_rowestimate",
+          "labels": {
+            "en": "Rows (estimate)"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Partitioning",
+          "id": "att_table_partitioning",
+          "labels": {
+            "en": "Partitioning"
+          },
+          "help": {
+            "en": "How the table is split, such as \"by month of order_date\"."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "ColumnCount",
+          "formula": "count(children())",
+          "result": "number",
+          "id": "att_table_columncount",
+          "labels": {
+            "en": "Columns"
+          },
+          "help": {
+            "en": "How many columns it has."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "KeyCount",
+          "formula": "count(children().Key)",
+          "result": "number",
+          "id": "att_table_keycount",
+          "labels": {
+            "en": "Key parts"
+          },
+          "help": {
+            "en": "How many of its columns are part of a key."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "HasPrimaryKey",
+          "formula": "contains(join(children().Key, '|'), 'PK')",
+          "result": "boolean",
+          "id": "att_table_hasprimarykey",
+          "labels": {
+            "en": "Has primary key"
+          },
+          "help": {
+            "en": "Yes when at least one of its columns is part of the primary key."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_table_key",
+          "formula": "HasPrimaryKey",
+          "message": "= 'Table \"' + Name + '\" has no primary key.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_table"
+    },
+    "cls_column": {
+      "id": "cls_column",
+      "key": "Column",
+      "kind": "node",
+      "labels": {
+        "en": "Column"
+      },
+      "help": {
+        "en": "One column of a table, with its data type as the database writes it, such as VARCHAR(100). Place it inside its table."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Column",
+          "id": "att_column_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "DataType",
+          "id": "att_column_datatype",
+          "labels": {
+            "en": "Data type"
+          },
+          "help": {
+            "en": "As the database writes it, such as VARCHAR(100) or DECIMAL(12,2)."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Key",
+          "options": ["PK", "FK", "PK and FK"],
+          "id": "att_column_key",
+          "labels": {
+            "en": "Key"
+          },
+          "help": {
+            "en": "PK when it is part of the primary key, FK when it is part of a foreign key."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Nullable",
+          "options": ["Yes", "No"],
+          "default": "Yes",
+          "id": "att_column_nullable",
+          "labels": {
+            "en": "Nullable"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Default",
+          "id": "att_column_default",
+          "labels": {
+            "en": "Default"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_column_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Label",
+          "formula": "Name + (DataType ? '  ' + DataType : '') + (Key ? '  [' + Key + ']' : '')",
+          "result": "text",
+          "id": "att_column_label",
+          "labels": {
+            "en": "Label"
+          },
+          "help": {
+            "en": "The name, the data type and the key, shown on the diagram."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_column_table",
+          "formula": "parent != null",
+          "message": "= 'Column \"' + Name + '\" is not inside a table.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_column"
+    }
+  },
+  "relations": {
+    "rel_relatesto": {
+      "id": "rel_relatesto",
+      "key": "RelatesTo",
+      "labels": {
+        "en": "Relationship"
+      },
+      "help": {
+        "en": "How two entities relate, read from the first to the second, such as \"Customer places Sales order\", with how many of each take part."
+      },
+      "from": ["cls_businessentity", "cls_entity"],
+      "to": ["cls_businessentity", "cls_entity"],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Verb",
+          "id": "att_relatesto_verb",
+          "labels": {
+            "en": "Verb"
+          },
+          "help": {
+            "en": "Such as \"places\" or \"belongs to\"."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "FromCardinality",
+          "options": ["1", "0..1", "0..*", "1..*"],
+          "id": "att_relatesto_fromcardinality",
+          "labels": {
+            "en": "From cardinality"
+          },
+          "help": {
+            "en": "How many of the first entity take part: 1, 0..1, 0..* or 1..*."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "ToCardinality",
+          "options": ["1", "0..1", "0..*", "1..*"],
+          "id": "att_relatesto_tocardinality",
+          "labels": {
+            "en": "To cardinality"
+          },
+          "help": {
+            "en": "How many of the second entity take part for each of the first."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Reading",
+          "formula": "(FromCardinality ?? '') + ' ' + (Verb ?? '') + ' ' + (ToCardinality ?? '')",
+          "result": "text",
+          "id": "att_relatesto_reading",
+          "labels": {
+            "en": "Reading"
+          },
+          "help": {
+            "en": "The cardinalities and the verb, shown on the line, such as \"1 places 0..*\"."
+          }
+        }
+      ],
+      "shape": "shp_rel_relatesto"
+    },
+    "rel_subtypeof": {
+      "id": "rel_subtypeof",
+      "key": "SubtypeOf",
+      "labels": {
+        "en": "Subtype of"
+      },
+      "help": {
+        "en": "The entity is a special kind of the other one and shares its key, such as Online order of Sales order."
+      },
+      "from": ["cls_entity"],
+      "to": ["cls_entity"],
+      "attributes": [],
+      "shape": "shp_rel_subtypeof"
+    },
+    "rel_foreignkey": {
+      "id": "rel_foreignkey",
+      "key": "ForeignKey",
+      "labels": {
+        "en": "Foreign key"
+      },
+      "help": {
+        "en": "Columns of the first table refer to the primary key of the second."
+      },
+      "from": ["cls_table"],
+      "to": ["cls_table"],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Columns",
+          "id": "att_foreignkey_columns",
+          "labels": {
+            "en": "Columns"
+          },
+          "help": {
+            "en": "The columns of the first table that refer to the second, such as customer_id."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "OnDelete",
+          "options": ["No action", "Cascade", "Set null", "Restrict"],
+          "id": "att_foreignkey_ondelete",
+          "labels": {
+            "en": "On delete"
+          }
+        }
+      ],
+      "shape": "shp_rel_foreignkey"
+    }
+  },
+  "modelTypes": {
+    "mt_conceptual": {
+      "id": "mt_conceptual",
+      "key": "Conceptual",
+      "labels": {
+        "en": "Conceptual data model"
+      },
+      "classes": ["cls_subjectarea", "cls_businessentity"],
+      "relations": ["rel_relatesto"],
+      "views": [],
+      "cardinalities": [],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Title",
+          "required": true,
+          "maxLength": 100,
+          "id": "att_mtconceptual_title",
+          "labels": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Organisation",
+          "id": "att_mtconceptual_organisation",
+          "labels": {
+            "en": "Organisation"
+          }
+        },
+        {
+          "type": "text",
+          "key": "ModelVersion",
+          "id": "att_mtconceptual_modelversion",
+          "labels": {
+            "en": "Version"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "EntityCount",
+          "formula": "count(objects('BusinessEntity'))",
+          "result": "number",
+          "id": "att_mtconceptual_entitycount",
+          "labels": {
+            "en": "Entities"
+          },
+          "help": {
+            "en": "How many business entities the model holds."
+          }
+        }
+      ],
+      "help": {
+        "en": "Subject areas with the business entities they hold and how they relate, in the words of the business."
+      },
+      "containers": {
+        "cls_subjectarea": ["cls_businessentity"]
+      }
+    },
+    "mt_logical": {
+      "id": "mt_logical",
+      "key": "Logical",
+      "labels": {
+        "en": "Logical data model"
+      },
+      "classes": ["cls_subjectarea", "cls_entity", "cls_entityattribute"],
+      "relations": ["rel_relatesto", "rel_subtypeof"],
+      "views": [],
+      "cardinalities": [],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Title",
+          "required": true,
+          "maxLength": 100,
+          "id": "att_mtlogical_title",
+          "labels": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Organisation",
+          "id": "att_mtlogical_organisation",
+          "labels": {
+            "en": "Organisation"
+          }
+        },
+        {
+          "type": "text",
+          "key": "ModelVersion",
+          "id": "att_mtlogical_modelversion",
+          "labels": {
+            "en": "Version"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "EntityCount",
+          "formula": "count(objects('Entity'))",
+          "result": "number",
+          "id": "att_mtlogical_entitycount",
+          "labels": {
+            "en": "Entities"
+          },
+          "help": {
+            "en": "How many entities the model holds."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "AttributeCount",
+          "formula": "count(objects('EntityAttribute'))",
+          "result": "number",
+          "id": "att_mtlogical_attributecount",
+          "labels": {
+            "en": "Attributes"
+          },
+          "help": {
+            "en": "How many attributes the model holds."
+          }
+        }
+      ],
+      "help": {
+        "en": "Entities with their attributes, keys and relationships, independent of any database."
+      },
+      "containers": {
+        "cls_subjectarea": ["cls_entity"],
+        "cls_entity": ["cls_entityattribute"]
+      }
+    },
+    "mt_physical": {
+      "id": "mt_physical",
+      "key": "Physical",
+      "labels": {
+        "en": "Physical data model"
+      },
+      "classes": ["cls_schema", "cls_table", "cls_column"],
+      "relations": ["rel_foreignkey"],
+      "views": [],
+      "cardinalities": [],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Title",
+          "required": true,
+          "maxLength": 100,
+          "id": "att_mtphysical_title",
+          "labels": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Organisation",
+          "id": "att_mtphysical_organisation",
+          "labels": {
+            "en": "Organisation"
+          }
+        },
+        {
+          "type": "text",
+          "key": "ModelVersion",
+          "id": "att_mtphysical_modelversion",
+          "labels": {
+            "en": "Version"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Database",
+          "id": "att_mtphysical_database",
+          "labels": {
+            "en": "Database"
+          },
+          "help": {
+            "en": "The kind of database, as free text."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "TableCount",
+          "formula": "count(objects('Table'))",
+          "result": "number",
+          "id": "att_mtphysical_tablecount",
+          "labels": {
+            "en": "Tables"
+          },
+          "help": {
+            "en": "How many tables the model holds."
+          }
+        }
+      ],
+      "help": {
+        "en": "The tables and columns of one database, with data types, primary keys and foreign keys."
+      },
+      "containers": {
+        "cls_schema": ["cls_table"],
+        "cls_table": ["cls_column"]
+      }
+    }
+  },
+  "shapes": {
+    "shp_subjectarea": {
+      "id": "shp_subjectarea",
+      "name": "SubjectArea look",
+      "kind": "node",
+      "size": {
+        "width": 540,
+        "height": 290,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 6,
+          "fill": "#ffffff00",
+          "stroke": "#495057",
+          "strokeWidth": 1.5,
+          "dash": [7, 4]
+        },
+        {
+          "type": "text",
+          "x": 12,
+          "y": 4,
+          "width": "100% - 48",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "container",
+        "fill": "#ffffff00",
+        "border": "#495057",
+        "borderWidth": 1.5,
+        "borderStyle": "dashed",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 540,
+          "height": 290,
+          "resizable": true
+        }
+      }
+    },
+    "shp_businessentity": {
+      "id": "shp_businessentity",
+      "name": "BusinessEntity look",
+      "kind": "node",
+      "size": {
+        "width": 150,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "#d0ebff",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 2
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 4,
+          "width": "100% - 16",
+          "height": "100% - 8",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": "#d0ebff",
+        "border": "#1c7ed6",
+        "borderWidth": 2,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 150,
+          "height": 70,
+          "resizable": true
+        }
+      }
+    },
+    "shp_entity": {
+      "id": "shp_entity",
+      "name": "Entity look",
+      "kind": "node",
+      "size": {
+        "width": 220,
+        "height": 204,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 6,
+          "fill": "#ffffff",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 2
+        },
+        {
+          "type": "text",
+          "x": 12,
+          "y": 4,
+          "width": "100% - 48",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "container",
+        "fill": "#ffffff",
+        "border": "#1c7ed6",
+        "borderWidth": 2,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 220,
+          "height": 204,
+          "resizable": true
+        }
+      }
+    },
+    "shp_entityattribute": {
+      "id": "shp_entityattribute",
+      "name": "EntityAttribute look",
+      "kind": "node",
+      "size": {
+        "width": 200,
+        "height": 28,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 0,
+          "fill": "= Key == 'PK' ? '#ffec99' : Key == 'FK' ? '#d0ebff' : Key == 'PK and FK' ? '#ffe8cc' : '#ffffff'",
+          "stroke": "#74c0fc",
+          "strokeWidth": 1
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 4,
+          "width": "100% - 16",
+          "height": "100% - 8",
+          "text": "= Label",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {}
+        }
+      ],
+      "look": {
+        "base": "box",
+        "fill": {
+          "by": "Key",
+          "values": {
+            "PK": "#ffec99",
+            "FK": "#d0ebff",
+            "PK and FK": "#ffe8cc"
+          },
+          "fallback": "#ffffff"
+        },
+        "border": "#74c0fc",
+        "borderWidth": 1,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Label"
+        },
+        "size": {
+          "width": 200,
+          "height": 28,
+          "resizable": true
+        }
+      }
+    },
+    "shp_schema": {
+      "id": "shp_schema",
+      "name": "Schema look",
+      "kind": "node",
+      "size": {
+        "width": 1540,
+        "height": 532,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 6,
+          "fill": "#ffffff00",
+          "stroke": "#0c8599",
+          "strokeWidth": 1.5,
+          "dash": [7, 4]
+        },
+        {
+          "type": "text",
+          "x": 12,
+          "y": 4,
+          "width": "100% - 48",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "container",
+        "fill": "#ffffff00",
+        "border": "#0c8599",
+        "borderWidth": 1.5,
+        "borderStyle": "dashed",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 1540,
+          "height": 532,
+          "resizable": true
+        }
+      }
+    },
+    "shp_table": {
+      "id": "shp_table",
+      "name": "Table look",
+      "kind": "node",
+      "size": {
+        "width": 220,
+        "height": 204,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 6,
+          "fill": "#ffffff",
+          "stroke": "#0c8599",
+          "strokeWidth": 2
+        },
+        {
+          "type": "text",
+          "x": 12,
+          "y": 4,
+          "width": "100% - 48",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "container",
+        "fill": "#ffffff",
+        "border": "#0c8599",
+        "borderWidth": 2,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 220,
+          "height": 204,
+          "resizable": true
+        }
+      }
+    },
+    "shp_column": {
+      "id": "shp_column",
+      "name": "Column look",
+      "kind": "node",
+      "size": {
+        "width": 200,
+        "height": 28,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 0,
+          "fill": "= Key == 'PK' ? '#ffec99' : Key == 'FK' ? '#d0ebff' : Key == 'PK and FK' ? '#ffe8cc' : '#ffffff'",
+          "stroke": "#63e6be",
+          "strokeWidth": 1
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 4,
+          "width": "100% - 16",
+          "height": "100% - 8",
+          "text": "= Label",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {}
+        }
+      ],
+      "look": {
+        "base": "box",
+        "fill": {
+          "by": "Key",
+          "values": {
+            "PK": "#ffec99",
+            "FK": "#d0ebff",
+            "PK and FK": "#ffe8cc"
+          },
+          "fallback": "#ffffff"
+        },
+        "border": "#63e6be",
+        "borderWidth": 1,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Label"
+        },
+        "size": {
+          "width": 200,
+          "height": 28,
+          "resizable": true
+        }
+      }
+    },
+    "shp_rel_relatesto": {
+      "id": "shp_rel_relatesto",
+      "name": "RelatesTo look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#1c7ed6",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "labels": [
+        {
+          "at": "middle",
+          "text": "= Reading",
+          "font": {
+            "size": 11
+          },
+          "background": "#ffffff",
+          "visible": "= Reading != null"
+        }
+      ],
+      "look": {
+        "colour": "#1c7ed6",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "none",
+        "label": {
+          "attribute": "Reading"
+        }
+      }
+    },
+    "shp_rel_subtypeof": {
+      "id": "shp_rel_subtypeof",
+      "name": "SubtypeOf look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#495057",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "triangle"
+      },
+      "look": {
+        "colour": "#495057",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "triangle",
+        "label": null
+      }
+    },
+    "shp_rel_foreignkey": {
+      "id": "shp_rel_foreignkey",
+      "name": "ForeignKey look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#0c8599",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "open-arrow"
+      },
+      "labels": [
+        {
+          "at": "middle",
+          "text": "= Columns",
+          "font": {
+            "size": 11
+          },
+          "background": "#ffffff",
+          "visible": "= Columns != null"
+        }
+      ],
+      "look": {
+        "colour": "#0c8599",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "open-arrow",
+        "label": {
+          "attribute": "Columns"
+        }
+      }
+    }
+  },
+  "panels": {
+    "cls_entityattribute": {
+      "class": "cls_entityattribute",
+      "tabs": [
+        {
+          "label": "Attribute",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "DataType",
+              "control": "select"
+            },
+            {
+              "attribute": "Key",
+              "control": "segmented"
+            },
+            {
+              "attribute": "Required",
+              "control": "segmented"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            }
+          ]
+        }
+      ]
+    },
+    "cls_column": {
+      "class": "cls_column",
+      "tabs": [
+        {
+          "label": "Column",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "DataType"
+            },
+            {
+              "attribute": "Key",
+              "control": "segmented"
+            },
+            {
+              "attribute": "Nullable",
+              "control": "segmented"
+            },
+            {
+              "attribute": "Default"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "rules": {},
+  "scripts": {}
+}

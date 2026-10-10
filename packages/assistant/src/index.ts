@@ -31,7 +31,7 @@ export {
   DRAFT_KINDS,
   MAX_SENTENCE_CHARS,
   buildRequest,
-  summariseTool,
+  summariseKit,
   type DraftKind,
 } from './prompts';
 export { extractCode, parseJsonObject } from './extract';

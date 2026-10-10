@@ -4,12 +4,12 @@ import { fileURLToPath } from 'node:url';
 import { prepare } from './app';
 import { loadHarness } from './bundle';
 
-const tools = (path: string) =>
+const kits = (path: string) =>
   fileURLToPath(
-    new URL(`../../../tools/agent-pipeline/${path}`, import.meta.url),
+    new URL(`../../../kits/agent-pipeline/${path}`, import.meta.url),
   );
 
-test('the agent pipeline tool opens, draws the sample pipeline and checks it', async ({
+test('the agent pipeline Kit opens, draws the sample pipeline and checks it', async ({
   page,
 }) => {
   await prepare(page, { name: 'Anna', colour: '#e8590c', seed: false });
@@ -17,13 +17,13 @@ test('the agent pipeline tool opens, draws the sample pipeline and checks it', a
   await page.evaluate(
     (json) =>
       (window as unknown as { __seed(t: string): Promise<void> }).__seed(json),
-    readFileSync(tools('tool.json'), 'utf8'),
+    readFileSync(kits('kit.json'), 'utf8'),
   );
   await page.reload();
   await page.getByTestId('open-folder').click();
   await page
     .locator('input[type="file"][aria-label="Files to import"]')
-    .setInputFiles(tools('code-review.mkmodel.json'));
+    .setInputFiles(kits('code-review.mkmodel.json'));
   await expect(page.getByTestId('import-note')).toBeVisible();
   await page
     .getByRole('tree')
@@ -31,7 +31,7 @@ test('the agent pipeline tool opens, draws the sample pipeline and checks it', a
     .click();
   await expect(page.getByTestId('model-view')).toBeVisible();
 
-  // Actors, tasks, artifacts and gates all come from the tool's palette.
+  // Actors, tasks, artifacts and gates all come from the Kit's palette.
   for (const name of ['Agent', 'Human', 'Task', 'Artifact', 'Gate', 'Stage'])
     await expect(page.getByTestId(`palette-class-${name}`)).toBeVisible();
 

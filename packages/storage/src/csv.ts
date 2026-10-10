@@ -5,7 +5,7 @@ import {
   type AttributeDef,
   type Json,
   type Model,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 import { zipFiles } from './zip';
 
@@ -88,7 +88,7 @@ function table(
  * Rows are in drawing order. Lines end with CRLF as RFC 4180 says.
  */
 export function exportCsv(
-  tool: ToolLibrary,
+  kit: Kit,
   model: Model,
   options: CsvOptions = {},
 ): Record<string, string> {
@@ -97,11 +97,11 @@ export function exportCsv(
   const classIds = [...new Set(elements.map((e) => e.class))];
   const fixedElement = ['id', 'x', 'y', 'w', 'h', 'parent_id'];
   for (const classId of classIds) {
-    const cls = tool.classes[classId];
-    // An object of a class the tool no longer has cannot be named, so it is left out.
+    const cls = kit.classes[classId];
+    // An object of a class the Kit no longer has cannot be named, so it is left out.
     if (!cls) continue;
     const columns = attributeColumns(
-      effectiveAttributes(tool, classId),
+      effectiveAttributes(kit, classId),
       fixedElement,
     );
     const rows = elements
@@ -125,10 +125,10 @@ export function exportCsv(
   const connectors = inDrawingOrder(model.connectors);
   const fixedConnector = ['id', 'from_id', 'to_id'];
   for (const relationId of new Set(connectors.map((c) => c.relation))) {
-    const rel = tool.relations[relationId];
+    const rel = kit.relations[relationId];
     if (!rel) continue;
     const columns = attributeColumns(
-      effectiveRelationAttributes(tool, relationId),
+      effectiveRelationAttributes(kit, relationId),
       fixedConnector,
     );
     const rows = connectors
@@ -153,9 +153,9 @@ export function exportCsv(
 
 /** The CSV files of a model in one zip. */
 export function exportCsvZip(
-  tool: ToolLibrary,
+  kit: Kit,
   model: Model,
   options: CsvOptions = {},
 ): Uint8Array {
-  return zipFiles(exportCsv(tool, model, options));
+  return zipFiles(exportCsv(kit, model, options));
 }

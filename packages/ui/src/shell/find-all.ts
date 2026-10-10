@@ -3,14 +3,14 @@ import {
   type AttributeDef,
   type ElementId,
   type Model,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 
 export interface FindAllEntry {
   slug: string;
   name: string;
   model: Model;
-  tool: ToolLibrary;
+  kit: Kit;
 }
 
 export type FindAllMatch =
@@ -103,21 +103,21 @@ export function findAcrossModels(
   const limit = options.limit ?? FIND_ALL_LIMIT;
   const hits: FindAllHit[] = [];
 
-  // Class facts are the same for every element of a class, and models of one tool library share
+  // Class facts are the same for every element of a class, and models of one Kit share
   // them, so they are worked out once per library.
-  const perTool = new Map<ToolLibrary, Map<string, ClassInfo>>();
+  const perKit = new Map<Kit, Map<string, ClassInfo>>();
 
   for (const entry of entries) {
-    const { tool, model } = entry;
-    let classes = perTool.get(tool);
-    if (!classes) perTool.set(tool, (classes = new Map()));
+    const { kit, model } = entry;
+    let classes = perKit.get(kit);
+    if (!classes) perKit.set(kit, (classes = new Map()));
     const infoOf = (classId: string): ClassInfo => {
       let info = classes.get(classId);
       if (info) return info;
-      const cls = tool.classes[classId as keyof ToolLibrary['classes']];
+      const cls = kit.classes[classId as keyof Kit['classes']];
       let attributes: AttributeDef[] = [];
       try {
-        if (cls) attributes = effectiveAttributes(tool, cls.id);
+        if (cls) attributes = effectiveAttributes(kit, cls.id);
       } catch {
         // A broken class chain has no attributes to search, but its elements still can match.
       }

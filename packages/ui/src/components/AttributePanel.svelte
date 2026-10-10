@@ -27,7 +27,7 @@
     heading: string;
     references: ReferenceServices;
     onEdit: (field: Field, value: Json) => void;
-    /** The tool's panel layout for the selection, rebuilt whenever a value changes; null shows the generated panel. */
+    /** The Kit's panel layout for the selection, rebuilt whenever a value changes; null shows the generated panel. */
     layoutPanel?: LayoutPanel | null;
     /** Stored values the class no longer defines; shown for a single selected object. */
     unknown?: UnknownAttribute[];
@@ -163,7 +163,7 @@
       <details class="unknown" data-testid="unknown-attributes">
         <summary>Unknown attributes ({unknown.length})</summary>
         <p class="note">
-          The tool no longer has these attributes. The values are kept until you
+          The Kit no longer has these attributes. The values are kept until you
           remove them.
         </p>
         {#each unknown as entry (entry.id)}

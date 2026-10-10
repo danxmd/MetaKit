@@ -40,7 +40,7 @@
       type="button"
       onclick={() => input?.click()}
       data-testid="import-files"
-      title="Open a .mkmodel.json, .mkbundle or .mktool file"
+      title="Open a .mkmodel.json, .mkbundle or .mkkit file"
       >Import file(s)…</button
     >
     <div class="menu-sep"></div>
@@ -72,8 +72,8 @@
       disabled={slug === ''}
       onclick={() => onExportBundle(slug)}
       data-testid="export-bundle"
-      title="Save the model and its tool library in one .mkbundle file"
-      >Bundle (model and tool library)</button
+      title="Save the model and its Kit in one .mkbundle file"
+      >Bundle (model and Kit)</button
     >
     <button
       type="button"

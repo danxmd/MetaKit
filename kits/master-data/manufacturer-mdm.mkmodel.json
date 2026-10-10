@@ -1,0 +1,621 @@
+{
+  "attributes": {
+    "Organisation": "A maker of industrial pumps",
+    "Title": "Customer, product and supplier master data"
+  },
+  "connectors": [
+    {
+      "attributes": {
+        "Trust": 2
+      },
+      "from": "el_src_crm",
+      "id": "cn_001",
+      "relation": "Supplies",
+      "to": "el_customer"
+    },
+    {
+      "attributes": {
+        "Trust": 1
+      },
+      "from": "el_src_orders",
+      "id": "cn_002",
+      "relation": "Supplies",
+      "to": "el_customer"
+    },
+    {
+      "attributes": {
+        "Trust": 3
+      },
+      "from": "el_src_service",
+      "id": "cn_003",
+      "relation": "Supplies",
+      "to": "el_customer"
+    },
+    {
+      "attributes": {
+        "Trust": 1
+      },
+      "from": "el_src_design",
+      "id": "cn_004",
+      "relation": "Supplies",
+      "to": "el_product"
+    },
+    {
+      "attributes": {
+        "Trust": 2
+      },
+      "from": "el_src_erp",
+      "id": "cn_005",
+      "relation": "Supplies",
+      "to": "el_product"
+    },
+    {
+      "attributes": {
+        "Trust": 1
+      },
+      "from": "el_src_erp",
+      "id": "cn_006",
+      "relation": "Supplies",
+      "to": "el_supplier"
+    },
+    {
+      "attributes": {
+        "Trust": 2
+      },
+      "from": "el_src_portal",
+      "id": "cn_007",
+      "relation": "Supplies",
+      "to": "el_supplier"
+    },
+    {
+      "from": "el_customer",
+      "id": "cn_008",
+      "relation": "MatchedBy",
+      "to": "el_match_customer"
+    },
+    {
+      "from": "el_customer",
+      "id": "cn_009",
+      "relation": "MergedBy",
+      "to": "el_surv_customer"
+    },
+    {
+      "from": "el_product",
+      "id": "cn_010",
+      "relation": "MatchedBy",
+      "to": "el_match_product"
+    },
+    {
+      "from": "el_product",
+      "id": "cn_011",
+      "relation": "MergedBy",
+      "to": "el_surv_product"
+    },
+    {
+      "from": "el_supplier",
+      "id": "cn_012",
+      "relation": "MatchedBy",
+      "to": "el_match_supplier"
+    },
+    {
+      "from": "el_supplier",
+      "id": "cn_013",
+      "relation": "MergedBy",
+      "to": "el_surv_supplier"
+    },
+    {
+      "from": "el_stw_customer",
+      "id": "cn_014",
+      "relation": "Stewards",
+      "to": "el_customer"
+    },
+    {
+      "from": "el_stw_product",
+      "id": "cn_015",
+      "relation": "Stewards",
+      "to": "el_product"
+    },
+    {
+      "from": "el_customer",
+      "id": "cn_016",
+      "relation": "ManagedIn",
+      "to": "el_hub_customer"
+    },
+    {
+      "from": "el_product",
+      "id": "cn_017",
+      "relation": "ManagedIn",
+      "to": "el_hub_product"
+    },
+    {
+      "from": "el_supplier",
+      "id": "cn_018",
+      "relation": "ManagedIn",
+      "to": "el_hub_supplier"
+    },
+    {
+      "attributes": {
+        "Frequency": "Live"
+      },
+      "from": "el_hub_customer",
+      "id": "cn_019",
+      "relation": "Distributes",
+      "to": "el_app_billing"
+    },
+    {
+      "attributes": {
+        "Frequency": "Daily"
+      },
+      "from": "el_hub_customer",
+      "id": "cn_020",
+      "relation": "Distributes",
+      "to": "el_app_portal"
+    },
+    {
+      "attributes": {
+        "Frequency": "Daily"
+      },
+      "from": "el_hub_product",
+      "id": "cn_021",
+      "relation": "Distributes",
+      "to": "el_app_catalogue"
+    },
+    {
+      "attributes": {
+        "Frequency": "Live"
+      },
+      "from": "el_hub_product",
+      "id": "cn_022",
+      "relation": "Distributes",
+      "to": "el_app_planning"
+    }
+  ],
+  "elements": [
+    {
+      "attributes": {
+        "Hosting": "Software as a service",
+        "Name": "Sales system",
+        "Records": 410000
+      },
+      "class": "SourceSystem",
+      "h": 70,
+      "id": "el_src_crm",
+      "w": 150,
+      "x": 40,
+      "y": 80
+    },
+    {
+      "attributes": {
+        "Hosting": "On-premises",
+        "Name": "Order management",
+        "Records": 260000
+      },
+      "class": "SourceSystem",
+      "h": 70,
+      "id": "el_src_orders",
+      "w": 150,
+      "x": 40,
+      "y": 180
+    },
+    {
+      "attributes": {
+        "Hosting": "Cloud",
+        "Name": "Field service system",
+        "Records": 90000
+      },
+      "class": "SourceSystem",
+      "h": 70,
+      "id": "el_src_service",
+      "w": 150,
+      "x": 40,
+      "y": 280
+    },
+    {
+      "attributes": {
+        "Hosting": "On-premises",
+        "Name": "Product design system",
+        "Records": 38000
+      },
+      "class": "SourceSystem",
+      "h": 70,
+      "id": "el_src_design",
+      "w": 150,
+      "x": 40,
+      "y": 530
+    },
+    {
+      "attributes": {
+        "Hosting": "On-premises",
+        "Name": "Purchasing system",
+        "Records": 52000
+      },
+      "class": "SourceSystem",
+      "h": 70,
+      "id": "el_src_erp",
+      "w": 150,
+      "x": 40,
+      "y": 760
+    },
+    {
+      "attributes": {
+        "Hosting": "Software as a service",
+        "Name": "Supplier portal",
+        "Records": 6400
+      },
+      "class": "SourceSystem",
+      "h": 70,
+      "id": "el_src_portal",
+      "w": 150,
+      "x": 40,
+      "y": 1030
+    },
+    {
+      "attributes": {
+        "Name": "Customer",
+        "Owner": "Head of sales operations"
+      },
+      "class": "MasterDataDomain",
+      "h": 390,
+      "id": "el_dom_customer",
+      "w": 520,
+      "x": 260,
+      "y": 20
+    },
+    {
+      "attributes": {
+        "Fields": [
+          {
+            "key": true,
+            "name": "Customer number",
+            "nullable": false,
+            "type": "Identifier"
+          },
+          {
+            "key": false,
+            "name": "Legal name",
+            "nullable": true,
+            "type": "Text"
+          },
+          {
+            "key": false,
+            "name": "Tax number",
+            "nullable": true,
+            "type": "Text"
+          },
+          {
+            "key": false,
+            "name": "Billing address",
+            "nullable": true,
+            "type": "Text"
+          },
+          {
+            "key": false,
+            "name": "Industry",
+            "nullable": true,
+            "type": "Code"
+          }
+        ],
+        "GoldenRecords": 512000,
+        "Name": "Customer",
+        "SourceRecords": 760000
+      },
+      "class": "DataEntity",
+      "h": 110,
+      "id": "el_customer",
+      "parent": "el_dom_customer",
+      "w": 190,
+      "x": 290,
+      "y": 90
+    },
+    {
+      "attributes": {
+        "Domain": "Customer",
+        "Name": "Customer data steward"
+      },
+      "class": "DataSteward",
+      "h": 110,
+      "id": "el_stw_customer",
+      "parent": "el_dom_customer",
+      "w": 90,
+      "x": 560,
+      "y": 270
+    },
+    {
+      "attributes": {
+        "AutoMergeFrom": 95,
+        "ComparedAttributes": "Legal name, tax number and postcode",
+        "MatchThreshold": 80,
+        "MatchType": "Fuzzy",
+        "Name": "Same company"
+      },
+      "class": "MatchRule",
+      "h": 70,
+      "id": "el_match_customer",
+      "parent": "el_dom_customer",
+      "w": 200,
+      "x": 540,
+      "y": 60
+    },
+    {
+      "attributes": {
+        "AppliesTo": "Billing address and tax number",
+        "Name": "Trusted address",
+        "SourceOrder": "Order management, then the sales system",
+        "Strategy": "Most trusted source"
+      },
+      "class": "SurvivorshipRule",
+      "h": 70,
+      "id": "el_surv_customer",
+      "parent": "el_dom_customer",
+      "w": 200,
+      "x": 540,
+      "y": 180
+    },
+    {
+      "attributes": {
+        "Name": "Product",
+        "Owner": "Head of engineering"
+      },
+      "class": "MasterDataDomain",
+      "h": 400,
+      "id": "el_dom_product",
+      "w": 520,
+      "x": 260,
+      "y": 440
+    },
+    {
+      "attributes": {
+        "Fields": [
+          {
+            "key": true,
+            "name": "Part number",
+            "nullable": false,
+            "type": "Identifier"
+          },
+          {
+            "key": false,
+            "name": "Description",
+            "nullable": true,
+            "type": "Text"
+          },
+          {
+            "key": false,
+            "name": "Unit of measure",
+            "nullable": true,
+            "type": "Code"
+          },
+          {
+            "key": false,
+            "name": "Weight",
+            "nullable": true,
+            "type": "Decimal"
+          }
+        ],
+        "GoldenRecords": 41000,
+        "Name": "Product",
+        "SourceRecords": 90000
+      },
+      "class": "DataEntity",
+      "h": 110,
+      "id": "el_product",
+      "parent": "el_dom_product",
+      "w": 190,
+      "x": 290,
+      "y": 510
+    },
+    {
+      "attributes": {
+        "Domain": "Product",
+        "Name": "Product data steward"
+      },
+      "class": "DataSteward",
+      "h": 110,
+      "id": "el_stw_product",
+      "parent": "el_dom_product",
+      "w": 90,
+      "x": 560,
+      "y": 700
+    },
+    {
+      "attributes": {
+        "AutoMergeFrom": 100,
+        "ComparedAttributes": "Part number and description",
+        "MatchThreshold": 100,
+        "MatchType": "Exact",
+        "Name": "Same part"
+      },
+      "class": "MatchRule",
+      "h": 70,
+      "id": "el_match_product",
+      "parent": "el_dom_product",
+      "w": 200,
+      "x": 540,
+      "y": 480
+    },
+    {
+      "attributes": {
+        "AppliesTo": "Description, unit and weight",
+        "Name": "Engineering wins",
+        "SourceOrder": "Product design system, then purchasing",
+        "Strategy": "Most trusted source"
+      },
+      "class": "SurvivorshipRule",
+      "h": 70,
+      "id": "el_surv_product",
+      "parent": "el_dom_product",
+      "w": 200,
+      "x": 540,
+      "y": 600
+    },
+    {
+      "attributes": {
+        "Name": "Supplier",
+        "Owner": "Head of purchasing"
+      },
+      "class": "MasterDataDomain",
+      "h": 230,
+      "id": "el_dom_supplier",
+      "w": 520,
+      "x": 260,
+      "y": 880
+    },
+    {
+      "attributes": {
+        "Fields": [
+          {
+            "key": true,
+            "name": "Supplier number",
+            "nullable": false,
+            "type": "Identifier"
+          },
+          {
+            "key": false,
+            "name": "Legal name",
+            "nullable": true,
+            "type": "Text"
+          },
+          {
+            "key": false,
+            "name": "Bank account",
+            "nullable": true,
+            "type": "Text"
+          }
+        ],
+        "GoldenRecords": 5800,
+        "Name": "Supplier",
+        "SourceRecords": 9100
+      },
+      "class": "DataEntity",
+      "h": 110,
+      "id": "el_supplier",
+      "parent": "el_dom_supplier",
+      "w": 190,
+      "x": 290,
+      "y": 940
+    },
+    {
+      "attributes": {
+        "AutoMergeFrom": 97,
+        "ComparedAttributes": "Legal name and tax number",
+        "MatchThreshold": 85,
+        "MatchType": "Probabilistic",
+        "Name": "Same supplier"
+      },
+      "class": "MatchRule",
+      "h": 70,
+      "id": "el_match_supplier",
+      "parent": "el_dom_supplier",
+      "w": 200,
+      "x": 540,
+      "y": 910
+    },
+    {
+      "attributes": {
+        "AppliesTo": "Bank account",
+        "Name": "Newest bank details",
+        "Strategy": "Most recent"
+      },
+      "class": "SurvivorshipRule",
+      "h": 70,
+      "id": "el_surv_supplier",
+      "parent": "el_dom_supplier",
+      "w": 200,
+      "x": 540,
+      "y": 1030
+    },
+    {
+      "attributes": {
+        "Name": "Customer hub",
+        "Style": "Coexistence"
+      },
+      "class": "MDMHub",
+      "h": 70,
+      "id": "el_hub_customer",
+      "w": 170,
+      "x": 860,
+      "y": 110
+    },
+    {
+      "attributes": {
+        "Name": "Product hub",
+        "Style": "Centralised"
+      },
+      "class": "MDMHub",
+      "h": 70,
+      "id": "el_hub_product",
+      "w": 170,
+      "x": 860,
+      "y": 530
+    },
+    {
+      "attributes": {
+        "Name": "Supplier registry",
+        "Style": "Registry"
+      },
+      "class": "MDMHub",
+      "h": 70,
+      "id": "el_hub_supplier",
+      "w": 170,
+      "x": 860,
+      "y": 960
+    },
+    {
+      "attributes": {
+        "Name": "Billing",
+        "Owner": "Finance"
+      },
+      "class": "Application",
+      "h": 70,
+      "id": "el_app_billing",
+      "w": 150,
+      "x": 1110,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "Name": "Customer portal",
+        "Owner": "Customer service"
+      },
+      "class": "Application",
+      "h": 70,
+      "id": "el_app_portal",
+      "w": 150,
+      "x": 1110,
+      "y": 190
+    },
+    {
+      "attributes": {
+        "Name": "Online catalogue",
+        "Owner": "Marketing"
+      },
+      "class": "Application",
+      "h": 70,
+      "id": "el_app_catalogue",
+      "w": 150,
+      "x": 1110,
+      "y": 460
+    },
+    {
+      "attributes": {
+        "Name": "Production planning",
+        "Owner": "Operations"
+      },
+      "class": "Application",
+      "h": 70,
+      "id": "el_app_planning",
+      "w": 150,
+      "x": 1110,
+      "y": 600
+    }
+  ],
+  "formatVersion": 2,
+  "id": "mdl_manufacturermdm",
+  "kind": "mkmodel",
+  "kit": {
+    "id": "kit_masterdata",
+    "name": "Master data management",
+    "version": "1.0.0"
+  },
+  "modelType": "MasterData",
+  "name": "Customer, product and supplier master data"
+}

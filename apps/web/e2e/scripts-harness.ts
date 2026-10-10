@@ -1,15 +1,15 @@
 // Bundled and run inside Chromium by scripts.spec.ts: the script editor with its language worker.
 import { generateDeclarations } from '../../../packages/behaviour/src/types-gen';
-import type { ToolLibrary } from '@metakit-app/core';
-import { SAMPLE, sampleTool } from '@metakit-app/core/testing';
+import type { Kit } from '@metakit-app/core';
+import { SAMPLE, sampleKit } from '@metakit-app/core/testing';
 import { createScriptEditor } from '../../../packages/ui/src/components/build/scripts/script-editor';
 import {
   createLanguageClient,
   type WorkerLike,
 } from '../../../packages/ui/src/components/build/scripts/script-language-client';
 
-function tool(): ToolLibrary {
-  const t = sampleTool();
+function kit(): Kit {
+  const t = sampleKit();
   t.classes[SAMPLE.task]!.attributes.push({
     id: 'att_number',
     key: 'Number',
@@ -30,7 +30,7 @@ const api = {
     );
     worker = new Worker(url);
     const client = createLanguageClient(worker as unknown as WorkerLike);
-    await client.declarations(generateDeclarations(tool()));
+    await client.declarations(generateDeclarations(kit()));
     const parent = document.createElement('div');
     // Fixed at the top of the window so that the mouse can be moved over any line of it.
     parent.style.cssText =

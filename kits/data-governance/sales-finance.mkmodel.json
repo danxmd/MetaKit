@@ -1,0 +1,832 @@
+{
+  "attributes": {
+    "Scope": "Who owns, looks after and checks the data of two business domains.",
+    "Title": "Sales and finance domains"
+  },
+  "connectors": [
+    {
+      "from": "el_77weewnr62",
+      "id": "cn_5my95gv214",
+      "relation": "Owns",
+      "to": "el_g9eeqf1nnv"
+    },
+    {
+      "from": "el_rvxj5yv7xn",
+      "id": "cn_t6cwk93my5",
+      "relation": "Owns",
+      "to": "el_4hzygj6s2n"
+    },
+    {
+      "from": "el_77weewnr62",
+      "id": "cn_g8rexghvca",
+      "relation": "Owns",
+      "to": "el_9tefjqen3e"
+    },
+    {
+      "from": "el_rvxj5yv7xn",
+      "id": "cn_gjybrawr3z",
+      "relation": "Owns",
+      "to": "el_52hw8dedec"
+    },
+    {
+      "from": "el_rvxj5yv7xn",
+      "id": "cn_az8zb7j23e",
+      "relation": "Owns",
+      "to": "el_89amjh21he"
+    },
+    {
+      "from": "el_77weewnr62",
+      "id": "cn_m7bqyrya7a",
+      "relation": "Owns",
+      "to": "el_xc6qzk04w9"
+    },
+    {
+      "from": "el_rvxj5yv7xn",
+      "id": "cn_yekyk066fn",
+      "relation": "Owns",
+      "to": "el_hh63nvvnf8"
+    },
+    {
+      "from": "el_9x2k54vw26",
+      "id": "cn_ef005hr1rb",
+      "relation": "Stewards",
+      "to": "el_9tefjqen3e"
+    },
+    {
+      "from": "el_9x2k54vw26",
+      "id": "cn_whphj9bvxv",
+      "relation": "Stewards",
+      "to": "el_xc6qzk04w9"
+    },
+    {
+      "from": "el_9x2k54vw26",
+      "id": "cn_6qrk2vsvs2",
+      "relation": "Stewards",
+      "to": "el_v31sgs74wt"
+    },
+    {
+      "from": "el_kn5d68q8vw",
+      "id": "cn_phh830cjyt",
+      "relation": "Stewards",
+      "to": "el_52hw8dedec"
+    },
+    {
+      "from": "el_kn5d68q8vw",
+      "id": "cn_kgm6y026tj",
+      "relation": "Stewards",
+      "to": "el_89amjh21he"
+    },
+    {
+      "from": "el_ewnbqcbgbq",
+      "id": "cn_gczasm17jy",
+      "relation": "CustodianOf",
+      "to": "el_xc6qzk04w9"
+    },
+    {
+      "from": "el_ewnbqcbgbq",
+      "id": "cn_5bfq5261j3",
+      "relation": "CustodianOf",
+      "to": "el_37y04wax6a"
+    },
+    {
+      "from": "el_ewnbqcbgbq",
+      "id": "cn_bc6hn2j8y1",
+      "relation": "CustodianOf",
+      "to": "el_ndhwgbhy4g"
+    },
+    {
+      "from": "el_kn5d68q8vw",
+      "id": "cn_bf5rmjpt3v",
+      "relation": "CustodianOf",
+      "to": "el_hh63nvvnf8"
+    },
+    {
+      "from": "el_kn5d68q8vw",
+      "id": "cn_b0wqzwkawy",
+      "relation": "CustodianOf",
+      "to": "el_n1zh4gca4j"
+    },
+    {
+      "from": "el_9tefjqen3e",
+      "id": "cn_z9xj288c5m",
+      "relation": "Contains",
+      "to": "el_xc6qzk04w9"
+    },
+    {
+      "from": "el_9tefjqen3e",
+      "id": "cn_a4nkeqw2nv",
+      "relation": "Contains",
+      "to": "el_37y04wax6a"
+    },
+    {
+      "from": "el_9tefjqen3e",
+      "id": "cn_dngrvmcjs7",
+      "relation": "Contains",
+      "to": "el_ndhwgbhy4g"
+    },
+    {
+      "from": "el_v31sgs74wt",
+      "id": "cn_fj8z8c6nh3",
+      "relation": "Contains",
+      "to": "el_ne0w796v8z"
+    },
+    {
+      "from": "el_v31sgs74wt",
+      "id": "cn_1ba5a93ark",
+      "relation": "Contains",
+      "to": "el_p31ywvgpaf"
+    },
+    {
+      "from": "el_52hw8dedec",
+      "id": "cn_429s3wacxn",
+      "relation": "Contains",
+      "to": "el_nfy3zngg1k"
+    },
+    {
+      "from": "el_89amjh21he",
+      "id": "cn_n6nffnajnp",
+      "relation": "Contains",
+      "to": "el_hh63nvvnf8"
+    },
+    {
+      "attributes": {
+        "Purpose": "Customer history"
+      },
+      "from": "el_v31sgs74wt",
+      "id": "cn_m6me6zfeqz",
+      "relation": "Consumes",
+      "to": "el_9tefjqen3e"
+    },
+    {
+      "attributes": {
+        "Purpose": "Booked revenue"
+      },
+      "from": "el_52hw8dedec",
+      "id": "cn_kdrp8sxke8",
+      "relation": "Consumes",
+      "to": "el_89amjh21he"
+    },
+    {
+      "from": "el_9tefjqen3e",
+      "id": "cn_rnxm40v5bz",
+      "relation": "GovernedBy",
+      "to": "el_kzta156hsq"
+    },
+    {
+      "from": "el_xc6qzk04w9",
+      "id": "cn_ybrtrenmxa",
+      "relation": "GovernedBy",
+      "to": "el_kzta156hsq"
+    },
+    {
+      "from": "el_xc6qzk04w9",
+      "id": "cn_dxhw40pan6",
+      "relation": "GovernedBy",
+      "to": "el_ge6f8xdvkm"
+    },
+    {
+      "from": "el_hh63nvvnf8",
+      "id": "cn_qa2b011tjs",
+      "relation": "GovernedBy",
+      "to": "el_78n7sjb2a9"
+    },
+    {
+      "from": "el_hh63nvvnf8",
+      "id": "cn_gnzte8jb3q",
+      "relation": "GovernedBy",
+      "to": "el_ge6f8xdvkm"
+    },
+    {
+      "from": "el_89amjh21he",
+      "id": "cn_v7mdmvr72r",
+      "relation": "GovernedBy",
+      "to": "el_78n7sjb2a9"
+    },
+    {
+      "from": "el_xc6qzk04w9",
+      "id": "cn_ktqp86d508",
+      "relation": "ClassifiedAs",
+      "to": "el_w86yng83px"
+    },
+    {
+      "from": "el_37y04wax6a",
+      "id": "cn_djzzs04djc",
+      "relation": "ClassifiedAs",
+      "to": "el_rsyfrjkenc"
+    },
+    {
+      "from": "el_ndhwgbhy4g",
+      "id": "cn_gf3n34pdgr",
+      "relation": "ClassifiedAs",
+      "to": "el_rsyfrjkenc"
+    },
+    {
+      "from": "el_ne0w796v8z",
+      "id": "cn_89rr7memdy",
+      "relation": "ClassifiedAs",
+      "to": "el_rsyfrjkenc"
+    },
+    {
+      "from": "el_p31ywvgpaf",
+      "id": "cn_rrzrcv9j59",
+      "relation": "ClassifiedAs",
+      "to": "el_ct4cpfzw61"
+    },
+    {
+      "from": "el_hh63nvvnf8",
+      "id": "cn_nnj9gppjxt",
+      "relation": "ClassifiedAs",
+      "to": "el_03hek90k6m"
+    },
+    {
+      "from": "el_n1zh4gca4j",
+      "id": "cn_x8s9wz62ax",
+      "relation": "ClassifiedAs",
+      "to": "el_03hek90k6m"
+    },
+    {
+      "from": "el_nfy3zngg1k",
+      "id": "cn_fykbzxagnb",
+      "relation": "ClassifiedAs",
+      "to": "el_rsyfrjkenc"
+    },
+    {
+      "from": "el_7jf18jmy4e",
+      "id": "cn_1f743zjrvb",
+      "relation": "Defines",
+      "to": "el_xc6qzk04w9"
+    },
+    {
+      "from": "el_7jf18jmy4e",
+      "id": "cn_kpy6hd2n3t",
+      "relation": "Defines",
+      "to": "el_9tefjqen3e"
+    },
+    {
+      "from": "el_4scwrz6n1j",
+      "id": "cn_jv2mje1par",
+      "relation": "Defines",
+      "to": "el_ne0w796v8z"
+    },
+    {
+      "from": "el_rb0bp3p560",
+      "id": "cn_ejtbq4yhwa",
+      "relation": "Defines",
+      "to": "el_nfy3zngg1k"
+    },
+    {
+      "from": "el_rb0bp3p560",
+      "id": "cn_yez2s61rrm",
+      "relation": "Defines",
+      "to": "el_hh63nvvnf8"
+    },
+    {
+      "from": "el_1cz6f8n08f",
+      "id": "cn_ea75tqpg4r",
+      "relation": "Checks",
+      "to": "el_xc6qzk04w9"
+    },
+    {
+      "from": "el_n2sn6mvwv7",
+      "id": "cn_4mrb28afr5",
+      "relation": "Checks",
+      "to": "el_xc6qzk04w9"
+    },
+    {
+      "from": "el_z7m6d40b3n",
+      "id": "cn_m2x5z6eq3s",
+      "relation": "Checks",
+      "to": "el_37y04wax6a"
+    },
+    {
+      "from": "el_87xws2w491",
+      "id": "cn_9rzzws5v4m",
+      "relation": "Checks",
+      "to": "el_hh63nvvnf8"
+    },
+    {
+      "from": "el_kc1fb80zhy",
+      "id": "cn_9d0vg83sjj",
+      "relation": "Checks",
+      "to": "el_nfy3zngg1k"
+    },
+    {
+      "from": "el_kc1fb80zhy",
+      "id": "cn_12d9wf96tr",
+      "relation": "Checks",
+      "to": "el_hh63nvvnf8"
+    }
+  ],
+  "elements": [
+    {
+      "attributes": {
+        "Email": "amira@example.com",
+        "Name": "Amira Haddad",
+        "Team": "Sales"
+      },
+      "class": "Person",
+      "h": 60,
+      "id": "el_77weewnr62",
+      "w": 120,
+      "x": 80,
+      "y": 20
+    },
+    {
+      "attributes": {
+        "Email": "jonas@example.com",
+        "Name": "Jonas Weber",
+        "Team": "Sales"
+      },
+      "class": "Person",
+      "h": 60,
+      "id": "el_9x2k54vw26",
+      "w": 120,
+      "x": 230,
+      "y": 20
+    },
+    {
+      "attributes": {
+        "Email": "li@example.com",
+        "Name": "Li Na",
+        "Team": "Data platform"
+      },
+      "class": "Person",
+      "h": 60,
+      "id": "el_ewnbqcbgbq",
+      "w": 120,
+      "x": 560,
+      "y": 20
+    },
+    {
+      "attributes": {
+        "Email": "carlos@example.com",
+        "Name": "Carlos Mendes",
+        "Team": "Finance"
+      },
+      "class": "Person",
+      "h": 60,
+      "id": "el_rvxj5yv7xn",
+      "w": 120,
+      "x": 900,
+      "y": 20
+    },
+    {
+      "attributes": {
+        "Email": "grace@example.com",
+        "Name": "Grace Okafor",
+        "Team": "Finance"
+      },
+      "class": "Person",
+      "h": 60,
+      "id": "el_kn5d68q8vw",
+      "w": 120,
+      "x": 1050,
+      "y": 20
+    },
+    {
+      "attributes": {
+        "Description": "Customers, orders and the sales pipeline.",
+        "DomainLead": "Amira Haddad",
+        "Name": "Sales"
+      },
+      "class": "DataDomain",
+      "h": 440,
+      "id": "el_g9eeqf1nnv",
+      "w": 620,
+      "x": 40,
+      "y": 170
+    },
+    {
+      "attributes": {
+        "Description": "Ledger, invoices, payroll and revenue reporting.",
+        "DomainLead": "Carlos Mendes",
+        "Name": "Finance"
+      },
+      "class": "DataDomain",
+      "h": 440,
+      "id": "el_4hzygj6s2n",
+      "w": 620,
+      "x": 700,
+      "y": 170
+    },
+    {
+      "attributes": {
+        "Classification": "Confidential",
+        "Consumers": "Marketing, customer service",
+        "Description": "One view of every customer and their orders.",
+        "Name": "Customer 360",
+        "SLA": "Refreshed daily by 06:00",
+        "Status": "Published"
+      },
+      "class": "DataProduct",
+      "h": 60,
+      "id": "el_9tefjqen3e",
+      "parent": "el_g9eeqf1nnv",
+      "w": 120,
+      "x": 60,
+      "y": 210
+    },
+    {
+      "attributes": {
+        "Classification": "Internal",
+        "Description": "Open opportunities and the churn forecast.",
+        "Name": "Sales pipeline",
+        "Status": "Draft"
+      },
+      "class": "DataProduct",
+      "h": 60,
+      "id": "el_v31sgs74wt",
+      "parent": "el_g9eeqf1nnv",
+      "w": 120,
+      "x": 300,
+      "y": 210
+    },
+    {
+      "attributes": {
+        "Classification": "Confidential",
+        "Consumers": "Leadership team",
+        "Name": "Revenue reporting",
+        "SLA": "Closed by the third working day of the month",
+        "Status": "Published"
+      },
+      "class": "DataProduct",
+      "h": 60,
+      "id": "el_52hw8dedec",
+      "parent": "el_4hzygj6s2n",
+      "w": 120,
+      "x": 720,
+      "y": 210
+    },
+    {
+      "attributes": {
+        "Classification": "Restricted",
+        "Consumers": "Accounts receivable",
+        "Name": "Invoice ledger",
+        "SLA": "Updated every hour",
+        "Status": "Published"
+      },
+      "class": "DataProduct",
+      "h": 60,
+      "id": "el_89amjh21he",
+      "parent": "el_4hzygj6s2n",
+      "w": 120,
+      "x": 960,
+      "y": 210
+    },
+    {
+      "attributes": {
+        "Classification": "Confidential",
+        "ContainsPersonalData": true,
+        "Kind": "Table",
+        "Name": "Customer table",
+        "RetentionPeriod": "P7Y"
+      },
+      "class": "DataAsset",
+      "h": 60,
+      "id": "el_xc6qzk04w9",
+      "parent": "el_g9eeqf1nnv",
+      "w": 120,
+      "x": 60,
+      "y": 320
+    },
+    {
+      "attributes": {
+        "Classification": "Internal",
+        "ContainsPersonalData": false,
+        "Kind": "Table",
+        "Name": "Orders table"
+      },
+      "class": "DataAsset",
+      "h": 60,
+      "id": "el_37y04wax6a",
+      "parent": "el_g9eeqf1nnv",
+      "w": 120,
+      "x": 250,
+      "y": 320
+    },
+    {
+      "attributes": {
+        "Classification": "Internal",
+        "ContainsPersonalData": false,
+        "Kind": "Stream",
+        "Name": "Web events stream"
+      },
+      "class": "DataAsset",
+      "h": 60,
+      "id": "el_ndhwgbhy4g",
+      "parent": "el_g9eeqf1nnv",
+      "w": 120,
+      "x": 440,
+      "y": 320
+    },
+    {
+      "attributes": {
+        "Classification": "Internal",
+        "ContainsPersonalData": false,
+        "Kind": "Model",
+        "Name": "Churn model"
+      },
+      "class": "DataAsset",
+      "h": 60,
+      "id": "el_ne0w796v8z",
+      "parent": "el_g9eeqf1nnv",
+      "w": 120,
+      "x": 250,
+      "y": 420
+    },
+    {
+      "attributes": {
+        "Classification": "Public",
+        "ContainsPersonalData": false,
+        "Kind": "Report",
+        "Name": "Win and loss report"
+      },
+      "class": "DataAsset",
+      "h": 60,
+      "id": "el_p31ywvgpaf",
+      "parent": "el_g9eeqf1nnv",
+      "w": 120,
+      "x": 440,
+      "y": 420
+    },
+    {
+      "attributes": {
+        "Classification": "Restricted",
+        "ContainsPersonalData": false,
+        "Kind": "Table",
+        "Name": "General ledger",
+        "RetentionPeriod": "P10Y"
+      },
+      "class": "DataAsset",
+      "h": 60,
+      "id": "el_hh63nvvnf8",
+      "parent": "el_4hzygj6s2n",
+      "w": 120,
+      "x": 720,
+      "y": 320
+    },
+    {
+      "attributes": {
+        "Classification": "Restricted",
+        "ContainsPersonalData": true,
+        "Kind": "File",
+        "Name": "Payroll file",
+        "RetentionPeriod": "P10Y"
+      },
+      "class": "DataAsset",
+      "h": 60,
+      "id": "el_n1zh4gca4j",
+      "parent": "el_4hzygj6s2n",
+      "w": 120,
+      "x": 910,
+      "y": 320
+    },
+    {
+      "attributes": {
+        "Classification": "Internal",
+        "ContainsPersonalData": false,
+        "Kind": "Report",
+        "Name": "Revenue dashboard"
+      },
+      "class": "DataAsset",
+      "h": 60,
+      "id": "el_nfy3zngg1k",
+      "parent": "el_4hzygj6s2n",
+      "w": 120,
+      "x": 1100,
+      "y": 320
+    },
+    {
+      "attributes": {
+        "Definition": "A person or company that has placed at least one order.",
+        "Name": "Customer",
+        "Status": "Approved",
+        "Synonyms": "Client, account"
+      },
+      "class": "GlossaryTerm",
+      "h": 60,
+      "id": "el_7jf18jmy4e",
+      "parent": "el_g9eeqf1nnv",
+      "w": 120,
+      "x": 60,
+      "y": 420
+    },
+    {
+      "attributes": {
+        "Definition": "A customer who has not ordered for twelve months.",
+        "Name": "Churn",
+        "Status": "Approved"
+      },
+      "class": "GlossaryTerm",
+      "h": 60,
+      "id": "el_4scwrz6n1j",
+      "parent": "el_g9eeqf1nnv",
+      "w": 120,
+      "x": 60,
+      "y": 510
+    },
+    {
+      "attributes": {
+        "Definition": "Income from sales after returns and discounts.",
+        "Name": "Revenue",
+        "Status": "Approved",
+        "Synonyms": "Net sales"
+      },
+      "class": "GlossaryTerm",
+      "h": 60,
+      "id": "el_rb0bp3p560",
+      "parent": "el_4hzygj6s2n",
+      "w": 120,
+      "x": 720,
+      "y": 420
+    },
+    {
+      "attributes": {
+        "Definition": "A month of the financial year.",
+        "Name": "Fiscal period",
+        "Status": "Draft"
+      },
+      "class": "GlossaryTerm",
+      "h": 60,
+      "id": "el_m8mr1bcmc0",
+      "parent": "el_4hzygj6s2n",
+      "w": 120,
+      "x": 870,
+      "y": 420
+    },
+    {
+      "attributes": {
+        "EffectiveDate": "2026-01-01",
+        "Kind": "Privacy",
+        "Name": "Customer data privacy",
+        "ReviewDate": "2027-01-01"
+      },
+      "class": "Policy",
+      "h": 60,
+      "id": "el_kzta156hsq",
+      "w": 120,
+      "x": 80,
+      "y": 650
+    },
+    {
+      "attributes": {
+        "EffectiveDate": "2025-01-01",
+        "Kind": "Retention",
+        "Name": "Record retention",
+        "ReviewDate": "2028-01-01"
+      },
+      "class": "Policy",
+      "h": 60,
+      "id": "el_ge6f8xdvkm",
+      "w": 120,
+      "x": 400,
+      "y": 650
+    },
+    {
+      "attributes": {
+        "EffectiveDate": "2025-07-01",
+        "Kind": "Access",
+        "Name": "Financial records access",
+        "ReviewDate": "2026-07-01"
+      },
+      "class": "Policy",
+      "h": 60,
+      "id": "el_78n7sjb2a9",
+      "w": 120,
+      "x": 760,
+      "y": 650
+    },
+    {
+      "attributes": {
+        "Handling": "May be shared outside the organisation.",
+        "Level": "Public",
+        "Name": "Public"
+      },
+      "class": "Classification",
+      "h": 60,
+      "id": "el_ct4cpfzw61",
+      "w": 120,
+      "x": 80,
+      "y": 790
+    },
+    {
+      "attributes": {
+        "Handling": "For staff only.",
+        "Level": "Internal",
+        "Name": "Internal"
+      },
+      "class": "Classification",
+      "h": 60,
+      "id": "el_rsyfrjkenc",
+      "w": 120,
+      "x": 260,
+      "y": 790
+    },
+    {
+      "attributes": {
+        "Handling": "Named groups only; encrypted at rest.",
+        "Level": "Confidential",
+        "Name": "Confidential"
+      },
+      "class": "Classification",
+      "h": 60,
+      "id": "el_w86yng83px",
+      "w": 120,
+      "x": 440,
+      "y": 790
+    },
+    {
+      "attributes": {
+        "Handling": "Named people only; access is logged and reviewed.",
+        "Level": "Restricted",
+        "Name": "Restricted"
+      },
+      "class": "Classification",
+      "h": 60,
+      "id": "el_03hek90k6m",
+      "w": 120,
+      "x": 620,
+      "y": 790
+    },
+    {
+      "attributes": {
+        "Dimension": "Completeness",
+        "LastResult": 99.2,
+        "Name": "Customer email filled",
+        "Threshold": 98
+      },
+      "class": "QualityRule",
+      "h": 60,
+      "id": "el_1cz6f8n08f",
+      "w": 120,
+      "x": 1380,
+      "y": 210
+    },
+    {
+      "attributes": {
+        "Dimension": "Uniqueness",
+        "LastResult": 100,
+        "Name": "Customer id unique",
+        "Threshold": 100
+      },
+      "class": "QualityRule",
+      "h": 60,
+      "id": "el_n2sn6mvwv7",
+      "w": 120,
+      "x": 1380,
+      "y": 300
+    },
+    {
+      "attributes": {
+        "Dimension": "Timeliness",
+        "LastResult": 97,
+        "Name": "Orders loaded daily",
+        "Threshold": 95
+      },
+      "class": "QualityRule",
+      "h": 60,
+      "id": "el_z7m6d40b3n",
+      "w": 120,
+      "x": 1380,
+      "y": 390
+    },
+    {
+      "attributes": {
+        "Dimension": "Consistency",
+        "LastResult": 100,
+        "Name": "Ledger balances",
+        "Threshold": 100
+      },
+      "class": "QualityRule",
+      "h": 60,
+      "id": "el_87xws2w491",
+      "w": 120,
+      "x": 1380,
+      "y": 480
+    },
+    {
+      "attributes": {
+        "Dimension": "Accuracy",
+        "LastResult": 96.5,
+        "Name": "Dashboard matches ledger",
+        "Threshold": 99
+      },
+      "class": "QualityRule",
+      "h": 60,
+      "id": "el_kc1fb80zhy",
+      "w": 120,
+      "x": 1380,
+      "y": 570
+    }
+  ],
+  "formatVersion": 2,
+  "id": "mdl_0c7jer9sef",
+  "kind": "mkmodel",
+  "kit": {
+    "id": "tool_datagov",
+    "name": "Data governance and ownership",
+    "version": "1.0.0"
+  },
+  "modelType": "Governance",
+  "name": "Sales and finance domains"
+}

@@ -12,7 +12,7 @@ The **View** menu changes what you see, not what the model contains.
 
 ## What it is
 
-It has three groups: zoom, the minimap, and **Assistance** (help while you model). When the tool library defines views, a **Palette view** choice appears at the bottom.
+It has three groups: zoom, the minimap, and **Assistance** (help while you model). When the Kit defines views, a **Palette view** choice appears at the bottom.
 
 ## Where to find it
 
@@ -42,7 +42,7 @@ A view limits the [[palette]] to some objects and relations. With **All** you se
 
 While a view is chosen, new connections can use only the relations of that view, and [[smart-modelling]] only offers those.
 
-Rules in the tool library can refuse a view change. Then the list jumps back and a warning message appears.
+Rules in the Kit can refuse a view change. Then the list jumps back and a warning message appears.
 
 ## Examples
 
@@ -54,7 +54,7 @@ In the Code review pipeline, choose **Responsibilities**. The palette shrinks to
 - The palette view is not remembered. A new visit starts with **All**.
 - You can also zoom with the mouse wheel and the toolbar buttons. See [[canvas-navigation]].
 
-> **Tip**: New to a tool? Switch on both **Interaction hints** and **Smart modelling**. They teach you what the tool allows.
+> **Tip**: New to a Kit? Switch on both **Interaction hints** and **Smart modelling**. They teach you what the Kit allows.
 
 ## Related
 

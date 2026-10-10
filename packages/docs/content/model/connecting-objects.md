@@ -8,7 +8,7 @@ contexts: []
 order: 140
 ---
 
-A connection (also called a connector) joins two objects and has a *relation*, such as **Performs** or **Feeds**. The tool library decides which relations may join which kinds of object.
+A connection (also called a connector) joins two objects and has a *relation*, such as **Performs** or **Feeds**. The Kit decides which relations may join which kinds of object.
 
 ## What it is
 
@@ -73,11 +73,11 @@ Messages show over the canvas for six seconds. See [[status-and-messages]].
 
 ### How the line is drawn
 
-Without bend points the line leaves the facing edges of the two objects and turns at right angles in the middle. With bend points it runs in straight pieces through them. The arrowheads and line style come from the tool library.
+Without bend points the line leaves the facing edges of the two objects and turns at right angles in the middle. With bend points it runs in straight pieces through them. The arrowheads and line style come from the Kit.
 
 ## Examples
 
-In the Code review pipeline, click **Performs**, press on the agent **Planner**, drag to the task **Draft plan** and let go. The connection is created. Now press on **Planner** and drop on **Sam**, a **Human**, with **Performs** still chosen. Nothing is created. The message says that a **Performs** cannot go from an Agent to a Human, because the tool says **Performs** goes from an *Actor* (an Agent or a Human) to a *Task*.
+In the Code review pipeline, click **Performs**, press on the agent **Planner**, drag to the task **Draft plan** and let go. The connection is created. Now press on **Planner** and drop on **Sam**, a **Human**, with **Performs** still chosen. Nothing is created. The message says that a **Performs** cannot go from an Agent to a Human, because the Kit says **Performs** goes from an *Actor* (an Agent or a Human) to a *Task*.
 
 Select the **Merge** task and drag from its edge to the gate **Code review**. Only **Hands over to** fits Task to Gate, so no menu appears. Drag from an artifact to a task: only **Feeds** fits, and it is created.
 

@@ -20,7 +20,7 @@ When two stamps are compared, the later one wins. If they are exactly equal, the
 
 You see the result on the canvas and in short notices above the canvas. Each notice has a **×** button (label "Dismiss"). There is no merge screen, because the rules do not need one.
 
-For tool libraries in Git mode there is a real conflict dialog, because Git is not live. See [[git-pull-conflicts]].
+For Kits in Git mode there is a real conflict dialog, because Git is not live. See [[git-pull-conflicts]].
 
 ## How to use it
 
