@@ -28,11 +28,11 @@ jobs:
       - run: pnpm build
       - name: Validate the sample Kits and models
         run: |
-          for path in kits/bpmn-lite kits/er-lite kits/bpmn-lite/order-process.mkmodel.json kits/er-lite/library.mkmodel.json kits/data-ai-strategy kits/data-ai-maturity kits/kpi-metric-tree kits/project-raid kits/requirements-stories kits/decision-tables; do
+          for path in kits/bpmn-lite kits/er-lite kits/bpmn-lite/order-process.mkmodel.json kits/er-lite/library.mkmodel.json kits/data-ai-strategy kits/data-ai-maturity kits/kpi-metric-tree kits/project-raid kits/requirements-stories kits/decision-tables kits/enterprise-architecture kits/software-c4 kits/event-storming kits/threat-model kits/mind-map kits/org-chart kits/mind-map/team-offsite.mkmodel.json kits/org-chart/software-company.mkmodel.json; do
             node apps/cli/dist/bin.js validate "$path" --strict
           done
           # These samples show one warning or more on purpose, so they are checked without --strict.
-          for path in kits/data-ai-strategy/insurer-strategy.mkmodel.json kits/data-ai-maturity/maturity-2027.mkmodel.json kits/kpi-metric-tree/online-store.mkmodel.json kits/project-raid/office-move.mkmodel.json kits/requirements-stories/appointment-booking.mkmodel.json kits/decision-tables/loan-approval.mkmodel.json; do
+          for path in kits/data-ai-strategy/insurer-strategy.mkmodel.json kits/data-ai-maturity/maturity-2027.mkmodel.json kits/kpi-metric-tree/online-store.mkmodel.json kits/project-raid/office-move.mkmodel.json kits/requirements-stories/appointment-booking.mkmodel.json kits/decision-tables/loan-approval.mkmodel.json kits/enterprise-architecture/online-ordering.mkmodel.json kits/software-c4/ticket-booking.mkmodel.json kits/event-storming/bike-rental.mkmodel.json kits/threat-model/expenses-app.mkmodel.json; do
             node apps/cli/dist/bin.js validate "$path"
           done
       - name: Install Chromium

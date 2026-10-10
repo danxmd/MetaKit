@@ -182,6 +182,74 @@ export const BUILT_IN_KITS: readonly BuiltInKit[] = [
     load: () =>
       import('../../../../kits/er-lite/kit.json?raw').then((m) => m.default),
   },
+  {
+    id: 'kit_enterprisearch' as KitId,
+    name: 'Enterprise architecture',
+    version: '1.0.0',
+    domain: 'architecture',
+    description:
+      'Business, application and technology layers: actors, roles, processes and services, application components, interfaces and data objects, nodes, system software and networks, and how they serve, realise and run each other.',
+    load: () =>
+      import('../../../../kits/enterprise-architecture/kit.json?raw').then(
+        (m) => m.default,
+      ),
+  },
+  {
+    id: 'kit_c4' as KitId,
+    name: 'Software architecture (C4-style)',
+    version: '1.0.0',
+    domain: 'architecture',
+    description:
+      'Software at three levels in the C4 style: people and software systems, the containers inside a system and the components inside a container, with what each relationship is for and how it talks.',
+    load: () =>
+      import('../../../../kits/software-c4/kit.json?raw').then(
+        (m) => m.default,
+      ),
+  },
+  {
+    id: 'kit_eventstorming' as KitId,
+    name: 'Event storming',
+    version: '1.0.0',
+    domain: 'architecture',
+    description:
+      'Domain events on a timeline with the commands, actors, aggregates, policies, read models and external systems around them, hotspots for open questions and bounded contexts as lanes.',
+    load: () =>
+      import('../../../../kits/event-storming/kit.json?raw').then(
+        (m) => m.default,
+      ),
+  },
+  {
+    id: 'kit_threatmodel' as KitId,
+    name: 'Security threat model',
+    version: '1.0.0',
+    domain: 'architecture',
+    description:
+      'A data flow diagram inside trust boundaries, with the assets worth protecting, threats sorted by STRIDE category and scored by likelihood and impact, and their mitigations.',
+    load: () =>
+      import('../../../../kits/threat-model/kit.json?raw').then(
+        (m) => m.default,
+      ),
+  },
+  {
+    id: 'kit_mindmap' as KitId,
+    name: 'Mind map and concept map',
+    version: '1.0.0',
+    domain: 'general',
+    description:
+      'Mind maps that grow from a central topic into topics and ideas coloured by branch, and concept maps of concepts joined by labelled links.',
+    load: () =>
+      import('../../../../kits/mind-map/kit.json?raw').then((m) => m.default),
+  },
+  {
+    id: 'kit_orgchart' as KitId,
+    name: 'Org chart',
+    version: '1.0.0',
+    domain: 'general',
+    description:
+      'Organisation units, positions and the people who fill them, with reporting lines, head count and vacancies.',
+    load: () =>
+      import('../../../../kits/org-chart/kit.json?raw').then((m) => m.default),
+  },
 ];
 
 /** The built-in Kits whose name or description holds every word of the query, in any case. */

@@ -29,6 +29,7 @@ describe('finding a built-in Kit', () => {
     expect(names('acceptance criteria')).toEqual([
       'Requirements and user stories',
     ]);
+    expect(names('stride')).toEqual(['Security threat model']);
     expect(names('  ')).toHaveLength(BUILT_IN_KITS.length);
     expect(names('nothing like this')).toEqual([]);
   });
@@ -39,6 +40,7 @@ describe('finding a built-in Kit', () => {
       'Business and strategy',
       'Delivery',
       'Architecture',
+      'General',
     ]);
     expect(
       groupBuiltIns(searchBuiltIns(BUILT_IN_KITS, 'entities')).map((g) => [

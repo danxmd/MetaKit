@@ -1,0 +1,1596 @@
+{
+  "formatVersion": 7,
+  "manifest": {
+    "id": "kit_threatmodel",
+    "name": "Security threat model",
+    "version": "1.0.0",
+    "languages": ["en"]
+  },
+  "settings": {
+    "grid": {
+      "size": 10,
+      "snap": true,
+      "visible": true
+    },
+    "layers": [],
+    "numbering": {
+      "enabled": false,
+      "prefix": "",
+      "start": 1
+    }
+  },
+  "classes": {
+    "cls_trustboundary": {
+      "id": "cls_trustboundary",
+      "key": "TrustBoundary",
+      "kind": "swimlane",
+      "labels": {
+        "en": "Trust boundary"
+      },
+      "help": {
+        "en": "A line inside which everything trusts everything else to the same degree, such as a company network. Data that crosses it needs protection. A lane for the processes, data stores and entities inside it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Trust boundary",
+          "id": "att_trustboundary_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_trustboundary_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "TrustLevel",
+          "options": ["Untrusted", "Partly trusted", "Trusted"],
+          "id": "att_trustboundary_trustlevel",
+          "labels": {
+            "en": "Trust level"
+          }
+        }
+      ],
+      "shape": "shp_trustboundary"
+    },
+    "cls_process": {
+      "id": "cls_process",
+      "key": "Process",
+      "kind": "node",
+      "labels": {
+        "en": "Process"
+      },
+      "help": {
+        "en": "Software that handles data, such as a web application or a service."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Process",
+          "id": "att_process_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_process_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Technology",
+          "id": "att_process_technology",
+          "labels": {
+            "en": "Technology"
+          }
+        },
+        {
+          "type": "text",
+          "key": "RunsAs",
+          "id": "att_process_runsas",
+          "labels": {
+            "en": "Runs as"
+          },
+          "help": {
+            "en": "The account or privilege it runs with."
+          }
+        }
+      ],
+      "shape": "shp_process"
+    },
+    "cls_datastore": {
+      "id": "cls_datastore",
+      "key": "DataStore",
+      "kind": "node",
+      "labels": {
+        "en": "Data store"
+      },
+      "help": {
+        "en": "Where data is kept, such as a database, a file store or a queue."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Data store",
+          "id": "att_datastore_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_datastore_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Technology",
+          "id": "att_datastore_technology",
+          "labels": {
+            "en": "Technology"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Classification",
+          "options": ["Public", "Internal", "Confidential", "Restricted"],
+          "id": "att_datastore_classification",
+          "labels": {
+            "en": "Classification"
+          }
+        }
+      ],
+      "shape": "shp_datastore"
+    },
+    "cls_externalentity": {
+      "id": "cls_externalentity",
+      "key": "ExternalEntity",
+      "kind": "node",
+      "labels": {
+        "en": "External entity"
+      },
+      "help": {
+        "en": "A person or system outside the scope of the model that sends or receives data, such as a user or a partner system."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "External entity",
+          "id": "att_externalentity_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_externalentity_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Kind",
+          "options": ["Person", "System", "Organisation"],
+          "id": "att_externalentity_kind",
+          "labels": {
+            "en": "Kind"
+          }
+        }
+      ],
+      "shape": "shp_externalentity"
+    },
+    "cls_asset": {
+      "id": "cls_asset",
+      "key": "Asset",
+      "kind": "node",
+      "labels": {
+        "en": "Asset"
+      },
+      "help": {
+        "en": "Something worth protecting, such as personal data, money or the good name of the organisation."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Asset",
+          "id": "att_asset_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_asset_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Classification",
+          "options": ["Public", "Internal", "Confidential", "Restricted"],
+          "id": "att_asset_classification",
+          "labels": {
+            "en": "Classification"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_asset_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        }
+      ],
+      "shape": "shp_asset"
+    },
+    "cls_threat": {
+      "id": "cls_threat",
+      "key": "Threat",
+      "kind": "node",
+      "labels": {
+        "en": "Threat"
+      },
+      "help": {
+        "en": "Something an attacker or an accident could do, sorted into one of the six STRIDE categories and scored by likelihood times impact."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Threat",
+          "id": "att_threat_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_threat_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Category",
+          "options": [
+            "Spoofing",
+            "Tampering",
+            "Repudiation",
+            "Information disclosure",
+            "Denial of service",
+            "Elevation of privilege"
+          ],
+          "id": "att_threat_category",
+          "labels": {
+            "en": "Category"
+          },
+          "help": {
+            "en": "Spoofing: pretending to be someone else. Tampering: changing data. Repudiation: denying an action. Information disclosure: reading what one should not. Denial of service: making it unavailable. Elevation of privilege: gaining rights one should not have."
+          }
+        },
+        {
+          "type": "integer",
+          "key": "Likelihood",
+          "min": 1,
+          "max": 5,
+          "id": "att_threat_likelihood",
+          "labels": {
+            "en": "Likelihood (1 to 5)"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "Impact",
+          "min": 1,
+          "max": 5,
+          "id": "att_threat_impact",
+          "labels": {
+            "en": "Impact (1 to 5)"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Status",
+          "options": ["Open", "Mitigated", "Accepted", "Transferred"],
+          "default": "Open",
+          "id": "att_threat_status",
+          "labels": {
+            "en": "Status"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_threat_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Score",
+          "formula": "Likelihood == null || Impact == null ? null : Likelihood * Impact",
+          "result": "number",
+          "id": "att_threat_score",
+          "labels": {
+            "en": "Score"
+          },
+          "help": {
+            "en": "Likelihood times impact, from 1 to 25."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Rating",
+          "formula": "Score == null ? null : (Score >= 15 ? 'High' : (Score >= 8 ? 'Medium' : 'Low'))",
+          "result": "text",
+          "id": "att_threat_rating",
+          "labels": {
+            "en": "Rating"
+          },
+          "help": {
+            "en": "High from 15, Medium from 8, otherwise Low. It colours the threat."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Mitigations",
+          "formula": "count(incoming('Mitigates'))",
+          "result": "number",
+          "id": "att_threat_mitigations",
+          "labels": {
+            "en": "Mitigations"
+          },
+          "help": {
+            "en": "How many mitigations work against it."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_threat_high",
+          "formula": "Rating != 'High' || Status == 'Accepted' || Status == 'Transferred' || Mitigations > 0",
+          "message": "= 'High threat \"' + Name + '\" has no mitigation: connect one with \"Mitigates\", or record that the risk is accepted or transferred.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_threat_target",
+          "formula": "count(outgoing('Threatens')) > 0",
+          "message": "= 'Threat \"' + Name + '\" threatens nothing: connect it to the process, data store, entity or asset at risk.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_threat"
+    },
+    "cls_mitigation": {
+      "id": "cls_mitigation",
+      "key": "Mitigation",
+      "kind": "node",
+      "labels": {
+        "en": "Mitigation"
+      },
+      "help": {
+        "en": "A measure that makes a threat less likely or less harmful, such as encryption or an audit log."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Mitigation",
+          "id": "att_mitigation_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_mitigation_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Kind",
+          "options": ["Prevent", "Detect", "Respond"],
+          "id": "att_mitigation_kind",
+          "labels": {
+            "en": "Kind"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Status",
+          "options": ["Planned", "In progress", "In place", "Verified"],
+          "default": "Planned",
+          "id": "att_mitigation_status",
+          "labels": {
+            "en": "Status"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_mitigation_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "date",
+          "key": "Due",
+          "id": "att_mitigation_due",
+          "labels": {
+            "en": "Due"
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_mitigation_target",
+          "formula": "count(outgoing('Mitigates')) > 0",
+          "message": "= 'Mitigation \"' + Name + '\" mitigates no threat.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_mitigation"
+    }
+  },
+  "relations": {
+    "rel_dataflow": {
+      "id": "rel_dataflow",
+      "key": "DataFlow",
+      "labels": {
+        "en": "Data flow"
+      },
+      "help": {
+        "en": "Data moves from one process, store or entity to another. A flow that crosses a trust boundary is drawn red until it is encrypted and authenticated."
+      },
+      "from": ["cls_process", "cls_datastore", "cls_externalentity"],
+      "to": ["cls_process", "cls_datastore", "cls_externalentity"],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Data",
+          "id": "att_dataflow_data",
+          "labels": {
+            "en": "Data"
+          },
+          "help": {
+            "en": "What moves, such as \"expense claims\"."
+          }
+        },
+        {
+          "type": "text",
+          "key": "Protocol",
+          "id": "att_dataflow_protocol",
+          "labels": {
+            "en": "Protocol"
+          },
+          "help": {
+            "en": "How it moves, such as \"HTTPS\"."
+          }
+        },
+        {
+          "type": "boolean",
+          "key": "Encrypted",
+          "id": "att_dataflow_encrypted",
+          "labels": {
+            "en": "Encrypted"
+          }
+        },
+        {
+          "type": "boolean",
+          "key": "Authenticated",
+          "id": "att_dataflow_authenticated",
+          "labels": {
+            "en": "Authenticated"
+          },
+          "help": {
+            "en": "Yes when both ends prove who they are."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "CrossesBoundary",
+          "formula": "from.parent != to.parent",
+          "result": "boolean",
+          "id": "att_dataflow_crossesboundary",
+          "labels": {
+            "en": "Crosses a boundary"
+          },
+          "help": {
+            "en": "Yes when the two ends sit in different trust boundaries, or one of them in none."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Unprotected",
+          "formula": "CrossesBoundary && !(Encrypted == true && Authenticated == true)",
+          "result": "boolean",
+          "id": "att_dataflow_unprotected",
+          "labels": {
+            "en": "Unprotected"
+          },
+          "help": {
+            "en": "Yes when it crosses a trust boundary without being both encrypted and authenticated. It colours the line."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Label",
+          "formula": "(Data ?? '') + (isEmpty(Protocol) ? '' : ' [' + Protocol + ']')",
+          "result": "text",
+          "id": "att_dataflow_label",
+          "labels": {
+            "en": "Label"
+          },
+          "help": {
+            "en": "The data and the protocol, shown on the line."
+          }
+        }
+      ],
+      "shape": "shp_rel_dataflow",
+      "constraints": [
+        {
+          "id": "k_flow_boundary",
+          "formula": "!Unprotected",
+          "message": "= 'The data flow \"' + (Data ?? '') + '\" from \"' + from.Name + '\" to \"' + to.Name + '\" crosses a trust boundary but is not ' + (Encrypted == true ? 'authenticated' : (Authenticated == true ? 'encrypted' : 'encrypted or authenticated')) + '.'",
+          "severity": "warning"
+        }
+      ]
+    },
+    "rel_threatens": {
+      "id": "rel_threatens",
+      "key": "Threatens",
+      "labels": {
+        "en": "Threatens"
+      },
+      "help": {
+        "en": "The threat puts this process, store, entity or asset at risk."
+      },
+      "from": ["cls_threat"],
+      "to": ["cls_process", "cls_datastore", "cls_externalentity", "cls_asset"],
+      "attributes": [],
+      "shape": "shp_rel_threatens"
+    },
+    "rel_mitigates": {
+      "id": "rel_mitigates",
+      "key": "Mitigates",
+      "labels": {
+        "en": "Mitigates"
+      },
+      "help": {
+        "en": "The mitigation works against the threat."
+      },
+      "from": ["cls_mitigation"],
+      "to": ["cls_threat"],
+      "attributes": [],
+      "shape": "shp_rel_mitigates"
+    },
+    "rel_holds": {
+      "id": "rel_holds",
+      "key": "Holds",
+      "labels": {
+        "en": "Holds"
+      },
+      "help": {
+        "en": "The data store keeps, or the process handles, the asset."
+      },
+      "from": ["cls_datastore", "cls_process"],
+      "to": ["cls_asset"],
+      "attributes": [],
+      "shape": "shp_rel_holds"
+    }
+  },
+  "modelTypes": {
+    "mt_threatmodel": {
+      "id": "mt_threatmodel",
+      "key": "ThreatModel",
+      "labels": {
+        "en": "Threat model"
+      },
+      "classes": [
+        "cls_trustboundary",
+        "cls_process",
+        "cls_datastore",
+        "cls_externalentity",
+        "cls_asset",
+        "cls_threat",
+        "cls_mitigation"
+      ],
+      "relations": [
+        "rel_dataflow",
+        "rel_threatens",
+        "rel_mitigates",
+        "rel_holds"
+      ],
+      "views": [
+        {
+          "id": "vw_dataflows",
+          "key": "DataFlows",
+          "labels": {
+            "en": "Data flows"
+          },
+          "classes": [
+            "cls_trustboundary",
+            "cls_process",
+            "cls_datastore",
+            "cls_externalentity"
+          ],
+          "relations": ["rel_dataflow"]
+        },
+        {
+          "id": "vw_threats",
+          "key": "Threats",
+          "labels": {
+            "en": "Threats"
+          },
+          "classes": [
+            "cls_threat",
+            "cls_mitigation",
+            "cls_asset",
+            "cls_process",
+            "cls_datastore",
+            "cls_externalentity"
+          ],
+          "relations": ["rel_threatens", "rel_mitigates", "rel_holds"]
+        }
+      ],
+      "cardinalities": [],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Title",
+          "required": true,
+          "maxLength": 100,
+          "id": "att_mtthreatmodel_title",
+          "labels": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "text",
+          "key": "System",
+          "id": "att_mtthreatmodel_system",
+          "labels": {
+            "en": "System"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Reviewer",
+          "id": "att_mtthreatmodel_reviewer",
+          "labels": {
+            "en": "Reviewer"
+          }
+        },
+        {
+          "type": "date",
+          "key": "ReviewDate",
+          "id": "att_mtthreatmodel_reviewdate",
+          "labels": {
+            "en": "Review date"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Threats",
+          "formula": "count(objects('Threat'))",
+          "result": "number",
+          "id": "att_mtthreatmodel_threats",
+          "labels": {
+            "en": "Threats"
+          },
+          "help": {
+            "en": "How many threats the model lists."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Mitigations",
+          "formula": "count(objects('Mitigation'))",
+          "result": "number",
+          "id": "att_mtthreatmodel_mitigations",
+          "labels": {
+            "en": "Mitigations"
+          },
+          "help": {
+            "en": "How many mitigations the model lists."
+          }
+        }
+      ],
+      "help": {
+        "en": "A data flow diagram inside trust boundaries, with the assets, threats and mitigations of the system."
+      },
+      "containers": {
+        "cls_trustboundary": [
+          "cls_process",
+          "cls_datastore",
+          "cls_externalentity",
+          "cls_trustboundary"
+        ]
+      }
+    }
+  },
+  "shapes": {
+    "shp_trustboundary": {
+      "id": "shp_trustboundary",
+      "name": "TrustBoundary look",
+      "kind": "node",
+      "size": {
+        "width": 760,
+        "height": 400,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "fill": "#ffffff00",
+          "stroke": "#e03131",
+          "strokeWidth": 2,
+          "dash": [7, 4]
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": 28,
+          "height": "100%",
+          "fill": "#ffe3e3",
+          "stroke": "#e03131",
+          "strokeWidth": 2
+        },
+        {
+          "type": "text",
+          "x": -66,
+          "y": "50% - 14",
+          "width": 160,
+          "height": 28,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          },
+          "transform": {
+            "rotate": -90
+          }
+        }
+      ],
+      "look": {
+        "base": "swimlane",
+        "fill": "#ffe3e3",
+        "border": "#e03131",
+        "borderWidth": 2,
+        "borderStyle": "dashed",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 760,
+          "height": 400,
+          "resizable": true
+        }
+      }
+    },
+    "shp_process": {
+      "id": "shp_process",
+      "name": "Process look",
+      "kind": "node",
+      "size": {
+        "width": 160,
+        "height": 100,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "ellipse",
+      "parts": [
+        {
+          "type": "ellipse",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "fill": "#d0ebff",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": "15%",
+          "y": "15%",
+          "width": "70%",
+          "height": "70% - 20",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": "15%",
+          "y": "85% - 18",
+          "width": "70%",
+          "height": 18,
+          "text": "= Technology",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "circle",
+        "fill": "#d0ebff",
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 160,
+          "height": 100,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Technology"
+        }
+      }
+    },
+    "shp_datastore": {
+      "id": "shp_datastore",
+      "name": "DataStore look",
+      "kind": "node",
+      "size": {
+        "width": 160,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 0,
+          "fill": "#e7f5ff",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= Classification",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6 M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "box",
+        "fill": "#e7f5ff",
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 160,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Classification"
+        },
+        "icon": {
+          "name": "database"
+        }
+      }
+    },
+    "shp_externalentity": {
+      "id": "shp_externalentity",
+      "name": "ExternalEntity look",
+      "kind": "node",
+      "size": {
+        "width": 160,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 0,
+          "fill": "#f1f3f5",
+          "stroke": "#495057",
+          "strokeWidth": 2
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 4,
+          "width": "100% - 16",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 22",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= Kind",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "box",
+        "fill": "#f1f3f5",
+        "border": "#495057",
+        "borderWidth": 2,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 160,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Kind"
+        }
+      }
+    },
+    "shp_asset": {
+      "id": "shp_asset",
+      "name": "Asset look",
+      "kind": "node",
+      "size": {
+        "width": 190,
+        "height": 80,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          ["15%", 0],
+          ["85%", 0],
+          ["100%", "50%"],
+          ["85%", "100%"],
+          ["15%", "100%"],
+          [0, "50%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            ["15%", 0],
+            ["85%", 0],
+            ["100%", "50%"],
+            ["85%", "100%"],
+            ["15%", "100%"],
+            [0, "50%"]
+          ],
+          "fill": "#fff3bf",
+          "stroke": "#f08c00",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": "18% + 26",
+          "y": 4,
+          "width": "64% - 26",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": "18% + 26",
+          "y": "100% - 22",
+          "width": "64% - 26",
+          "height": 18,
+          "text": "= Classification",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z",
+          "viewBox": [0, 0, 24, 24],
+          "x": "18% + 4",
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "hexagon",
+        "fill": "#fff3bf",
+        "border": "#f08c00",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 190,
+          "height": 80,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Classification"
+        },
+        "icon": {
+          "name": "star"
+        }
+      }
+    },
+    "shp_threat": {
+      "id": "shp_threat",
+      "name": "Threat look",
+      "kind": "node",
+      "size": {
+        "width": 220,
+        "height": 126,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 4,
+          "fill": "#ffffff",
+          "stroke": "#c92a2a",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": 28,
+          "radius": 4,
+          "fill": "= Rating == 'Low' ? '#d3f9d8' : Rating == 'Medium' ? '#fff3bf' : Rating == 'High' ? '#ffc9c9' : '#e9ecef'",
+          "stroke": "#c92a2a"
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 2,
+          "width": "100% - 36",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 34,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Category: ' + Category",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 50,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Score: ' + Score",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 66,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Rating: ' + Rating",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 82,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Status: ' + Status",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 3L2 20h20z M12 10v5 M12 18h.01",
+          "viewBox": [0, 0, 24, 24],
+          "x": "100% - 26",
+          "y": 4,
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "header-box",
+        "fill": {
+          "by": "Rating",
+          "values": {
+            "Low": "#d3f9d8",
+            "Medium": "#fff3bf",
+            "High": "#ffc9c9"
+          },
+          "fallback": "#e9ecef"
+        },
+        "border": "#c92a2a",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 220,
+          "height": 126,
+          "resizable": true
+        },
+        "icon": {
+          "name": "warning"
+        },
+        "fields": ["Category", "Score", "Rating", "Status"]
+      }
+    },
+    "shp_mitigation": {
+      "id": "shp_mitigation",
+      "name": "Mitigation look",
+      "kind": "node",
+      "size": {
+        "width": 200,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "= Status == 'Planned' ? '#fff4e6' : Status == 'In progress' ? '#ffe8cc' : Status == 'In place' ? '#d3f9d8' : Status == 'Verified' ? '#b2f2bb' : '#fff4e6'",
+          "stroke": "#2f9e44",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= Status",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M4 12.5l5 5L20 6.5",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": {
+          "by": "Status",
+          "values": {
+            "Planned": "#fff4e6",
+            "In progress": "#ffe8cc",
+            "In place": "#d3f9d8",
+            "Verified": "#b2f2bb"
+          },
+          "fallback": "#fff4e6"
+        },
+        "border": "#2f9e44",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 200,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Status"
+        },
+        "icon": {
+          "name": "check"
+        }
+      }
+    },
+    "shp_rel_dataflow": {
+      "id": "shp_rel_dataflow",
+      "name": "DataFlow look",
+      "kind": "relation",
+      "line": {
+        "stroke": "= Unprotected == true ? '#e03131' : Unprotected == false ? '#495057' : '#495057'",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "labels": [
+        {
+          "at": "middle",
+          "text": "= Label",
+          "font": {
+            "size": 11
+          },
+          "background": "#ffffff",
+          "visible": "= Label != null"
+        }
+      ],
+      "look": {
+        "colour": {
+          "by": "Unprotected",
+          "values": {
+            "true": "#e03131",
+            "false": "#495057"
+          },
+          "fallback": "#495057"
+        },
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": {
+          "attribute": "Label"
+        }
+      }
+    },
+    "shp_rel_threatens": {
+      "id": "shp_rel_threatens",
+      "name": "Threatens look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#c92a2a",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [2, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#c92a2a",
+        "width": 1.5,
+        "style": "dotted",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_mitigates": {
+      "id": "shp_rel_mitigates",
+      "name": "Mitigates look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#2f9e44",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "bar"
+      },
+      "look": {
+        "colour": "#2f9e44",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "bar",
+        "label": null
+      }
+    },
+    "shp_rel_holds": {
+      "id": "shp_rel_holds",
+      "name": "Holds look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#f08c00",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "look": {
+        "colour": "#f08c00",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "none",
+        "label": null
+      }
+    }
+  },
+  "panels": {
+    "cls_threat": {
+      "class": "cls_threat",
+      "tabs": [
+        {
+          "label": "Threat",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Category",
+              "control": "select"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            },
+            {
+              "attribute": "Owner"
+            },
+            {
+              "attribute": "Status",
+              "control": "select"
+            }
+          ]
+        },
+        {
+          "label": "Score",
+          "items": [
+            {
+              "attribute": "Likelihood"
+            },
+            {
+              "attribute": "Impact"
+            },
+            {
+              "attribute": "Score"
+            },
+            {
+              "attribute": "Rating"
+            },
+            {
+              "attribute": "Mitigations"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    }
+  },
+  "rules": {},
+  "scripts": {}
+}

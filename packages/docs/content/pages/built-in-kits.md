@@ -50,6 +50,17 @@ They are listed by domain, under one heading each:
 | Built-in Kit | What it is for |
 | --- | --- |
 | **ER lite** | Data models: entities, their attributes and the relationships between them. |
+| **Enterprise architecture** | Business, application and technology layers: actors, roles, processes and services, application components, interfaces and data objects, nodes, system software and networks, and how they serve, realise and run each other. See [[enterprise-architecture]]. |
+| **Software architecture (C4-style)** | Software at three levels in the C4 style: people and software systems, the containers inside a system and the components inside a container, with what each relationship is for and how it talks. See [[software-c4]]. |
+| **Event storming** | Domain events on a timeline with the commands, actors, aggregates, policies, read models and external systems around them, hotspots for open questions and bounded contexts as lanes. See [[event-storming]]. |
+| **Security threat model** | A data flow diagram inside trust boundaries, with the assets worth protecting, threats sorted by STRIDE category and scored by likelihood and impact, and their mitigations. See [[threat-model]]. |
+
+**General**
+
+| Built-in Kit | What it is for |
+| --- | --- |
+| **Mind map and concept map** | Mind maps that grow from a central topic into topics and ideas coloured by branch, and concept maps of concepts joined by labelled links. See [[mind-map]]. |
+| **Org chart** | Organisation units, positions and the people who fill them, with reporting lines, head count and vacancies. See [[org-chart]]. |
 
 ## Where to find it
 

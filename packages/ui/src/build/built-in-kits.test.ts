@@ -43,6 +43,10 @@ const INTENDED_WARNINGS: Record<string, number> = {
   'project-raid': 1,
   'requirements-stories': 1,
   'decision-tables': 1,
+  'enterprise-architecture': 1,
+  'software-c4': 1,
+  'event-storming': 1,
+  'threat-model': 2,
 };
 
 /**

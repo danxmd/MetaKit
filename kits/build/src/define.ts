@@ -216,7 +216,7 @@ export function look(base: LookBase, o: LookOptions): NodeLook {
 }
 
 export function line(
-  colour: string,
+  colour: LookColour,
   o: {
     style?: LookLineStyle;
     start?: MarkerType;
