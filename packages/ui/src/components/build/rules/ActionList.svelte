@@ -3,7 +3,7 @@
     ClassId,
     RuleAction,
     RuleActionType,
-    ToolLibrary,
+    Kit,
   } from '@metakit-app/core';
   import {
     ACTION_LABELS,
@@ -18,7 +18,7 @@
 
   let {
     model,
-    tool,
+    kit,
     actions,
     branch = [],
     classId,
@@ -26,7 +26,7 @@
     testid = 'rule-add-action',
   }: {
     model: RuleEditorModel;
-    tool: ToolLibrary;
+    kit: Kit;
     actions: readonly RuleAction[];
     /** `[]` for the rule's own list, `[2, 'then']` for a branch of a question. */
     branch?: ActionPath;
@@ -40,7 +40,7 @@
   const keyOf = (path: ActionPath) => path.join('-');
   const pathOf = (i: number): ActionPath => [...branch, i];
 
-  const keys = $derived(attributesFor(tool, classId, true));
+  const keys = $derived(attributesFor(kit, classId, true));
   const withCurrent = (current: string | undefined) =>
     current && !keys.includes(current) ? [current, ...keys] : keys;
 
@@ -173,7 +173,7 @@
               onchange={(e) => patch(i, { class: e.currentTarget.value })}
               data-testid="action-{key}-class"
             >
-              {#each classesFor(tool) as c (c.id)}<option value={c.id}
+              {#each classesFor(kit) as c (c.id)}<option value={c.id}
                   >{c.key}</option
                 >{/each}
             </select>
@@ -193,7 +193,7 @@
                   aria-label="Attribute to fill in"
                   data-testid="action-{key}-attr-{j}-key"
                 >
-                  {#each attributesFor(tool, a.class, true) as name (name)}<option
+                  {#each attributesFor(kit, a.class, true) as name (name)}<option
                       value={name}>{name}</option
                     >{/each}
                 </select>
@@ -226,7 +226,7 @@
               type="button"
               onclick={() => {
                 const used = pairs(a).map((p) => p[0]);
-                const next = attributesFor(tool, a.class, true).find(
+                const next = attributesFor(kit, a.class, true).find(
                   (n) => !used.includes(n),
                 );
                 if (next) setPairs(i, [...pairs(a), [next, '']]);
@@ -272,7 +272,7 @@
               onchange={(e) => patch(i, { relation: e.currentTarget.value })}
               data-testid="action-{key}-relation"
             >
-              {#each relationsFor(tool) as r (r.id)}<option value={r.id}
+              {#each relationsFor(kit) as r (r.id)}<option value={r.id}
                   >{r.key}</option
                 >{/each}
             </select>
@@ -343,7 +343,7 @@
             <strong>If the answer is yes</strong>
             <ActionList
               {model}
-              {tool}
+              {kit}
               {classId}
               {changed}
               actions={a.then}
@@ -355,7 +355,7 @@
             <strong>If the answer is no</strong>
             <ActionList
               {model}
-              {tool}
+              {kit}
               {classId}
               {changed}
               actions={a.else ?? []}

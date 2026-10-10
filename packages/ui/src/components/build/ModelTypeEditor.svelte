@@ -6,7 +6,7 @@
     type ModelTypeDef,
     type ModelTypeId,
     type RelationId,
-    type ToolLibrary,
+    type Kit,
     type ViewDef,
   } from '@metakit-app/core';
   import { toggled, uniqueKey, withPatch } from '../../build/attributes';
@@ -18,19 +18,19 @@
   import LabelsField from './LabelsField.svelte';
 
   let {
-    tool,
+    kit,
     id,
     run,
     usages,
   }: {
-    tool: ToolLibrary;
+    kit: Kit;
     id: ModelTypeId;
     run: (command: never) => CommandResult;
     usages: (attributeId: string) => string[];
   } = $props();
 
-  const def = $derived(tool.modelTypes[id]);
-  const languages = $derived(tool.manifest.languages);
+  const def = $derived(kit.modelTypes[id]);
+  const languages = $derived(kit.manifest.languages);
   const lang = $derived(languages[0] ?? 'en');
   let error = $state<string | null>(null);
 
@@ -47,10 +47,10 @@
       });
   };
   const classes = $derived(
-    Object.values(tool.classes).sort((a, b) => a.key.localeCompare(b.key)),
+    Object.values(kit.classes).sort((a, b) => a.key.localeCompare(b.key)),
   );
   const relations = $derived(
-    Object.values(tool.relations).sort((a, b) => a.key.localeCompare(b.key)),
+    Object.values(kit.relations).sort((a, b) => a.key.localeCompare(b.key)),
   );
   const containerClasses = $derived(
     classes.filter(
@@ -60,7 +60,7 @@
     ),
   );
   const nodeShapes = $derived(
-    Object.values(tool.shapes).filter((s) => s.kind === 'node'),
+    Object.values(kit.shapes).filter((s) => s.kind === 'node'),
   );
 
   function toggleClass(cls: ClassId, on: boolean) {
@@ -288,7 +288,7 @@
                     onchange={(e) =>
                       toggleInView(i, 'classes', cid, e.currentTarget.checked)}
                   />
-                  {tool.classes[cid]?.key ?? cid}</label
+                  {kit.classes[cid]?.key ?? cid}</label
                 >
               {/each}
             </fieldset>
@@ -307,7 +307,7 @@
                         e.currentTarget.checked,
                       )}
                   />
-                  {tool.relations[rid]?.key ?? rid}</label
+                  {kit.relations[rid]?.key ?? rid}</label
                 >
               {/each}
             </fieldset>
@@ -349,7 +349,7 @@
             aria-label="Class"
           >
             {#each def.classes as cid (cid)}<option value={cid}
-                >{tool.classes[cid]?.key ?? cid}</option
+                >{kit.classes[cid]?.key ?? cid}</option
               >{/each}
           </select>
           {#if c.kind === 'degree'}
@@ -360,7 +360,7 @@
               aria-label="Relation class"
             >
               {#each def.relations as rid (rid)}<option value={rid}
-                  >{tool.relations[rid]?.key ?? rid}</option
+                  >{kit.relations[rid]?.key ?? rid}</option
                 >{/each}
             </select>
             <select
@@ -446,7 +446,7 @@
                           : accepted.filter((x) => x !== cid),
                       )}
                   />
-                  {tool.classes[cid]?.key ?? cid}</label
+                  {kit.classes[cid]?.key ?? cid}</label
                 >
               {/each}
             {/if}
@@ -458,14 +458,14 @@
     <AttributeList
       owner={{ kind: 'modelType', id }}
       attributes={def.attributes}
-      {tool}
+      {kit}
       {run}
       {usages}
     />
     <ConstraintsEditor
       owner={{ kind: 'modelType', id }}
       constraints={def.constraints ?? []}
-      {tool}
+      {kit}
       {run}
     />
   </div>

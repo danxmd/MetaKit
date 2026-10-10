@@ -333,17 +333,17 @@ describe('buildLayoutPanel', () => {
 });
 
 describe('buildLayoutPanelFor', () => {
-  it('uses the layout of the tool for the selection and null without one', () => {
-    const { tool, store, create } = makeStore('bpmn-lite');
+  it('uses the layout of the Kit for the selection and null without one', () => {
+    const { kit, store, create } = makeStore('bpmn-lite');
     const a = create('cls_task', { att_name: 'A' } as never);
     const b = create('cls_task', { att_name: 'B' } as never);
     const gw = create('cls_gateway');
-    expect(buildLayoutPanelFor(tool, store.state, [{ id: a }], [])).toBeNull();
+    expect(buildLayoutPanelFor(kit, store.state, [{ id: a }], [])).toBeNull();
     const layout: PanelLayout = {
       class: 'cls_task',
       tabs: [{ label: 'Main', items: [{ attribute: 'Name' }] }],
     };
-    const withLayout = { ...tool, panels: { cls_task: layout } };
+    const withLayout = { ...kit, panels: { cls_task: layout } };
     const one = buildLayoutPanelFor(withLayout, store.state, [{ id: a }], []);
     expect(one!.tabs.map((t) => t.label)).toEqual(['Main', 'More']);
     const two = buildLayoutPanelFor(

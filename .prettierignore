@@ -6,3 +6,5 @@ CLAUDE.md
 LICENSE
 pnpm-lock.yaml
 dist/
+# Written by releases before the Kit rename, byte for byte (ADR 0011).
+packages/storage/fixtures/

@@ -2,7 +2,7 @@
 
 ## 1. Engine
 
-- [x] 1.1 Rule types, guards, tool format 3 migration; tests.
+- [x] 1.1 Rule types, guards, Kit format 3 migration; tests.
 - [x] 1.2 `RuleEngine`: matching, conditions, actions, cascade limits, dry run; tests per action.
 
 ## 2. Editor and commands

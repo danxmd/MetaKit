@@ -24,14 +24,14 @@ A fill, border or text colour SHALL be a fixed colour or depend on the value of 
 A shape made from a look SHALL keep the look, so that it opens in the simple editor again, and editing it as a drawing SHALL remove the look after a confirmation.
 
 #### Scenario: Round trip
-- **WHEN** a tool library with a look is saved, migrated and loaded
+- **WHEN** a Kit with a look is saved, migrated and loaded
 - **THEN** the look is unchanged and still regenerates the same parts
 
 ### Requirement: Format 5
-Tool format 5 SHALL add the optional `look` and a migration from 4 SHALL leave tool libraries unchanged apart from the version.
+Kit format 5 SHALL add the optional `look` and a migration from 4 SHALL leave Kits unchanged apart from the version.
 
 #### Scenario: Migrate
-- **WHEN** a format 4 tool library is loaded
+- **WHEN** a format 4 Kit is loaded
 - **THEN** it is format 5 and equal otherwise
 
 ### Requirement: Renamed attributes follow

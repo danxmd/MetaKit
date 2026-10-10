@@ -155,7 +155,7 @@ export class GitHubRemote implements GitRemote {
     }>(`${this.repoPath}/git/trees/${commit.commit.tree.sha}?recursive=1`);
     if (tree.truncated)
       throw new Error(
-        'The repository is too large for GitHub to list in one answer. Use a smaller repository for the tool library.',
+        'The repository is too large for GitHub to list in one answer. Use a smaller repository for the Kit.',
       );
     const start = this.prefix ? `${this.prefix}/` : '';
     const entries = tree.tree.filter(

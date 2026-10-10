@@ -1,27 +1,23 @@
-import type {
-  ActionAttribute,
-  ModelStore,
-  ToolLibrary,
-} from '@metakit-app/core';
+import type { ActionAttribute, ModelStore, Kit } from '@metakit-app/core';
 import type { Behaviour } from './runtime';
 import { RuleEngine } from './rules';
 
 export interface AttachRulesOptions {
   /** The model's store; `Behaviour` does not hold it, so the caller that made it passes it again. */
   store: ModelStore;
-  /** The tool library as it is now; read on every use so that Build mode edits are seen. */
-  tool: () => ToolLibrary;
+  /** The Kit as it is now; read on every use so that Build mode edits are seen. */
+  kit: () => Kit;
 }
 
 export interface AttachedRules {
   engine: RuleEngine;
-  /** Reads the rules again; call it after the tool library changed. */
+  /** Reads the rules again; call it after the Kit changed. */
   reload(): void;
   /** Stops the rules and removes their commands; `behaviour.dispose()` does not do it for you. */
   dispose(): void;
 }
 
-/** Starts the rules of the tool library on a behaviour made by `createBehaviour`. */
+/** Starts the rules of the Kit on a behaviour made by `createBehaviour`. */
 export function attachRules(
   behaviour: Behaviour,
   options: AttachRulesOptions,
@@ -30,7 +26,7 @@ export function attachRules(
     store: options.store,
     bus: behaviour.bus,
     calculator: behaviour.calculator,
-    tool: options.tool,
+    kit: options.kit,
     host: behaviour.host,
     commands: behaviour.commands,
   });

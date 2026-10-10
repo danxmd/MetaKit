@@ -9,7 +9,7 @@ export function provideBuildUndo(source: () => UndoSource | null) {
 }
 
 /**
- * Returns a function that shows `text` with Undo for the step just made in the tool library.
+ * Returns a function that shows `text` with Undo for the step just made in the Kit.
  * Call it while the component starts, like any context.
  */
 export function useBuildUndo(): (text: string) => void {

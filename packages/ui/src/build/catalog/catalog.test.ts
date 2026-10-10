@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
-  createEmptyTool,
-  createToolStore,
+  createEmptyKit,
+  createKitStore,
   keyProblem,
   LOOK_BASE_IDS,
   LOOK_ICON_NAMES,
-  validateToolLibrary,
+  validateKit,
   type ClassId,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 import { parseCached } from '@metakit-app/formula';
 import { lookAttributeKeys } from '@metakit-app/shapes';
@@ -22,15 +22,15 @@ import {
 } from './catalog';
 
 const ALL = CATALOG_CLASSES.map((c) => c.key);
-const empty = () => createEmptyTool({ name: 'Catalog test' });
+const empty = () => createEmptyKit({ name: 'Catalog test' });
 
 function apply(
-  tool: ToolLibrary,
+  kit: Kit,
   picks: string[],
   withRelations = true,
   generic: string[] = [],
 ) {
-  const store = createToolStore(tool);
+  const store = createKitStore(kit);
   const result = catalogCommands(store.state, picks, {
     withRelations,
     generic,
@@ -40,12 +40,12 @@ function apply(
   return { store, result };
 }
 
-const errors = (tool: ToolLibrary) => validateToolLibrary(tool);
+const errors = (kit: Kit) => validateKit(kit);
 
-const byKey = (tool: ToolLibrary, key: string) =>
-  Object.values(tool.classes).find((c) => c.key === key);
-const relationByKey = (tool: ToolLibrary, key: string) =>
-  Object.values(tool.relations).find((r) => r.key === key);
+const byKey = (kit: Kit, key: string) =>
+  Object.values(kit.classes).find((c) => c.key === key);
+const relationByKey = (kit: Kit, key: string) =>
+  Object.values(kit.relations).find((r) => r.key === key);
 
 describe('class catalog entries', () => {
   it('has seven topics, about sixty classes and about twenty relation classes', () => {
@@ -163,42 +163,42 @@ describe('class catalog entries', () => {
 });
 
 describe('catalogCommands', () => {
-  it('adds everything to an empty tool library as a valid result', () => {
+  it('adds everything to an empty Kit as a valid result', () => {
     const { store, result } = apply(
       empty(),
       ALL,
       true,
       GENERIC_RELATIONS.map((r) => r.key),
     );
-    const tool = store.state;
-    expect(errors(tool)).toEqual([]);
-    expect(Object.keys(tool.classes)).toHaveLength(CATALOG_CLASSES.length);
-    expect(Object.keys(tool.relations)).toHaveLength(CATALOG_RELATIONS.length);
-    expect(Object.keys(tool.shapes)).toHaveLength(
+    const kit = store.state;
+    expect(errors(kit)).toEqual([]);
+    expect(Object.keys(kit.classes)).toHaveLength(CATALOG_CLASSES.length);
+    expect(Object.keys(kit.relations)).toHaveLength(CATALOG_RELATIONS.length);
+    expect(Object.keys(kit.shapes)).toHaveLength(
       CATALOG_CLASSES.length + CATALOG_RELATIONS.length,
     );
     expect(result.skipped).toEqual([]);
     // Every class draws with its own simple look.
-    for (const c of Object.values(tool.classes))
-      expect(tool.shapes[c.shape!]?.look, c.key).toBeDefined();
+    for (const c of Object.values(kit.classes))
+      expect(kit.shapes[c.shape!]?.look, c.key).toBeDefined();
     // Every formula in the result parses.
-    for (const c of Object.values(tool.classes))
+    for (const c of Object.values(kit.classes))
       for (const a of c.attributes)
         if (a.type === 'formula')
           expect('error' in parseCached(a.formula), a.key).toBe(false);
     // "Any class" ends list every class.
-    const every = Object.keys(tool.classes).sort();
-    expect([...relationByKey(tool, 'DependsOn')!.from].sort()).toEqual(every);
-    expect([...relationByKey(tool, 'DependsOn')!.to].sort()).toEqual(every);
-    expect([...relationByKey(tool, 'Owns')!.to].sort()).toEqual(every);
+    const every = Object.keys(kit.classes).sort();
+    expect([...relationByKey(kit, 'DependsOn')!.from].sort()).toEqual(every);
+    expect([...relationByKey(kit, 'DependsOn')!.to].sort()).toEqual(every);
+    expect([...relationByKey(kit, 'Owns')!.to].sort()).toEqual(every);
   });
 
-  it('is one undo step, and undo restores the tool library', () => {
-    const tool = empty();
-    const { store } = apply(tool, ['Dataset', 'DataPipeline', 'DataStore']);
+  it('is one undo step, and undo restores the Kit', () => {
+    const kit = empty();
+    const { store } = apply(kit, ['Dataset', 'DataPipeline', 'DataStore']);
     expect(Object.keys(store.state.classes)).toHaveLength(3);
     expect(store.undo()).toBe(true);
-    expect(store.state).toEqual(tool);
+    expect(store.state).toEqual(kit);
     expect(store.canUndo()).toBe(false);
   });
 
@@ -208,16 +208,16 @@ describe('catalogCommands', () => {
       'DataPipeline',
       'DataStore',
     ]);
-    const tool = store.state;
+    const kit = store.state;
     const keys = result.added.relations.map((r) => r.key).sort();
     // Depends on connects any two classes, so it only comes when it is ticked.
     expect(keys).toEqual(['FlowsTo', 'ReadsFrom', 'WritesTo']);
-    const id = (k: string) => byKey(tool, k)!.id;
-    expect(relationByKey(tool, 'WritesTo')).toMatchObject({
+    const id = (k: string) => byKey(kit, k)!.id;
+    expect(relationByKey(kit, 'WritesTo')).toMatchObject({
       from: [id('DataPipeline')],
       to: [id('DataStore'), id('Dataset')],
     });
-    expect(relationByKey(tool, 'ReadsFrom')).toMatchObject({
+    expect(relationByKey(kit, 'ReadsFrom')).toMatchObject({
       from: [id('DataPipeline')],
       to: [id('DataStore'), id('Dataset')],
     });
@@ -239,40 +239,40 @@ describe('catalogCommands', () => {
   it('skips taken keys and connects relation classes to the existing class', () => {
     const start = apply(empty(), ['Dataset'], false).store.state;
     const existing = byKey(start, 'Dataset')!.id;
-    const store = createToolStore(start);
+    const store = createKitStore(start);
     const result = catalogCommands(store.state, ['Dataset', 'DataPipeline'], {
       withRelations: true,
     });
     expect(result.skipped).toEqual(['Dataset']);
     expect(result.added.classes.map((c) => c.key)).toEqual(['DataPipeline']);
     expect(store.execute(result.batch).ok).toBe(true);
-    const tool = store.state;
+    const kit = store.state;
     expect(
-      Object.values(tool.classes).filter((c) => c.key === 'Dataset'),
+      Object.values(kit.classes).filter((c) => c.key === 'Dataset'),
     ).toHaveLength(1);
-    expect(relationByKey(tool, 'WritesTo')?.to).toEqual([existing]);
+    expect(relationByKey(kit, 'WritesTo')?.to).toEqual([existing]);
     expect(catalogResultText(result)).toContain(
-      'Already in this tool library, so not added again: Dataset.',
+      'Already in this Kit, so not added again: Dataset.',
     );
-    expect(errors(tool)).toEqual([]);
+    expect(errors(kit)).toEqual([]);
   });
 
   it('connects to a hand-made class that has a catalog key', () => {
-    const tool = empty();
+    const kit = empty();
     const own = 'cls_handmade00' as ClassId;
-    tool.classes[own] = {
+    kit.classes[own] = {
       id: own,
       key: 'MLModel',
       kind: 'node',
       labels: { en: 'My model' },
       attributes: [],
     };
-    const { store } = apply(tool, ['ModelDeployment']);
+    const { store } = apply(kit, ['ModelDeployment']);
     expect(relationByKey(store.state, 'DeployedAs')).toMatchObject({
       from: [own],
     });
     // The hand-made class is left as it was.
-    expect(store.state.classes[own]).toEqual(tool.classes[own]);
+    expect(store.state.classes[own]).toEqual(kit.classes[own]);
   });
 
   it('does not add a relation class whose key is taken', () => {
@@ -283,9 +283,9 @@ describe('catalogCommands', () => {
     expect(relationByKey(store.state, 'WritesTo')).toEqual(before);
   });
 
-  it('puts labels under the first language when the tool has no English', () => {
-    const tool = createEmptyTool({ name: 'Deutsch', languages: ['de'] });
-    const { store } = apply(tool, ['Risk', 'Control']);
+  it('puts labels under the first language when the Kit has no English', () => {
+    const kit = createEmptyKit({ name: 'Deutsch', languages: ['de'] });
+    const { store } = apply(kit, ['Risk', 'Control']);
     const risk = byKey(store.state, 'Risk')!;
     expect(risk.labels).toEqual({ de: 'Risk' });
     expect(errors(store.state)).toEqual([]);

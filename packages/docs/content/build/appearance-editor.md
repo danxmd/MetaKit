@@ -81,7 +81,7 @@ Explained in [[appearance-forms]] and [[appearance-data-rules]].
 
 ## Examples
 
-Make the look of **Task** in the Agent pipeline tool:
+Make the look of **Task** in the Agent pipeline Kit:
 
 1. Choose the form **Rounded box**.
 2. Leave the fill light blue. Under **Changes with data**, set **Fill colour depends on** to **Status**. Give Planned a grey, Running a blue, Waiting for human an orange, Done a green and Failed a red. Leave **Anything else** grey.
@@ -89,12 +89,12 @@ Make the look of **Task** in the Agent pipeline tool:
 4. Add a mark: **Show a mark on the corner** when **Priority** is **High**, mark text "!", red.
 5. Press **Done**. In the [[try-it-preview]] place a task to see the new look on the canvas. The tiles under the preview in the editor show each Status. To see a task change colour, open a real model and edit its Status in the attribute panel.
 
-The shipped Agent pipeline tool draws its classes with hand-drawn shapes (for example "Task (status stripe)"). They are a good example of what the [[shape-editor]] can do, and of what you no longer need to do by hand.
+The shipped Agent pipeline Kit draws its classes with hand-drawn shapes (for example "Task (status stripe)"). They are a good example of what the [[shape-editor]] can do, and of what you no longer need to do by hand.
 
 ## Good to know
 
 - Every change is saved at once as one undoable command. **Undo** in the Build header steps back through them ([[page-build-view]]).
-- A look is stored inside its shape (tool format 5). Older tool libraries open as before; their shapes are hand-drawn.
+- A look is stored inside its shape (Kit format 5). Older Kits open as before; their shapes are hand-drawn.
 - If you rename an attribute that the look uses, the look follows ([[keys-and-renaming]]).
 - The preview uses sample values; it shows every value of the attributes the look depends on.
 - A relation class has its own, shorter editor ([[appearance-relations]]).

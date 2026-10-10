@@ -12,7 +12,7 @@ Objects and connections carry data: a name, a status, a cost. You read and chang
 
 ## What it is
 
-The panel is the right-hand column of the [[page-model-view|model view]], 20 rem wide. It always shows the current selection. Which attributes appear, in which order and with which controls is decided by the tool library (see [[attributes]]). A tool builder can also design the panel with tabs and groups (see [[panel-layout]]).
+The panel is the right-hand column of the [[page-model-view|model view]], 20 rem wide. It always shows the current selection. Which attributes appear, in which order and with which controls is decided by the Kit (see [[attributes]]). A method engineer can also design the panel with tabs and groups (see [[panel-layout]]).
 
 ## Where to find it
 
@@ -40,12 +40,12 @@ To edit many objects at once, select them all (see [[selecting]]). Then change a
 | Objects of kinds with nothing in common | "These objects have no attributes in common." |
 | A selection of connections only | The attributes of the relation, for example **Condition** and **Handoff** of **Hands over to**. |
 | Objects and connections selected together | The panel shows the objects. |
-| Nothing to show in a tool-designed panel | "There is nothing to show for this object." |
+| Nothing to show in a designed panel | "There is nothing to show for this object." |
 
 ### Layout
 
-- **Generated panel.** If the tool has no panel layout for this kind, the attributes appear in one list. Attributes with a group name are put under a small heading, for example **Effort** or **Quality**.
-- **Designed panel.** If the tool has a layout, it can have tabs. Click a tab name or use the **Left arrow**, **Right arrow**, **Home** and **End** keys when a tab has the focus. The tab you chose is kept while you edit. Groups appear as framed boxes with a title. Fields can be hidden depending on other values, so a field may appear when you change another one. The Agent pipeline task panel has tabs **Overview**, **Effort** and more.
+- **Generated panel.** If the Kit has no panel layout for this kind, the attributes appear in one list. Attributes with a group name are put under a small heading, for example **Effort** or **Quality**.
+- **Designed panel.** If the Kit has a layout, it can have tabs. Click a tab name or use the **Left arrow**, **Right arrow**, **Home** and **End** keys when a tab has the focus. The tab you chose is kept while you edit. Groups appear as framed boxes with a title. Fields can be hidden depending on other values, so a field may appear when you change another one. The Agent pipeline task panel has tabs **Overview**, **Effort** and more.
 
 ### Parts of a field
 
@@ -56,7 +56,7 @@ To edit many objects at once, select them all (see [[selecting]]). Then change a
 | (unit) | The unit, for example (h) or ($). |
 | Control | The input. See [[field-types]]. |
 | Red message | A problem with the value. It appears under the field. |
-| Grey help text | The tool builder's explanation, shown under the field. |
+| Grey help text | The method engineer's explanation, shown under the field. |
 | — (dash) | With several objects selected: their values differ. |
 
 ### Messages at the top
@@ -65,11 +65,11 @@ A red list at the top of the panel shows problems that belong to the whole objec
 
 ### Unknown attributes
 
-If a model has values for attributes the tool no longer defines, a folded section **Unknown attributes (n)** appears for a single selected object. It says "The tool no longer has these attributes. The values are kept until you remove them." Each entry shows the attribute id, the stored value and a **Remove value** button. Removing is an undo step.
+If a model has values for attributes the Kit no longer defines, a folded section **Unknown attributes (n)** appears for a single selected object. It says "The Kit no longer has these attributes. The values are kept until you remove them." Each entry shows the attribute id, the stored value and a **Remove value** button. Removing is an undo step.
 
 ### Buttons
 
-Some attributes are buttons. Clicking one runs a rule or script of the tool on the selected object. They do not store anything. See [[behaviour-commands]].
+Some attributes are buttons. Clicking one runs a rule or script of the Kit on the selected object. They do not store anything. See [[behaviour-commands]].
 
 ## Examples
 

@@ -137,6 +137,6 @@ A rule check on every change costs tens of microseconds for a formula and under 
 ## What this spike leaves open
 
 - The real script API, the 24 events, generated types, the editor and permission prompts.
-- The cost of many sandboxes at once: each is 17 ms and 16 MB or more of WebAssembly memory, so a model with many scripts should share one sandbox per tool library, not one per script.
+- The cost of many sandboxes at once: each is 17 ms and 16 MB or more of WebAssembly memory, so a model with many scripts should share one sandbox per Kit, not one per script.
 - Behaviour in Firefox and Safari (not targeted for scripts in phase 0, since local folders need Chromium anyway).
 - Numbers on Windows and macOS machines; the code is portable and a rerun takes a minute.

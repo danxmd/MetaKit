@@ -1,12 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import {
-  findClassByKey,
-  findRelationByKey,
-  type ToolLibrary,
-} from '@metakit-app/core';
-import { SAMPLE, sampleTool } from '@metakit-app/core/testing';
+import { findClassByKey, findRelationByKey, type Kit } from '@metakit-app/core';
+import { SAMPLE, sampleKit } from '@metakit-app/core/testing';
 import {
   PREVIEW_ATTRIBUTE_LIMIT,
   previewOfClass,
@@ -17,11 +13,11 @@ import {
 const pipeline = JSON.parse(
   readFileSync(
     fileURLToPath(
-      new URL('../../../../tools/agent-pipeline/tool.json', import.meta.url),
+      new URL('../../../../kits/agent-pipeline/kit.json', import.meta.url),
     ),
     'utf8',
   ),
-) as ToolLibrary;
+) as Kit;
 
 describe('the preview card of a class', () => {
   it('shows the label, the help text and the inherited attributes', () => {
@@ -59,22 +55,22 @@ describe('the preview card of a class', () => {
   });
 
   it('reads the help text of the class when it has one', () => {
-    const tool = sampleTool();
-    const task = tool.classes[SAMPLE.task as keyof typeof tool.classes]!;
-    const info = previewOfClass(tool, {
+    const kit = sampleKit();
+    const task = kit.classes[SAMPLE.task as keyof typeof kit.classes]!;
+    const info = previewOfClass(kit, {
       ...task,
       help: { en: ' Something somebody does. ' },
     });
     expect(info.help).toBe('Something somebody does.');
     expect(
-      previewOfClass(tool, { ...task, help: { en: '  ' } }).help,
+      previewOfClass(kit, { ...task, help: { en: '  ' } }).help,
     ).toBeNull();
   });
 
   it('calls containers and swimlanes by their kind', () => {
-    const tool = sampleTool();
-    const lane = tool.classes[SAMPLE.lane as keyof typeof tool.classes]!;
-    const info = previewOfClass(tool, lane);
+    const kit = sampleKit();
+    const lane = kit.classes[SAMPLE.lane as keyof typeof kit.classes]!;
+    const info = previewOfClass(kit, lane);
     expect(info.kind).toBe('container');
     expect(['Container', 'Swimlane']).toContain(info.kindLabel);
   });
@@ -100,11 +96,11 @@ describe('the preview card of a relation class', () => {
   });
 
   it('says "any object" when an end is open', () => {
-    const tool = sampleTool();
-    const flow = tool.relations[SAMPLE.flow as keyof typeof tool.relations]!;
+    const kit = sampleKit();
+    const flow = kit.relations[SAMPLE.flow as keyof typeof kit.relations]!;
     const open = { ...flow, from: [], to: [] };
     const info = previewOfRelation(
-      { ...tool, relations: { ...tool.relations, [flow.id]: open } },
+      { ...kit, relations: { ...kit.relations, [flow.id]: open } },
       open,
     );
     expect(info.sentence).toMatch(/from any object to any object$/);

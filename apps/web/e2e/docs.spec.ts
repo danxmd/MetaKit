@@ -5,15 +5,15 @@ import { newModel, prepare } from './app';
 const panel = (page: Page) => page.getByTestId('docs-panel');
 const context = (page: Page) => expect(panel(page));
 
-/** A fresh workspace with one new tool library open in Build mode. */
-async function openNewTool(page: Page, name = 'Docs tool') {
+/** A fresh workspace with one new Kit open in Build mode. */
+async function openNewKit(page: Page, name = 'Docs Kit') {
   await prepare(page, { name: 'Anna', colour: '#e8590c', seed: false });
   await page.getByTestId('open-folder').click();
   await page.getByRole('button', { name: 'Create workspace' }).click();
   await page.getByTestId('mode-build').click();
-  await page.getByTestId('new-tool').click();
-  await page.getByTestId('new-tool-name').fill(name);
-  await page.getByTestId('new-tool-create').click();
+  await page.getByTestId('new-kit').click();
+  await page.getByTestId('new-kit-name').fill(name);
+  await page.getByTestId('new-kit-create').click();
   await expect(page.getByTestId('build-view')).toBeVisible();
 }
 
@@ -134,7 +134,7 @@ test.describe('Help side bar', () => {
   test('follows the page: Build sections, editors and dialogs report their own context', async ({
     page,
   }) => {
-    await openNewTool(page);
+    await openNewKit(page);
     await page.keyboard.press('F1');
     await context(page).toHaveAttribute('data-context', 'build.classes');
     for (const [tab, ctx] of [
@@ -168,7 +168,7 @@ test.describe('Help side bar', () => {
     await page.keyboard.press('Escape');
     await context(page).toHaveAttribute('data-context', 'models');
     await page.getByTestId('mode-build').click();
-    await context(page).toHaveAttribute('data-context', 'tool-libraries');
+    await context(page).toHaveAttribute('data-context', 'kits');
   });
 });
 
@@ -246,8 +246,8 @@ test.describe('Documentation area', () => {
     await expect(page.getByTestId('docs-group-start')).toContainText(
       'Getting started',
     );
-    // The tutorials of the built-in data and AI tools are written, so the placeholder card is gone.
-    await expect(page.getByTestId('docs-group-tutorials')).toContainText('2');
+    // The tutorials of the built-in data and AI Kits are written, so the placeholder card is gone.
+    await expect(page.getByTestId('docs-group-tutorials')).toContainText('4');
     await expect(page.getByTestId('docs-tutorials-empty')).toHaveCount(0);
     await expect(
       page

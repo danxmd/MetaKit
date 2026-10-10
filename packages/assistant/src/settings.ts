@@ -74,7 +74,7 @@ export type SettingsStore = ReturnType<typeof createSettingsStore>;
 
 /**
  * The API keys of this browser profile, one per provider. They live in IndexedDB only and are
- * never part of the settings, a model, a tool library or a log. `reveal` hands a key to the code
+ * never part of the settings, a model, a Kit or a log. `reveal` hands a key to the code
  * that calls the provider and to nothing else; the settings page shows only whether one is set.
  */
 export interface KeyStore {

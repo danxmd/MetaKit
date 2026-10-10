@@ -7,7 +7,7 @@ export interface TokenRecord {
   id: string;
   service: GitService;
   host: string;
-  /** A name the person chooses, such as "Work laptop, tool libraries". */
+  /** A name the person chooses, such as "Work laptop, Kits". */
   label: string;
   token: string;
   createdAt: string;

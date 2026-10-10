@@ -1,0 +1,3601 @@
+{
+  "formatVersion": 7,
+  "manifest": {
+    "id": "kit_mllifecycle",
+    "name": "ML lifecycle (MLOps)",
+    "version": "1.0.0",
+    "languages": ["en"]
+  },
+  "settings": {
+    "grid": {
+      "size": 10,
+      "snap": true,
+      "visible": true
+    },
+    "layers": [],
+    "numbering": {
+      "enabled": false,
+      "prefix": "",
+      "start": 1
+    }
+  },
+  "classes": {
+    "cls_aiusecase": {
+      "id": "cls_aiusecase",
+      "key": "AIUseCase",
+      "kind": "node",
+      "labels": {
+        "en": "AI use case"
+      },
+      "help": {
+        "en": "The business problem the model is for, rated by the value it brings and how feasible it is."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "AI use case",
+          "id": "att_aiusecase_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_aiusecase_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "Value",
+          "min": 1,
+          "max": 5,
+          "id": "att_aiusecase_value",
+          "labels": {
+            "en": "Value (1 to 5)"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "Feasibility",
+          "min": 1,
+          "max": 5,
+          "id": "att_aiusecase_feasibility",
+          "labels": {
+            "en": "Feasibility (1 to 5)"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Status",
+          "options": ["Idea", "Assessed", "Pilot", "In production", "Stopped"],
+          "id": "att_aiusecase_status",
+          "labels": {
+            "en": "Status"
+          }
+        },
+        {
+          "type": "text",
+          "key": "BusinessMetric",
+          "id": "att_aiusecase_businessmetric",
+          "labels": {
+            "en": "Business metric"
+          },
+          "help": {
+            "en": "What the business measures to see the effect, such as churn rate."
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_aiusecase_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        }
+      ],
+      "shape": "shp_aiusecase"
+    },
+    "cls_dataset": {
+      "id": "cls_dataset",
+      "key": "Dataset",
+      "kind": "node",
+      "labels": {
+        "en": "Dataset"
+      },
+      "help": {
+        "en": "A named collection of data, such as a table or a set of files, with how often it is refreshed and how sensitive it is."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Dataset",
+          "id": "att_dataset_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_dataset_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Format",
+          "id": "att_dataset_format",
+          "labels": {
+            "en": "Format"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Refresh",
+          "options": [
+            "Real time",
+            "Hourly",
+            "Daily",
+            "Weekly",
+            "Monthly",
+            "On demand"
+          ],
+          "id": "att_dataset_refresh",
+          "labels": {
+            "en": "Refresh"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Classification",
+          "options": ["Public", "Internal", "Confidential", "Restricted"],
+          "id": "att_dataset_classification",
+          "labels": {
+            "en": "Classification"
+          }
+        },
+        {
+          "type": "boolean",
+          "key": "ContainsPersonalData",
+          "id": "att_dataset_containspersonaldata",
+          "labels": {
+            "en": "Contains personal data"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "RowCount",
+          "min": 0,
+          "id": "att_dataset_rowcount",
+          "labels": {
+            "en": "Row count"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Version",
+          "id": "att_dataset_version",
+          "labels": {
+            "en": "Version"
+          }
+        }
+      ],
+      "shape": "shp_dataset"
+    },
+    "cls_feature": {
+      "id": "cls_feature",
+      "key": "Feature",
+      "kind": "node",
+      "labels": {
+        "en": "Feature"
+      },
+      "help": {
+        "en": "One input value a model learns from, with where it comes from."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Feature",
+          "id": "att_feature_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_feature_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Type",
+          "options": ["Numeric", "Categorical", "Text", "Embedding", "Date"],
+          "id": "att_feature_type",
+          "labels": {
+            "en": "Type"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Source",
+          "id": "att_feature_source",
+          "labels": {
+            "en": "Source"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_feature_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        }
+      ],
+      "shape": "shp_feature",
+      "constraints": [
+        {
+          "id": "k_feature_source",
+          "formula": "count(outgoing('DerivedFrom')) > 0",
+          "message": "= 'Feature \"' + Name + '\" does not say which dataset it comes from: connect it with \"Derived from\".'",
+          "severity": "warning"
+        }
+      ]
+    },
+    "cls_mlmodel": {
+      "id": "cls_mlmodel",
+      "key": "MLModel",
+      "kind": "node",
+      "labels": {
+        "en": "ML model"
+      },
+      "help": {
+        "en": "A model in the registry: one prediction task, with its versions. Place it in the model registry."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "ML model",
+          "id": "att_mlmodel_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_mlmodel_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Task",
+          "options": [
+            "Classification",
+            "Regression",
+            "Forecasting",
+            "Ranking",
+            "Clustering",
+            "Generation"
+          ],
+          "id": "att_mlmodel_task",
+          "labels": {
+            "en": "Task"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Framework",
+          "id": "att_mlmodel_framework",
+          "labels": {
+            "en": "Framework"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Metric",
+          "id": "att_mlmodel_metric",
+          "labels": {
+            "en": "Metric"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_mlmodel_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Versions",
+          "formula": "count(incoming('VersionOf'))",
+          "result": "number",
+          "id": "att_mlmodel_versions",
+          "labels": {
+            "en": "Versions"
+          },
+          "help": {
+            "en": "How many versions of this model are registered."
+          }
+        }
+      ],
+      "shape": "shp_mlmodel"
+    },
+    "cls_evaluation": {
+      "id": "cls_evaluation",
+      "key": "Evaluation",
+      "kind": "node",
+      "labels": {
+        "en": "Evaluation"
+      },
+      "help": {
+        "en": "A measured test of a model version on a test dataset, such as accuracy, fairness or speed. Passed compares the score with the threshold in the direction of the metric."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Evaluation",
+          "id": "att_evaluation_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_evaluation_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "TestSet",
+          "id": "att_evaluation_testset",
+          "labels": {
+            "en": "Test dataset"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Metric",
+          "id": "att_evaluation_metric",
+          "labels": {
+            "en": "Metric"
+          }
+        },
+        {
+          "type": "number",
+          "key": "Score",
+          "id": "att_evaluation_score",
+          "labels": {
+            "en": "Score"
+          }
+        },
+        {
+          "type": "number",
+          "key": "Threshold",
+          "id": "att_evaluation_threshold",
+          "labels": {
+            "en": "Threshold"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Passed",
+          "formula": "Score == null || Threshold == null ? null : (Direction == 'Lower is better' ? Score <= Threshold : Score >= Threshold)",
+          "result": "boolean",
+          "id": "att_evaluation_passed",
+          "labels": {
+            "en": "Passed"
+          },
+          "help": {
+            "en": "Yes when the score reached the threshold in the direction of the metric."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Kind",
+          "options": [
+            "Accuracy",
+            "Fairness",
+            "Robustness",
+            "Speed",
+            "Explainability"
+          ],
+          "id": "att_evaluation_kind",
+          "labels": {
+            "en": "Kind"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Direction",
+          "options": ["Higher is better", "Lower is better"],
+          "default": "Higher is better",
+          "id": "att_evaluation_direction",
+          "labels": {
+            "en": "Direction"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Outcome",
+          "formula": "Passed == null ? 'Not run' : Passed ? 'Passed' : 'Failed'",
+          "result": "text",
+          "id": "att_evaluation_outcome",
+          "labels": {
+            "en": "Outcome"
+          },
+          "help": {
+            "en": "Passed, Failed, or Not run while the score or threshold is missing."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Reading",
+          "formula": "(Metric ?? 'Score') + ' ' + (Score == null ? '-' : text(Score)) + (Direction == 'Lower is better' ? ', at most ' : ', at least ') + (Threshold == null ? '-' : text(Threshold))",
+          "result": "text",
+          "id": "att_evaluation_reading",
+          "labels": {
+            "en": "Reading"
+          },
+          "help": {
+            "en": "The score and the threshold, shown on the diagram."
+          }
+        }
+      ],
+      "shape": "shp_evaluation",
+      "constraints": [
+        {
+          "id": "k_evaluation_target",
+          "formula": "count(outgoing('Evaluates')) > 0",
+          "message": "= 'Evaluation \"' + Name + '\" tests no model version: connect it with \"Evaluates\".'",
+          "severity": "warning"
+        }
+      ]
+    },
+    "cls_modeldeployment": {
+      "id": "cls_modeldeployment",
+      "key": "ModelDeployment",
+      "kind": "node",
+      "labels": {
+        "en": "Model deployment"
+      },
+      "help": {
+        "en": "A model version running in an environment where others can call it. Place it inside its environment."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Model deployment",
+          "id": "att_modeldeployment_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_modeldeployment_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Environment",
+          "formula": "parent ? parent.Stage : null",
+          "result": "text",
+          "id": "att_modeldeployment_environment",
+          "labels": {
+            "en": "Environment"
+          },
+          "help": {
+            "en": "The stage of the environment it sits in."
+          }
+        },
+        {
+          "type": "text",
+          "key": "Endpoint",
+          "id": "att_modeldeployment_endpoint",
+          "labels": {
+            "en": "Endpoint"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Status",
+          "options": ["Planned", "Live", "Retired"],
+          "id": "att_modeldeployment_status",
+          "labels": {
+            "en": "Status"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "DeployedVersion",
+          "formula": "join(incoming('DeployedAs').Name, ', ')",
+          "result": "text",
+          "id": "att_modeldeployment_deployedversion",
+          "labels": {
+            "en": "Deployed version"
+          },
+          "help": {
+            "en": "The model version that runs here."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "VersionReady",
+          "formula": "IFERROR(incoming('DeployedAs')[0].ReadyForRelease, null)",
+          "result": "boolean",
+          "id": "att_modeldeployment_versionready",
+          "labels": {
+            "en": "Version ready for production"
+          },
+          "help": {
+            "en": "Yes when the version that runs here passed its evaluations and was approved."
+          }
+        }
+      ],
+      "shape": "shp_modeldeployment",
+      "constraints": [
+        {
+          "id": "k_deployment_environment",
+          "formula": "parent != null",
+          "message": "= 'Deployment \"' + Name + '\" is not inside an environment.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_deployment_version",
+          "formula": "count(incoming('DeployedAs')) == 1",
+          "message": "= 'Deployment \"' + Name + '\" should run exactly one model version: connect the version with \"Deployed as\".'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_deployment_ready",
+          "formula": "Environment != 'Production' || count(incoming('DeployedAs')) == 0 || VersionReady == true",
+          "message": "= 'Deployment \"' + Name + '\" runs in production, but its model version has not passed every evaluation and been approved.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_deployment_monitor",
+          "formula": "Environment != 'Production' || count(incoming('Monitors')) > 0",
+          "message": "= 'Deployment \"' + Name + '\" runs in production with no monitor.'",
+          "severity": "warning"
+        }
+      ]
+    },
+    "cls_monitor": {
+      "id": "cls_monitor",
+      "key": "Monitor",
+      "kind": "node",
+      "labels": {
+        "en": "Monitor"
+      },
+      "help": {
+        "en": "A watch on a running deployment that raises an incident when its signal, such as drift or latency, goes above the threshold."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Monitor",
+          "id": "att_monitor_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_monitor_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Signal",
+          "options": ["Drift", "Latency", "Cost", "Quality"],
+          "id": "att_monitor_signal",
+          "labels": {
+            "en": "Signal"
+          }
+        },
+        {
+          "type": "number",
+          "key": "Threshold",
+          "id": "att_monitor_threshold",
+          "labels": {
+            "en": "Threshold"
+          }
+        },
+        {
+          "type": "text",
+          "key": "AlertChannel",
+          "id": "att_monitor_alertchannel",
+          "labels": {
+            "en": "Alert channel"
+          }
+        },
+        {
+          "type": "number",
+          "key": "CurrentValue",
+          "id": "att_monitor_currentvalue",
+          "labels": {
+            "en": "Current value"
+          },
+          "help": {
+            "en": "The latest measured value of the signal."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Breached",
+          "formula": "CurrentValue == null || Threshold == null ? null : CurrentValue > Threshold",
+          "result": "boolean",
+          "id": "att_monitor_breached",
+          "labels": {
+            "en": "Breached"
+          },
+          "help": {
+            "en": "Yes when the current value is above the threshold. The fill turns red."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Reading",
+          "formula": "(Signal ?? 'Signal') + ': ' + (CurrentValue == null ? '-' : text(CurrentValue)) + ', limit ' + (Threshold == null ? '-' : text(Threshold))",
+          "result": "text",
+          "id": "att_monitor_reading",
+          "labels": {
+            "en": "Reading"
+          },
+          "help": {
+            "en": "The signal, its current value and the threshold, shown on the diagram."
+          }
+        }
+      ],
+      "shape": "shp_monitor",
+      "constraints": [
+        {
+          "id": "k_monitor_target",
+          "formula": "count(outgoing('Monitors')) > 0",
+          "message": "= 'Monitor \"' + Name + '\" watches nothing: connect it to a deployment with \"Monitors\".'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_monitor_incident",
+          "formula": "Breached != true || count(outgoing('Raises')) > 0",
+          "message": "= 'Monitor \"' + Name + '\" is above its threshold, but no incident was raised for it.'",
+          "severity": "warning"
+        }
+      ]
+    },
+    "cls_environment": {
+      "id": "cls_environment",
+      "key": "Environment",
+      "kind": "container",
+      "labels": {
+        "en": "Environment"
+      },
+      "help": {
+        "en": "A stage such as development, test or production. Place what runs there inside it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Environment",
+          "id": "att_environment_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_environment_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Stage",
+          "options": ["Development", "Test", "Production"],
+          "id": "att_environment_stage",
+          "labels": {
+            "en": "Stage"
+          }
+        }
+      ],
+      "shape": "shp_environment"
+    },
+    "cls_featurestore": {
+      "id": "cls_featurestore",
+      "key": "FeatureStore",
+      "kind": "container",
+      "labels": {
+        "en": "Feature store"
+      },
+      "help": {
+        "en": "A shared place that keeps features ready for training and for predictions. Place its features inside it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Feature store",
+          "id": "att_featurestore_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_featurestore_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Technology",
+          "id": "att_featurestore_technology",
+          "labels": {
+            "en": "Technology"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Serving",
+          "options": ["Offline only", "Offline and online"],
+          "id": "att_featurestore_serving",
+          "labels": {
+            "en": "Serving"
+          }
+        }
+      ],
+      "shape": "shp_featurestore"
+    },
+    "cls_experiment": {
+      "id": "cls_experiment",
+      "key": "Experiment",
+      "kind": "container",
+      "labels": {
+        "en": "Experiment"
+      },
+      "help": {
+        "en": "A question tried out with training runs, all compared on one metric. Place its training runs inside it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Experiment",
+          "id": "att_experiment_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Hypothesis",
+          "multiline": true,
+          "id": "att_experiment_hypothesis",
+          "labels": {
+            "en": "Hypothesis"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Metric",
+          "id": "att_experiment_metric",
+          "labels": {
+            "en": "Metric"
+          },
+          "help": {
+            "en": "The metric the runs are compared on, such as AUC or error rate."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Direction",
+          "options": ["Higher is better", "Lower is better"],
+          "default": "Higher is better",
+          "id": "att_experiment_direction",
+          "labels": {
+            "en": "Direction"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Runs",
+          "formula": "count(children())",
+          "result": "number",
+          "id": "att_experiment_runs",
+          "labels": {
+            "en": "Runs"
+          },
+          "help": {
+            "en": "How many training runs sit inside."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "BestScore",
+          "formula": "Direction == 'Lower is better' ? min(children().Score) : max(children().Score)",
+          "result": "number",
+          "id": "att_experiment_bestscore",
+          "labels": {
+            "en": "Best score"
+          },
+          "help": {
+            "en": "The best score of the runs inside, in the direction of the metric."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Heading",
+          "formula": "Name + (BestScore == null ? '' : ', best ' + (Metric ?? 'score') + ' ' + BestScore)",
+          "result": "text",
+          "id": "att_experiment_heading",
+          "labels": {
+            "en": "Heading"
+          },
+          "help": {
+            "en": "The name and the best score, shown as the heading on the diagram."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_experiment_usecase",
+          "formula": "count(outgoing('Addresses')) > 0",
+          "message": "= 'Experiment \"' + Name + '\" addresses no use case: connect it to one with \"Addresses\".'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_experiment"
+    },
+    "cls_trainingrun": {
+      "id": "cls_trainingrun",
+      "key": "TrainingRun",
+      "kind": "node",
+      "labels": {
+        "en": "Training run"
+      },
+      "help": {
+        "en": "One training of a model with given data, algorithm and parameters, and the score it reached."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Training run",
+          "id": "att_trainingrun_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Algorithm",
+          "id": "att_trainingrun_algorithm",
+          "labels": {
+            "en": "Algorithm"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Parameters",
+          "multiline": true,
+          "id": "att_trainingrun_parameters",
+          "labels": {
+            "en": "Parameters"
+          },
+          "help": {
+            "en": "The settings of this run, such as learning rate or tree depth."
+          }
+        },
+        {
+          "type": "date",
+          "key": "StartedOn",
+          "id": "att_trainingrun_startedon",
+          "labels": {
+            "en": "Started on"
+          }
+        },
+        {
+          "type": "number",
+          "key": "DurationMinutes",
+          "min": 0,
+          "id": "att_trainingrun_durationminutes",
+          "labels": {
+            "en": "Duration (minutes)"
+          }
+        },
+        {
+          "type": "number",
+          "key": "ComputeCost",
+          "min": 0,
+          "id": "att_trainingrun_computecost",
+          "labels": {
+            "en": "Compute cost"
+          },
+          "help": {
+            "en": "What the compute for this run cost, in your currency."
+          }
+        },
+        {
+          "type": "number",
+          "key": "Score",
+          "id": "att_trainingrun_score",
+          "labels": {
+            "en": "Score"
+          },
+          "help": {
+            "en": "The value of the metric of its experiment that this run reached."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "IsBest",
+          "formula": "Score != null && parent != null && Score == parent.BestScore",
+          "result": "boolean",
+          "id": "att_trainingrun_isbest",
+          "labels": {
+            "en": "Best run"
+          },
+          "help": {
+            "en": "Yes when this run has the best score in its experiment. Its fill turns green."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_run_experiment",
+          "formula": "parent != null",
+          "message": "= 'Training run \"' + Name + '\" is not inside an experiment.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_run_data",
+          "formula": "count(outgoing('TrainsOn')) > 0",
+          "message": "= 'Training run \"' + Name + '\" does not say which data it trains on: connect it to a dataset or feature with \"Trains on\".'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_trainingrun"
+    },
+    "cls_modelregistry": {
+      "id": "cls_modelregistry",
+      "key": "ModelRegistry",
+      "kind": "container",
+      "labels": {
+        "en": "Model registry"
+      },
+      "help": {
+        "en": "The catalogue of models and their versions. Place the models and versions inside it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Model registry",
+          "id": "att_modelregistry_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_modelregistry_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Technology",
+          "id": "att_modelregistry_technology",
+          "labels": {
+            "en": "Technology"
+          }
+        }
+      ],
+      "shape": "shp_modelregistry"
+    },
+    "cls_modelversion": {
+      "id": "cls_modelversion",
+      "key": "ModelVersion",
+      "kind": "node",
+      "labels": {
+        "en": "Model version"
+      },
+      "help": {
+        "en": "One trained version of a model in the registry, with its stage, its evaluations and its approval."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Model version",
+          "id": "att_modelversion_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Version",
+          "id": "att_modelversion_version",
+          "labels": {
+            "en": "Version"
+          },
+          "help": {
+            "en": "Such as \"3\" or \"2027.04\"."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Stage",
+          "options": ["Candidate", "Staging", "Production", "Archived"],
+          "default": "Candidate",
+          "id": "att_modelversion_stage",
+          "labels": {
+            "en": "Stage"
+          }
+        },
+        {
+          "type": "date",
+          "key": "RegisteredOn",
+          "id": "att_modelversion_registeredon",
+          "labels": {
+            "en": "Registered on"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Notes",
+          "multiline": true,
+          "id": "att_modelversion_notes",
+          "labels": {
+            "en": "Notes"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "TrainedBy",
+          "formula": "join(incoming('Produces').Name, ', ')",
+          "result": "text",
+          "id": "att_modelversion_trainedby",
+          "labels": {
+            "en": "Trained by"
+          },
+          "help": {
+            "en": "The training run that produced it."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "EvaluationStatus",
+          "formula": "count(incoming('Evaluates')) == 0 ? 'Not evaluated' : contains(join(incoming('Evaluates').Outcome, ','), 'Failed') ? 'Failed' : contains(join(incoming('Evaluates').Outcome, ','), 'Not run') ? 'Incomplete' : 'Passed'",
+          "result": "text",
+          "id": "att_modelversion_evaluationstatus",
+          "labels": {
+            "en": "Evaluation"
+          },
+          "help": {
+            "en": "Passed when every evaluation of this version passed; Failed when one failed; Incomplete when one has no score yet."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "ApprovalStatus",
+          "formula": "count(incoming('Approves')) == 0 ? 'Not requested' : contains(join(incoming('Approves').Decision, ','), 'Rejected') ? 'Rejected' : contains(join(incoming('Approves').Decision, ','), 'Pending') ? 'Pending' : 'Approved'",
+          "result": "text",
+          "id": "att_modelversion_approvalstatus",
+          "labels": {
+            "en": "Approval"
+          },
+          "help": {
+            "en": "Approved when every approval gate of this version approved it; Pending or Rejected otherwise."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "ReadyForRelease",
+          "formula": "EvaluationStatus == 'Passed' && ApprovalStatus == 'Approved'",
+          "result": "boolean",
+          "id": "att_modelversion_readyforrelease",
+          "labels": {
+            "en": "Ready for production"
+          },
+          "help": {
+            "en": "Yes when it passed every evaluation and was approved."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_version_model",
+          "formula": "count(outgoing('VersionOf')) == 1",
+          "message": "= 'Model version \"' + Name + '\" should be a version of one model: connect it with \"Version of\".'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_version_run",
+          "formula": "count(incoming('Produces')) > 0",
+          "message": "= 'No training run produced model version \"' + Name + '\", so where it came from is unknown.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_modelversion"
+    },
+    "cls_approvalgate": {
+      "id": "cls_approvalgate",
+      "key": "ApprovalGate",
+      "kind": "node",
+      "labels": {
+        "en": "Approval gate"
+      },
+      "help": {
+        "en": "A decision by a person or board that a model version may go further, with the conditions attached."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Approval gate",
+          "id": "att_approvalgate_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Approver",
+          "id": "att_approvalgate_approver",
+          "labels": {
+            "en": "Approver"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Decision",
+          "options": ["Pending", "Approved", "Rejected"],
+          "default": "Pending",
+          "id": "att_approvalgate_decision",
+          "labels": {
+            "en": "Decision"
+          }
+        },
+        {
+          "type": "date",
+          "key": "DecidedOn",
+          "id": "att_approvalgate_decidedon",
+          "labels": {
+            "en": "Decided on"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Conditions",
+          "multiline": true,
+          "id": "att_approvalgate_conditions",
+          "labels": {
+            "en": "Conditions"
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_gate_version",
+          "formula": "count(outgoing('Approves')) > 0",
+          "message": "= 'Approval gate \"' + Name + '\" is for no model version: connect it with \"Approves\".'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_gate_approver",
+          "formula": "Decision == 'Pending' || !isEmpty(Approver)",
+          "message": "= 'Approval gate \"' + Name + '\" has a decision but no approver.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_approvalgate"
+    },
+    "cls_incident": {
+      "id": "cls_incident",
+      "key": "Incident",
+      "kind": "node",
+      "labels": {
+        "en": "Incident"
+      },
+      "help": {
+        "en": "Something that went wrong with a running model, such as drift or slow answers, and what is done about it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Incident",
+          "id": "att_incident_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_incident_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Severity",
+          "options": ["Low", "Medium", "High", "Critical"],
+          "id": "att_incident_severity",
+          "labels": {
+            "en": "Severity"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Status",
+          "options": ["Open", "Investigating", "Resolved"],
+          "default": "Open",
+          "id": "att_incident_status",
+          "labels": {
+            "en": "Status"
+          }
+        },
+        {
+          "type": "date",
+          "key": "OpenedOn",
+          "id": "att_incident_openedon",
+          "labels": {
+            "en": "Opened on"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Response",
+          "options": ["Investigate", "Roll back", "Retrain"],
+          "id": "att_incident_response",
+          "labels": {
+            "en": "Response"
+          },
+          "help": {
+            "en": "What is done about it. Retrain needs an experiment or a training run that follows from it."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_incident_retrain",
+          "formula": "Response != 'Retrain' || count(outgoing('LeadsTo')) > 0",
+          "message": "= 'Incident \"' + Name + '\" asks for retraining, but no experiment or training run follows from it: connect one with \"Leads to\".'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_incident"
+    }
+  },
+  "relations": {
+    "rel_trainson": {
+      "id": "rel_trainson",
+      "key": "TrainsOn",
+      "labels": {
+        "en": "Trains on"
+      },
+      "help": {
+        "en": "A model learns from a dataset or a feature."
+      },
+      "from": ["cls_trainingrun"],
+      "to": ["cls_dataset", "cls_feature"],
+      "attributes": [],
+      "shape": "shp_rel_trainson"
+    },
+    "rel_usesmodel": {
+      "id": "rel_usesmodel",
+      "key": "UsesModel",
+      "labels": {
+        "en": "Uses model"
+      },
+      "help": {
+        "en": "A use case, agent or application relies on a model."
+      },
+      "from": ["cls_aiusecase"],
+      "to": ["cls_mlmodel"],
+      "attributes": [],
+      "shape": "shp_rel_usesmodel"
+    },
+    "rel_evaluates": {
+      "id": "rel_evaluates",
+      "key": "Evaluates",
+      "labels": {
+        "en": "Evaluates"
+      },
+      "help": {
+        "en": "An evaluation tests a model or a prompt."
+      },
+      "from": ["cls_evaluation"],
+      "to": ["cls_modelversion"],
+      "attributes": [],
+      "shape": "shp_rel_evaluates"
+    },
+    "rel_deployedas": {
+      "id": "rel_deployedas",
+      "key": "DeployedAs",
+      "labels": {
+        "en": "Deployed as"
+      },
+      "help": {
+        "en": "A model runs as a deployment."
+      },
+      "from": ["cls_modelversion"],
+      "to": ["cls_modeldeployment"],
+      "attributes": [],
+      "shape": "shp_rel_deployedas"
+    },
+    "rel_monitors": {
+      "id": "rel_monitors",
+      "key": "Monitors",
+      "labels": {
+        "en": "Monitors"
+      },
+      "help": {
+        "en": "A monitor watches a deployment or a pipeline."
+      },
+      "from": ["cls_monitor"],
+      "to": ["cls_modeldeployment"],
+      "attributes": [],
+      "shape": "shp_rel_monitors"
+    },
+    "rel_derivedfrom": {
+      "id": "rel_derivedfrom",
+      "key": "DerivedFrom",
+      "labels": {
+        "en": "Derived from"
+      },
+      "help": {
+        "en": "The feature is calculated from the dataset."
+      },
+      "from": ["cls_feature"],
+      "to": ["cls_dataset"],
+      "attributes": [],
+      "shape": "shp_rel_derivedfrom"
+    },
+    "rel_addresses": {
+      "id": "rel_addresses",
+      "key": "Addresses",
+      "labels": {
+        "en": "Addresses"
+      },
+      "help": {
+        "en": "The experiment works on the use case."
+      },
+      "from": ["cls_experiment"],
+      "to": ["cls_aiusecase"],
+      "attributes": [],
+      "shape": "shp_rel_addresses"
+    },
+    "rel_produces": {
+      "id": "rel_produces",
+      "key": "Produces",
+      "labels": {
+        "en": "Produces"
+      },
+      "help": {
+        "en": "The training run produced the model version."
+      },
+      "from": ["cls_trainingrun"],
+      "to": ["cls_modelversion"],
+      "attributes": [],
+      "shape": "shp_rel_produces"
+    },
+    "rel_versionof": {
+      "id": "rel_versionof",
+      "key": "VersionOf",
+      "labels": {
+        "en": "Version of"
+      },
+      "help": {
+        "en": "The version belongs to the model."
+      },
+      "from": ["cls_modelversion"],
+      "to": ["cls_mlmodel"],
+      "attributes": [],
+      "shape": "shp_rel_versionof"
+    },
+    "rel_approves": {
+      "id": "rel_approves",
+      "key": "Approves",
+      "labels": {
+        "en": "Approves"
+      },
+      "help": {
+        "en": "The approval gate decides about the model version."
+      },
+      "from": ["cls_approvalgate"],
+      "to": ["cls_modelversion"],
+      "attributes": [],
+      "shape": "shp_rel_approves"
+    },
+    "rel_raises": {
+      "id": "rel_raises",
+      "key": "Raises",
+      "labels": {
+        "en": "Raises"
+      },
+      "help": {
+        "en": "The monitor raised the incident."
+      },
+      "from": ["cls_monitor"],
+      "to": ["cls_incident"],
+      "attributes": [],
+      "shape": "shp_rel_raises"
+    },
+    "rel_leadsto": {
+      "id": "rel_leadsto",
+      "key": "LeadsTo",
+      "labels": {
+        "en": "Leads to"
+      },
+      "help": {
+        "en": "The incident led to a new experiment or training run."
+      },
+      "from": ["cls_incident"],
+      "to": ["cls_experiment", "cls_trainingrun"],
+      "attributes": [],
+      "shape": "shp_rel_leadsto"
+    }
+  },
+  "modelTypes": {
+    "mt_mllifecycle": {
+      "id": "mt_mllifecycle",
+      "key": "MLLifecycle",
+      "labels": {
+        "en": "ML lifecycle"
+      },
+      "classes": [
+        "cls_aiusecase",
+        "cls_dataset",
+        "cls_feature",
+        "cls_mlmodel",
+        "cls_evaluation",
+        "cls_modeldeployment",
+        "cls_monitor",
+        "cls_environment",
+        "cls_featurestore",
+        "cls_experiment",
+        "cls_trainingrun",
+        "cls_modelregistry",
+        "cls_modelversion",
+        "cls_approvalgate",
+        "cls_incident"
+      ],
+      "relations": [
+        "rel_trainson",
+        "rel_usesmodel",
+        "rel_evaluates",
+        "rel_deployedas",
+        "rel_monitors",
+        "rel_derivedfrom",
+        "rel_addresses",
+        "rel_produces",
+        "rel_versionof",
+        "rel_approves",
+        "rel_raises",
+        "rel_leadsto"
+      ],
+      "views": [
+        {
+          "id": "vw_training",
+          "key": "Training",
+          "labels": {
+            "en": "Data and training"
+          },
+          "classes": [
+            "cls_aiusecase",
+            "cls_dataset",
+            "cls_featurestore",
+            "cls_feature",
+            "cls_experiment",
+            "cls_trainingrun",
+            "cls_modelversion"
+          ],
+          "relations": [
+            "rel_derivedfrom",
+            "rel_trainson",
+            "rel_addresses",
+            "rel_produces"
+          ]
+        },
+        {
+          "id": "vw_release",
+          "key": "Release",
+          "labels": {
+            "en": "Evaluation and release"
+          },
+          "classes": [
+            "cls_modelregistry",
+            "cls_mlmodel",
+            "cls_modelversion",
+            "cls_evaluation",
+            "cls_approvalgate",
+            "cls_environment",
+            "cls_modeldeployment"
+          ],
+          "relations": [
+            "rel_versionof",
+            "rel_evaluates",
+            "rel_approves",
+            "rel_deployedas"
+          ]
+        },
+        {
+          "id": "vw_operations",
+          "key": "Operations",
+          "labels": {
+            "en": "Operations"
+          },
+          "classes": [
+            "cls_environment",
+            "cls_modeldeployment",
+            "cls_monitor",
+            "cls_incident",
+            "cls_experiment",
+            "cls_trainingrun"
+          ],
+          "relations": ["rel_monitors", "rel_raises", "rel_leadsto"]
+        }
+      ],
+      "cardinalities": [],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Title",
+          "required": true,
+          "maxLength": 100,
+          "id": "att_mtmllifecycle_title",
+          "labels": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Organisation",
+          "id": "att_mtmllifecycle_organisation",
+          "labels": {
+            "en": "Organisation"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Team",
+          "id": "att_mtmllifecycle_team",
+          "labels": {
+            "en": "Team"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "TrainingRuns",
+          "formula": "count(objects('TrainingRun'))",
+          "result": "number",
+          "id": "att_mtmllifecycle_trainingruns",
+          "labels": {
+            "en": "Training runs"
+          },
+          "help": {
+            "en": "How many training runs the model shows."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "TrainingCost",
+          "formula": "sum(objects('TrainingRun').ComputeCost)",
+          "result": "number",
+          "id": "att_mtmllifecycle_trainingcost",
+          "labels": {
+            "en": "Training cost"
+          },
+          "help": {
+            "en": "The compute cost of all training runs."
+          }
+        }
+      ],
+      "help": {
+        "en": "A use case with its data and features, experiments and training runs, model versions in a registry with their evaluations and approvals, deployments per environment, monitors and incidents."
+      },
+      "containers": {
+        "cls_featurestore": ["cls_feature"],
+        "cls_experiment": ["cls_trainingrun"],
+        "cls_modelregistry": ["cls_mlmodel", "cls_modelversion"],
+        "cls_environment": ["cls_modeldeployment"]
+      }
+    }
+  },
+  "shapes": {
+    "shp_aiusecase": {
+      "id": "shp_aiusecase",
+      "name": "AIUseCase look",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 4,
+          "fill": "#ffffff",
+          "stroke": "#9c36b5",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": 28,
+          "radius": 4,
+          "fill": "#eebefa",
+          "stroke": "#9c36b5"
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 2,
+          "width": "100% - 36",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 34,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Value: ' + Value",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 50,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Feasibility: ' + Feasibility",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 66,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Status: ' + Status",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z",
+          "viewBox": [0, 0, 24, 24],
+          "x": "100% - 26",
+          "y": 4,
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "header-box",
+        "fill": "#eebefa",
+        "border": "#9c36b5",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 170,
+          "height": 110,
+          "resizable": true
+        },
+        "icon": {
+          "name": "star"
+        },
+        "fields": ["Value", "Feasibility", "Status"]
+      }
+    },
+    "shp_dataset": {
+      "id": "shp_dataset",
+      "name": "Dataset look",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 4,
+          "fill": "#ffffff",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": 28,
+          "radius": 4,
+          "fill": "#a5d8ff",
+          "stroke": "#1c7ed6"
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 2,
+          "width": "100% - 36",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 34,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Format: ' + Format",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 50,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Refresh: ' + Refresh",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 66,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Classification: ' + Classification",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "header-box",
+        "fill": "#a5d8ff",
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 170,
+          "height": 110,
+          "resizable": true
+        },
+        "fields": ["Format", "Refresh", "Classification"]
+      }
+    },
+    "shp_feature": {
+      "id": "shp_feature",
+      "name": "Feature look",
+      "kind": "node",
+      "size": {
+        "width": 140,
+        "height": 44,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 999,
+          "fill": "#eebefa",
+          "stroke": "#9c36b5",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 16,
+          "y": 4,
+          "width": "100% - 32",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 16,
+          "y": "100% - 22",
+          "width": "100% - 32",
+          "height": 18,
+          "text": "= Type",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "pill",
+        "fill": "#eebefa",
+        "border": "#9c36b5",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 140,
+          "height": 44,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Type"
+        }
+      }
+    },
+    "shp_mlmodel": {
+      "id": "shp_mlmodel",
+      "name": "MLModel look",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 80,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          ["15%", 0],
+          ["85%", 0],
+          ["100%", "50%"],
+          ["85%", "100%"],
+          ["15%", "100%"],
+          [0, "50%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            ["15%", 0],
+            ["85%", 0],
+            ["100%", "50%"],
+            ["85%", "100%"],
+            ["15%", "100%"],
+            [0, "50%"]
+          ],
+          "fill": "#eebefa",
+          "stroke": "#9c36b5",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": "18% + 26",
+          "y": 4,
+          "width": "64% - 26",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": "18% + 26",
+          "y": "100% - 22",
+          "width": "64% - 26",
+          "height": 18,
+          "text": "= Task",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 2v3 M5 7h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z M8.5 12.5h.01 M15.5 12.5h.01 M9 16h6",
+          "viewBox": [0, 0, 24, 24],
+          "x": "18% + 4",
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "hexagon",
+        "fill": "#eebefa",
+        "border": "#9c36b5",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 170,
+          "height": 80,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Task"
+        },
+        "icon": {
+          "name": "bot"
+        }
+      }
+    },
+    "shp_evaluation": {
+      "id": "shp_evaluation",
+      "name": "Evaluation look",
+      "kind": "node",
+      "size": {
+        "width": 220,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "#f8f0fc",
+          "stroke": "= Passed == true ? '#2f9e44' : Passed == false ? '#e03131' : '#9c36b5'",
+          "strokeWidth": 2
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= Reading",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M4 12.5l5 5L20 6.5",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": "#f8f0fc",
+        "border": {
+          "by": "Passed",
+          "values": {
+            "true": "#2f9e44",
+            "false": "#e03131"
+          },
+          "fallback": "#9c36b5"
+        },
+        "borderWidth": 2,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 220,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Reading"
+        },
+        "icon": {
+          "name": "check"
+        }
+      }
+    },
+    "shp_modeldeployment": {
+      "id": "shp_modeldeployment",
+      "name": "ModelDeployment look",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 4,
+          "fill": "#ffffff",
+          "stroke": "#0c8599",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": 28,
+          "radius": 4,
+          "fill": "= Status == 'Planned' ? '#e9ecef' : Status == 'Live' ? '#c3fae8' : Status == 'Retired' ? '#dee2e6' : '#e9ecef'",
+          "stroke": "#0c8599"
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 2,
+          "width": "100% - 36",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 34,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'DeployedVersion: ' + DeployedVersion",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 50,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Status: ' + Status",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 66,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Endpoint: ' + Endpoint",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M7 18a4 4 0 0 1-.5-8A5.5 5.5 0 0 1 17 8.5 4.5 4.5 0 0 1 17.5 18z",
+          "viewBox": [0, 0, 24, 24],
+          "x": "100% - 26",
+          "y": 4,
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "header-box",
+        "fill": {
+          "by": "Status",
+          "values": {
+            "Planned": "#e9ecef",
+            "Live": "#c3fae8",
+            "Retired": "#dee2e6"
+          },
+          "fallback": "#e9ecef"
+        },
+        "border": "#0c8599",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 170,
+          "height": 110,
+          "resizable": true
+        },
+        "icon": {
+          "name": "cloud"
+        },
+        "fields": ["DeployedVersion", "Status", "Endpoint"]
+      }
+    },
+    "shp_monitor": {
+      "id": "shp_monitor",
+      "name": "Monitor look",
+      "kind": "node",
+      "size": {
+        "width": 180,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "= Breached == true ? '#ffc9c9' : Breached == false ? '#d3f9d8' : '#f8f0fc'",
+          "stroke": "#9c36b5",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= Reading",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z M12 7v5l3 2",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": {
+          "by": "Breached",
+          "values": {
+            "true": "#ffc9c9",
+            "false": "#d3f9d8"
+          },
+          "fallback": "#f8f0fc"
+        },
+        "border": "#9c36b5",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 180,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Reading"
+        },
+        "icon": {
+          "name": "clock"
+        }
+      }
+    },
+    "shp_environment": {
+      "id": "shp_environment",
+      "name": "Environment look",
+      "kind": "node",
+      "size": {
+        "width": 250,
+        "height": 160,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 6,
+          "fill": "#f1f3f566",
+          "stroke": "#0c8599",
+          "strokeWidth": 1.5,
+          "dash": [7, 4]
+        },
+        {
+          "type": "text",
+          "x": 12,
+          "y": 4,
+          "width": "100% - 48",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "container",
+        "fill": "#f1f3f566",
+        "border": "#0c8599",
+        "borderWidth": 1.5,
+        "borderStyle": "dashed",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 250,
+          "height": 160,
+          "resizable": true
+        }
+      }
+    },
+    "shp_rel_trainson": {
+      "id": "shp_rel_trainson",
+      "name": "TrainsOn look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#9c36b5",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#9c36b5",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_usesmodel": {
+      "id": "shp_rel_usesmodel",
+      "name": "UsesModel look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#9c36b5",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#9c36b5",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_evaluates": {
+      "id": "shp_rel_evaluates",
+      "name": "Evaluates look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#9c36b5",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [2, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#9c36b5",
+        "width": 1.5,
+        "style": "dotted",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_deployedas": {
+      "id": "shp_rel_deployedas",
+      "name": "DeployedAs look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#9c36b5",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "triangle"
+      },
+      "look": {
+        "colour": "#9c36b5",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "triangle",
+        "label": null
+      }
+    },
+    "shp_rel_monitors": {
+      "id": "shp_rel_monitors",
+      "name": "Monitors look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#9c36b5",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#9c36b5",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_featurestore": {
+      "id": "shp_featurestore",
+      "name": "FeatureStore look",
+      "kind": "node",
+      "size": {
+        "width": 200,
+        "height": 290,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 6,
+          "fill": "#f1f3f566",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5,
+          "dash": [7, 4]
+        },
+        {
+          "type": "text",
+          "x": 12,
+          "y": 4,
+          "width": "100% - 48",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "path",
+          "d": "M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6 M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3",
+          "viewBox": [0, 0, 24, 24],
+          "x": "100% - 30",
+          "y": 6,
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "container",
+        "fill": "#f1f3f566",
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "dashed",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 200,
+          "height": 290,
+          "resizable": true
+        },
+        "icon": {
+          "name": "database"
+        }
+      }
+    },
+    "shp_experiment": {
+      "id": "shp_experiment",
+      "name": "Experiment look",
+      "kind": "node",
+      "size": {
+        "width": 420,
+        "height": 310,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 6,
+          "fill": "#f8f0fc66",
+          "stroke": "#9c36b5",
+          "strokeWidth": 1.5,
+          "dash": [7, 4]
+        },
+        {
+          "type": "text",
+          "x": 12,
+          "y": 4,
+          "width": "100% - 48",
+          "height": 24,
+          "text": "= Heading",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "container",
+        "fill": "#f8f0fc66",
+        "border": "#9c36b5",
+        "borderWidth": 1.5,
+        "borderStyle": "dashed",
+        "title": {
+          "attribute": "Heading",
+          "bold": true
+        },
+        "size": {
+          "width": 420,
+          "height": 310,
+          "resizable": true
+        }
+      }
+    },
+    "shp_trainingrun": {
+      "id": "shp_trainingrun",
+      "name": "TrainingRun look",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 4,
+          "fill": "#ffffff",
+          "stroke": "#9c36b5",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": 28,
+          "radius": 4,
+          "fill": "= IsBest == true ? '#b2f2bb' : IsBest == false ? '#f3d9fa' : '#f3d9fa'",
+          "stroke": "#9c36b5"
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 2,
+          "width": "100% - 36",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 34,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Algorithm: ' + Algorithm",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 50,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Score: ' + Score",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 66,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'ComputeCost: ' + ComputeCost",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "header-box",
+        "fill": {
+          "by": "IsBest",
+          "values": {
+            "true": "#b2f2bb",
+            "false": "#f3d9fa"
+          },
+          "fallback": "#f3d9fa"
+        },
+        "border": "#9c36b5",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 170,
+          "height": 110,
+          "resizable": true
+        },
+        "fields": ["Algorithm", "Score", "ComputeCost"]
+      }
+    },
+    "shp_modelregistry": {
+      "id": "shp_modelregistry",
+      "name": "ModelRegistry look",
+      "kind": "node",
+      "size": {
+        "width": 420,
+        "height": 330,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 6,
+          "fill": "#f1f3f566",
+          "stroke": "#9c36b5",
+          "strokeWidth": 1.5,
+          "dash": [7, 4]
+        },
+        {
+          "type": "text",
+          "x": 12,
+          "y": 4,
+          "width": "100% - 48",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "path",
+          "d": "M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6 M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3",
+          "viewBox": [0, 0, 24, 24],
+          "x": "100% - 30",
+          "y": 6,
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "container",
+        "fill": "#f1f3f566",
+        "border": "#9c36b5",
+        "borderWidth": 1.5,
+        "borderStyle": "dashed",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 420,
+          "height": 330,
+          "resizable": true
+        },
+        "icon": {
+          "name": "database"
+        }
+      }
+    },
+    "shp_modelversion": {
+      "id": "shp_modelversion",
+      "name": "ModelVersion look",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 4,
+          "fill": "#ffffff",
+          "stroke": "#9c36b5",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": 28,
+          "radius": 4,
+          "fill": "= Stage == 'Candidate' ? '#f3d9fa' : Stage == 'Staging' ? '#fff3bf' : Stage == 'Production' ? '#b2f2bb' : Stage == 'Archived' ? '#e9ecef' : '#f3d9fa'",
+          "stroke": "#9c36b5"
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 2,
+          "width": "100% - 36",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 34,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Stage: ' + Stage",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 50,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'EvaluationStatus: ' + EvaluationStatus",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 66,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'ApprovalStatus: ' + ApprovalStatus",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "header-box",
+        "fill": {
+          "by": "Stage",
+          "values": {
+            "Candidate": "#f3d9fa",
+            "Staging": "#fff3bf",
+            "Production": "#b2f2bb",
+            "Archived": "#e9ecef"
+          },
+          "fallback": "#f3d9fa"
+        },
+        "border": "#9c36b5",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 170,
+          "height": 110,
+          "resizable": true
+        },
+        "fields": ["Stage", "EvaluationStatus", "ApprovalStatus"]
+      }
+    },
+    "shp_approvalgate": {
+      "id": "shp_approvalgate",
+      "name": "ApprovalGate look",
+      "kind": "node",
+      "size": {
+        "width": 130,
+        "height": 100,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          ["50%", 0],
+          ["100%", "50%"],
+          ["50%", "100%"],
+          [0, "50%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            ["50%", 0],
+            ["100%", "50%"],
+            ["50%", "100%"],
+            [0, "50%"]
+          ],
+          "fill": "= Decision == 'Pending' ? '#fff3bf' : Decision == 'Approved' ? '#b2f2bb' : Decision == 'Rejected' ? '#ffc9c9' : '#fff3bf'",
+          "stroke": "#2f9e44",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": "24%",
+          "y": "24%",
+          "width": "52%",
+          "height": "52% - 20",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": "24%",
+          "y": "76% - 18",
+          "width": "52%",
+          "height": 18,
+          "text": "= Decision",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "diamond",
+        "fill": {
+          "by": "Decision",
+          "values": {
+            "Pending": "#fff3bf",
+            "Approved": "#b2f2bb",
+            "Rejected": "#ffc9c9"
+          },
+          "fallback": "#fff3bf"
+        },
+        "border": "#2f9e44",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 130,
+          "height": 100,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Decision"
+        }
+      }
+    },
+    "shp_incident": {
+      "id": "shp_incident",
+      "name": "Incident look",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "= Status == 'Open' ? '#ffc9c9' : Status == 'Investigating' ? '#ffec99' : Status == 'Resolved' ? '#d3f9d8' : '#ffc9c9'",
+          "stroke": "#e03131",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= Response",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 3L2 20h20z M12 10v5 M12 18h.01",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": {
+          "by": "Status",
+          "values": {
+            "Open": "#ffc9c9",
+            "Investigating": "#ffec99",
+            "Resolved": "#d3f9d8"
+          },
+          "fallback": "#ffc9c9"
+        },
+        "border": "#e03131",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 170,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Response"
+        },
+        "icon": {
+          "name": "warning"
+        }
+      }
+    },
+    "shp_rel_derivedfrom": {
+      "id": "shp_rel_derivedfrom",
+      "name": "DerivedFrom look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#1c7ed6",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#1c7ed6",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_addresses": {
+      "id": "shp_rel_addresses",
+      "name": "Addresses look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#2f9e44",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#2f9e44",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_produces": {
+      "id": "shp_rel_produces",
+      "name": "Produces look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#9c36b5",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#9c36b5",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_versionof": {
+      "id": "shp_rel_versionof",
+      "name": "VersionOf look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#9c36b5",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "triangle"
+      },
+      "look": {
+        "colour": "#9c36b5",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "triangle",
+        "label": null
+      }
+    },
+    "shp_rel_approves": {
+      "id": "shp_rel_approves",
+      "name": "Approves look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#2f9e44",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#2f9e44",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_raises": {
+      "id": "shp_rel_raises",
+      "name": "Raises look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#e03131",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#e03131",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_leadsto": {
+      "id": "shp_rel_leadsto",
+      "name": "LeadsTo look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#e03131",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#e03131",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    }
+  },
+  "panels": {
+    "cls_trainingrun": {
+      "class": "cls_trainingrun",
+      "tabs": [
+        {
+          "label": "Run",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Algorithm"
+            },
+            {
+              "attribute": "Parameters",
+              "control": "textarea"
+            },
+            {
+              "attribute": "StartedOn"
+            },
+            {
+              "attribute": "DurationMinutes"
+            }
+          ]
+        },
+        {
+          "label": "Result",
+          "items": [
+            {
+              "attribute": "Score"
+            },
+            {
+              "attribute": "IsBest"
+            },
+            {
+              "attribute": "ComputeCost"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_modelversion": {
+      "class": "cls_modelversion",
+      "tabs": [
+        {
+          "label": "Version",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Version"
+            },
+            {
+              "attribute": "Stage",
+              "control": "segmented"
+            },
+            {
+              "attribute": "RegisteredOn"
+            },
+            {
+              "attribute": "TrainedBy"
+            },
+            {
+              "attribute": "Notes",
+              "control": "textarea"
+            }
+          ]
+        },
+        {
+          "label": "Release",
+          "items": [
+            {
+              "attribute": "EvaluationStatus"
+            },
+            {
+              "attribute": "ApprovalStatus"
+            },
+            {
+              "attribute": "ReadyForRelease"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_evaluation": {
+      "class": "cls_evaluation",
+      "tabs": [
+        {
+          "label": "Evaluation",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Kind",
+              "control": "select"
+            },
+            {
+              "attribute": "TestSet"
+            },
+            {
+              "attribute": "Metric"
+            },
+            {
+              "attribute": "Direction",
+              "control": "segmented"
+            },
+            {
+              "attribute": "Score"
+            },
+            {
+              "attribute": "Threshold"
+            },
+            {
+              "attribute": "Passed"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_modeldeployment": {
+      "class": "cls_modeldeployment",
+      "tabs": [
+        {
+          "label": "Deployment",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Environment"
+            },
+            {
+              "attribute": "DeployedVersion"
+            },
+            {
+              "attribute": "VersionReady"
+            },
+            {
+              "attribute": "Status",
+              "control": "segmented"
+            },
+            {
+              "attribute": "Endpoint"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    }
+  },
+  "rules": {
+    "rule_productionready": {
+      "id": "rule_productionready",
+      "label": "Warn when a version that is not ready moves to production",
+      "when": {
+        "event": "attribute.changed",
+        "class": "cls_modelversion",
+        "attribute": "Stage"
+      },
+      "if": "= Stage == 'Production' && ReadyForRelease != true",
+      "then": [
+        {
+          "action": "message",
+          "kind": "warning",
+          "text": "= '\"' + Name + '\" moved to production, but its evaluation is ' + EvaluationStatus + ' and its approval is ' + ApprovalStatus + '.'"
+        }
+      ]
+    }
+  },
+  "scripts": {}
+}

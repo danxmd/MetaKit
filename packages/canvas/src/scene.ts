@@ -18,7 +18,7 @@ import {
   type ModelCommand,
   type Point,
   type RelationId,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 import {
   contains,
@@ -146,7 +146,7 @@ export class Scene {
 
   constructor(
     model: Model,
-    public tool: ToolLibrary,
+    public kit: Kit,
     options: SceneOptions = {},
   ) {
     this.model = model;
@@ -199,22 +199,22 @@ export class Scene {
     this.emit({ ids: touched, structural: false });
   }
 
-  /** Takes a changed tool library (hot reload) and redraws everything that depends on it. */
-  setTool(tool: ToolLibrary): void {
-    this.tool = tool;
+  /** Takes a changed Kit (hot reload) and redraws everything that depends on it. */
+  setKit(kit: Kit): void {
+    this.kit = kit;
     this.rebuild(this.model);
   }
 
   /** The shape a class draws with: its own when it has one, else a starter chosen by kind and key. */
   private nodeShapeFor(def: ClassDef): NodeShape {
-    const own = def.shape ? this.tool.shapes?.[def.shape] : undefined;
+    const own = def.shape ? this.kit.shapes?.[def.shape] : undefined;
     return own?.kind === 'node' ? own : starterFor(def);
   }
 
   private shapeLookup = (id: ShapeId): ShapeDef | undefined =>
-    this.tool.shapes?.[id];
+    this.kit.shapes?.[id];
 
-  /** Throws away everything and reads the whole model; used on open and after a tool change. */
+  /** Throws away everything and reads the whole model; used on open and after a Kit change. */
   rebuild(model: Model): void {
     this.model = model;
     this.ready = false;
@@ -293,11 +293,11 @@ export class Scene {
   private classInfo(id: ClassId) {
     let info = this.classCache.get(id);
     if (!info) {
-      const def = this.tool.classes[id];
+      const def = this.kit.classes[id];
       if (!def) return undefined;
       let defs: AttributeDef[] = [];
       try {
-        defs = effectiveAttributes(this.tool, id);
+        defs = effectiveAttributes(this.kit, id);
       } catch {
         // A broken class chain still draws, with the class name as the label.
       }
@@ -315,14 +315,14 @@ export class Scene {
   private relationInfo(id: RelationId) {
     let info = this.relationCache.get(id);
     if (!info) {
-      const def = this.tool.relations[id];
+      const def = this.kit.relations[id];
       let defs: AttributeDef[] = [];
       try {
-        if (def) defs = effectiveRelationAttributes(this.tool, id);
+        if (def) defs = effectiveRelationAttributes(this.kit, id);
       } catch {
         // A broken relation chain still draws with its own shape.
       }
-      const own = def?.shape ? this.tool.shapes?.[def.shape] : undefined;
+      const own = def?.shape ? this.kit.shapes?.[def.shape] : undefined;
       const shape =
         own?.kind === 'relation'
           ? own
@@ -531,7 +531,7 @@ export class Scene {
       }
       return look;
     }
-    const def = this.tool.relations[data.relation];
+    const def = this.kit.relations[data.relation];
     const calc = this.calculator?.scope(data.id);
     return compileRelation(
       info.shape,

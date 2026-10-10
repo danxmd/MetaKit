@@ -1,7 +1,7 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
-/** A bare workspace and a new tool library in Build mode. */
-async function newTool(page: Page, name: string) {
+/** A bare workspace and a new Kit in Build mode. */
+async function newKit(page: Page, name: string) {
   const folder = `bare-${Math.random().toString(36).slice(2)}`;
   await page.addInitScript(
     ([wanted]) => {
@@ -23,9 +23,9 @@ async function newTool(page: Page, name: string) {
   await page.getByTestId('open-folder').click();
   await page.getByRole('button', { name: 'Create workspace' }).click();
   await page.getByTestId('mode-build').click();
-  await page.getByTestId('new-tool').click();
-  await page.getByTestId('new-tool-name').fill(name);
-  await page.getByTestId('new-tool-create').click();
+  await page.getByTestId('new-kit').click();
+  await page.getByTestId('new-kit-name').fill(name);
+  await page.getByTestId('new-kit-create').click();
   await expect(page.getByTestId('build-view')).toBeVisible();
 }
 
@@ -60,7 +60,7 @@ const pixel = (canvas: Locator, x: number, y: number) =>
 test('the task shape of the plan can be built with editor actions only', async ({
   page,
 }) => {
-  await newTool(page, 'Shapes');
+  await newKit(page, 'Shapes');
   await addClass(page, 'Task');
   await addAttribute(page, 'text', 'Name');
   await addAttribute(page, 'choice', 'Priority');
