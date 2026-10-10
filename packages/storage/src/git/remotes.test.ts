@@ -431,7 +431,7 @@ describe('GitLab pagination', () => {
     expect(
       fake.requests.filter((r) => r.url.includes('/repository/tree?')).length,
     ).toBe(3);
-    // Only the tool library's folder is listed.
+    // Only the Kit's folder is listed.
     expect(fake.requests.some((r) => r.url.includes('path=lib'))).toBe(true);
   });
 

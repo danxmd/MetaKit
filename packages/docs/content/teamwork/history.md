@@ -14,13 +14,13 @@ MetaKit has no history screen that lists every past version. It keeps the past i
 
 | Layer | What it keeps | For how long | How to use it |
 | --- | --- | --- | --- |
-| Undo and redo | Your own steps in the open model or tool library | While it is open | **Undo** and **Redo** buttons, Ctrl+Z. See [[undo-redo]]. |
+| Undo and redo | Your own steps in the open model or Kit | While it is open | **Undo** and **Redo** buttons, Ctrl+Z. See [[undo-redo]]. |
 | Change files | Every edit of every instance, as lines | Until the instance folds them into its snapshot | Read by MetaKit only. See [[sync-overview]]. |
 | Snapshots | The merged state of a document at one moment | The newest one of each instance is kept | Read by MetaKit when opening. |
 | Deleted objects | A death stamp, with the data | 30 days in snapshots | Undo of a delete brings it back. |
-| Trash | Deleted models and tool libraries | 30 days | **Restore** from the deleted list. See [[trash-and-restore]]. |
+| Trash | Deleted models and Kits | 30 days | **Restore** from the deleted list. See [[trash-and-restore]]. |
 | Sync service history | Older versions of files, if your service has it | Set by the service | OneDrive, Google Drive and Dropbox have "version history". |
-| Git history | Every commit of a Git tool library | Forever | See [[git-mode]] and [[git-commit]]. |
+| Git history | Every commit of a Git Kit | Forever | See [[git-mode]] and [[git-commit]]. |
 | Exports | Whatever you saved | Yours | See [[import-export]]. |
 
 ## Where to find it
@@ -28,9 +28,9 @@ MetaKit has no history screen that lists every past version. It keeps the past i
 There is no screen for history in MetaKit. Look in:
 
 - The **Undo** and **Redo** buttons in the model toolbar and in the Build mode bar.
-- The list of deleted items in the Models page and the tool libraries list (see [[page-models]]).
+- The list of deleted items in the Models page and the Kits list (see [[page-models]]).
 - The version history of your sync service, for the whole folder.
-- Your Git hosting service, for tool libraries in Git mode.
+- Your Git hosting service, for Kits in Git mode.
 
 ## How to use it
 
@@ -39,7 +39,7 @@ There is no screen for history in MetaKit. Look in:
 1. Press **Undo**. Every step of yours can be undone, one by one, until you close the model.
 2. If someone else changed the same value since, the undo leaves their value alone. See [[conflicts-and-merging]].
 
-### Get back a deleted model or tool library
+### Get back a deleted model or Kit
 
 1. Open the deleted list. See [[trash-and-restore]].
 2. Press **Restore** within 30 days. After 30 days the item is no longer offered, but its files are still in the folder until someone removes them.
@@ -49,7 +49,7 @@ There is no screen for history in MetaKit. Look in:
 1. In your sync service, restore the version of the whole workspace folder from the day you want, into a **new** folder. Do not overwrite the live folder while others work.
 2. Open the new folder in MetaKit (see [[page-start]]).
 3. Export what you need as a `.mkbundle` (see [[import-export]]) and import it into the live workspace.
-4. For a tool library in Git, open an older version from the **Releases** list or check out the commit on the hosting service. See [[git-releases]].
+4. For a Kit in Git, open an older version from the **Releases** list or check out the commit on the hosting service. See [[git-releases]].
 
 ## Every option explained
 
@@ -86,7 +86,7 @@ Snapshots have a format version. Version 2 is current. Version 1 files (from bef
 - **No time travel in the app.** Do not look for a slider. The mix of undo, trash and sync service history is what exists.
 - **Snapshots are for machines.** The files are one entity per line so that diffs stay small, but they are not meant to be edited.
 - **Do not copy single files between folders.** Change files belong to their instance and sequence. Copy whole workspaces.
-- **Tool libraries.** If a tool library matters to many people, put it in Git. See [[git-mode]].
+- **Kits.** If a Kit matters to many people, put it in Git. See [[git-mode]].
 
 ## Related
 

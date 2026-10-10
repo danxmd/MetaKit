@@ -1,10 +1,12 @@
 /** The kinds of file MetaKit can import, told apart by the file name. */
-export type ImportKind = 'model' | 'bundle' | 'tool';
+export type ImportKind = 'model' | 'bundle' | 'kit';
 
 const EXTENSIONS: readonly (readonly [string, ImportKind])[] = [
   ['.mkmodel.json', 'model'],
   ['.mkbundle', 'bundle'],
-  ['.mktool', 'tool'],
+  ['.mkkit', 'kit'],
+  // A Kit package from a release before the Kit rename (ADR 0011).
+  ['.mktool', 'kit'],
 ];
 
 /** What the file chooser should offer. */
@@ -15,21 +17,21 @@ export function importKindOf(fileName: string): ImportKind | null {
   return EXTENSIONS.find(([ext]) => lower.endsWith(ext))?.[1] ?? null;
 }
 
-/** One importer per kind. A model file is text; bundles and tool packages are zip files. */
+/** One importer per kind. A model file is text; bundles and Kit packages are zip files. */
 export interface FileImporters<M, B, T> {
   model(text: string, fileName: string): Promise<M>;
   bundle(bytes: Uint8Array, fileName: string): Promise<B>;
-  tool(bytes: Uint8Array, fileName: string): Promise<T>;
+  kit(bytes: Uint8Array, fileName: string): Promise<T>;
 }
 
 export type FileImportResult<M, B, T> =
   | { fileName: string; kind: 'model'; ok: true; value: M }
   | { fileName: string; kind: 'bundle'; ok: true; value: B }
-  | { fileName: string; kind: 'tool'; ok: true; value: T }
+  | { fileName: string; kind: 'kit'; ok: true; value: T }
   | { fileName: string; kind: ImportKind | null; ok: false; message: string };
 
 /**
- * Hands each file to the importer for its kind, one after the other (so that a bundle's tool is
+ * Hands each file to the importer for its kind, one after the other (so that a bundle's Kit is
  * there before the model file that follows it). A file that fails does not stop the others; its
  * result says why in plain English.
  */
@@ -46,7 +48,7 @@ export async function importFiles<M, B, T>(
         fileName,
         kind,
         ok: false,
-        message: `"${fileName}" is not a file MetaKit can import. Choose a .mkmodel.json, .mkbundle or .mktool file.`,
+        message: `"${fileName}" is not a file MetaKit can import. Choose a .mkmodel.json, .mkbundle or .mkkit file.`,
       });
       continue;
     }
@@ -72,7 +74,7 @@ export async function importFiles<M, B, T>(
             fileName,
             kind,
             ok: true,
-            value: await importers.tool(bytes, fileName),
+            value: await importers.kit(bytes, fileName),
           });
       }
     } catch (error) {

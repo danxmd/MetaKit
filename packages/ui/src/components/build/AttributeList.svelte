@@ -4,7 +4,7 @@
     type AttributeDef,
     type AttributeType,
     type KeyOwner,
-    type ToolLibrary,
+    type Kit,
   } from '@metakit-app/core';
   import {
     ATTRIBUTE_TYPE_LABELS,
@@ -19,7 +19,7 @@
   let {
     owner,
     attributes,
-    tool,
+    kit,
     run,
     /** Keys that cannot be used because a parent or child class has them. */
     taken = [],
@@ -27,14 +27,14 @@
   }: {
     owner: KeyOwner;
     attributes: AttributeDef[];
-    tool: ToolLibrary;
+    kit: Kit;
     run: (command: never) => CommandResult;
     taken?: string[];
     /** Where an attribute is read, shown before it is deleted. */
     usages: (id: string) => string[];
   } = $props();
 
-  const language = $derived(tool.manifest.languages[0] ?? 'en');
+  const language = $derived(kit.manifest.languages[0] ?? 'en');
   let open = $state<string | null>(null);
   let newType = $state<AttributeType>('text');
   let error = $state<string | null>(null);
@@ -127,7 +127,7 @@
         {#if open === a.id}
           <AttributeForm
             def={a}
-            {tool}
+            {kit}
             onPut={(def) => exec({ type: 'putAttribute', owner, def })}
             onRename={(key) =>
               exec({

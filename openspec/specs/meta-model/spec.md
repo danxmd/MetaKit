@@ -1,19 +1,19 @@
 # meta-model Specification
 
 ## Purpose
-Describes how a tool library defines classes, relation classes, model types and attributes, how definitions are checked, and how inheritance is resolved.
+Describes how a Kit defines classes, relation classes, model types and attributes, how definitions are checked, and how inheritance is resolved.
 
 ## Requirements
 
-### Requirement: Tool library definitions
-A tool library SHALL consist of a manifest (id, name, version, languages), settings (grid, layers, numbering), classes, relation classes and model types, and SHALL carry a format version.
+### Requirement: Kit definitions
+A Kit SHALL consist of a manifest (id, name, version, languages), settings (grid, layers, numbering), classes, relation classes and model types, and SHALL carry a format version.
 
-#### Scenario: A complete library is accepted
-- **WHEN** a library with a manifest, settings, two classes, one relation class and one model type is checked
+#### Scenario: A complete Kit is accepted
+- **WHEN** a Kit with a manifest, settings, two classes, one relation class and one model type is checked
 - **THEN** no issues are reported
 
 #### Scenario: A missing part is reported with its path
-- **WHEN** a library without a manifest `id` is checked
+- **WHEN** a Kit without a manifest `id` is checked
 - **THEN** an issue with path `manifest.id` and a message saying an id is required is reported
 
 ### Requirement: Classes
@@ -35,7 +35,7 @@ A relation class SHALL list allowed FROM and TO classes (abstract classes allowe
 - **THEN** an issue says at least one TO class is required
 
 #### Scenario: Ends refer to existing classes
-- **WHEN** a FROM entry names a class id that is not in the library
+- **WHEN** a FROM entry names a class id that is not in the Kit
 - **THEN** an issue names the missing id
 
 ### Requirement: Model types
@@ -65,7 +65,7 @@ The system SHALL support the attribute types text, integer, number, boolean, dat
 - **THEN** an issue reports the duplicate
 
 ### Requirement: Keys
-Class keys, relation class keys and model type keys SHALL be unique within a library, and attribute keys SHALL be unique within the effective attributes of a class, of a relation class and of a model type.
+Class keys, relation class keys and model type keys SHALL be unique within a Kit, and attribute keys SHALL be unique within the effective attributes of a class, of a relation class and of a model type.
 
 #### Scenario: Duplicate class key
 - **WHEN** two classes have the key `Task`

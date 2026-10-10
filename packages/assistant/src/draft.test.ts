@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
-  createEmptyTool,
-  createToolStore,
-  validateToolLibrary,
-  type ToolLibrary,
+  createEmptyKit,
+  createKitStore,
+  validateKit,
+  type Kit,
 } from '@metakit-app/core';
 import { SAMPLE } from '@metakit-app/core/testing';
 import { asOneStep, describeDraftChange, draftToCommands } from './apply';
@@ -14,27 +14,27 @@ import {
   RULE_REPLY,
   SCRIPT_REPLY,
   SHAPE_REPLY,
-  planTool,
+  planKit,
 } from './fixtures';
 import { scriptedProvider } from './testing';
 
 const run = <K extends 'rule' | 'script' | 'shape' | 'class'>(
   kind: K,
   replies: string[],
-  tool: ToolLibrary = planTool(),
+  kit: Kit = planKit(),
   extra: { typeCheck?: (s: string, d: string) => Promise<string[]> } = {},
 ) => {
   const provider = scriptedProvider(replies);
   return {
     provider,
-    done: draft({ provider, key: 'fake', tool, kind, sentence: 'x', ...extra }),
+    done: draft({ provider, key: 'fake', kit, kind, sentence: 'x', ...extra }),
   };
 };
 
 describe('drafting the examples of the plan', () => {
   it('a rule: high-priority tasks need an owner', async () => {
-    const tool = planTool();
-    const { done, provider } = run('rule', [RULE_REPLY], tool);
+    const kit = planKit();
+    const { done, provider } = run('rule', [RULE_REPLY], kit);
     const out = await done;
     expect(out.errors).toEqual([]);
     expect(out.attempts).toBe(1);
@@ -65,11 +65,8 @@ describe('drafting the examples of the plan', () => {
   });
 
   it('a class: Task with a name, a priority and an owner', async () => {
-    const out = await run(
-      'class',
-      [CLASS_REPLY],
-      createEmptyTool({ name: 'T' }),
-    ).done;
+    const out = await run('class', [CLASS_REPLY], createEmptyKit({ name: 'T' }))
+      .done;
     expect(out.errors).toEqual([]);
     expect(out.draft!.attributes.map((a) => a.key)).toEqual([
       'Name',
@@ -205,7 +202,7 @@ describe('validation and the retry', () => {
     const { provider, done } = run(
       'script',
       [SCRIPT_REPLY, SCRIPT_REPLY],
-      planTool(),
+      planKit(),
       {
         typeCheck,
       },
@@ -228,7 +225,7 @@ describe('validation and the retry', () => {
       draft({
         provider,
         key: 'sk-ant-fake-not-a-real-key-0003',
-        tool: planTool(),
+        kit: planKit(),
         kind: 'rule',
         sentence: 'x',
       }),
@@ -237,10 +234,10 @@ describe('validation and the retry', () => {
 });
 
 describe('accepting a draft', () => {
-  it('applies a rule in one undo step, and undo restores the tool', async () => {
-    const tool = planTool();
-    const store = createToolStore(tool);
-    const out = await run('rule', [RULE_REPLY], tool).done;
+  it('applies a rule in one undo step, and undo restores the Kit', async () => {
+    const kit = planKit();
+    const store = createKitStore(kit);
+    const out = await run('rule', [RULE_REPLY], kit).done;
     const before = structuredClone(store.state);
     const commands = draftToCommands('rule', out.draft!, store.state);
     const result = store.execute(asOneStep(commands));
@@ -248,13 +245,13 @@ describe('accepting a draft', () => {
     const rules = Object.values(store.state.rules);
     expect(rules).toHaveLength(1);
     expect(rules[0]!.id).toMatch(/^rule_/);
-    expect(validateToolLibrary(store.state)).toEqual([]);
+    expect(validateKit(store.state)).toEqual([]);
     expect(store.undo()).toBe(true);
     expect(store.state).toEqual(before);
   });
 
   it('applies a script, a shape and a class, each undoable', async () => {
-    const store = createToolStore(planTool());
+    const store = createKitStore(planKit());
     const before = structuredClone(store.state);
 
     const script = await run('script', [SCRIPT_REPLY]).done;
@@ -282,7 +279,7 @@ describe('accepting a draft', () => {
     // Task exists already, so the new key is made unique.
     const keys = Object.values(store.state.classes).map((c) => c.key);
     expect(keys).toContain('Task2');
-    expect(validateToolLibrary(store.state)).toEqual([]);
+    expect(validateKit(store.state)).toEqual([]);
 
     store.undo();
     store.undo();
@@ -291,9 +288,9 @@ describe('accepting a draft', () => {
   });
 
   it('makes a script name unique', async () => {
-    const tool = planTool();
-    const script = await run('script', [SCRIPT_REPLY], tool).done;
-    const store = createToolStore(tool);
+    const kit = planKit();
+    const script = await run('script', [SCRIPT_REPLY], kit).done;
+    const store = createKitStore(kit);
     store.execute(
       asOneStep(draftToCommands('script', script.draft!, store.state)),
     );
@@ -308,9 +305,9 @@ describe('accepting a draft', () => {
   });
 
   it('describes each change in plain English', async () => {
-    const tool = planTool();
-    const rule = (await run('rule', [RULE_REPLY], tool).done).draft!;
-    const lines = describeDraftChange('rule', rule, tool);
+    const kit = planKit();
+    const rule = (await run('rule', [RULE_REPLY], kit).done).draft!;
+    const lines = describeDraftChange('rule', rule, kit);
     expect(lines[0]).toBe('Add the rule "High-priority tasks need an owner".');
     expect(lines[1]).toBe(
       'When an attribute is changed for Task (attribute Priority).',
@@ -318,18 +315,18 @@ describe('accepting a draft', () => {
     expect(lines.join('\n')).toContain('Set Status to "Needs owner"');
     expect(lines.join('\n')).toContain('Show a warning');
 
-    const script = (await run('script', [SCRIPT_REPLY], tool).done).draft!;
-    const s = describeDraftChange('script', script, tool).join('\n');
+    const script = (await run('script', [SCRIPT_REPLY], kit).done).draft!;
+    const s = describeDraftChange('script', script, kit).join('\n');
     expect(s).toContain('Add the script "Renumber tasks"');
     expect(s).toContain('object.created, object.moved');
     expect(s).toContain('Renumber tasks');
 
-    const shape = (await run('shape', [SHAPE_REPLY], tool).done).draft!;
-    expect(describeDraftChange('shape', shape, tool)[0]).toBe(
+    const shape = (await run('shape', [SHAPE_REPLY], kit).done).draft!;
+    expect(describeDraftChange('shape', shape, kit)[0]).toBe(
       'Add the shape "Blue task box", 140 by 70.',
     );
-    const cls = (await run('class', [CLASS_REPLY], tool).done).draft!;
-    const c = describeDraftChange('class', cls, tool).join('\n');
+    const cls = (await run('class', [CLASS_REPLY], kit).done).draft!;
+    const c = describeDraftChange('class', cls, kit).join('\n');
     expect(c).toContain('Add the class "Task2" (the key Task is taken)');
     expect(c).toContain('Priority (choice, choices Low, Medium, High');
   });

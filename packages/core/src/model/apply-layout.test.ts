@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { SAMPLE, emptySampleModel, sampleTool } from '../testing/sample-tool';
+import { SAMPLE, emptySampleModel, sampleKit } from '../testing/sample-kit';
 import { CommandError } from '../store/tx';
 import { createModelStore, type ModelStore } from './commands';
 import type { ConnectorId, ElementId } from '../ids';
 
-const tool = sampleTool();
-const fresh = (): ModelStore => createModelStore(emptySampleModel(), { tool });
+const kit = sampleKit();
+const fresh = (): ModelStore => createModelStore(emptySampleModel(), { kit });
 const make = (store: ModelStore, x = 0, y = 0): ElementId => {
   const r = store.execute({
     type: 'createElement',

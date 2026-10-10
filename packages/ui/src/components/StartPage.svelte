@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SupportFooter from './SupportFooter.svelte';
   import BrandMark from './BrandMark.svelte';
 
   let {
@@ -38,15 +39,15 @@
   const steps = [
     {
       title: 'Open or create a workspace folder',
-      text: 'Pick a folder on your computer. It holds everything: tool libraries and models.',
+      text: 'Pick a folder on your computer. It holds everything: Kits and models.',
     },
     {
-      title: 'Add a tool library, or build one',
-      text: 'A tool library defines the kinds of objects, connections, shapes and rules. Use a ready-made one or make your own in Build.',
+      title: 'Add a Kit, or build one',
+      text: 'A Kit defines the kinds of objects, connections, shapes and rules. Use a ready-made one or make your own in Build.',
     },
     {
       title: 'Model',
-      text: 'Draw models with the tool library in Model. Several people can work in the same folder at once.',
+      text: 'Draw models with the Kit in Model. Several people can work in the same folder at once.',
     },
   ];
 </script>
@@ -167,6 +168,7 @@
       </div>
     </section>
   </div>
+  <SupportFooter />
 </main>
 
 <style>
@@ -174,6 +176,7 @@
     position: relative;
     min-height: 100dvh;
     display: grid;
+    grid-template-rows: 1fr auto;
     align-items: center;
     padding: var(--gap-6) var(--gap-4);
   }

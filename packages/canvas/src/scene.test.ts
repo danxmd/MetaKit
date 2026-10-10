@@ -4,8 +4,8 @@ import { Scene } from './scene';
 import { BPMN, bpmnStore } from './testing';
 
 function setup() {
-  const { tool, store } = bpmnStore();
-  const scene = new Scene(store.state as Model, tool);
+  const { kit, store } = bpmnStore();
+  const scene = new Scene(store.state as Model, kit);
   scene.attach(store);
   const create = (
     x: number,
@@ -25,7 +25,7 @@ function setup() {
     if (!result.ok) throw new Error('cancelled');
     return result.value as ElementId;
   };
-  return { tool, store, scene, create };
+  return { kit, store, scene, create };
 }
 
 describe('Scene', () => {
@@ -126,7 +126,7 @@ describe('Scene', () => {
   });
 
   it('matches a full rebuild after any sequence of commands, undos and redos', () => {
-    const { store, scene, create, tool } = setup();
+    const { store, scene, create, kit } = setup();
     const ids: ElementId[] = [];
     for (let i = 0; i < 12; i++)
       ids.push(create(i * 130, (i % 3) * 90, `N${i}`));
@@ -143,7 +143,7 @@ describe('Scene', () => {
     store.undo();
     store.undo();
     store.redo();
-    const fresh = new Scene(store.state as Model, tool);
+    const fresh = new Scene(store.state as Model, kit);
     const view = (s: Scene) => ({
       elements: [...s.elements.values()]
         .map((e) => ({ ...e, compiled: e.compiled.compiled.ops }))
