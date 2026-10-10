@@ -115,6 +115,52 @@ export const BUILT_IN_KITS: readonly BuiltInKit[] = [
       ),
   },
   {
+    id: 'kit_datamesh' as KitId,
+    name: 'Data mesh and data products',
+    version: '1.0.0',
+    domain: 'data-ai',
+    description:
+      'Domains that own data products, with input and output ports, data contracts with a schema, a service level and a version, consumers, the self-serve platform and governance policies.',
+    load: () =>
+      import('../../../../kits/data-mesh/kit.json?raw').then((m) => m.default),
+  },
+  {
+    id: 'kit_datamodelling' as KitId,
+    name: 'Data modelling',
+    version: '1.0.0',
+    domain: 'data-ai',
+    description:
+      'Conceptual, logical and physical data models: subject areas, entities with attributes and keys, relationships with cardinality, and tables with typed columns and foreign keys.',
+    load: () =>
+      import('../../../../kits/data-modelling/kit.json?raw').then(
+        (m) => m.default,
+      ),
+  },
+  {
+    id: 'kit_datalineage' as KitId,
+    name: 'Data pipelines and lineage',
+    version: '1.0.0',
+    domain: 'data-ai',
+    description:
+      'Sources, jobs, schedules, datasets, reports and target applications, with lineage down to the field, upstream and downstream counts and checks for unscheduled jobs and orphan datasets.',
+    load: () =>
+      import('../../../../kits/data-pipelines-lineage/kit.json?raw').then(
+        (m) => m.default,
+      ),
+  },
+  {
+    id: 'kit_dataquality' as KitId,
+    name: 'Data quality management',
+    version: '1.0.0',
+    domain: 'data-ai',
+    description:
+      'Quality rules with thresholds and results on data assets, quality dimensions, issues with severity, status and owner, and the actions that resolve them, with pass rates and quality scores.',
+    load: () =>
+      import('../../../../kits/data-quality/kit.json?raw').then(
+        (m) => m.default,
+      ),
+  },
+  {
     id: 'tool_agentpipeline' as KitId,
     name: 'Agent pipeline',
     version: '1.0.0',

@@ -29,6 +29,10 @@ They are listed by domain, under one heading each:
 | **KPI and metric tree** | Outcome KPIs explained by driver and operational metrics, each with a target, a current value and a direction, coloured by whether it is on track. See [[kpi-metric-tree]]. |
 | **Data and AI architecture** | Data platforms: sources, pipelines, stores, datasets, ML models, AI services and consumers, with data lineage and personal-data checks. See [[data-ai-architecture]]. |
 | **Data governance and ownership** | Data ownership and governance: domains, data products, assets, owners and stewards, policies, classifications and quality rules. See [[data-governance]]. |
+| **Data mesh and data products** | Domains that own data products, with input and output ports, data contracts with a schema, a service level and a version, consumers, the self-serve platform and governance policies. See [[data-mesh]]. |
+| **Data modelling** | Conceptual, logical and physical data models: subject areas, entities with attributes and keys, relationships with cardinality, and tables with typed columns and foreign keys. See [[data-modelling]]. |
+| **Data pipelines and lineage** | Sources, jobs, schedules, datasets, reports and target applications, with lineage down to the field, upstream and downstream counts and checks for unscheduled jobs and orphan datasets. See [[data-pipelines-lineage]]. |
+| **Data quality management** | Quality rules with thresholds and results on data assets, quality dimensions, issues with severity, status and owner, and the actions that resolve them, with pass rates and quality scores. See [[data-quality]]. |
 | **Agent pipeline** | Pipelines in which AI agents and people perform tasks, hand over work and approve results. |
 
 **Business and strategy**

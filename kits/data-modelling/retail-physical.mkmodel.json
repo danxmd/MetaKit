@@ -1,0 +1,596 @@
+{
+  "attributes": {
+    "Database": "Relational database in the cloud",
+    "ModelVersion": "1.2",
+    "Organisation": "A home and garden retailer",
+    "Title": "Retail sales: physical model"
+  },
+  "connectors": [
+    {
+      "attributes": {
+        "Columns": "customer_id",
+        "OnDelete": "No action"
+      },
+      "from": "el_address",
+      "id": "cn_001",
+      "relation": "ForeignKey",
+      "to": "el_customer"
+    },
+    {
+      "attributes": {
+        "Columns": "customer_id",
+        "OnDelete": "No action"
+      },
+      "from": "el_order",
+      "id": "cn_002",
+      "relation": "ForeignKey",
+      "to": "el_customer"
+    },
+    {
+      "attributes": {
+        "Columns": "order_id",
+        "OnDelete": "No action"
+      },
+      "from": "el_line",
+      "id": "cn_003",
+      "relation": "ForeignKey",
+      "to": "el_order"
+    },
+    {
+      "attributes": {
+        "Columns": "product_id",
+        "OnDelete": "No action"
+      },
+      "from": "el_line",
+      "id": "cn_004",
+      "relation": "ForeignKey",
+      "to": "el_product"
+    },
+    {
+      "attributes": {
+        "Columns": "category_id",
+        "OnDelete": "No action"
+      },
+      "from": "el_product",
+      "id": "cn_005",
+      "relation": "ForeignKey",
+      "to": "el_category"
+    },
+    {
+      "attributes": {
+        "Columns": "product_id",
+        "OnDelete": "No action"
+      },
+      "from": "el_price",
+      "id": "cn_006",
+      "relation": "ForeignKey",
+      "to": "el_product"
+    }
+  ],
+  "elements": [
+    {
+      "attributes": {
+        "Description": "Tables of the sales system.",
+        "Name": "sales"
+      },
+      "class": "Schema",
+      "h": 532,
+      "id": "el_schema",
+      "w": 1540,
+      "x": 40,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "Implements": "Customer",
+        "Name": "customer",
+        "RowEstimate": "2 million"
+      },
+      "class": "Table",
+      "h": 204,
+      "id": "el_customer",
+      "parent": "el_schema",
+      "w": 220,
+      "x": 380,
+      "y": 80
+    },
+    {
+      "attributes": {
+        "DataType": "BIGINT",
+        "Key": "PK",
+        "Name": "customer_id"
+      },
+      "class": "Column",
+      "h": 28,
+      "id": "el_customer_1",
+      "parent": "el_customer",
+      "w": 200,
+      "x": 390,
+      "y": 116
+    },
+    {
+      "attributes": {
+        "DataType": "VARCHAR(200)",
+        "Name": "full_name"
+      },
+      "class": "Column",
+      "h": 28,
+      "id": "el_customer_2",
+      "parent": "el_customer",
+      "w": 200,
+      "x": 390,
+      "y": 148
+    },
+    {
+      "attributes": {
+        "DataType": "VARCHAR(320)",
+        "Name": "email"
+      },
+      "class": "Column",
+      "h": 28,
+      "id": "el_customer_3",
+      "parent": "el_customer",
+      "w": 200,
+      "x": 390,
+      "y": 180
+    },
+    {
+      "attributes": {
+        "DataType": "DATE",
+        "Name": "birth_date"
+      },
+      "class": "Column",
+      "h": 28,
+      "id": "el_customer_4",
+      "parent": "el_customer",
+      "w": 200,
+      "x": 390,
+      "y": 212
+    },
+    {
+      "attributes": {
+        "DataType": "CHAR(1)",
+        "Name": "loyalty_tier"
+      },
+      "class": "Column",
+      "h": 28,
+      "id": "el_customer_5",
+      "parent": "el_customer",
+      "w": 200,
+      "x": 390,
+      "y": 244
+    },
+    {
+      "attributes": {
+        "Implements": "Customer address",
+        "Name": "customer_address",
+        "RowEstimate": "2.5 million"
+      },
+      "class": "Table",
+      "h": 204,
+      "id": "el_address",
+      "parent": "el_schema",
+      "w": 220,
+      "x": 60,
+      "y": 80
+    },
+    {
+      "attributes": {
+        "DataType": "BIGINT",
+        "Key": "PK",
+        "Name": "address_id"
+      },
+      "class": "Column",
+      "h": 28,
+      "id": "el_address_1",
+      "parent": "el_address",
+      "w": 200,
+      "x": 70,
+      "y": 116
+    },
+    {
+      "attributes": {
+        "DataType": "BIGINT",
+        "Key": "FK",
+        "Name": "customer_id"
+      },
+      "class": "Column",
+      "h": 28,
+      "id": "el_address_2",
+      "parent": "el_address",
+      "w": 200,
+      "x": 70,
+      "y": 148
+    },
+    {
+      "attributes": {
+        "DataType": "VARCHAR(200)",
+        "Name": "street"
+      },
+      "class": "Column",
+      "h": 28,
+      "id": "el_address_3",
+      "parent": "el_address",
+      "w": 200,
+      "x": 70,
+      "y": 180
+    },
+    {
+      "attributes": {
+        "DataType": "VARCHAR(10)",
+        "Name": "postcode"
+      },
+      "class": "Column",
+      "h": 28,
+      "id": "el_address_4",
+      "parent": "el_address",
+      "w": 200,
+      "x": 70,
+      "y": 212
+    },
+    {
+      "attributes": {
+        "DataType": "CHAR(2)",
+        "Name": "country_code"
+      },
+      "class": "Column",
+      "h": 28,
+      "id": "el_address_5",
+      "parent": "el_address",
+      "w": 200,
+      "x": 70,
+      "y": 244
+    },
+    {
+      "attributes": {
+        "Implements": "Sales order, Online order",
+        "Name": "sales_order",
+        "RowEstimate": "40 million"
+      },
+      "class": "Table",
+      "h": 204,
+      "id": "el_order",
+      "parent": "el_schema",
+      "w": 220,
+      "x": 700,
+      "y": 80
+    },
+    {
+      "attributes": {
+        "DataType": "BIGINT",
+        "Key": "PK",
+        "Name": "order_id"
+      },
+      "class": "Column",
+      "h": 28,
+      "id": "el_order_1",
+      "parent": "el_order",
+      "w": 200,
+      "x": 710,
+      "y": 116
+    },
+    {
+      "attributes": {
+        "DataType": "BIGINT",
+        "Key": "FK",
+        "Name": "customer_id"
+      },
+      "class": "Column",
+      "h": 28,
+      "id": "el_order_2",
+      "parent": "el_order",
+      "w": 200,
+      "x": 710,
+      "y": 148
+    },
+    {
+      "attributes": {
+        "DataType": "DATE",
+        "Name": "order_date"
+      },
+      "class": "Column",
+      "h": 28,
+      "id": "el_order_3",
+      "parent": "el_order",
+      "w": 200,
+      "x": 710,
+      "y": 180
+    },
+    {
+      "attributes": {
+        "DataType": "VARCHAR(10)",
+        "Name": "channel"
+      },
+      "class": "Column",
+      "h": 28,
+      "id": "el_order_4",
+      "parent": "el_order",
+      "w": 200,
+      "x": 710,
+      "y": 212
+    },
+    {
+      "attributes": {
+        "DataType": "VARCHAR(64)",
+        "Name": "web_session_id"
+      },
+      "class": "Column",
+      "h": 28,
+      "id": "el_order_5",
+      "parent": "el_order",
+      "w": 200,
+      "x": 710,
+      "y": 244
+    },
+    {
+      "attributes": {
+        "Implements": "Order line",
+        "Name": "order_line",
+        "RowEstimate": "120 million"
+      },
+      "class": "Table",
+      "h": 204,
+      "id": "el_line",
+      "parent": "el_schema",
+      "w": 220,
+      "x": 1020,
+      "y": 80
+    },
+    {
+      "attributes": {
+        "DataType": "BIGINT",
+        "Key": "PK and FK",
+        "Name": "order_id"
+      },
+      "class": "Column",
+      "h": 28,
+      "id": "el_line_1",
+      "parent": "el_line",
+      "w": 200,
+      "x": 1030,
+      "y": 116
+    },
+    {
+      "attributes": {
+        "DataType": "SMALLINT",
+        "Key": "PK",
+        "Name": "line_no"
+      },
+      "class": "Column",
+      "h": 28,
+      "id": "el_line_2",
+      "parent": "el_line",
+      "w": 200,
+      "x": 1030,
+      "y": 148
+    },
+    {
+      "attributes": {
+        "DataType": "BIGINT",
+        "Key": "FK",
+        "Name": "product_id"
+      },
+      "class": "Column",
+      "h": 28,
+      "id": "el_line_3",
+      "parent": "el_line",
+      "w": 200,
+      "x": 1030,
+      "y": 180
+    },
+    {
+      "attributes": {
+        "DataType": "INTEGER",
+        "Name": "quantity"
+      },
+      "class": "Column",
+      "h": 28,
+      "id": "el_line_4",
+      "parent": "el_line",
+      "w": 200,
+      "x": 1030,
+      "y": 212
+    },
+    {
+      "attributes": {
+        "DataType": "DECIMAL(12,2)",
+        "Name": "net_amount"
+      },
+      "class": "Column",
+      "h": 28,
+      "id": "el_line_5",
+      "parent": "el_line",
+      "w": 200,
+      "x": 1030,
+      "y": 244
+    },
+    {
+      "attributes": {
+        "Implements": "Product",
+        "Name": "product",
+        "RowEstimate": "60 thousand"
+      },
+      "class": "Table",
+      "h": 172,
+      "id": "el_product",
+      "parent": "el_schema",
+      "w": 220,
+      "x": 1020,
+      "y": 380
+    },
+    {
+      "attributes": {
+        "DataType": "BIGINT",
+        "Key": "PK",
+        "Name": "product_id"
+      },
+      "class": "Column",
+      "h": 28,
+      "id": "el_product_1",
+      "parent": "el_product",
+      "w": 200,
+      "x": 1030,
+      "y": 416
+    },
+    {
+      "attributes": {
+        "DataType": "VARCHAR(200)",
+        "Name": "product_name"
+      },
+      "class": "Column",
+      "h": 28,
+      "id": "el_product_2",
+      "parent": "el_product",
+      "w": 200,
+      "x": 1030,
+      "y": 448
+    },
+    {
+      "attributes": {
+        "DataType": "INTEGER",
+        "Key": "FK",
+        "Name": "category_id"
+      },
+      "class": "Column",
+      "h": 28,
+      "id": "el_product_3",
+      "parent": "el_product",
+      "w": 200,
+      "x": 1030,
+      "y": 480
+    },
+    {
+      "attributes": {
+        "DataType": "DECIMAL(12,2)",
+        "Name": "list_price"
+      },
+      "class": "Column",
+      "h": 28,
+      "id": "el_product_4",
+      "parent": "el_product",
+      "w": 200,
+      "x": 1030,
+      "y": 512
+    },
+    {
+      "attributes": {
+        "Implements": "Product category",
+        "Name": "product_category",
+        "RowEstimate": "400"
+      },
+      "class": "Table",
+      "h": 140,
+      "id": "el_category",
+      "parent": "el_schema",
+      "w": 220,
+      "x": 700,
+      "y": 380
+    },
+    {
+      "attributes": {
+        "DataType": "INTEGER",
+        "Key": "PK",
+        "Name": "category_id"
+      },
+      "class": "Column",
+      "h": 28,
+      "id": "el_category_1",
+      "parent": "el_category",
+      "w": 200,
+      "x": 710,
+      "y": 416
+    },
+    {
+      "attributes": {
+        "DataType": "VARCHAR(100)",
+        "Name": "category_name"
+      },
+      "class": "Column",
+      "h": 28,
+      "id": "el_category_2",
+      "parent": "el_category",
+      "w": 200,
+      "x": 710,
+      "y": 448
+    },
+    {
+      "attributes": {
+        "DataType": "INTEGER",
+        "Key": "FK",
+        "Name": "parent_category_id"
+      },
+      "class": "Column",
+      "h": 28,
+      "id": "el_category_3",
+      "parent": "el_category",
+      "w": 200,
+      "x": 710,
+      "y": 480
+    },
+    {
+      "attributes": {
+        "Implements": "Product price",
+        "Name": "product_price",
+        "RowEstimate": "500 thousand"
+      },
+      "class": "Table",
+      "h": 140,
+      "id": "el_price",
+      "parent": "el_schema",
+      "w": 220,
+      "x": 1340,
+      "y": 380
+    },
+    {
+      "attributes": {
+        "DataType": "BIGINT",
+        "Key": "PK and FK",
+        "Name": "product_id"
+      },
+      "class": "Column",
+      "h": 28,
+      "id": "el_price_1",
+      "parent": "el_price",
+      "w": 200,
+      "x": 1350,
+      "y": 416
+    },
+    {
+      "attributes": {
+        "DataType": "DATE",
+        "Key": "PK",
+        "Name": "valid_from"
+      },
+      "class": "Column",
+      "h": 28,
+      "id": "el_price_2",
+      "parent": "el_price",
+      "w": 200,
+      "x": 1350,
+      "y": 448
+    },
+    {
+      "attributes": {
+        "DataType": "DECIMAL(12,2)",
+        "Name": "price"
+      },
+      "class": "Column",
+      "h": 28,
+      "id": "el_price_3",
+      "parent": "el_price",
+      "w": 200,
+      "x": 1350,
+      "y": 480
+    }
+  ],
+  "formatVersion": 2,
+  "id": "mdl_retailphysical",
+  "kind": "mkmodel",
+  "kit": {
+    "id": "kit_datamodelling",
+    "name": "Data modelling",
+    "version": "1.0.0"
+  },
+  "modelType": "Physical",
+  "name": "Retail sales: physical model"
+}
