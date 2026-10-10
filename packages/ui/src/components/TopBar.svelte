@@ -8,9 +8,11 @@
     workspaceName,
     area,
     docsActive = false,
+    tutorialsActive = false,
     helpOpen = false,
     onMode,
     onDocs,
+    onTutorials,
     onHelp,
     onGit,
     onAssistant,
@@ -21,15 +23,21 @@
     area: 'model' | 'build';
     /** The Documentation area is showing: neither Model nor Build is current. */
     docsActive?: boolean;
+    /** The Tutorials page is showing. */
+    tutorialsActive?: boolean;
     helpOpen?: boolean;
     onMode: (area: 'model' | 'build') => void;
     onDocs: () => void;
+    onTutorials: () => void;
     onHelp: () => void;
     onGit: () => void;
     onAssistant: () => void;
     onProfile: () => void;
     onCloseWorkspace: () => void;
   } = $props();
+
+  // The Documentation or the Tutorials page is showing: neither Model nor Build is current.
+  const away = $derived(docsActive || tutorialsActive);
 
   const theme = pageTheme();
   let preference = $state<ThemePreference>(theme.preference);
@@ -55,13 +63,13 @@
   <div class="segmented-control mode" role="group" aria-label="Area">
     <button
       type="button"
-      aria-current={!docsActive && area === 'model' ? 'page' : undefined}
+      aria-current={!away && area === 'model' ? 'page' : undefined}
       onclick={() => onMode('model')}
       data-testid="mode-model">Model</button
     >
     <button
       type="button"
-      aria-current={!docsActive && area === 'build' ? 'page' : undefined}
+      aria-current={!away && area === 'build' ? 'page' : undefined}
       onclick={() => onMode('build')}
       data-testid="mode-build">Build</button
     >
@@ -69,6 +77,14 @@
 
   <span class="spacer"></span>
 
+  <button
+    type="button"
+    class="ghost tutorials-btn"
+    aria-current={tutorialsActive ? 'page' : undefined}
+    onclick={onTutorials}
+    title="Guided tours and step-by-step tutorials"
+    data-testid="open-tutorials">Tutorials</button
+  >
   <button
     type="button"
     class="ghost docs-btn"
@@ -165,7 +181,8 @@
   .spacer {
     flex: 1;
   }
-  .docs-btn[aria-current='page'] {
+  .docs-btn[aria-current='page'],
+  .tutorials-btn[aria-current='page'] {
     color: var(--accent);
     background: var(--accent-soft);
   }

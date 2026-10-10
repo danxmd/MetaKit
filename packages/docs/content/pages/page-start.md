@@ -19,6 +19,7 @@ The page has two columns (one on a narrow window). The left column holds the hea
   1. **Open or create a workspace folder.** Pick a folder on your computer. It holds everything: Kits and models.
   2. **Add a Kit, or build one.** A Kit defines the kinds of objects, connections, shapes and rules. Use a ready-made one or make your own in Build.
   3. **Model.** Draw models with the Kit in Model. Several people can work in the same folder at once.
+- **Tutorials** and **Help**, at the top right. **Tutorials** opens the Tutorials page with the guided tours ([[guided-tours]]); **Help** opens the Help side bar ([[docs-help]]).
 - **What is a workspace folder?** A normal folder with plain JSON files. Keep it in OneDrive, SharePoint, Google Drive or Dropbox and your team shares it through that service. MetaKit runs in your browser and uploads nothing anywhere. See [[concepts-workspace]] and [[concepts-no-server]].
 
 ## Where to find it
@@ -29,7 +30,7 @@ It opens by itself when you start MetaKit, and again after you choose **Close wo
 
 **The first time:**
 
-1. If a dialog "Who are you?" appears, enter a name and colour ([[profile]]).
+1. If a dialog "Who are you?" appears, enter a name and colour ([[profile]]). A small card then offers **Take the first-steps tour**, a one-minute tour of this page, or **Not now**. It appears once per browser; the tour stays on the Tutorials page.
 2. Choose **Open workspace folder**. The browser shows its own folder chooser.
 3. Pick an existing workspace folder, or an empty folder to start a new one.
 4. For an existing workspace, MetaKit opens it and shows the [[page-models|Models page]].
@@ -59,6 +60,8 @@ It opens by itself when you start MetaKit, and again after you choose **Close wo
 | **Workspace name** (text box) | The name stored in the new workspace. Required; **Create workspace** stays disabled while it is empty. |
 | **Create workspace** | Creates the workspace in the chosen folder. |
 | **Choose another folder** | Cancels creation and returns to the buttons. |
+| **Tutorials** | Opens the Tutorials page. **← Start page** comes back. See [[guided-tours]]. |
+| **Help** | Opens or closes the Help side bar (also `F1`). |
 | Buttons are greyed out | MetaKit is busy opening or creating. Wait a moment. |
 | Red message below the buttons | An error from opening the folder, quoted below. |
 | Warning "Local folders need Chrome or Edge on a desktop computer. This browser cannot open them, so MetaKit cannot start here." | Unsupported browser. See [[browser-support]]. |
@@ -88,5 +91,6 @@ Anna opens MetaKit for the first time, picks `C:\Work\Pipelines` (empty), types 
 - [[concepts-workspace]]
 - [[browser-support]]
 - [[quick-tour]]
+- [[guided-tours]]
 - [[profile]]
 - [[page-models]]

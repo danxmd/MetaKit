@@ -14,6 +14,7 @@
     onCancelCreate,
     helpOpen = false,
     onHelp,
+    onTutorials,
   }: {
     supported: boolean;
     /** The name of the remembered folder, if there is one. */
@@ -29,6 +30,8 @@
     helpOpen?: boolean;
     /** The start page has no top bar, so it carries its own Help button. */
     onHelp: () => void;
+    /** Opens the Tutorials page, with the guided tours. */
+    onTutorials: () => void;
   } = $props();
 
   let name = $state('');
@@ -53,15 +56,26 @@
 </script>
 
 <main class="start" data-testid="start-page">
-  <button
-    type="button"
-    class="ghost help"
-    aria-pressed={helpOpen}
-    onclick={onHelp}
-    title="Help for this page (F1)"
-    data-testid="toggle-help"
-    ><span class="mark" aria-hidden="true">?</span> Help</button
-  >
+  <div class="corner">
+    <button
+      type="button"
+      class="ghost"
+      onclick={onTutorials}
+      title="Guided tours and step-by-step tutorials"
+      data-testid="open-tutorials"
+      data-tour="start-tutorials">Tutorials</button
+    >
+    <button
+      type="button"
+      class="ghost help"
+      aria-pressed={helpOpen}
+      onclick={onHelp}
+      title="Help for this page (F1)"
+      data-testid="toggle-help"
+      data-tour="start-help"
+      ><span class="mark" aria-hidden="true">?</span> Help</button
+    >
+  </div>
   <div class="wrap">
     <section class="hero">
       <div class="brand">
@@ -116,6 +130,7 @@
               disabled={busy}
               onclick={onReopen}
               data-testid="reopen-folder"
+              data-tour="start-open"
             >
               Continue with “{remembered}”
             </button>
@@ -128,6 +143,7 @@
               disabled={busy}
               onclick={onOpen}
               data-testid="open-folder"
+              data-tour="start-open"
             >
               Open workspace folder
             </button>
@@ -146,7 +162,7 @@
     </section>
 
     <section class="info" aria-label="How MetaKit works">
-      <ol class="steps card">
+      <ol class="steps card" data-tour="start-steps">
         {#each steps as step, i (step.title)}
           <li>
             <span class="num">{i + 1}</span>
@@ -157,7 +173,11 @@
           </li>
         {/each}
       </ol>
-      <div class="about card" data-testid="workspace-explainer">
+      <div
+        class="about card"
+        data-testid="workspace-explainer"
+        data-tour="start-workspace"
+      >
         <h3>What is a workspace folder?</h3>
         <p class="muted">
           A normal folder with plain JSON files. Keep it in OneDrive,
@@ -180,10 +200,12 @@
     align-items: center;
     padding: var(--gap-6) var(--gap-4);
   }
-  .help {
+  .corner {
     position: absolute;
     top: var(--gap-3);
     right: var(--gap-4);
+    display: flex;
+    gap: var(--gap-1);
   }
   .help[aria-pressed='true'] {
     color: var(--accent);

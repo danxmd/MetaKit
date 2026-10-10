@@ -18,7 +18,7 @@ The Tutorials category of the Documentation area lists every tutorial that is wr
 
 ## Where to find it
 
-Open the Documentation area from the top bar and choose **Tutorials** in the topic tree. See [[docs-help]] for how the Documentation area and the Help side bar work.
+Choose **Tutorials** in the top bar, or on the Start page. The Tutorials page lists the guided tours first and the written tutorials below them ([[guided-tours]]). The written tutorials are also in the **Tutorials** group of the Documentation area's topic tree. See [[docs-help]] for how the Documentation area and the Help side bar work.
 
 ## How to use it
 

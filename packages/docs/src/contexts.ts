@@ -8,6 +8,7 @@ export const DOC_CONTEXTS = [
   'kits',
   'model',
   'docs',
+  'tutorials',
   'build',
   'build.classes',
   'build.relations',

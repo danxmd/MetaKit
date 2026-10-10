@@ -10,6 +10,7 @@
     "./theme": "./src/theme/theme.ts",
     "./feedback": "./src/shell/feedback.ts",
     "./docs": "./src/docs/index.ts",
+    "./tours": "./src/tours/index.ts",
     "./assistant": "./src/assistant/entry.ts",
     "./assistant-language": "./src/assistant/language-client.ts"
   },

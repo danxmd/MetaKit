@@ -5,6 +5,7 @@
     DocsLayer,
     docsOpen,
     isTypingTarget,
+    openDocs,
     pushDocsContext,
     setDocsContext,
     toggleDocs,
@@ -38,6 +39,17 @@
   import PermissionDialog from '@metakit-app/ui/components/build/scripts/PermissionDialog.svelte';
   import ProfileDialog from '@metakit-app/ui/components/ProfileDialog.svelte';
   import StartPage from '@metakit-app/ui/components/StartPage.svelte';
+  import TourLayer from '@metakit-app/ui/components/tours/TourLayer.svelte';
+  import TourOffer from '@metakit-app/ui/components/tours/TourOffer.svelte';
+  import TutorialsPage from '@metakit-app/ui/components/tours/TutorialsPage.svelte';
+  import {
+    loadTours,
+    tourBlocker,
+    tours,
+    type Tour,
+    type TourGoTo,
+    type TourWhere,
+  } from '@metakit-app/ui/tours';
   import {
     BUILT_IN_KITS,
     findAcrossModels,
@@ -102,10 +114,13 @@
   }
 
   async function chooseProfile(chosen: Profile) {
+    const first = profile === null;
     controller.setProfile(chosen);
     // The dialog closes only once the choice is stored, so a quick reload does not ask again.
     await saveProfile(chosen);
     profile = chosen;
+    // Once per browser, after the very first "Who are you?".
+    if (first && !tours.get().offered) offerTour = true;
   }
 
   async function openHandle(handle: FileSystemDirectoryHandle) {
@@ -199,6 +214,7 @@
   let docsRequest = $state<{ topic: string | null } | null>(null);
 
   function showDocsArea(topic: string | null | undefined) {
+    tutorialsArea = false;
     docsVisited = true;
     docsArea = true;
     if (topic !== undefined) docsRequest = { topic };
@@ -226,6 +242,63 @@
   $effect(() =>
     docsArea ? pushDocsContext('docs', DocsLayer.area) : undefined,
   );
+
+  // Tutorials and guided tours -------------------------------------------------------------------
+
+  // Like the Documentation area, the Tutorials page covers the views without unmounting them.
+  let tutorialsArea = $state(false);
+  let offerTour = $state(false);
+  $effect(() =>
+    tutorialsArea ? pushDocsContext('tutorials', DocsLayer.area) : undefined,
+  );
+
+  const tourWhere: TourWhere = $derived({
+    workspace: app.phase !== 'start',
+    model: app.phase === 'model' && !!app.open,
+    kit: app.phase === 'build' && !!app.build,
+  });
+
+  function showTutorials() {
+    docsArea = false;
+    tutorialsArea = true;
+  }
+
+  /** Goes to the tour's page and starts it at its first step. */
+  async function startTour(tour: Tour) {
+    const blocked = tourBlocker(tour, tourWhere);
+    if (blocked)
+      return goToForTour(blocked.goTo, blocked.thenStart ? tour : null);
+    docsArea = false;
+    tutorialsArea = false;
+    if (tour.page === 'models') {
+      if (app.build) await controller.closeBuild();
+      if (app.open) await controller.closeModel();
+      area = 'model';
+    } else if (tour.page === 'kits') {
+      if (app.open) await controller.closeModel();
+      if (app.build) await controller.closeBuild();
+      area = 'build';
+    }
+    tours.start(tour);
+  }
+
+  /** A tour that cannot start here offers the page where it can. */
+  async function goToForTour(goTo: TourGoTo, then: Tour | null) {
+    if (goTo === 'start') {
+      if (app.phase !== 'start') await closeWorkspace();
+      tutorialsArea = false;
+    } else await chooseArea(goTo === 'models' ? 'model' : 'build');
+    if (then && !tourBlocker(then, tourWhere)) await startTour(then);
+  }
+
+  async function answerOffer(take: boolean) {
+    offerTour = false;
+    tours.markOffered();
+    if (!take) return;
+    const { tourById, FIRST_STEPS } = await loadTours();
+    const first = tourById(FIRST_STEPS);
+    if (first) await startTour(first);
+  }
 
   function onWindowKey(event: KeyboardEvent) {
     if (event.defaultPrevented) return;
@@ -273,8 +346,9 @@
   }
 
   async function chooseArea(next: 'model' | 'build') {
-    const fromDocs = docsArea;
+    const fromDocs = docsArea || tutorialsArea;
     docsArea = false;
+    tutorialsArea = false;
     // Back from the Documentation to where the person was: nothing to close or open.
     if (fromDocs && next === area) return;
     if (next === 'build' && app.open) await controller.closeModel();
@@ -286,6 +360,7 @@
 
   async function closeWorkspace() {
     docsArea = false;
+    tutorialsArea = false;
     await controller.closeWorkspace();
     area = 'model';
   }
@@ -331,7 +406,18 @@
 
 {#if app.phase === 'start'}
   <div class="row start-row">
-    <div class="start-scroll">
+    {#if tutorialsArea}
+      <div class="start-scroll">
+        <TutorialsPage
+          where={tourWhere}
+          onStart={startTour}
+          onGoTo={goToForTour}
+          onReadTopic={(id) => openDocs(id)}
+          onClose={() => (tutorialsArea = false)}
+        />
+      </div>
+    {/if}
+    <div class="start-scroll" hidden={tutorialsArea}>
       <StartPage
         {supported}
         remembered={remembered?.name ?? null}
@@ -344,6 +430,7 @@
         onCancelCreate={() => (pendingCreate = null)}
         helpOpen={docs.open}
         onHelp={toggleDocs}
+        onTutorials={showTutorials}
       />
     </div>
     {#if docs.open}
@@ -356,9 +443,11 @@
       workspaceName={app.workspaceName}
       {area}
       docsActive={docsArea}
+      tutorialsActive={tutorialsArea}
       helpOpen={docs.open}
       onMode={chooseArea}
       onDocs={() => showDocsArea(undefined)}
+      onTutorials={showTutorials}
       onHelp={toggleDocs}
       onGit={() => controller.openGitSettings(true)}
       onAssistant={() => (showAssistant = true)}
@@ -368,7 +457,11 @@
     <div class="row">
       <!-- The views fill this box (height: 100%); the home pages scroll inside it. -->
       <div class="content">
-        <div class="views" class:covered={docsArea} inert={docsArea}>
+        <div
+          class="views"
+          class:covered={docsArea || tutorialsArea}
+          inert={docsArea || tutorialsArea}
+        >
           {#if app.phase === 'build' && app.build}
             {#key app.build.slug}
               <BuildView
@@ -449,6 +542,16 @@
         {#if docsVisited}
           <div class="docs-area" hidden={!docsArea}>
             <DocsPage request={docsRequest} />
+          </div>
+        {/if}
+        {#if tutorialsArea}
+          <div class="docs-area">
+            <TutorialsPage
+              where={tourWhere}
+              onStart={startTour}
+              onGoTo={goToForTour}
+              onReadTopic={(id) => showDocsArea(id)}
+            />
           </div>
         {/if}
       </div>
@@ -550,6 +653,14 @@
   />
 {/if}
 
+{#if offerTour}
+  <TourOffer
+    onStart={() => answerOffer(true)}
+    onDismiss={() => answerOffer(false)}
+  />
+{/if}
+
+<TourLayer />
 <ConfirmDialog />
 <Toast />
 
@@ -574,6 +685,9 @@
     flex: 1;
     min-width: 0;
     overflow: auto;
+  }
+  .start-scroll[hidden] {
+    display: none;
   }
   .content {
     position: relative;
