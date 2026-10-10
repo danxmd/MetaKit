@@ -53,6 +53,10 @@ A guided tour teaches one page in a minute or two. It highlights one button or a
 | Tour | Page | What it covers |
 | --- | --- | --- |
 | **First steps** | Start page | Opening or creating a workspace folder, what a workspace folder is, the three steps, Help and Tutorials. |
+| **Models page** | [[page-models]] | **New model**, **Import / Export**, search across models, the list and its folders, the **…** menu of a model, deleted models, and the Model and Build switch. |
+| **Modelling a model** | An open model ([[page-model-view]]) | The palette, connecting, the canvas, the attribute panel, the menus, **Check** and Problems, find, undo and redo, the save status, the people in the model and **← Models**. Needs an open model. |
+| **Kits page** | [[page-kits]] | Your Kits, **Add** from a file or Git, **New Kit**, **Edit**, the built-in Kits, **Use in this workspace** and **Copy and extend…**. |
+| **Help and settings** | Any workspace page | **Help** (`F1`), **Docs**, **Tutorials** and the **Settings** menu: appearance, your name and colour, Git and the assistant. |
 
 ## Examples
 
@@ -64,6 +68,8 @@ Lena opens MetaKit for the first time. After she types her name, the card offers
 - **Help still works.** Press `F1` during a tour to open the Help side bar at the topic of the page ([[docs-help]]).
 - **Arrow keys** move between steps while the pop-up has the focus. Elsewhere, for example on the canvas, they keep their usual meaning.
 - When the tour ends, the keyboard focus goes back to where it was.
+- **Menus open by themselves.** When a step points at an item inside a menu, such as **Git settings…** in **Settings**, the tour opens the menu and closes it again when you move on.
+- **Steps that depend on the page.** Some steps are left out when their control is not there, for example the deleted models when nothing was deleted. The step count then jumps over them.
 
 ## Related
 

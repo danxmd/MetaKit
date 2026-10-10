@@ -50,7 +50,12 @@
   const kitOf = (model: ModelEntry) => kits.find((t) => t.id === model.kit);
 </script>
 
-<ul class="tree" class:top={depth === 0} role={depth === 0 ? 'tree' : 'group'}>
+<ul
+  class="tree"
+  class:top={depth === 0}
+  role={depth === 0 ? 'tree' : 'group'}
+  data-tour={depth === 0 ? 'models-list' : undefined}
+>
   {#each node.models as model (model.slug)}
     <li
       class="row"
@@ -93,6 +98,7 @@
           class="menu more"
           use:menuBehaviour
           data-testid="model-actions-{model.slug}"
+          data-tour="models-actions"
         >
           <summary aria-label="Actions for {model.name}">…</summary>
           <div class="menu-list right">
@@ -125,7 +131,9 @@
       aria-selected="false"
     >
       <details open>
-        <summary data-testid="folder-{folder.path}">{folder.name}</summary>
+        <summary data-testid="folder-{folder.path}" data-tour="models-folder"
+          >{folder.name}</summary
+        >
         <FolderTree
           node={folder}
           depth={depth + 1}

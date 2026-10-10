@@ -60,7 +60,12 @@
     <span class="name" data-testid="workspace-title">{workspaceName}</span>
   </span>
 
-  <div class="segmented-control mode" role="group" aria-label="Area">
+  <div
+    class="segmented-control mode"
+    role="group"
+    aria-label="Area"
+    data-tour="top-areas"
+  >
     <button
       type="button"
       aria-current={!away && area === 'model' ? 'page' : undefined}
@@ -83,7 +88,8 @@
     aria-current={tutorialsActive ? 'page' : undefined}
     onclick={onTutorials}
     title="Guided tours and step-by-step tutorials"
-    data-testid="open-tutorials">Tutorials</button
+    data-testid="open-tutorials"
+    data-tour="top-tutorials">Tutorials</button
   >
   <button
     type="button"
@@ -91,7 +97,8 @@
     aria-current={docsActive ? 'page' : undefined}
     onclick={onDocs}
     title="Read the documentation"
-    data-testid="open-docs">Docs</button
+    data-testid="open-docs"
+    data-tour="top-docs">Docs</button
   >
   <button
     type="button"
@@ -100,14 +107,15 @@
     onclick={onHelp}
     title="Help for this page (F1)"
     data-testid="toggle-help"
+    data-tour="top-help"
     ><span class="mark" aria-hidden="true">?</span> Help</button
   >
 
   <details class="menu" use:menuBehaviour data-testid="settings-menu">
-    <summary>Settings</summary>
+    <summary data-tour="top-settings">Settings</summary>
     <div class="menu-list right">
       <div class="menu-heading">Appearance</div>
-      <div class="theme" data-keep-open>
+      <div class="theme" data-keep-open data-tour="settings-theme">
         <div class="segmented-control" role="group" aria-label="Appearance">
           {#each choices as c (c.id)}
             <button
@@ -121,16 +129,25 @@
       </div>
       <div class="menu-sep"></div>
       <div class="menu-heading">Connections</div>
-      <button type="button" onclick={onGit} data-testid="settings-git"
-        >Git settings…</button
+      <button
+        type="button"
+        onclick={onGit}
+        data-testid="settings-git"
+        data-tour="settings-git">Git settings…</button
       >
-      <button type="button" onclick={onAssistant} data-testid="open-assistant"
-        >Assistant…</button
+      <button
+        type="button"
+        onclick={onAssistant}
+        data-testid="open-assistant"
+        data-tour="settings-assistant">Assistant…</button
       >
       <div class="menu-sep"></div>
       <div class="menu-heading">This browser</div>
-      <button type="button" onclick={onProfile} data-testid="settings-profile"
-        >Your name and colour…</button
+      <button
+        type="button"
+        onclick={onProfile}
+        data-testid="settings-profile"
+        data-tour="settings-profile">Your name and colour…</button
       >
       <div class="menu-sep"></div>
       <button

@@ -74,6 +74,253 @@ export const TOURS: readonly Tour[] = [
       },
     ],
   },
+  {
+    id: 'models-page',
+    title: 'Models page',
+    summary:
+      'Make a model, find your way through folders and search, import and export, and bring back deleted models.',
+    page: 'models',
+    steps: [
+      {
+        anchor: 'models-new',
+        title: 'New model',
+        text: 'Start a model here. You pick a Kit, a model type and a name.',
+        placement: 'bottom',
+      },
+      {
+        anchor: 'models-import-export',
+        title: 'Import and export',
+        text: 'Bring in model files and bundles that others sent you. Or save a model as a file, a bundle or a CSV table.',
+        placement: 'bottom',
+      },
+      {
+        anchor: 'models-search',
+        title: 'Search across models',
+        text: 'Type a word to find objects in every model of the workspace. Choose a hit to open the model right there.',
+        placement: 'bottom',
+        optional: true,
+      },
+      {
+        anchor: 'models-list',
+        title: 'Your models',
+        text: 'Click a name to open the model. Each row also shows the Kit it is made with.',
+        placement: 'bottom',
+        optional: true,
+      },
+      {
+        anchor: 'models-folder',
+        title: 'Folders',
+        text: 'Models are grouped by the folder you give them. Click a folder to fold it away.',
+        placement: 'right',
+        optional: true,
+      },
+      {
+        anchor: 'models-actions',
+        title: 'Rename, move or delete',
+        text: 'The … menu of a model renames it, moves it to another folder or deletes it.',
+        placement: 'left',
+        optional: true,
+      },
+      {
+        anchor: 'models-trash',
+        title: 'Deleted models',
+        text: 'Deleted models are kept here for 30 days. Open the list to restore one.',
+        placement: 'top',
+        optional: true,
+      },
+      {
+        anchor: 'top-areas',
+        title: 'Model and Build',
+        text: 'Model is where you draw. Build is where Kits are added and made.',
+        placement: 'bottom',
+      },
+    ],
+  },
+  {
+    id: 'modelling',
+    title: 'Modelling a model',
+    summary:
+      'Place and connect objects, fill in their attributes, and find your way around the menus, find, undo, problems and the save status.',
+    page: 'model',
+    needs: 'model',
+    steps: [
+      {
+        anchor: 'model-palette',
+        title: 'Palette',
+        text: 'Pick a kind of object, then click on the canvas to place it. You can also drag it onto the canvas.',
+        placement: 'right',
+      },
+      {
+        anchor: 'model-relations',
+        title: 'Connecting objects',
+        text: 'Pick a relation, then click the first object and then the second one. Escape stops placing or connecting.',
+        placement: 'right',
+      },
+      {
+        anchor: 'model-canvas',
+        title: 'Canvas',
+        text: 'Click an object to select it, drag to move it, and double-click to edit its name. Right-click shows more actions.',
+      },
+      {
+        anchor: 'model-attributes',
+        title: 'Attribute panel',
+        text: 'It shows the fields of what you selected. Every change is saved as you make it.',
+        placement: 'left',
+      },
+      {
+        anchor: 'model-menus',
+        title: 'Menus',
+        text: 'File, Edit, View, Arrange and Check hold everything you can do with the model. Commands from the Kit appear here too.',
+        placement: 'bottom',
+      },
+      {
+        anchor: 'model-check',
+        title: 'Problems',
+        text: 'Check, then Problems, lists what does not follow the rules of the Kit. A number shows how many there are.',
+        placement: 'bottom',
+      },
+      {
+        anchor: 'model-find',
+        title: 'Find',
+        text: 'Type to find objects in this model by name or by an attribute. Ctrl+F jumps here.',
+        placement: 'bottom',
+      },
+      {
+        anchor: 'model-undo',
+        title: 'Undo and redo',
+        text: 'Undo takes back your last change and Redo brings it back. Ctrl+Z and Ctrl+Shift+Z do the same.',
+        placement: 'bottom',
+      },
+      {
+        anchor: 'model-save',
+        title: 'Save status',
+        text: 'MetaKit saves every change by itself. This shows Saving… and then Saved.',
+        placement: 'bottom',
+      },
+      {
+        anchor: 'model-people',
+        title: 'People',
+        text: 'Everyone who has this model open is shown here, each in their own colour.',
+        placement: 'bottom',
+      },
+      {
+        anchor: 'model-back',
+        title: 'Back to Models',
+        text: 'Returns to the list of models. The model stays as you left it.',
+        placement: 'bottom',
+      },
+    ],
+  },
+  {
+    id: 'kits-page',
+    title: 'Kits page',
+    summary:
+      'Your Kits and the built-in ones: use one as it is, copy and extend it, make a new Kit, or add one from a file or Git.',
+    page: 'kits',
+    steps: [
+      {
+        anchor: 'kits-workspace',
+        title: 'Your Kits',
+        text: 'These are the Kits of this workspace. Everyone who has the folder uses the same ones.',
+        placement: 'bottom',
+      },
+      {
+        anchor: 'kits-add',
+        title: 'Add from a file or Git',
+        text: 'Bring in a Kit someone sent you as a file. Or open one kept in a GitHub or GitLab repository.',
+        placement: 'bottom',
+      },
+      {
+        anchor: 'kits-new',
+        title: 'New Kit',
+        text: 'Make a Kit from scratch, or start from a copy of another one.',
+        placement: 'bottom',
+      },
+      {
+        anchor: 'kits-edit',
+        title: 'Edit a Kit',
+        text: 'Edit opens the Kit in Build, where you change its classes, shapes and rules.',
+        placement: 'right',
+        optional: true,
+      },
+      {
+        anchor: 'kits-built-in',
+        title: 'Built-in Kits',
+        text: 'Ready-made Kits that come with MetaKit. They are read-only here.',
+        placement: 'bottom',
+      },
+      {
+        anchor: 'kits-use',
+        title: 'Use in this workspace',
+        text: 'Adds the Kit to this workspace as it is, so you can make models with it.',
+        placement: 'right',
+        optional: true,
+      },
+      {
+        anchor: 'kits-copy',
+        title: 'Copy and extend',
+        text: 'Makes your own Kit based on this one. You can then change it in Build.',
+        placement: 'right',
+      },
+    ],
+  },
+  {
+    id: 'help-settings',
+    title: 'Help and settings',
+    summary:
+      'The Help side bar, the documentation, the appearance, your name and colour, Git and the assistant.',
+    page: 'any',
+    steps: [
+      {
+        anchor: 'top-help',
+        title: 'Help side bar',
+        text: 'Help opens the topic for the page you are on, beside your work. F1 opens and closes it from anywhere.',
+        placement: 'bottom',
+      },
+      {
+        anchor: 'top-docs',
+        title: 'Documentation',
+        text: 'All help topics on a page of their own, with search. Your work stays open underneath.',
+        placement: 'bottom',
+      },
+      {
+        anchor: 'top-tutorials',
+        title: 'Tutorials',
+        text: 'The guided tours and the written tutorials. Come back here any time.',
+        placement: 'bottom',
+      },
+      {
+        anchor: 'top-settings',
+        title: 'Settings',
+        text: 'Settings holds what belongs to you and this browser, not to a model or a Kit.',
+        placement: 'bottom',
+      },
+      {
+        anchor: 'settings-theme',
+        title: 'Appearance',
+        text: 'Choose Light or Dark. System follows the setting of your computer.',
+        placement: 'left',
+      },
+      {
+        anchor: 'settings-profile',
+        title: 'Your name and colour',
+        text: 'Others see them next to the models you have open. They are kept in this browser.',
+        placement: 'left',
+      },
+      {
+        anchor: 'settings-git',
+        title: 'Git',
+        text: 'Connect to GitHub or GitLab to keep Kits in a repository. Your token stays in this browser.',
+        placement: 'left',
+      },
+      {
+        anchor: 'settings-assistant',
+        title: 'Assistant',
+        text: 'The assistant drafts changes to a Kit with your own API key. It is off until you set it up.',
+        placement: 'left',
+      },
+    ],
+  },
 ];
 
 export function tourById(id: string): Tour | undefined {

@@ -108,7 +108,7 @@
 >
   {#snippet actions()}
     <details class="menu" use:menuBehaviour data-testid="add-menu">
-      <summary>Add</summary>
+      <summary data-tour="kits-add">Add</summary>
       <div class="menu-list right">
         <button
           type="button"
@@ -123,7 +123,8 @@
     <button
       class="primary"
       onclick={() => (creating = { kind: 'empty' })}
-      data-testid="new-kit">New Kit</button
+      data-testid="new-kit"
+      data-tour="kits-new">New Kit</button
     >
   {/snippet}
 
@@ -146,7 +147,7 @@
     data-testid="workspace-kits"
   >
     <div class="section-head">
-      <h2 id="workspace-kits">In this workspace</h2>
+      <h2 id="workspace-kits" data-tour="kits-workspace">In this workspace</h2>
       <p class="muted">
         The Kits your team uses and edits. Everyone with the folder sees the
         same ones.
@@ -202,7 +203,8 @@
                 class="primary"
                 onclick={() => onEditKit(kit.slug)}
                 aria-label="Edit {kit.name}"
-                data-testid="edit-kit-{kit.slug}">Edit</button
+                data-testid="edit-kit-{kit.slug}"
+                data-tour="kits-edit">Edit</button
               >
               <details class="menu more" use:menuBehaviour>
                 <summary aria-label="More actions for {kit.name}">…</summary>
@@ -239,7 +241,7 @@
     data-testid="built-in-kits"
   >
     <div class="section-head">
-      <h2 id="built-in-kits">Built-in Kits</h2>
+      <h2 id="built-in-kits" data-tour="kits-built-in">Built-in Kits</h2>
       <p class="muted">
         Ready-made Kits that come with MetaKit. They cannot be changed here: use
         one as it is, or copy it to make it your own.
@@ -298,13 +300,15 @@
             {:else}
               <button
                 onclick={() => onUseBuiltIn(b)}
-                data-testid="use-built-in-{b.id}">Use in this workspace</button
+                data-testid="use-built-in-{b.id}"
+                data-tour="kits-use">Use in this workspace</button
               >
             {/if}
             <button
               class="ghost"
               onclick={() => (creating = { kind: 'built-in', kit: b })}
-              data-testid="copy-built-in-{b.id}">Copy and extend…</button
+              data-testid="copy-built-in-{b.id}"
+              data-tour="kits-copy">Copy and extend…</button
             >
           </div>
         </li>

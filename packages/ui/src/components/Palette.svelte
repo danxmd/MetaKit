@@ -146,7 +146,7 @@
     </button>
   {/each}
 
-  <h3>Relations</h3>
+  <h3 data-tour="model-relations">Relations</h3>
   {#each palette.relations as rel (rel.id)}
     <button
       class="entry"

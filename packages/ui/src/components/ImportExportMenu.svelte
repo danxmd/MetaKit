@@ -33,7 +33,7 @@
 </script>
 
 <details class="menu" use:menuBehaviour data-testid="import-export-menu">
-  <summary>Import / Export</summary>
+  <summary data-tour="models-import-export">Import / Export</summary>
   <div class="menu-list right">
     <div class="menu-heading">Import</div>
     <button

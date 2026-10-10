@@ -24,8 +24,21 @@
   let innerWidth = $state(0);
   let innerHeight = $state(0);
 
+  /** Inside a closed menu, which Chrome lays out but does not paint. */
+  function inClosedMenu(el: HTMLElement): boolean {
+    for (let d = el.parentElement?.closest('details'); d;) {
+      const summary = d.querySelector(':scope > summary');
+      if (!d.open && !summary?.contains(el)) return true;
+      d = d.parentElement?.closest('details');
+    }
+    return false;
+  }
+
   const shown = (el: HTMLElement) =>
-    el.isConnected && el.getClientRects().length > 0;
+    el.isConnected &&
+    el.getClientRects().length > 0 &&
+    !inClosedMenu(el) &&
+    (el.checkVisibility?.() ?? true);
 
   function sameBox(a: Box | null, b: Box | null) {
     return (
@@ -46,10 +59,12 @@
     if (!current) return;
     status = 'searching';
     target = null;
-    const started = performance.now();
+    let started = performance.now();
     const selector = `[data-tour="${CSS.escape(current.anchor)}"]`;
     let el: HTMLElement | null = null;
     let skipped = false;
+    // Closed menus this step opened to show its control; they close again when the step ends.
+    const opened: HTMLDetailsElement[] = [];
     const observer = new ResizeObserver(() => measure());
 
     function measure() {
@@ -71,9 +86,14 @@
         measure();
         return;
       }
-      if (el) observer.unobserve(el);
-      el = null;
+      if (el) {
+        // The control went away (a menu closed, a list changed): give it the same time again.
+        observer.unobserve(el);
+        el = null;
+        started = performance.now();
+      }
       const found = document.querySelector<HTMLElement>(selector);
+      if (found && !shown(found)) reveal(found);
       if (found && shown(found)) {
         el = found;
         found.scrollIntoView({ block: 'nearest', inline: 'nearest' });
@@ -95,6 +115,19 @@
       status = 'missing';
     }
 
+    /** Opens the closed menus around a control, but not the menu whose summary is the control. */
+    function reveal(found: HTMLElement) {
+      let menu = found.parentElement?.closest('details');
+      while (menu) {
+        const summary = menu.querySelector(':scope > summary');
+        if (!menu.open && !summary?.contains(found)) {
+          menu.open = true;
+          opened.push(menu);
+        }
+        menu = menu.parentElement?.closest('details');
+      }
+    }
+
     // The first look reads the state it sets; it must not make this effect depend on it.
     untrack(look);
     const timer = setInterval(look, 150);
@@ -105,6 +138,7 @@
       clearInterval(timer);
       observer.disconnect();
       window.removeEventListener('scroll', onScroll, true);
+      for (const menu of opened) if (menu.isConnected) menu.open = false;
     };
   });
 

@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { prepare } from './app';
+import { newModel, prepare } from './app';
 
 /**
  * Walks the running tour to its end. Every step must find its control (the layer says so on
@@ -19,10 +19,13 @@ async function walkTour(page: Page, id: string) {
       layer,
       `step ${i + 1} of "${id}" finds [data-tour="${anchor}"]`,
     ).toHaveAttribute('data-tour-missing', 'false');
-    const control = (await page
-      .locator(`[data-tour="${anchor}"]`)
-      .first()
-      .boundingBox())!;
+    const located = page.locator(`[data-tour="${anchor}"]`).first();
+    // Painted, not only laid out: Chrome lays out the inside of a closed menu.
+    expect(
+      await located.evaluate((el) => el.checkVisibility()),
+      `[data-tour="${anchor}"] is visible`,
+    ).toBe(true);
+    const control = (await located.boundingBox())!;
     const popup = (await page.getByTestId('tour-popup').boundingBox())!;
     const small =
       control.width * control.height < (viewport.width * viewport.height) / 5;
@@ -191,6 +194,91 @@ test.describe('Guided tours', () => {
       'first-steps',
     );
     await walkTour(page, 'first-steps');
+  });
+});
+
+test.describe('Page tours', () => {
+  test('Models page: started from the Kits page, it opens the Models page and walks it', async ({
+    page,
+  }) => {
+    await prepare(page);
+    await newModel(page, 'Order process', 'Sales');
+    await page.getByTestId('back-to-explorer').click();
+    await page.getByTestId('new-model').click();
+    await page.getByTestId('new-model-name').fill('Old draft');
+    await page.getByTestId('new-model-create').click();
+    await expect(page.getByTestId('model-view')).toBeVisible();
+    await page.getByTestId('back-to-explorer').click();
+    await page.getByLabel('Actions for Old draft').click();
+    await page.getByRole('button', { name: 'Delete Old draft' }).click();
+    await expect(page.getByTestId('trash')).toBeVisible();
+
+    await page.getByTestId('mode-build').click();
+    await expect(page.getByTestId('kits-page')).toBeVisible();
+    await startTour(page, 'models-page');
+    await expect(page.getByTestId('models-page')).toBeVisible();
+    await walkTour(page, 'models-page');
+  });
+
+  test('Modelling a model: needs an open model, then walks the model view', async ({
+    page,
+  }) => {
+    await prepare(page);
+    await page.getByTestId('open-folder').click();
+    await page.getByTestId('open-tutorials').click();
+    await expect(page.getByTestId('tour-needs-modelling')).toHaveText(
+      'Open a model first.',
+    );
+    await expect(page.getByTestId('tour-start-modelling')).toHaveCount(0);
+    await page.getByTestId('tour-goto-modelling').click();
+    await expect(page.getByTestId('models-page')).toBeVisible();
+
+    await page.getByTestId('new-model').click();
+    await page.getByTestId('new-model-name').fill('Order process');
+    await page.getByTestId('new-model-create').click();
+    await expect(page.getByTestId('model-view')).toBeVisible();
+    await startTour(page, 'modelling');
+    await expect(page.getByTestId('model-view')).toBeVisible();
+    await walkTour(page, 'modelling');
+  });
+
+  test('Kits page: started from the Models page, it opens the Kits page and walks it', async ({
+    page,
+  }) => {
+    await prepare(page);
+    await page.getByTestId('open-folder').click();
+    await expect(page.getByTestId('models-page')).toBeVisible();
+    await startTour(page, 'kits-page');
+    await expect(page.getByTestId('kits-page')).toBeVisible();
+    // Step 3 is New Kit, beside it and not over it.
+    await page.getByTestId('tour-next').click();
+    await page.getByTestId('tour-next').click();
+    await expect(page.getByTestId('tour-layer')).toHaveAttribute(
+      'data-tour-anchor',
+      'kits-new',
+    );
+    await page.getByTestId('tour-end').click();
+    await startTour(page, 'kits-page');
+    await walkTour(page, 'kits-page');
+  });
+
+  test('Help and settings: opens the Settings menu for its items, and F1 still works', async ({
+    page,
+  }) => {
+    await prepare(page);
+    await page.getByTestId('open-folder').click();
+    await startTour(page, 'help-settings');
+    await page.keyboard.press('F1');
+    await expect(page.getByTestId('docs-panel')).toBeVisible();
+    await expect(page.getByTestId('tour-layer')).toBeVisible();
+    await page.keyboard.press('F1');
+    await expect(page.getByTestId('docs-panel')).toHaveCount(0);
+    await walkTour(page, 'help-settings');
+    // The menu the tour opened is closed again.
+    await expect(page.getByTestId('settings-menu')).not.toHaveAttribute(
+      'open',
+      '',
+    );
   });
 });
 

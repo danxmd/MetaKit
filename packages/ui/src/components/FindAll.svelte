@@ -109,7 +109,12 @@
   });
 </script>
 
-<div class="find-all" bind:this={root} data-testid="find-all">
+<div
+  class="find-all"
+  bind:this={root}
+  data-testid="find-all"
+  data-tour="models-search"
+>
   <input
     type="search"
     placeholder="Search all models"

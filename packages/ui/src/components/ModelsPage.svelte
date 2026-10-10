@@ -75,8 +75,11 @@
       {onExportCsv}
       {onImport}
     />
-    <button class="primary" onclick={onNew} data-testid="new-model"
-      >New model</button
+    <button
+      class="primary"
+      onclick={onNew}
+      data-testid="new-model"
+      data-tour="models-new">New model</button
     >
   {/snippet}
 
@@ -124,7 +127,7 @@
   {/if}
 
   {#if trashed.length > 0}
-    <details class="trash" data-testid="trash">
+    <details class="trash" data-testid="trash" data-tour="models-trash">
       <summary>Deleted ({trashed.length}), kept for 30 days</summary>
       <ul>
         {#each trashed as model (model.slug)}

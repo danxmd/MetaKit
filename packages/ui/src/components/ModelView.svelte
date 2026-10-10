@@ -910,7 +910,7 @@
       onRunCommand={runCommand}
     >
       {#snippet trailing()}
-        <div class="find">
+        <div class="find" data-tour="model-find">
           <input
             bind:this={findInput}
             type="search"
@@ -946,7 +946,7 @@
     </ModelToolbar>
   </div>
 
-  <div class="palette-slot">
+  <div class="palette-slot" data-tour="model-palette">
     <PaletteList
       {kit}
       {palette}
@@ -973,6 +973,7 @@
       role="application"
       aria-label="Model canvas"
       data-testid="canvas-host"
+      data-tour="model-canvas"
     >
       <div class="minimap" bind:this={mapHost} hidden={!minimapOn}></div>
       <HintLine text={hintText} />
@@ -1144,7 +1145,7 @@
     />
   {/if}
 
-  <div class="side">
+  <div class="side" data-tour="model-attributes">
     <AttributePanel
       {sections}
       count={targets.length}
