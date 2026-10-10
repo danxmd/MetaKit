@@ -3,7 +3,7 @@ id: event-storming
 title: Event storming
 category: kits
 summary: A built-in Kit for event storming, with domain events on a timeline, the commands, actors, aggregates, policies, read models and external systems around them, hotspots for open questions and bounded contexts as lanes.
-keywords: [event storming, domain event, command, actor, aggregate, policy, read model, hotspot, bounded context, timeline, sticky notes, domain-driven design]
+keywords: [event storming, domain event, command, actor, aggregate, reactive policy, read model, hotspot, bounded context, timeline, sticky notes, domain-driven design]
 contexts: []
 order: 320
 ---

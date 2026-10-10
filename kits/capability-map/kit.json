@@ -1,0 +1,951 @@
+{
+  "formatVersion": 7,
+  "manifest": {
+    "id": "kit_capabilitymap",
+    "name": "Business capability map",
+    "version": "1.0.0",
+    "languages": ["en"]
+  },
+  "settings": {
+    "grid": {
+      "size": 10,
+      "snap": true,
+      "visible": true
+    },
+    "layers": [],
+    "numbering": {
+      "enabled": false,
+      "prefix": "",
+      "start": 1
+    }
+  },
+  "classes": {
+    "cls_businesscapability": {
+      "id": "cls_businesscapability",
+      "key": "BusinessCapability",
+      "kind": "node",
+      "labels": {
+        "en": "Business capability"
+      },
+      "help": {
+        "en": "What the organisation is able to do, independent of how or by whom. Use one of its three levels."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Business capability",
+          "id": "att_businesscapability_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_businesscapability_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "Maturity",
+          "min": 1,
+          "max": 5,
+          "id": "att_businesscapability_maturity",
+          "labels": {
+            "en": "Maturity (1 to 5)"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "StrategicImportance",
+          "options": ["Low", "Medium", "High"],
+          "id": "att_businesscapability_strategicimportance",
+          "labels": {
+            "en": "Strategic importance"
+          },
+          "help": {
+            "en": "How much the capability matters for the strategy."
+          }
+        },
+        {
+          "type": "integer",
+          "key": "TargetMaturity",
+          "min": 1,
+          "max": 5,
+          "id": "att_businesscapability_targetmaturity",
+          "labels": {
+            "en": "Target maturity (1 to 5)"
+          },
+          "help": {
+            "en": "The maturity the strategy needs, on the same scale."
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_businesscapability_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Gap",
+          "formula": "Maturity == null || TargetMaturity == null ? null : max(0, TargetMaturity - Maturity)",
+          "result": "number",
+          "id": "att_businesscapability_gap",
+          "labels": {
+            "en": "Gap"
+          },
+          "help": {
+            "en": "Target maturity minus maturity, at least 0."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "HeatScore",
+          "formula": "Gap == null || StrategicImportance == null ? null : Gap * (StrategicImportance == 'High' ? 3 : (StrategicImportance == 'Medium' ? 2 : 1))",
+          "result": "number",
+          "id": "att_businesscapability_heatscore",
+          "labels": {
+            "en": "Heat score"
+          },
+          "help": {
+            "en": "The gap times the importance (Low 1, Medium 2, High 3), from 0 to 12."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Heat",
+          "formula": "HeatScore == null ? null : (HeatScore >= 6 ? 'Hot' : (HeatScore >= 3 ? 'Warm' : (HeatScore > 0 ? 'Mild' : 'Fine')))",
+          "result": "text",
+          "id": "att_businesscapability_heat",
+          "labels": {
+            "en": "Heat"
+          },
+          "help": {
+            "en": "Hot from a heat score of 6, Warm from 3, Mild above 0, otherwise Fine. The fill shows it."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Scores",
+          "formula": "(Maturity == null ? '-' : text(Maturity)) + ' → ' + (TargetMaturity == null ? '-' : text(TargetMaturity)) + (StrategicImportance == null ? '' : ', ' + StrategicImportance)",
+          "result": "text",
+          "id": "att_businesscapability_scores",
+          "labels": {
+            "en": "Scores"
+          },
+          "help": {
+            "en": "Maturity, target and importance, such as \"2 → 4, High\"."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Heading",
+          "formula": "Name + (Maturity == null && TargetMaturity == null ? '' : ' (' + Scores + ')')",
+          "result": "text",
+          "id": "att_businesscapability_heading",
+          "labels": {
+            "en": "Heading"
+          },
+          "help": {
+            "en": "The name and the scores, shown as the heading of a container."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Applications",
+          "formula": "count(incoming('Supports'))",
+          "result": "number",
+          "id": "att_businesscapability_applications",
+          "labels": {
+            "en": "Applications"
+          },
+          "help": {
+            "en": "How many applications support it."
+          }
+        }
+      ],
+      "abstract": true,
+      "constraints": [
+        {
+          "id": "k_capability_target",
+          "formula": "Maturity == null || TargetMaturity == null || TargetMaturity >= Maturity",
+          "message": "= 'The target maturity of \"' + Name + '\" is below its maturity.'",
+          "severity": "warning"
+        }
+      ]
+    },
+    "cls_application": {
+      "id": "cls_application",
+      "key": "Application",
+      "kind": "node",
+      "labels": {
+        "en": "Application"
+      },
+      "help": {
+        "en": "A software application, with its owner, what should happen to it and how well it fits technically."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Application",
+          "id": "att_application_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_application_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_application_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Lifecycle",
+          "options": ["Invest", "Tolerate", "Migrate", "Eliminate"],
+          "id": "att_application_lifecycle",
+          "labels": {
+            "en": "Lifecycle"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "Users",
+          "min": 0,
+          "id": "att_application_users",
+          "labels": {
+            "en": "Users"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "TechnicalFit",
+          "min": 1,
+          "max": 5,
+          "id": "att_application_technicalfit",
+          "labels": {
+            "en": "Technical fit (1 to 5)"
+          },
+          "help": {
+            "en": "How well it fits the technology standards, from 1 (poor) to 5 (very good)."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Capabilities",
+          "formula": "count(outgoing('Supports'))",
+          "result": "number",
+          "id": "att_application_capabilities",
+          "labels": {
+            "en": "Capabilities"
+          },
+          "help": {
+            "en": "How many capabilities it supports."
+          }
+        }
+      ],
+      "shape": "shp_application",
+      "constraints": [
+        {
+          "id": "k_application_supports",
+          "formula": "count(outgoing('Supports')) > 0",
+          "message": "= 'Application \"' + Name + '\" supports no capability: connect it with \"Supports\".'",
+          "severity": "warning"
+        }
+      ]
+    },
+    "cls_capabilityl1": {
+      "id": "cls_capabilityl1",
+      "key": "CapabilityL1",
+      "kind": "container",
+      "labels": {
+        "en": "Level 1 capability"
+      },
+      "help": {
+        "en": "A top-level area of the business, such as Customer or Finance. Place its level 2 capabilities inside it."
+      },
+      "attributes": [],
+      "extends": "cls_businesscapability",
+      "shape": "shp_capabilityl1"
+    },
+    "cls_capabilityl2": {
+      "id": "cls_capabilityl2",
+      "key": "CapabilityL2",
+      "kind": "container",
+      "labels": {
+        "en": "Level 2 capability"
+      },
+      "help": {
+        "en": "A part of a level 1 capability. Place its level 3 capabilities inside it."
+      },
+      "attributes": [],
+      "extends": "cls_businesscapability",
+      "constraints": [
+        {
+          "id": "k_level2_parent",
+          "formula": "parent != null",
+          "message": "= 'Level 2 capability \"' + Name + '\" is not inside a level 1 capability.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_capabilityl2"
+    },
+    "cls_capabilityl3": {
+      "id": "cls_capabilityl3",
+      "key": "CapabilityL3",
+      "kind": "node",
+      "labels": {
+        "en": "Level 3 capability"
+      },
+      "help": {
+        "en": "The most detailed level, scored on maturity, target and importance."
+      },
+      "attributes": [],
+      "extends": "cls_businesscapability",
+      "constraints": [
+        {
+          "id": "k_level3_parent",
+          "formula": "parent != null",
+          "message": "= 'Level 3 capability \"' + Name + '\" is not inside a level 2 capability.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_capability_applications",
+          "formula": "StrategicImportance != 'High' || Applications > 0",
+          "message": "= '\"' + Name + '\" is of high importance, but no application supports it.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_capabilityl3"
+    }
+  },
+  "relations": {
+    "rel_supports": {
+      "id": "rel_supports",
+      "key": "Supports",
+      "labels": {
+        "en": "Supports"
+      },
+      "help": {
+        "en": "The application helps the organisation perform the capability."
+      },
+      "from": ["cls_application"],
+      "to": ["cls_businesscapability"],
+      "attributes": [
+        {
+          "type": "choice",
+          "key": "Coverage",
+          "options": ["Full", "Partial"],
+          "id": "att_supports_coverage",
+          "labels": {
+            "en": "Coverage"
+          },
+          "help": {
+            "en": "Whether the application covers all of the capability or a part of it."
+          }
+        }
+      ],
+      "shape": "shp_rel_supports"
+    }
+  },
+  "modelTypes": {
+    "mt_capabilitymap": {
+      "id": "mt_capabilitymap",
+      "key": "CapabilityMap",
+      "labels": {
+        "en": "Capability map"
+      },
+      "classes": [
+        "cls_application",
+        "cls_capabilityl1",
+        "cls_capabilityl2",
+        "cls_capabilityl3"
+      ],
+      "relations": ["rel_supports"],
+      "views": [
+        {
+          "id": "vw_map",
+          "key": "Map",
+          "labels": {
+            "en": "Map"
+          },
+          "classes": [
+            "cls_capabilityl1",
+            "cls_capabilityl2",
+            "cls_capabilityl3"
+          ],
+          "relations": []
+        },
+        {
+          "id": "vw_applications",
+          "key": "Applications",
+          "labels": {
+            "en": "Applications"
+          },
+          "classes": [
+            "cls_capabilityl2",
+            "cls_capabilityl3",
+            "cls_application"
+          ],
+          "relations": ["rel_supports"]
+        }
+      ],
+      "cardinalities": [],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Title",
+          "required": true,
+          "maxLength": 100,
+          "id": "att_mtcapabilitymap_title",
+          "labels": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Organisation",
+          "id": "att_mtcapabilitymap_organisation",
+          "labels": {
+            "en": "Organisation"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "AverageMaturity",
+          "formula": "IFERROR(round(avg(objects('BusinessCapability').Maturity), 1), null)",
+          "result": "number",
+          "id": "att_mtcapabilitymap_averagematurity",
+          "labels": {
+            "en": "Average maturity"
+          },
+          "help": {
+            "en": "The average maturity of all scored capabilities."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "AverageTarget",
+          "formula": "IFERROR(round(avg(objects('BusinessCapability').TargetMaturity), 1), null)",
+          "result": "number",
+          "id": "att_mtcapabilitymap_averagetarget",
+          "labels": {
+            "en": "Average target"
+          },
+          "help": {
+            "en": "The average target maturity of all scored capabilities."
+          }
+        }
+      ],
+      "help": {
+        "en": "Capabilities on three levels, scored and coloured by heat, and the applications that support them."
+      },
+      "containers": {
+        "cls_capabilityl1": ["cls_capabilityl2"],
+        "cls_capabilityl2": ["cls_capabilityl3"]
+      }
+    }
+  },
+  "shapes": {
+    "shp_application": {
+      "id": "shp_application",
+      "name": "Application look",
+      "kind": "node",
+      "size": {
+        "width": 160,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 0,
+          "fill": "= Lifecycle == 'Invest' ? '#d3f9d8' : Lifecycle == 'Tolerate' ? '#fff3bf' : Lifecycle == 'Migrate' ? '#ffd8a8' : Lifecycle == 'Eliminate' ? '#ffc9c9' : '#e9ecef'",
+          "stroke": "#0c8599",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 4,
+          "width": "100% - 16",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 22",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= Lifecycle",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "box",
+        "fill": {
+          "by": "Lifecycle",
+          "values": {
+            "Invest": "#d3f9d8",
+            "Tolerate": "#fff3bf",
+            "Migrate": "#ffd8a8",
+            "Eliminate": "#ffc9c9"
+          },
+          "fallback": "#e9ecef"
+        },
+        "border": "#0c8599",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 160,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Lifecycle"
+        }
+      }
+    },
+    "shp_capabilityl1": {
+      "id": "shp_capabilityl1",
+      "name": "CapabilityL1 look",
+      "kind": "node",
+      "size": {
+        "width": 384,
+        "height": 410,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 6,
+          "fill": "= Heat == 'Hot' ? '#ffa8a855' : Heat == 'Warm' ? '#ffd8a855' : Heat == 'Mild' ? '#fff3bf55' : Heat == 'Fine' ? '#d3f9d855' : '#f8f9fa55'",
+          "stroke": "#2f9e44",
+          "strokeWidth": 2,
+          "dash": [7, 4]
+        },
+        {
+          "type": "text",
+          "x": 12,
+          "y": 4,
+          "width": "100% - 48",
+          "height": 24,
+          "text": "= Heading",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "container",
+        "fill": {
+          "by": "Heat",
+          "values": {
+            "Hot": "#ffa8a855",
+            "Warm": "#ffd8a855",
+            "Mild": "#fff3bf55",
+            "Fine": "#d3f9d855"
+          },
+          "fallback": "#f8f9fa55"
+        },
+        "border": "#2f9e44",
+        "borderWidth": 2,
+        "borderStyle": "dashed",
+        "title": {
+          "attribute": "Heading",
+          "bold": true
+        },
+        "size": {
+          "width": 384,
+          "height": 410,
+          "resizable": true
+        }
+      }
+    },
+    "shp_capabilityl2": {
+      "id": "shp_capabilityl2",
+      "name": "CapabilityL2 look",
+      "kind": "node",
+      "size": {
+        "width": 360,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 6,
+          "fill": "= Heat == 'Hot' ? '#ffa8a855' : Heat == 'Warm' ? '#ffd8a855' : Heat == 'Mild' ? '#fff3bf55' : Heat == 'Fine' ? '#d3f9d855' : '#f8f9fa55'",
+          "stroke": "#2f9e44",
+          "strokeWidth": 1.5,
+          "dash": [7, 4]
+        },
+        {
+          "type": "text",
+          "x": 12,
+          "y": 4,
+          "width": "100% - 48",
+          "height": 24,
+          "text": "= Heading",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "container",
+        "fill": {
+          "by": "Heat",
+          "values": {
+            "Hot": "#ffa8a855",
+            "Warm": "#ffd8a855",
+            "Mild": "#fff3bf55",
+            "Fine": "#d3f9d855"
+          },
+          "fallback": "#f8f9fa55"
+        },
+        "border": "#2f9e44",
+        "borderWidth": 1.5,
+        "borderStyle": "dashed",
+        "title": {
+          "attribute": "Heading",
+          "bold": true
+        },
+        "size": {
+          "width": 360,
+          "height": 110,
+          "resizable": true
+        }
+      }
+    },
+    "shp_capabilityl3": {
+      "id": "shp_capabilityl3",
+      "name": "CapabilityL3 look",
+      "kind": "node",
+      "size": {
+        "width": 160,
+        "height": 60,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "= Heat == 'Hot' ? '#ffa8a8' : Heat == 'Warm' ? '#ffd8a8' : Heat == 'Mild' ? '#fff3bf' : Heat == 'Fine' ? '#d3f9d8' : '#f8f9fa'",
+          "stroke": "#2f9e44",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 4,
+          "width": "100% - 16",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 22",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= Scores",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": {
+          "by": "Heat",
+          "values": {
+            "Hot": "#ffa8a8",
+            "Warm": "#ffd8a8",
+            "Mild": "#fff3bf",
+            "Fine": "#d3f9d8"
+          },
+          "fallback": "#f8f9fa"
+        },
+        "border": "#2f9e44",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 160,
+          "height": 60,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Scores"
+        }
+      }
+    },
+    "shp_rel_supports": {
+      "id": "shp_rel_supports",
+      "name": "Supports look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#0c8599",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#0c8599",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    }
+  },
+  "panels": {
+    "cls_capabilityl1": {
+      "class": "cls_capabilityl1",
+      "tabs": [
+        {
+          "label": "Capability",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            },
+            {
+              "attribute": "Owner"
+            }
+          ]
+        },
+        {
+          "label": "Assessment",
+          "items": [
+            {
+              "attribute": "Maturity"
+            },
+            {
+              "attribute": "TargetMaturity"
+            },
+            {
+              "attribute": "StrategicImportance",
+              "control": "segmented"
+            },
+            {
+              "attribute": "Gap"
+            },
+            {
+              "attribute": "HeatScore"
+            },
+            {
+              "attribute": "Heat"
+            },
+            {
+              "attribute": "Applications"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_capabilityl2": {
+      "class": "cls_capabilityl2",
+      "tabs": [
+        {
+          "label": "Capability",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            },
+            {
+              "attribute": "Owner"
+            }
+          ]
+        },
+        {
+          "label": "Assessment",
+          "items": [
+            {
+              "attribute": "Maturity"
+            },
+            {
+              "attribute": "TargetMaturity"
+            },
+            {
+              "attribute": "StrategicImportance",
+              "control": "segmented"
+            },
+            {
+              "attribute": "Gap"
+            },
+            {
+              "attribute": "HeatScore"
+            },
+            {
+              "attribute": "Heat"
+            },
+            {
+              "attribute": "Applications"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_capabilityl3": {
+      "class": "cls_capabilityl3",
+      "tabs": [
+        {
+          "label": "Capability",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            },
+            {
+              "attribute": "Owner"
+            }
+          ]
+        },
+        {
+          "label": "Assessment",
+          "items": [
+            {
+              "attribute": "Maturity"
+            },
+            {
+              "attribute": "TargetMaturity"
+            },
+            {
+              "attribute": "StrategicImportance",
+              "control": "segmented"
+            },
+            {
+              "attribute": "Gap"
+            },
+            {
+              "attribute": "HeatScore"
+            },
+            {
+              "attribute": "Heat"
+            },
+            {
+              "attribute": "Applications"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    }
+  },
+  "rules": {},
+  "scripts": {}
+}

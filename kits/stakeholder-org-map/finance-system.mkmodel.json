@@ -1,0 +1,483 @@
+{
+  "attributes": {
+    "Change": "Replace the finance system by mid 2028",
+    "Organisation": "A manufacturing company",
+    "Title": "Finance system replacement"
+  },
+  "connectors": [
+    {
+      "from": "el_p_omar",
+      "id": "cn_001",
+      "relation": "ReportsTo",
+      "to": "el_p_anna"
+    },
+    {
+      "from": "el_p_lena",
+      "id": "cn_002",
+      "relation": "ReportsTo",
+      "to": "el_p_anna"
+    },
+    {
+      "from": "el_p_sofia",
+      "id": "cn_003",
+      "relation": "ReportsTo",
+      "to": "el_p_jonas"
+    },
+    {
+      "from": "el_p_anna",
+      "id": "cn_004",
+      "relation": "Fills",
+      "to": "el_r_owner"
+    },
+    {
+      "from": "el_p_omar",
+      "id": "cn_005",
+      "relation": "Fills",
+      "to": "el_r_keyuser"
+    },
+    {
+      "from": "el_p_lena",
+      "id": "cn_006",
+      "relation": "Fills",
+      "to": "el_r_keyuser"
+    },
+    {
+      "from": "el_p_jonas",
+      "id": "cn_007",
+      "relation": "Fills",
+      "to": "el_r_pm"
+    },
+    {
+      "from": "el_p_sofia",
+      "id": "cn_008",
+      "relation": "Fills",
+      "to": "el_r_data"
+    },
+    {
+      "from": "el_r_owner",
+      "id": "cn_009",
+      "relation": "Accountable",
+      "to": "el_act_choose"
+    },
+    {
+      "from": "el_r_pm",
+      "id": "cn_010",
+      "relation": "Responsible",
+      "to": "el_act_choose"
+    },
+    {
+      "from": "el_r_keyuser",
+      "id": "cn_011",
+      "relation": "Consulted",
+      "to": "el_act_choose"
+    },
+    {
+      "from": "el_r_pm",
+      "id": "cn_012",
+      "relation": "Accountable",
+      "to": "el_act_migrate"
+    },
+    {
+      "from": "el_r_data",
+      "id": "cn_013",
+      "relation": "Responsible",
+      "to": "el_act_migrate"
+    },
+    {
+      "from": "el_r_pm",
+      "id": "cn_014",
+      "relation": "Accountable",
+      "to": "el_del_plan"
+    },
+    {
+      "from": "el_r_data",
+      "id": "cn_015",
+      "relation": "Responsible",
+      "to": "el_del_plan"
+    },
+    {
+      "from": "el_r_owner",
+      "id": "cn_016",
+      "relation": "Informed",
+      "to": "el_del_plan"
+    },
+    {
+      "from": "el_r_keyuser",
+      "id": "cn_017",
+      "relation": "Responsible",
+      "to": "el_del_training"
+    },
+    {
+      "from": "el_s_council",
+      "id": "cn_018",
+      "relation": "Influences",
+      "to": "el_s_clerks"
+    }
+  ],
+  "elements": [
+    {
+      "attributes": {
+        "Head": "Chief financial officer",
+        "Name": "Finance and IT"
+      },
+      "class": "OrganisationUnit",
+      "h": 330,
+      "id": "el_ou_company",
+      "w": 900,
+      "x": 20,
+      "y": 20
+    },
+    {
+      "attributes": {
+        "Code": "FIN",
+        "Head": "Anna Berg",
+        "Name": "Finance"
+      },
+      "class": "OrganisationUnit",
+      "h": 270,
+      "id": "el_ou_finance",
+      "parent": "el_ou_company",
+      "w": 430,
+      "x": 40,
+      "y": 60
+    },
+    {
+      "attributes": {
+        "Name": "Anna Berg",
+        "Role": "Finance director"
+      },
+      "class": "Person",
+      "h": 110,
+      "id": "el_p_anna",
+      "parent": "el_ou_finance",
+      "w": 90,
+      "x": 60,
+      "y": 100
+    },
+    {
+      "attributes": {
+        "Name": "Omar Haddad",
+        "Role": "Accounts payable lead"
+      },
+      "class": "Person",
+      "h": 110,
+      "id": "el_p_omar",
+      "parent": "el_ou_finance",
+      "w": 90,
+      "x": 200,
+      "y": 100
+    },
+    {
+      "attributes": {
+        "Name": "Lena Fischer",
+        "Role": "Financial controller"
+      },
+      "class": "Person",
+      "h": 110,
+      "id": "el_p_lena",
+      "parent": "el_ou_finance",
+      "w": 90,
+      "x": 340,
+      "y": 100
+    },
+    {
+      "attributes": {
+        "Name": "Business owner"
+      },
+      "class": "Role",
+      "h": 44,
+      "id": "el_r_owner",
+      "parent": "el_ou_finance",
+      "w": 140,
+      "x": 70,
+      "y": 270
+    },
+    {
+      "attributes": {
+        "Name": "Key user"
+      },
+      "class": "Role",
+      "h": 44,
+      "id": "el_r_keyuser",
+      "parent": "el_ou_finance",
+      "w": 140,
+      "x": 280,
+      "y": 270
+    },
+    {
+      "attributes": {
+        "Code": "IT",
+        "Head": "Jonas Weber",
+        "Name": "IT"
+      },
+      "class": "OrganisationUnit",
+      "h": 270,
+      "id": "el_ou_it",
+      "parent": "el_ou_company",
+      "w": 410,
+      "x": 490,
+      "y": 60
+    },
+    {
+      "attributes": {
+        "Name": "Jonas Weber",
+        "Role": "IT project manager"
+      },
+      "class": "Person",
+      "h": 110,
+      "id": "el_p_jonas",
+      "parent": "el_ou_it",
+      "w": 90,
+      "x": 510,
+      "y": 100
+    },
+    {
+      "attributes": {
+        "Name": "Sofia Rossi",
+        "Role": "Data analyst"
+      },
+      "class": "Person",
+      "h": 110,
+      "id": "el_p_sofia",
+      "parent": "el_ou_it",
+      "w": 90,
+      "x": 680,
+      "y": 100
+    },
+    {
+      "attributes": {
+        "Name": "Project manager"
+      },
+      "class": "Role",
+      "h": 44,
+      "id": "el_r_pm",
+      "parent": "el_ou_it",
+      "w": 140,
+      "x": 520,
+      "y": 270
+    },
+    {
+      "attributes": {
+        "Name": "Data specialist"
+      },
+      "class": "Role",
+      "h": 44,
+      "id": "el_r_data",
+      "parent": "el_ou_it",
+      "w": 140,
+      "x": 700,
+      "y": 270
+    },
+    {
+      "attributes": {
+        "Due": "2027-03-31",
+        "Name": "Choose the new system",
+        "Status": "Done"
+      },
+      "class": "Activity",
+      "h": 110,
+      "id": "el_act_choose",
+      "w": 220,
+      "x": 40,
+      "y": 420
+    },
+    {
+      "attributes": {
+        "Due": "2027-11-30",
+        "Name": "Migrate supplier data",
+        "Status": "In progress"
+      },
+      "class": "Activity",
+      "h": 110,
+      "id": "el_act_migrate",
+      "w": 220,
+      "x": 275,
+      "y": 420
+    },
+    {
+      "attributes": {
+        "Due": "2027-06-30",
+        "Name": "Migration plan",
+        "Status": "Done"
+      },
+      "class": "Deliverable",
+      "h": 110,
+      "id": "el_del_plan",
+      "w": 220,
+      "x": 510,
+      "y": 420
+    },
+    {
+      "attributes": {
+        "Due": "2028-02-28",
+        "Name": "Training material",
+        "Status": "Not started"
+      },
+      "class": "Deliverable",
+      "h": 110,
+      "id": "el_del_training",
+      "w": 220,
+      "x": 745,
+      "y": 420
+    },
+    {
+      "attributes": {
+        "Name": "Keep satisfied",
+        "Quadrant": "Keep satisfied"
+      },
+      "class": "GridQuadrant",
+      "h": 260,
+      "id": "el_q_satisfied",
+      "w": 270,
+      "x": 1000,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "Name": "Manage closely",
+        "Quadrant": "Manage closely"
+      },
+      "class": "GridQuadrant",
+      "h": 260,
+      "id": "el_q_manage",
+      "w": 270,
+      "x": 1290,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "Name": "Monitor",
+        "Quadrant": "Monitor"
+      },
+      "class": "GridQuadrant",
+      "h": 260,
+      "id": "el_q_monitor",
+      "w": 270,
+      "x": 1000,
+      "y": 320
+    },
+    {
+      "attributes": {
+        "Name": "Keep informed",
+        "Quadrant": "Keep informed"
+      },
+      "class": "GridQuadrant",
+      "h": 260,
+      "id": "el_q_informed",
+      "w": 270,
+      "x": 1290,
+      "y": 320
+    },
+    {
+      "attributes": {
+        "Attitude": "Neutral",
+        "DesiredAttitude": "Supportive",
+        "Influence": 4,
+        "Interest": 2,
+        "Kind": "Organisation",
+        "Name": "External auditor"
+      },
+      "class": "Stakeholder",
+      "h": 110,
+      "id": "el_s_auditor",
+      "parent": "el_q_satisfied",
+      "w": 110,
+      "x": 1080,
+      "y": 110
+    },
+    {
+      "attributes": {
+        "Attitude": "Champion",
+        "DesiredAttitude": "Champion",
+        "Influence": 5,
+        "Interest": 3,
+        "Kind": "Group",
+        "Name": "Management board"
+      },
+      "class": "Stakeholder",
+      "h": 110,
+      "id": "el_s_board",
+      "parent": "el_q_manage",
+      "w": 110,
+      "x": 1310,
+      "y": 110
+    },
+    {
+      "attributes": {
+        "Attitude": "Sceptical",
+        "DesiredAttitude": "Neutral",
+        "EngagementPlan": "Monthly briefing on jobs and training; a seat in the steering group.",
+        "Influence": 4,
+        "Interest": 4,
+        "Kind": "Group",
+        "Name": "Works council"
+      },
+      "class": "Stakeholder",
+      "h": 110,
+      "id": "el_s_council",
+      "parent": "el_q_manage",
+      "w": 110,
+      "x": 1430,
+      "y": 110
+    },
+    {
+      "attributes": {
+        "Attitude": "Neutral",
+        "Influence": 2,
+        "Interest": 2,
+        "Kind": "Group",
+        "Name": "Sales team"
+      },
+      "class": "Stakeholder",
+      "h": 110,
+      "id": "el_s_sales",
+      "parent": "el_q_monitor",
+      "w": 110,
+      "x": 1080,
+      "y": 390
+    },
+    {
+      "attributes": {
+        "Attitude": "Sceptical",
+        "DesiredAttitude": "Supportive",
+        "Influence": 2,
+        "Interest": 5,
+        "Kind": "Group",
+        "Name": "Accounts clerks"
+      },
+      "class": "Stakeholder",
+      "h": 110,
+      "id": "el_s_clerks",
+      "parent": "el_q_informed",
+      "w": 110,
+      "x": 1310,
+      "y": 390
+    },
+    {
+      "attributes": {
+        "Attitude": "Neutral",
+        "Influence": 2,
+        "Interest": 4,
+        "Kind": "Organisation",
+        "Name": "Suppliers"
+      },
+      "class": "Stakeholder",
+      "h": 110,
+      "id": "el_s_suppliers",
+      "parent": "el_q_informed",
+      "w": 110,
+      "x": 1430,
+      "y": 390
+    }
+  ],
+  "formatVersion": 2,
+  "id": "mdl_financesystem",
+  "kind": "mkmodel",
+  "kit": {
+    "id": "kit_stakeholdermap",
+    "name": "Stakeholder and organisation map",
+    "version": "1.0.0"
+  },
+  "modelType": "StakeholderMap",
+  "name": "Finance system replacement"
+}

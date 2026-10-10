@@ -1,0 +1,2246 @@
+{
+  "formatVersion": 7,
+  "manifest": {
+    "id": "kit_datamesh",
+    "name": "Data mesh and data products",
+    "version": "1.0.0",
+    "languages": ["en"]
+  },
+  "settings": {
+    "grid": {
+      "size": 10,
+      "snap": true,
+      "visible": true
+    },
+    "layers": [],
+    "numbering": {
+      "enabled": false,
+      "prefix": "",
+      "start": 1
+    }
+  },
+  "classes": {
+    "cls_datadomain": {
+      "id": "cls_datadomain",
+      "key": "DataDomain",
+      "kind": "container",
+      "labels": {
+        "en": "Data domain"
+      },
+      "help": {
+        "en": "An area of the business that owns its data and the data products made from it, such as sales or customer. Place its products, ports and contracts inside it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Data domain",
+          "id": "att_datadomain_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "DomainOwner",
+          "id": "att_datadomain_domainowner",
+          "labels": {
+            "en": "Domain owner"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_datadomain_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "DomainType",
+          "options": ["Source-aligned", "Aggregate", "Consumer-aligned"],
+          "id": "att_datadomain_domaintype",
+          "labels": {
+            "en": "Type"
+          },
+          "help": {
+            "en": "Source-aligned domains share the data of their own systems; aggregate and consumer-aligned ones combine it for a use."
+          }
+        }
+      ],
+      "shape": "shp_datadomain"
+    },
+    "cls_dataproduct": {
+      "id": "cls_dataproduct",
+      "key": "DataProduct",
+      "kind": "node",
+      "labels": {
+        "en": "Data product"
+      },
+      "help": {
+        "en": "Data packaged for others to use, owned by a domain team. It takes data in through input ports and shares it through output ports covered by data contracts."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Data product",
+          "id": "att_dataproduct_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_dataproduct_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_dataproduct_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Consumers",
+          "formula": "sum(outgoing('Publishes').Consumers)",
+          "result": "number",
+          "id": "att_dataproduct_consumers",
+          "labels": {
+            "en": "Consumers"
+          },
+          "help": {
+            "en": "How many consumers and other products read from its output ports."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Status",
+          "options": ["Idea", "In development", "Live", "Retired"],
+          "id": "att_dataproduct_status",
+          "labels": {
+            "en": "Status"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "ProductType",
+          "options": ["Source-aligned", "Aggregate", "Consumer-aligned"],
+          "id": "att_dataproduct_producttype",
+          "labels": {
+            "en": "Type"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Classification",
+          "options": ["Public", "Internal", "Confidential", "Restricted"],
+          "id": "att_dataproduct_classification",
+          "labels": {
+            "en": "Classification"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Version",
+          "id": "att_dataproduct_version",
+          "labels": {
+            "en": "Version"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "InputPorts",
+          "formula": "count(incoming('Feeds'))",
+          "result": "number",
+          "id": "att_dataproduct_inputports",
+          "labels": {
+            "en": "Input ports"
+          },
+          "help": {
+            "en": "How many input ports feed it."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "OutputPorts",
+          "formula": "count(outgoing('Publishes'))",
+          "result": "number",
+          "id": "att_dataproduct_outputports",
+          "labels": {
+            "en": "Output ports"
+          },
+          "help": {
+            "en": "How many output ports it publishes through."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Contracts",
+          "formula": "sum(outgoing('Publishes').Contracts)",
+          "result": "number",
+          "id": "att_dataproduct_contracts",
+          "labels": {
+            "en": "Contracts"
+          },
+          "help": {
+            "en": "How many data contracts cover its output ports."
+          }
+        }
+      ],
+      "shape": "shp_dataproduct",
+      "constraints": [
+        {
+          "id": "k_product_owner",
+          "formula": "!isEmpty(Owner)",
+          "message": "= 'Data product \"' + Name + '\" has no owner.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_product_contract",
+          "formula": "Contracts > 0",
+          "message": "= 'Data product \"' + Name + '\" has no data contract: connect a contract to one of its output ports with \"Has contract\".'",
+          "severity": "warning"
+        }
+      ]
+    },
+    "cls_sourcesystem": {
+      "id": "cls_sourcesystem",
+      "key": "SourceSystem",
+      "kind": "node",
+      "labels": {
+        "en": "Source system"
+      },
+      "help": {
+        "en": "A system where data is first created or captured."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Source system",
+          "id": "att_sourcesystem_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_sourcesystem_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Technology",
+          "id": "att_sourcesystem_technology",
+          "labels": {
+            "en": "Technology"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_sourcesystem_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Hosting",
+          "options": ["On-premises", "Cloud", "Software as a service"],
+          "id": "att_sourcesystem_hosting",
+          "labels": {
+            "en": "Hosting"
+          }
+        }
+      ],
+      "shape": "shp_sourcesystem"
+    },
+    "cls_policy": {
+      "id": "cls_policy",
+      "key": "Policy",
+      "kind": "node",
+      "labels": {
+        "en": "Policy"
+      },
+      "help": {
+        "en": "A rule every data product must follow, such as how personal data is protected or how products are named. A global policy applies to all domains; the platform can enforce it automatically."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Policy",
+          "id": "att_policy_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_policy_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_policy_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "date",
+          "key": "EffectiveDate",
+          "id": "att_policy_effectivedate",
+          "labels": {
+            "en": "Effective date"
+          }
+        },
+        {
+          "type": "date",
+          "key": "ReviewDate",
+          "id": "att_policy_reviewdate",
+          "labels": {
+            "en": "Review date"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Scope",
+          "options": ["Global", "Domain"],
+          "id": "att_policy_scope",
+          "labels": {
+            "en": "Scope"
+          },
+          "help": {
+            "en": "Global policies apply to every data product; domain policies only to the products of one domain."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "EnforcedBy",
+          "formula": "join(incoming('Enforces').Name, ', ')",
+          "result": "text",
+          "id": "att_policy_enforcedby",
+          "labels": {
+            "en": "Enforced by"
+          },
+          "help": {
+            "en": "The platform services that enforce it automatically."
+          }
+        }
+      ],
+      "shape": "shp_policy"
+    },
+    "cls_inputport": {
+      "id": "cls_inputport",
+      "key": "InputPort",
+      "kind": "node",
+      "labels": {
+        "en": "Input port"
+      },
+      "help": {
+        "en": "Where a data product takes data in: from a source system or from the output port of another product."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Input port",
+          "id": "att_inputport_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_inputport_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Mechanism",
+          "options": [
+            "Batch",
+            "Streaming",
+            "API",
+            "Change data capture",
+            "Files"
+          ],
+          "id": "att_inputport_mechanism",
+          "labels": {
+            "en": "Mechanism"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Format",
+          "id": "att_inputport_format",
+          "labels": {
+            "en": "Format"
+          },
+          "help": {
+            "en": "Such as tables, files or events."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_inputport_product",
+          "formula": "count(outgoing('Feeds')) > 0",
+          "message": "= 'Input port \"' + Name + '\" feeds no data product: connect it to its product with \"Feeds\".'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_inputport"
+    },
+    "cls_outputport": {
+      "id": "cls_outputport",
+      "key": "OutputPort",
+      "kind": "node",
+      "labels": {
+        "en": "Output port"
+      },
+      "help": {
+        "en": "Where a data product shares its data with consumers, such as a table, an API or an event stream. A data contract says what consumers can rely on."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Output port",
+          "id": "att_outputport_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_outputport_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Interface",
+          "options": [
+            "Table",
+            "Files",
+            "API",
+            "Event stream",
+            "Query endpoint"
+          ],
+          "id": "att_outputport_interface",
+          "labels": {
+            "en": "Interface"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Address",
+          "id": "att_outputport_address",
+          "labels": {
+            "en": "Address"
+          },
+          "help": {
+            "en": "Where consumers find it, such as a table name or a web address."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Consumers",
+          "formula": "count(outgoing('FlowsTo'))",
+          "result": "number",
+          "id": "att_outputport_consumers",
+          "labels": {
+            "en": "Consumers"
+          },
+          "help": {
+            "en": "How many consumers and input ports of other products read from it."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Contracts",
+          "formula": "count(outgoing('HasContract'))",
+          "result": "number",
+          "id": "att_outputport_contracts",
+          "labels": {
+            "en": "Contracts"
+          },
+          "help": {
+            "en": "How many data contracts cover it."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "ContractVersion",
+          "formula": "join(outgoing('HasContract').Version, ', ')",
+          "result": "text",
+          "id": "att_outputport_contractversion",
+          "labels": {
+            "en": "Contract version"
+          },
+          "help": {
+            "en": "The version of its contract."
+          }
+        }
+      ],
+      "shape": "shp_outputport"
+    },
+    "cls_datacontract": {
+      "id": "cls_datacontract",
+      "key": "DataContract",
+      "kind": "node",
+      "labels": {
+        "en": "Data contract"
+      },
+      "help": {
+        "en": "What the owner of a data product promises the consumers of an output port: the schema, the service level and how changes are announced."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Data contract",
+          "id": "att_datacontract_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_datacontract_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Version",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "id": "att_datacontract_version",
+          "labels": {
+            "en": "Version"
+          },
+          "help": {
+            "en": "Major, minor and patch, such as 2.1.0. Raise the major number for a change that breaks consumers."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Status",
+          "options": ["Draft", "Active", "Deprecated"],
+          "default": "Draft",
+          "id": "att_datacontract_status",
+          "labels": {
+            "en": "Status"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Schema",
+          "multiline": true,
+          "id": "att_datacontract_schema",
+          "labels": {
+            "en": "Schema"
+          },
+          "help": {
+            "en": "The fields and their types, one per line, such as \"order_id: text, key\"."
+          }
+        },
+        {
+          "type": "text",
+          "key": "Freshness",
+          "id": "att_datacontract_freshness",
+          "labels": {
+            "en": "Freshness"
+          },
+          "help": {
+            "en": "How up to date the data is, such as \"updated by 06:00 every day\"."
+          }
+        },
+        {
+          "type": "number",
+          "key": "Availability",
+          "unit": "%",
+          "min": 0,
+          "max": 100,
+          "id": "att_datacontract_availability",
+          "labels": {
+            "en": "Availability"
+          },
+          "help": {
+            "en": "The share of time the output port can be read, such as 99.5."
+          }
+        },
+        {
+          "type": "text",
+          "key": "QualityExpectations",
+          "multiline": true,
+          "id": "att_datacontract_qualityexpectations",
+          "labels": {
+            "en": "Quality expectations"
+          },
+          "help": {
+            "en": "The quality checks consumers can rely on, such as \"no order without a customer\"."
+          }
+        },
+        {
+          "type": "text",
+          "key": "ChangeNotice",
+          "id": "att_datacontract_changenotice",
+          "labels": {
+            "en": "Notice of changes"
+          },
+          "help": {
+            "en": "How long consumers are told in advance about a change that breaks them, such as \"30 days\"."
+          }
+        },
+        {
+          "type": "date",
+          "key": "EffectiveDate",
+          "id": "att_datacontract_effectivedate",
+          "labels": {
+            "en": "Effective date"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "VersionLabel",
+          "formula": "Version ? 'Version ' + Version : null",
+          "result": "text",
+          "id": "att_datacontract_versionlabel",
+          "labels": {
+            "en": "Version label"
+          },
+          "help": {
+            "en": "The version, shown under the name."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "HasServiceLevel",
+          "formula": "!isEmpty(Freshness) || Availability != null",
+          "result": "boolean",
+          "id": "att_datacontract_hasservicelevel",
+          "labels": {
+            "en": "Has service level"
+          },
+          "help": {
+            "en": "Yes when the contract promises a freshness or an availability."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_contract_sla",
+          "formula": "HasServiceLevel",
+          "message": "= 'Data contract \"' + Name + '\" has no service level: give it a freshness or an availability.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_datacontract"
+    },
+    "cls_consumer": {
+      "id": "cls_consumer",
+      "key": "Consumer",
+      "kind": "node",
+      "labels": {
+        "en": "Consumer"
+      },
+      "help": {
+        "en": "A team, application, report or model that uses data from an output port."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Consumer",
+          "id": "att_consumer_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "ConsumerType",
+          "options": ["Team", "Application", "Report", "ML model", "Partner"],
+          "id": "att_consumer_consumertype",
+          "labels": {
+            "en": "Type"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Purpose",
+          "multiline": true,
+          "id": "att_consumer_purpose",
+          "labels": {
+            "en": "Purpose"
+          },
+          "help": {
+            "en": "What the consumer uses the data for."
+          }
+        }
+      ],
+      "shape": "shp_consumer"
+    },
+    "cls_selfserveplatform": {
+      "id": "cls_selfserveplatform",
+      "key": "SelfServePlatform",
+      "kind": "container",
+      "labels": {
+        "en": "Self-serve platform"
+      },
+      "help": {
+        "en": "The shared data platform that domain teams use to build, run and share their data products without a central team. Place its services inside it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Self-serve platform",
+          "id": "att_selfserveplatform_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "PlatformTeam",
+          "id": "att_selfserveplatform_platformteam",
+          "labels": {
+            "en": "Platform team"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_selfserveplatform_description",
+          "labels": {
+            "en": "Description"
+          }
+        }
+      ],
+      "shape": "shp_selfserveplatform"
+    },
+    "cls_platformservice": {
+      "id": "cls_platformservice",
+      "key": "PlatformService",
+      "kind": "node",
+      "labels": {
+        "en": "Platform service"
+      },
+      "help": {
+        "en": "One service of the self-serve platform, such as storage, pipelines, the data catalog or access control. Technology is free text."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Platform service",
+          "id": "att_platformservice_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_platformservice_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Category",
+          "options": [
+            "Storage",
+            "Compute",
+            "Pipelines",
+            "Catalog and discovery",
+            "Access control",
+            "Monitoring",
+            "Policy enforcement"
+          ],
+          "id": "att_platformservice_category",
+          "labels": {
+            "en": "Category"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Technology",
+          "id": "att_platformservice_technology",
+          "labels": {
+            "en": "Technology"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "UsedBy",
+          "formula": "count(incoming('BuiltOn'))",
+          "result": "number",
+          "id": "att_platformservice_usedby",
+          "labels": {
+            "en": "Used by"
+          },
+          "help": {
+            "en": "How many data products are built on it."
+          }
+        }
+      ],
+      "shape": "shp_platformservice"
+    }
+  },
+  "relations": {
+    "rel_governedby": {
+      "id": "rel_governedby",
+      "key": "GovernedBy",
+      "labels": {
+        "en": "Governed by"
+      },
+      "help": {
+        "en": "Data or a use case must follow a policy or a regulation."
+      },
+      "from": ["cls_dataproduct"],
+      "to": ["cls_policy"],
+      "attributes": [],
+      "shape": "shp_rel_governedby"
+    },
+    "rel_feeds": {
+      "id": "rel_feeds",
+      "key": "Feeds",
+      "labels": {
+        "en": "Feeds"
+      },
+      "help": {
+        "en": "The input port brings data into the data product."
+      },
+      "from": ["cls_inputport"],
+      "to": ["cls_dataproduct"],
+      "attributes": [],
+      "shape": "shp_rel_feeds"
+    },
+    "rel_publishes": {
+      "id": "rel_publishes",
+      "key": "Publishes",
+      "labels": {
+        "en": "Publishes"
+      },
+      "help": {
+        "en": "The data product shares its data through the output port."
+      },
+      "from": ["cls_dataproduct"],
+      "to": ["cls_outputport"],
+      "attributes": [],
+      "shape": "shp_rel_publishes"
+    },
+    "rel_flowsto": {
+      "id": "rel_flowsto",
+      "key": "FlowsTo",
+      "labels": {
+        "en": "Flows to"
+      },
+      "help": {
+        "en": "Data moves from a source system or an output port to an input port of another product, or to a consumer."
+      },
+      "from": ["cls_sourcesystem", "cls_outputport"],
+      "to": ["cls_inputport", "cls_consumer"],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Frequency",
+          "id": "att_flowsto_frequency",
+          "labels": {
+            "en": "Frequency"
+          }
+        }
+      ],
+      "shape": "shp_rel_flowsto"
+    },
+    "rel_hascontract": {
+      "id": "rel_hascontract",
+      "key": "HasContract",
+      "labels": {
+        "en": "Has contract"
+      },
+      "help": {
+        "en": "The data contract covers what the output port shares."
+      },
+      "from": ["cls_outputport"],
+      "to": ["cls_datacontract"],
+      "attributes": [],
+      "shape": "shp_rel_hascontract"
+    },
+    "rel_builton": {
+      "id": "rel_builton",
+      "key": "BuiltOn",
+      "labels": {
+        "en": "Built on"
+      },
+      "help": {
+        "en": "The data product uses the platform service."
+      },
+      "from": ["cls_dataproduct"],
+      "to": ["cls_platformservice"],
+      "attributes": [],
+      "shape": "shp_rel_builton"
+    },
+    "rel_enforces": {
+      "id": "rel_enforces",
+      "key": "Enforces",
+      "labels": {
+        "en": "Enforces"
+      },
+      "help": {
+        "en": "The platform service checks or applies the policy automatically, for every product that uses it."
+      },
+      "from": ["cls_platformservice"],
+      "to": ["cls_policy"],
+      "attributes": [],
+      "shape": "shp_rel_enforces"
+    }
+  },
+  "modelTypes": {
+    "mt_datamesh": {
+      "id": "mt_datamesh",
+      "key": "DataMesh",
+      "labels": {
+        "en": "Data mesh"
+      },
+      "classes": [
+        "cls_datadomain",
+        "cls_dataproduct",
+        "cls_sourcesystem",
+        "cls_policy",
+        "cls_inputport",
+        "cls_outputport",
+        "cls_datacontract",
+        "cls_consumer",
+        "cls_selfserveplatform",
+        "cls_platformservice"
+      ],
+      "relations": [
+        "rel_governedby",
+        "rel_feeds",
+        "rel_publishes",
+        "rel_flowsto",
+        "rel_hascontract",
+        "rel_builton",
+        "rel_enforces"
+      ],
+      "views": [
+        {
+          "id": "vw_products",
+          "key": "Products",
+          "labels": {
+            "en": "Products and ports"
+          },
+          "classes": [
+            "cls_datadomain",
+            "cls_dataproduct",
+            "cls_inputport",
+            "cls_outputport",
+            "cls_datacontract",
+            "cls_sourcesystem",
+            "cls_consumer"
+          ],
+          "relations": [
+            "rel_feeds",
+            "rel_publishes",
+            "rel_flowsto",
+            "rel_hascontract"
+          ]
+        },
+        {
+          "id": "vw_governance",
+          "key": "Governance",
+          "labels": {
+            "en": "Platform and governance"
+          },
+          "classes": [
+            "cls_selfserveplatform",
+            "cls_platformservice",
+            "cls_policy",
+            "cls_dataproduct"
+          ],
+          "relations": ["rel_builton", "rel_enforces", "rel_governedby"]
+        }
+      ],
+      "cardinalities": [],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Title",
+          "required": true,
+          "maxLength": 100,
+          "id": "att_mtdatamesh_title",
+          "labels": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Organisation",
+          "id": "att_mtdatamesh_organisation",
+          "labels": {
+            "en": "Organisation"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "DataProducts",
+          "formula": "count(objects('DataProduct'))",
+          "result": "number",
+          "id": "att_mtdatamesh_dataproducts",
+          "labels": {
+            "en": "Data products"
+          },
+          "help": {
+            "en": "How many data products the model holds."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "DataContracts",
+          "formula": "count(objects('DataContract'))",
+          "result": "number",
+          "id": "att_mtdatamesh_datacontracts",
+          "labels": {
+            "en": "Data contracts"
+          },
+          "help": {
+            "en": "How many data contracts the model holds."
+          }
+        }
+      ],
+      "help": {
+        "en": "Domains with their data products, input and output ports, data contracts and consumers, the self-serve platform and the policies that govern them."
+      },
+      "containers": {
+        "cls_datadomain": [
+          "cls_dataproduct",
+          "cls_inputport",
+          "cls_outputport",
+          "cls_datacontract"
+        ],
+        "cls_selfserveplatform": ["cls_platformservice"]
+      }
+    }
+  },
+  "shapes": {
+    "shp_datadomain": {
+      "id": "shp_datadomain",
+      "name": "DataDomain look",
+      "kind": "node",
+      "size": {
+        "width": 600,
+        "height": 250,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 6,
+          "fill": "#ffffff00",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5,
+          "dash": [7, 4]
+        },
+        {
+          "type": "text",
+          "x": 12,
+          "y": 4,
+          "width": "100% - 48",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "container",
+        "fill": "#ffffff00",
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "dashed",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 600,
+          "height": 250,
+          "resizable": true
+        }
+      }
+    },
+    "shp_dataproduct": {
+      "id": "shp_dataproduct",
+      "name": "DataProduct look",
+      "kind": "node",
+      "size": {
+        "width": 160,
+        "height": 80,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          ["15%", 0],
+          ["85%", 0],
+          ["100%", "50%"],
+          ["85%", "100%"],
+          ["15%", "100%"],
+          [0, "50%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            ["15%", 0],
+            ["85%", 0],
+            ["100%", "50%"],
+            ["85%", "100%"],
+            ["15%", "100%"],
+            [0, "50%"]
+          ],
+          "fill": "= Status == 'Idea' ? '#e9ecef' : Status == 'In development' ? '#fff3bf' : Status == 'Live' ? '#b2f2bb' : Status == 'Retired' ? '#dee2e6' : '#a5d8ff'",
+          "stroke": "#1864ab",
+          "strokeWidth": 2
+        },
+        {
+          "type": "text",
+          "x": "18%",
+          "y": 4,
+          "width": "64%",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": "18%",
+          "y": "100% - 22",
+          "width": "64%",
+          "height": 18,
+          "text": "= Owner",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "hexagon",
+        "fill": {
+          "by": "Status",
+          "values": {
+            "Idea": "#e9ecef",
+            "In development": "#fff3bf",
+            "Live": "#b2f2bb",
+            "Retired": "#dee2e6"
+          },
+          "fallback": "#a5d8ff"
+        },
+        "border": "#1864ab",
+        "borderWidth": 2,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 160,
+          "height": 80,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Owner"
+        }
+      }
+    },
+    "shp_sourcesystem": {
+      "id": "shp_sourcesystem",
+      "name": "SourceSystem look",
+      "kind": "node",
+      "size": {
+        "width": 150,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 0,
+          "fill": "#a5d8ff",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= Technology",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6 M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "box",
+        "fill": "#a5d8ff",
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 150,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Technology"
+        },
+        "icon": {
+          "name": "database"
+        }
+      }
+    },
+    "shp_policy": {
+      "id": "shp_policy",
+      "name": "Policy look",
+      "kind": "node",
+      "size": {
+        "width": 120,
+        "height": 90,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          [0, 0],
+          ["100% - 18", 0],
+          ["100%", 18],
+          ["100%", "100%"],
+          [0, "100%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            [0, 0],
+            ["100% - 18", 0],
+            ["100%", 18],
+            ["100%", "100%"],
+            [0, "100%"]
+          ],
+          "fill": "#ffc9c9",
+          "stroke": "#e03131",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "polygon",
+          "points": [
+            ["100% - 18", 0],
+            ["100% - 18", 18],
+            ["100%", 18]
+          ],
+          "fill": "#00000022",
+          "stroke": "#e03131",
+          "strokeWidth": 1
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 20,
+          "width": "100% - 16",
+          "height": "100% - 46",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 24",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= Owner",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M6 11h12v10H6z M8 11V8a4 4 0 0 1 8 0v3",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": 4,
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "document",
+        "fill": "#ffc9c9",
+        "border": "#e03131",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 120,
+          "height": 90,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Owner"
+        },
+        "icon": {
+          "name": "lock"
+        }
+      }
+    },
+    "shp_rel_governedby": {
+      "id": "shp_rel_governedby",
+      "name": "GovernedBy look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#e03131",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "open-arrow"
+      },
+      "look": {
+        "colour": "#e03131",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "open-arrow",
+        "label": null
+      }
+    },
+    "shp_inputport": {
+      "id": "shp_inputport",
+      "name": "InputPort look",
+      "kind": "node",
+      "size": {
+        "width": 140,
+        "height": 44,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 999,
+          "fill": "#e7f5ff",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 16,
+          "y": 4,
+          "width": "100% - 32",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 16,
+          "y": "100% - 22",
+          "width": "100% - 32",
+          "height": 18,
+          "text": "= Mechanism",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "pill",
+        "fill": "#e7f5ff",
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 140,
+          "height": 44,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Mechanism"
+        }
+      }
+    },
+    "shp_outputport": {
+      "id": "shp_outputport",
+      "name": "OutputPort look",
+      "kind": "node",
+      "size": {
+        "width": 150,
+        "height": 44,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 999,
+          "fill": "#d0ebff",
+          "stroke": "#1864ab",
+          "strokeWidth": 2
+        },
+        {
+          "type": "text",
+          "x": 16,
+          "y": 4,
+          "width": "100% - 32",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 16,
+          "y": "100% - 22",
+          "width": "100% - 32",
+          "height": 18,
+          "text": "= Interface",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "pill",
+        "fill": "#d0ebff",
+        "border": "#1864ab",
+        "borderWidth": 2,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 150,
+          "height": 44,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Interface"
+        }
+      }
+    },
+    "shp_datacontract": {
+      "id": "shp_datacontract",
+      "name": "DataContract look",
+      "kind": "node",
+      "size": {
+        "width": 120,
+        "height": 90,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          [0, 0],
+          ["100% - 18", 0],
+          ["100%", 18],
+          ["100%", "100%"],
+          [0, "100%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            [0, 0],
+            ["100% - 18", 0],
+            ["100%", 18],
+            ["100%", "100%"],
+            [0, "100%"]
+          ],
+          "fill": "= Status == 'Draft' ? '#fff3bf' : Status == 'Active' ? '#d3f9d8' : Status == 'Deprecated' ? '#e9ecef' : '#fff9db'",
+          "stroke": "#f08c00",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "polygon",
+          "points": [
+            ["100% - 18", 0],
+            ["100% - 18", 18],
+            ["100%", 18]
+          ],
+          "fill": "#00000022",
+          "stroke": "#f08c00",
+          "strokeWidth": 1
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 20,
+          "width": "100% - 16",
+          "height": "100% - 46",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 24",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= VersionLabel",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M6 2h8l5 5v15H6z M14 2v5h5 M9 13h7 M9 17h7",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": 4,
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "document",
+        "fill": {
+          "by": "Status",
+          "values": {
+            "Draft": "#fff3bf",
+            "Active": "#d3f9d8",
+            "Deprecated": "#e9ecef"
+          },
+          "fallback": "#fff9db"
+        },
+        "border": "#f08c00",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 120,
+          "height": 90,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "VersionLabel"
+        },
+        "icon": {
+          "name": "document"
+        }
+      }
+    },
+    "shp_consumer": {
+      "id": "shp_consumer",
+      "name": "Consumer look",
+      "kind": "node",
+      "size": {
+        "width": 160,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 0,
+          "fill": "#f3f0ff",
+          "stroke": "#6741d9",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= ConsumerType",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "box",
+        "fill": "#f3f0ff",
+        "border": "#6741d9",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 160,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "ConsumerType"
+        },
+        "icon": {
+          "name": "person"
+        }
+      }
+    },
+    "shp_selfserveplatform": {
+      "id": "shp_selfserveplatform",
+      "name": "SelfServePlatform look",
+      "kind": "node",
+      "size": {
+        "width": 1260,
+        "height": 150,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 6,
+          "fill": "#ffffff00",
+          "stroke": "#0c8599",
+          "strokeWidth": 1.5,
+          "dash": [7, 4]
+        },
+        {
+          "type": "text",
+          "x": 12,
+          "y": 4,
+          "width": "100% - 48",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "container",
+        "fill": "#ffffff00",
+        "border": "#0c8599",
+        "borderWidth": 1.5,
+        "borderStyle": "dashed",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 1260,
+          "height": 150,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "PlatformTeam"
+        }
+      }
+    },
+    "shp_platformservice": {
+      "id": "shp_platformservice",
+      "name": "PlatformService look",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 60,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "#c3fae8",
+          "stroke": "#0c8599",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= Category",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M19 12l2-1-1-3-2 .5-1.5-1.5.5-2-3-1-1 2h-2l-1-2-3 1 .5 2L6 8.5 4 8l-1 3 2 1v2l-2 1 1 3 2-.5L7.5 19l-.5 2 3 1 1-2h2l1 2 3-1-.5-2 1.5-1.5 2 .5 1-3-2-1z",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": "#c3fae8",
+        "border": "#0c8599",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 170,
+          "height": 60,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Category"
+        },
+        "icon": {
+          "name": "gear"
+        }
+      }
+    },
+    "shp_rel_feeds": {
+      "id": "shp_rel_feeds",
+      "name": "Feeds look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#1c7ed6",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#1c7ed6",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_publishes": {
+      "id": "shp_rel_publishes",
+      "name": "Publishes look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#1864ab",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#1864ab",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_flowsto": {
+      "id": "shp_rel_flowsto",
+      "name": "FlowsTo look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#1c7ed6",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "labels": [
+        {
+          "at": "middle",
+          "text": "= Frequency",
+          "font": {
+            "size": 11
+          },
+          "background": "#ffffff",
+          "visible": "= Frequency != null"
+        }
+      ],
+      "look": {
+        "colour": "#1c7ed6",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": {
+          "attribute": "Frequency"
+        }
+      }
+    },
+    "shp_rel_hascontract": {
+      "id": "shp_rel_hascontract",
+      "name": "HasContract look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#f08c00",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "startMarker": {
+        "type": "diamond"
+      },
+      "look": {
+        "colour": "#f08c00",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "diamond",
+        "end": "none",
+        "label": null
+      }
+    },
+    "shp_rel_builton": {
+      "id": "shp_rel_builton",
+      "name": "BuiltOn look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#0c8599",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [2, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#0c8599",
+        "width": 1.5,
+        "style": "dotted",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_enforces": {
+      "id": "shp_rel_enforces",
+      "name": "Enforces look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#e03131",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "open-arrow"
+      },
+      "look": {
+        "colour": "#e03131",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "open-arrow",
+        "label": null
+      }
+    }
+  },
+  "panels": {
+    "cls_dataproduct": {
+      "class": "cls_dataproduct",
+      "tabs": [
+        {
+          "label": "Product",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Owner"
+            },
+            {
+              "attribute": "ProductType",
+              "control": "select"
+            },
+            {
+              "attribute": "Status",
+              "control": "segmented"
+            },
+            {
+              "attribute": "Classification"
+            },
+            {
+              "attribute": "Version"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            }
+          ]
+        },
+        {
+          "label": "Ports and use",
+          "items": [
+            {
+              "attribute": "InputPorts"
+            },
+            {
+              "attribute": "OutputPorts"
+            },
+            {
+              "attribute": "Consumers"
+            },
+            {
+              "attribute": "Contracts"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_datacontract": {
+      "class": "cls_datacontract",
+      "tabs": [
+        {
+          "label": "Contract",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Version"
+            },
+            {
+              "attribute": "Status",
+              "control": "segmented"
+            },
+            {
+              "attribute": "EffectiveDate"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            }
+          ]
+        },
+        {
+          "label": "Service level",
+          "items": [
+            {
+              "attribute": "Freshness"
+            },
+            {
+              "attribute": "Availability"
+            },
+            {
+              "attribute": "ChangeNotice"
+            },
+            {
+              "attribute": "HasServiceLevel"
+            }
+          ]
+        },
+        {
+          "label": "Schema and quality",
+          "items": [
+            {
+              "attribute": "Schema",
+              "control": "textarea"
+            },
+            {
+              "attribute": "QualityExpectations",
+              "control": "textarea"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "rules": {},
+  "scripts": {}
+}

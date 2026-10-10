@@ -151,6 +151,13 @@ export const table = (
   })),
   ...extra,
 });
+export const link = (key: string, extra: Common = {}): CatalogAttribute => ({
+  type: 'link',
+  key,
+  label: words(key),
+  target: 'any',
+  ...extra,
+});
 /** A whole number from 1 to 5. */
 export const scale = (key: string, extra: Common = {}): CatalogAttribute => ({
   type: 'integer',
@@ -377,7 +384,11 @@ export interface KitSpec {
   folder: string;
   id: KitId;
   name: string;
-  catalog: { keys: string[]; generic?: string[] };
+  /**
+   * Catalog classes to pick. Their relation classes come along; `skipRelations` leaves out the
+   * ones that do not fit this Kit.
+   */
+  catalog: { keys: string[]; generic?: string[]; skipRelations?: string[] };
   amend?: Record<string, AmendSpec>;
   classes?: ClassSpec[];
   relations?: RelationSpec[];
@@ -386,6 +397,8 @@ export interface KitSpec {
   panels?: PanelSpec[];
   rules?: RuleSpec[];
   sample: SampleSpec;
+  /** Further sample models, such as one per model type. */
+  moreSamples?: SampleSpec[];
 }
 
 // Building -------------------------------------------------------------------------------------
@@ -476,7 +489,30 @@ export function buildKit(spec: KitSpec): Kit {
     throw new Error(
       `${spec.folder}: not in the catalog: ${missing.join(', ')}`,
     );
-  run(withStableIds(picked.batch.commands));
+  const skip = new Set(spec.catalog.skipRelations ?? []);
+  const unknown = [...skip].filter(
+    (k) => !picked.added.relations.some((r) => r.key === k),
+  );
+  if (unknown.length > 0)
+    throw new Error(
+      `${spec.folder}: these relation classes do not come with the picks: ${unknown.join(', ')}`,
+    );
+  const skippedShapes = new Set(
+    picked.batch.commands.flatMap((c) =>
+      c.type === 'putRelation' && skip.has(c.def.key) && c.def.shape
+        ? [c.def.shape]
+        : [],
+    ),
+  );
+  run(
+    withStableIds(
+      picked.batch.commands.filter(
+        (c) =>
+          !(c.type === 'putRelation' && skip.has(c.def.key)) &&
+          !(c.type === 'putShape' && skippedShapes.has(c.def.id)),
+      ),
+    ),
+  );
 
   // 2. Classes of this Kit, parents first.
   for (const c of spec.classes ?? []) {
@@ -723,29 +759,34 @@ export function buildSample(kit: Kit, sample: SampleSpec): Model {
 
 export interface BuiltFiles {
   kit: Kit;
+  /** The first sample model. */
   model: Model;
   /** Path under `kits/` and text (Prettier formats it when written). */
   files: { path: string; text: string }[];
 }
 
-/** The Kit and its sample, checked: the sample has no errors and only its intended warnings. */
+/** The Kit and its samples, checked: each has no errors and only its intended warnings. */
 export function renderKit(spec: KitSpec): BuiltFiles {
   const kit = buildKit(spec);
-  const model = buildSample(kit, spec.sample);
-  const issues = validateModel(
-    kit,
-    model,
-    new ModelCalculator(kit, () => model),
-  );
-  const errors = issues.filter((i) => i.severity === 'error');
-  const warnings = issues.filter((i) => i.severity === 'warning');
-  if (errors.length > 0 || warnings.length !== spec.sample.intendedWarnings)
-    throw new Error(
-      `${spec.folder}: the sample has ${errors.length} errors and ${warnings.length} warnings (${spec.sample.intendedWarnings} intended):\n${issues.map((i) => `  ${i.severity}: ${i.message}`).join('\n')}`,
+  const samples = [spec.sample, ...(spec.moreSamples ?? [])];
+  const models = samples.map((sample) => {
+    const model = buildSample(kit, sample);
+    const issues = validateModel(
+      kit,
+      model,
+      new ModelCalculator(kit, () => model),
     );
+    const errors = issues.filter((i) => i.severity === 'error');
+    const warnings = issues.filter((i) => i.severity === 'warning');
+    if (errors.length > 0 || warnings.length !== sample.intendedWarnings)
+      throw new Error(
+        `${spec.folder}/${sample.file}: the sample has ${errors.length} errors and ${warnings.length} warnings (${sample.intendedWarnings} intended):\n${issues.map((i) => `  ${i.severity}: ${i.message}`).join('\n')}`,
+      );
+    return model;
+  });
   return {
     kit,
-    model,
+    model: models[0]!,
     files: [
       {
         path: `${spec.folder}/kit.json`,
@@ -754,10 +795,10 @@ export function renderKit(spec: KitSpec): BuiltFiles {
         text: `${JSON.stringify(kit, null, 2)}
 `,
       },
-      {
-        path: `${spec.folder}/${spec.sample.file}`,
-        text: exportMkModel(kit, model),
-      },
+      ...samples.map((sample, i) => ({
+        path: `${spec.folder}/${sample.file}`,
+        text: exportMkModel(kit, models[i]!),
+      })),
     ],
   };
 }

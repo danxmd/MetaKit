@@ -3,7 +3,7 @@ id: org-chart
 title: Org chart
 category: kits
 summary: A built-in Kit for organisation charts, with units, positions and the people who fill them, reporting lines, and head count and vacancies that add up by unit.
-keywords: [org chart, organisation chart, organisation unit, department, position, reports to, dotted line, head count, vacancy, vacancies, seats, fte]
+keywords: [org chart, organisation chart, org unit, department, position, reports to, dotted line, head count, vacancy, vacancies, seats, fte]
 contexts: []
 order: 410
 ---

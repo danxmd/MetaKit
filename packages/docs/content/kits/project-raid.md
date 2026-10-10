@@ -3,7 +3,7 @@ id: project-raid
 title: Project delivery and RAID
 category: kits
 summary: A built-in Kit for planning a project or programme in workstreams, tasks, deliverables and milestones, with its RAID log of risks, assumptions, issues, dependencies and decisions.
-keywords: [project, programme, workstream, milestone, deliverable, task, raid, raid log, risk, assumption, issue, dependency, decision log, rag, overdue, progress]
+keywords: [project, programme, workstream, milestone, deliverable, task, raid, raid log, risk, assumption, issue, dependency, decision log, rag status, overdue, task progress]
 contexts: []
 order: 200
 ---

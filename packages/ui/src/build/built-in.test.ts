@@ -24,6 +24,7 @@ describe('finding a built-in Kit', () => {
 
   it('matches every word in the name or description, in any case', () => {
     expect(names('lineage')).toContain('Data and AI architecture');
+    expect(names('lineage')).toContain('Data pipelines and lineage');
     expect(names('lineage')).not.toContain('ER lite');
     expect(names('MATURITY gap')).toEqual(['Data and AI maturity assessment']);
     expect(names('acceptance criteria')).toEqual([
@@ -47,6 +48,9 @@ describe('finding a built-in Kit', () => {
         g.id,
         g.kits.map((k) => k.name),
       ]),
-    ).toEqual([['architecture', ['ER lite']]]);
+    ).toEqual([
+      ['data-ai', ['Data modelling']],
+      ['architecture', ['ER lite']],
+    ]);
   });
 });

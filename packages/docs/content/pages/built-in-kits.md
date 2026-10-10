@@ -29,13 +29,29 @@ They are listed by domain, under one heading each:
 | **KPI and metric tree** | Outcome KPIs explained by driver and operational metrics, each with a target, a current value and a direction, coloured by whether it is on track. See [[kpi-metric-tree]]. |
 | **Data and AI architecture** | Data platforms: sources, pipelines, stores, datasets, ML models, AI services and consumers, with data lineage and personal-data checks. See [[data-ai-architecture]]. |
 | **Data governance and ownership** | Data ownership and governance: domains, data products, assets, owners and stewards, policies, classifications and quality rules. See [[data-governance]]. |
+| **Data mesh and data products** | Domains that own data products, with input and output ports, data contracts with a schema, a service level and a version, consumers, the self-serve platform and governance policies. See [[data-mesh]]. |
+| **Data modelling** | Conceptual, logical and physical data models: subject areas, entities with attributes and keys, relationships with cardinality, and tables with typed columns and foreign keys. See [[data-modelling]]. |
+| **Data pipelines and lineage** | Sources, jobs, schedules, datasets, reports and target applications, with lineage down to the field, upstream and downstream counts and checks for unscheduled jobs and orphan datasets. See [[data-pipelines-lineage]]. |
+| **Data quality management** | Quality rules with thresholds and results on data assets, quality dimensions, issues with severity, status and owner, and the actions that resolve them, with pass rates and quality scores. See [[data-quality]]. |
+| **Master data management** | Master data domains with golden records, the source systems that supply them, match and survivorship rules, MDM hubs in the registry, consolidation, coexistence or centralised style, and data stewards. See [[master-data]]. |
+| **Analytics and BI landscape** | Reports and dashboards with their owners, usage and refresh, the semantic models and metrics they are built on and the audiences they serve, with checks for metrics defined twice. See [[analytics-bi]]. |
+| **Privacy and records of processing** | Records of processing: activities with purposes and legal bases, data categories, data subjects, recipients and transfers with safeguards, retention, systems and an impact assessment indication. See [[privacy-ropa]]. |
+| **Cloud data migration** | Workloads moving from source systems to cloud target services in migration waves, with dependencies, cut-over plans, status, risks and the readiness of each wave. See [[cloud-data-migration]]. |
 | **Agent pipeline** | Pipelines in which AI agents and people perform tasks, hand over work and approve results. |
+| **ML lifecycle (MLOps)** | Datasets and features, experiments and training runs, model versions in a registry with evaluations and approvals, deployments per environment, monitors and incidents. See [[ml-lifecycle]]. |
+| **Generative AI solution** | Use cases, flows, prompts and foundation models, a retrieval pipeline, agents and tools, guardrails, evaluations and human review, with the cost and latency of each request. See [[genai-solution]]. |
+| **AI risk and compliance** | AI systems with their intended purpose and a risk tier, risks and controls, obligations, assessments, incidents, owners and evidence. See [[ai-risk-compliance]]. |
 
 **Business and strategy**
 
 | Built-in Kit | What it is for |
 | --- | --- |
 | **BPMN lite** | Business processes: tasks, events, gateways and lanes connected by sequence flows. |
+| **Business capability map** | Capabilities on three levels with maturity, target and strategic importance, a heat colour, and the applications that support them. See [[capability-map]]. |
+| **Business model canvas** | The nine blocks of a business model as containers, with items, how well each is tested, annual amounts and links between items. See [[business-model-canvas]]. |
+| **Value streams and customer journeys** | Value streams and customer journeys: stages, touchpoints scored by emotion, channels, pain points, opportunities and metrics. See [[value-streams-journeys]]. |
+| **Stakeholder and organisation map** | Organisation units, roles and people, stakeholders on an interest and influence grid with their attitude, and RACI for activities and deliverables. See [[stakeholder-org-map]]. |
+| **OKRs and goals** | Goals, objectives and key results per period, with progress from start, target and current values, initiatives and owners. See [[okrs-goals]]. |
 
 **Delivery**
 
