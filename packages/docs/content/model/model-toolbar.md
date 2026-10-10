@@ -48,10 +48,10 @@ It is the top strip of the model view. It is always visible while a model is ope
 
 ### Second row
 
-- The six menus listed above. **Commands** only appears when the tool has commands for the model menu. The **Check** menu always appears and shows a number when the model has problems.
+- The six menus listed above. **Commands** only appears when the Kit has commands for the model menu. The **Check** menu always appears and shows a number when the model has problems.
 - **Undo** and **Redo** icon buttons (curved arrows). Tooltips: "Undo (Ctrl+Z)" and "Redo (Ctrl+Shift+Z)". They are grey when there is nothing to undo or redo. See [[undo-redo]].
 - **Zoom out** (**−**), **Fit to window** (four corner marks, tooltip "Show the whole model") and **Zoom in** (**+**). See [[canvas-navigation]].
-- Extra buttons that the tool library adds to the toolbar (commands placed in the toolbar). See [[behaviour-commands]].
+- Extra buttons that the Kit adds to the toolbar (commands placed in the toolbar). See [[behaviour-commands]].
 
 ### When items are grey
 
@@ -63,7 +63,7 @@ It is the top strip of the model view. It is always visible while a model is ope
 | **Align left**, **Align centres**, **Align right**, **Align top**, **Align middle**, **Align bottom** | Fewer than two objects are selected. |
 | **Distribute horizontally**, **Distribute vertically** | Fewer than three objects are selected. |
 
-All other items are always available. Toolbar buttons that come from the tool library are always available too. See [[status-and-messages]] for the messages commands can show.
+All other items are always available. Toolbar buttons that come from the Kit are always available too. See [[status-and-messages]] for the messages commands can show.
 
 ### How the menus behave
 
@@ -79,7 +79,7 @@ The header itself stores nothing in the model. Three settings are remembered in 
 
 ## Examples
 
-In the Agent pipeline tool, rules add the toolbar buttons **Hand to human**, **Mark done** and **Mark ready**, and the **Commands** menu holds **Total effort and cost**. Select a task and click **Mark done** to set its status. See [[menu-commands]].
+In the Agent pipeline Kit, rules add the toolbar buttons **Hand to human**, **Mark done** and **Mark ready**, and the **Commands** menu holds **Total effort and cost**. Select a task and click **Mark done** to set its status. See [[menu-commands]].
 
 ## Good to know
 

@@ -1,0 +1,13 @@
+{
+  "contents": [
+    "tool.json"
+  ],
+  "created": "2026-06-01T09:00:00.000Z",
+  "formatVersion": 1,
+  "kind": "mktool",
+  "tool": {
+    "id": "tool_erlite",
+    "name": "ER lite",
+    "version": "1.0.0"
+  }
+}

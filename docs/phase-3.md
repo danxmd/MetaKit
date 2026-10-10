@@ -1,6 +1,6 @@
 # Phase 3: folder sync (lane B, weeks 6 to 9)
 
-Phase 3 lets several people edit the same tool libraries and models at once through a shared synced folder. It turns the sync spike into `packages/sync` and replaces the single snapshot file from phase 1 with per-instance change files.
+Phase 3 lets several people edit the same Kits and models at once through a shared synced folder. It turns the sync spike into `packages/sync` and replaces the single snapshot file from phase 1 with per-instance change files.
 
 **Before starting:** read `docs/spikes/sync.md`, Danial's results from the real-service runs, and the phase-0 gate report. Plan section: "Collaboration through a shared folder".
 
@@ -44,7 +44,7 @@ Deliver:
 
 - A sync status line ("last change from Anna, 12 s ago").
 - A small notice when a same-field clash was resolved.
-- Deleted tools and models go to a 30-day trash that can be restored.
+- Deleted Kits and models go to a 30-day trash that can be restored.
 - A setup check that warns when the folder looks online-only (files not available locally) or not synced.
 
 Done when: Danial runs the two-machine test over OneDrive and a SharePoint library and no changes are lost. Claude prepares the test protocol and results table; Danial runs it.

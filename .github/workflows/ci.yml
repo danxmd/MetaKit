@@ -26,10 +26,14 @@ jobs:
       - run: pnpm lint
       - run: pnpm test
       - run: pnpm build
-      - name: Validate the sample tool libraries and models
+      - name: Validate the sample Kits and models
         run: |
-          for path in tools/bpmn-lite tools/er-lite tools/bpmn-lite/order-process.mkmodel.json tools/er-lite/library.mkmodel.json; do
+          for path in kits/bpmn-lite kits/er-lite kits/bpmn-lite/order-process.mkmodel.json kits/er-lite/library.mkmodel.json kits/data-ai-strategy kits/data-ai-maturity kits/kpi-metric-tree; do
             node apps/cli/dist/bin.js validate "$path" --strict
+          done
+          # These samples show one warning each on purpose, so they are checked without --strict.
+          for path in kits/data-ai-strategy/insurer-strategy.mkmodel.json kits/data-ai-maturity/maturity-2027.mkmodel.json kits/kpi-metric-tree/online-store.mkmodel.json; do
+            node apps/cli/dist/bin.js validate "$path"
           done
       - name: Install Chromium
         run: pnpm --filter @metakit-app/web exec playwright install --with-deps chromium

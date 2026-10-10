@@ -1,0 +1,556 @@
+{
+  "formatVersion": 7,
+  "manifest": {
+    "id": "tool_bpmnlite",
+    "name": "BPMN lite",
+    "version": "1.0.0",
+    "languages": ["en", "de"]
+  },
+  "settings": {
+    "grid": {
+      "size": 10,
+      "snap": true,
+      "visible": true
+    },
+    "layers": [
+      {
+        "key": "main",
+        "labels": {
+          "en": "Main",
+          "de": "Haupt"
+        },
+        "visible": true
+      }
+    ],
+    "numbering": {
+      "enabled": true,
+      "prefix": "T-",
+      "start": 1
+    }
+  },
+  "classes": {
+    "cls_flownode": {
+      "id": "cls_flownode",
+      "key": "FlowNode",
+      "kind": "node",
+      "labels": {
+        "en": "Flow node",
+        "de": "Flussknoten"
+      },
+      "abstract": true,
+      "attributes": [
+        {
+          "id": "att_name",
+          "key": "Name",
+          "type": "text",
+          "labels": {
+            "en": "Name",
+            "de": "Name"
+          },
+          "required": true,
+          "maxLength": 80,
+          "default": "New"
+        },
+        {
+          "id": "att_description",
+          "key": "Description",
+          "type": "text",
+          "labels": {
+            "en": "Description",
+            "de": "Beschreibung"
+          },
+          "multiline": true
+        }
+      ],
+      "help": {
+        "en": "Everything that can take part in a sequence flow."
+      },
+      "shape": "shp_task"
+    },
+    "cls_task": {
+      "id": "cls_task",
+      "key": "Task",
+      "kind": "node",
+      "labels": {
+        "en": "Task",
+        "de": "Aufgabe"
+      },
+      "extends": "cls_flownode",
+      "attributes": [
+        {
+          "id": "att_priority",
+          "key": "Priority",
+          "type": "choice",
+          "labels": {
+            "en": "Priority",
+            "de": "Priorität"
+          },
+          "options": ["Low", "Medium", "High"],
+          "default": "Medium"
+        },
+        {
+          "id": "att_owner",
+          "key": "Owner",
+          "type": "reference",
+          "labels": {
+            "en": "Owner",
+            "de": "Verantwortlich"
+          },
+          "target": {
+            "modelTypes": ["mt_process"],
+            "classes": ["cls_lane"]
+          },
+          "max": 1
+        },
+        {
+          "id": "att_effort",
+          "key": "Effort",
+          "type": "number",
+          "labels": {
+            "en": "Effort",
+            "de": "Aufwand"
+          },
+          "min": 0,
+          "decimals": 1,
+          "unit": "h"
+        },
+        {
+          "id": "att_cost",
+          "key": "Cost",
+          "type": "formula",
+          "labels": {
+            "en": "Cost",
+            "de": "Kosten"
+          },
+          "formula": "Effort * 85",
+          "result": "number"
+        },
+        {
+          "id": "att_due",
+          "key": "Due",
+          "type": "date",
+          "labels": {
+            "en": "Due date",
+            "de": "Fällig am"
+          }
+        },
+        {
+          "id": "att_duration",
+          "key": "Duration",
+          "type": "duration",
+          "labels": {
+            "en": "Duration",
+            "de": "Dauer"
+          },
+          "default": "PT1H"
+        },
+        {
+          "id": "att_tags",
+          "key": "Tags",
+          "type": "multi-choice",
+          "options": ["Finance", "Legal", "Customer"],
+          "max": 3
+        },
+        {
+          "id": "att_checklist",
+          "key": "Checklist",
+          "type": "table",
+          "columns": [
+            {
+              "id": "item",
+              "key": "Item",
+              "type": "text"
+            },
+            {
+              "id": "done",
+              "key": "Done",
+              "type": "boolean"
+            }
+          ],
+          "maxRows": 20
+        },
+        {
+          "id": "att_spec",
+          "key": "Spec",
+          "type": "link",
+          "target": "any"
+        },
+        {
+          "id": "att_open",
+          "key": "OpenSpec",
+          "type": "action",
+          "labels": {
+            "en": "Open specification"
+          },
+          "run": {
+            "kind": "command",
+            "ref": "openSpec"
+          }
+        }
+      ],
+      "shape": "shp_task"
+    },
+    "cls_gateway": {
+      "id": "cls_gateway",
+      "key": "Gateway",
+      "kind": "node",
+      "labels": {
+        "en": "Gateway",
+        "de": "Gateway"
+      },
+      "extends": "cls_flownode",
+      "attributes": [
+        {
+          "id": "att_gatewaykind",
+          "key": "GatewayKind",
+          "type": "choice",
+          "options": ["XOR", "AND", "OR"],
+          "default": "XOR"
+        }
+      ],
+      "shape": "shp_gateway"
+    },
+    "cls_start": {
+      "id": "cls_start",
+      "key": "StartEvent",
+      "kind": "node",
+      "labels": {
+        "en": "Start event",
+        "de": "Startereignis"
+      },
+      "extends": "cls_flownode",
+      "attributes": [],
+      "shape": "shp_event"
+    },
+    "cls_end": {
+      "id": "cls_end",
+      "key": "EndEvent",
+      "kind": "node",
+      "labels": {
+        "en": "End event",
+        "de": "Endereignis"
+      },
+      "extends": "cls_flownode",
+      "attributes": [],
+      "shape": "shp_event"
+    },
+    "cls_lane": {
+      "id": "cls_lane",
+      "key": "Lane",
+      "kind": "swimlane",
+      "labels": {
+        "en": "Lane",
+        "de": "Bahn"
+      },
+      "attributes": [
+        {
+          "id": "att_lanename",
+          "key": "LaneName",
+          "type": "text",
+          "labels": {
+            "en": "Name",
+            "de": "Name"
+          },
+          "required": true,
+          "maxLength": 60
+        }
+      ],
+      "shape": "shp_swimlane"
+    }
+  },
+  "relations": {
+    "rel_flow": {
+      "id": "rel_flow",
+      "key": "SequenceFlow",
+      "labels": {
+        "en": "Sequence flow",
+        "de": "Sequenzfluss"
+      },
+      "from": ["cls_flownode"],
+      "to": ["cls_flownode"],
+      "attributes": [
+        {
+          "id": "att_condition",
+          "key": "Condition",
+          "type": "text",
+          "labels": {
+            "en": "Condition",
+            "de": "Bedingung"
+          },
+          "maxLength": 120
+        }
+      ],
+      "shape": "shp_flow"
+    }
+  },
+  "modelTypes": {
+    "mt_process": {
+      "id": "mt_process",
+      "key": "Process",
+      "labels": {
+        "en": "Process",
+        "de": "Prozess"
+      },
+      "classes": [
+        "cls_task",
+        "cls_gateway",
+        "cls_start",
+        "cls_end",
+        "cls_lane"
+      ],
+      "relations": ["rel_flow"],
+      "views": [
+        {
+          "id": "vw_flowonly",
+          "key": "FlowOnly",
+          "labels": {
+            "en": "Flow only",
+            "de": "Nur Fluss"
+          },
+          "classes": ["cls_task", "cls_gateway", "cls_start", "cls_end"],
+          "relations": ["rel_flow"]
+        }
+      ],
+      "cardinalities": [
+        {
+          "kind": "count",
+          "class": "cls_start",
+          "min": 1,
+          "max": 1
+        },
+        {
+          "kind": "count",
+          "class": "cls_end",
+          "min": 1
+        },
+        {
+          "kind": "degree",
+          "class": "cls_start",
+          "relation": "rel_flow",
+          "end": "to",
+          "max": 0
+        },
+        {
+          "kind": "degree",
+          "class": "cls_end",
+          "relation": "rel_flow",
+          "end": "from",
+          "max": 0
+        }
+      ],
+      "attributes": [
+        {
+          "id": "att_title",
+          "key": "Title",
+          "type": "text",
+          "required": true,
+          "maxLength": 100
+        },
+        {
+          "id": "att_version",
+          "key": "Version",
+          "type": "integer",
+          "min": 1,
+          "default": 1
+        },
+        {
+          "id": "att_processowner",
+          "key": "ProcessOwner",
+          "type": "text"
+        }
+      ]
+    }
+  },
+  "shapes": {
+    "shp_task": {
+      "id": "shp_task",
+      "name": "Task (rounded box)",
+      "kind": "node",
+      "size": {
+        "width": 140,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 60,
+        "minHeight": 36
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "= $fill",
+          "stroke": "#364fc7",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 4,
+          "width": "100% - 16",
+          "height": "100% - 8",
+          "text": "= $label",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle"
+        }
+      ]
+    },
+    "shp_gateway": {
+      "id": "shp_gateway",
+      "name": "Gateway (diamond)",
+      "kind": "node",
+      "size": {
+        "width": 70,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 40
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          ["50%", 0],
+          ["100%", "50%"],
+          ["50%", "100%"],
+          [0, "50%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            ["50%", 0],
+            ["100%", "50%"],
+            ["50%", "100%"],
+            [0, "50%"]
+          ],
+          "fill": "= $fill",
+          "stroke": "#364fc7",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": "22%",
+          "y": "22%",
+          "width": "56%",
+          "height": "56%",
+          "text": "= $label",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle"
+        }
+      ]
+    },
+    "shp_event": {
+      "id": "shp_event",
+      "name": "Event (circle)",
+      "kind": "node",
+      "size": {
+        "width": 60,
+        "height": 60,
+        "resizable": true,
+        "minWidth": 30,
+        "minHeight": 30
+      },
+      "outline": "ellipse",
+      "parts": [
+        {
+          "type": "ellipse",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "fill": "= $fill",
+          "stroke": "#364fc7",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": "15%",
+          "y": "15%",
+          "width": "70%",
+          "height": "70%",
+          "text": "= $label",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle"
+        }
+      ]
+    },
+    "shp_swimlane": {
+      "id": "shp_swimlane",
+      "name": "Swimlane (horizontal)",
+      "kind": "node",
+      "size": {
+        "width": 600,
+        "height": 160,
+        "resizable": true,
+        "minWidth": 200,
+        "minHeight": 80
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "fill": "#ffffff",
+          "stroke": "#364fc7",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": 28,
+          "height": "100%",
+          "fill": "= $fill",
+          "stroke": "#364fc7",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": -66,
+          "y": "50% - 14",
+          "width": 160,
+          "height": 28,
+          "text": "= $label",
+          "align": "center",
+          "valign": "middle",
+          "wrap": false,
+          "font": {
+            "weight": 600
+          },
+          "transform": {
+            "rotate": -90
+          }
+        }
+      ]
+    },
+    "shp_flow": {
+      "id": "shp_flow",
+      "name": "Flow (arrow)",
+      "kind": "relation",
+      "line": {
+        "stroke": "#6b7a90",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      }
+    }
+  },
+  "panels": {},
+  "rules": {},
+  "scripts": {}
+}

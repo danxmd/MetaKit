@@ -6,7 +6,7 @@ import {
   type Model,
   type ModelCommand,
 } from '@metakit-app/core';
-import { BPMN, bpmnStore, emptyModel, loadTool } from '../testing';
+import { BPMN, bpmnStore, emptyModel, loadKit } from '../testing';
 import { align, distribute, type Placed } from './arrange';
 import {
   copySelection,
@@ -26,50 +26,50 @@ const rect = (x: number, y: number, w = 100, h = 50) => ({
 
 describe('allowedRelations', () => {
   it('allows only relations whose ends fit, by inheritance', () => {
-    const tool = loadTool('bpmn-lite');
-    const type = Object.values(tool.modelTypes)[0]!;
+    const kit = loadKit('bpmn-lite');
+    const type = Object.values(kit.modelTypes)[0]!;
     expect(
-      allowedRelations(tool, type, 'cls_task', 'cls_gateway').map((r) => r.key),
+      allowedRelations(kit, type, 'cls_task', 'cls_gateway').map((r) => r.key),
     ).toEqual(['SequenceFlow']);
-    expect(allowedRelations(tool, type, 'cls_lane', 'cls_task')).toEqual([]);
-    expect(allowedRelations(tool, type, 'cls_task', 'cls_lane')).toEqual([]);
+    expect(allowedRelations(kit, type, 'cls_lane', 'cls_task')).toEqual([]);
+    expect(allowedRelations(kit, type, 'cls_task', 'cls_lane')).toEqual([]);
   });
 
   it('says which elements can start and end a connector', () => {
-    const tool = loadTool('bpmn-lite');
-    const type = Object.values(tool.modelTypes)[0]!;
-    expect(canConnectAt(tool, type, 'cls_task')).toBe(true);
-    expect(canConnectAt(tool, type, 'cls_lane')).toBe(false);
-    expect(canConnectAt(tool, type, 'cls_gateway', { from: 'cls_task' })).toBe(
+    const kit = loadKit('bpmn-lite');
+    const type = Object.values(kit.modelTypes)[0]!;
+    expect(canConnectAt(kit, type, 'cls_task')).toBe(true);
+    expect(canConnectAt(kit, type, 'cls_lane')).toBe(false);
+    expect(canConnectAt(kit, type, 'cls_gateway', { from: 'cls_task' })).toBe(
       true,
     );
-    expect(canConnectAt(tool, type, 'cls_lane', { from: 'cls_task' })).toBe(
+    expect(canConnectAt(kit, type, 'cls_lane', { from: 'cls_task' })).toBe(
       false,
     );
-    const flow = Object.values(tool.relations).find(
+    const flow = Object.values(kit.relations).find(
       (r) => r.key === 'SequenceFlow',
     )!;
-    expect(canConnectAt(tool, type, 'cls_task', { relation: flow.id })).toBe(
+    expect(canConnectAt(kit, type, 'cls_task', { relation: flow.id })).toBe(
       true,
     );
-    expect(canConnectAt(tool, type, 'cls_lane', { relation: flow.id })).toBe(
+    expect(canConnectAt(kit, type, 'cls_lane', { relation: flow.id })).toBe(
       false,
     );
   });
 
   it('keeps ER relations apart', () => {
-    const tool = loadTool('er-lite');
-    const type = Object.values(tool.modelTypes)[0]!;
+    const kit = loadKit('er-lite');
+    const type = Object.values(kit.modelTypes)[0]!;
     const keys = (a: string, b: string) =>
-      allowedRelations(tool, type, a as never, b as never).map((r) => r.key);
+      allowedRelations(kit, type, a as never, b as never).map((r) => r.key);
     expect(keys('cls_entity', 'cls_attribute')).toEqual(['Has']);
     expect(keys('cls_entity', 'cls_relationship')).toEqual(['Participates']);
     expect(keys('cls_attribute', 'cls_entity')).toEqual([]);
   });
 
   it('explains a refusal', () => {
-    const tool = loadTool('bpmn-lite');
-    expect(refusalReason(tool, 'cls_lane', 'cls_task')).toContain('Lane');
+    const kit = loadKit('bpmn-lite');
+    expect(refusalReason(kit, 'cls_lane', 'cls_task')).toContain('Lane');
   });
 });
 
@@ -192,7 +192,7 @@ describe('align and distribute', () => {
 
 describe('clipboard', () => {
   function build() {
-    const { tool, store } = bpmnStore();
+    const { kit, store } = bpmnStore();
     const run = (c: ModelCommand) =>
       (store.execute(c) as unknown as { value: never }).value;
     const a = run({
@@ -222,12 +222,12 @@ describe('clipboard', () => {
       bends: [{ x: 200, y: 100 }],
     });
     run({ type: 'createConnector', relation: BPMN.flow, from: b, to: c });
-    return { tool, store, a, b, c };
+    return { kit, store, a, b, c };
   }
 
   it('copies the selection and the connectors between selected elements only', () => {
-    const { tool, store, a, b } = build();
-    const data = copySelection(tool, store.state as Model, [a, b]);
+    const { kit, store, a, b } = build();
+    const data = copySelection(kit, store.state as Model, [a, b]);
     expect(data.elements).toHaveLength(2);
     expect(data.connectors).toHaveLength(1);
     expect(data.elements[0]!.attrs).toMatchObject({ Name: 'A' });
@@ -237,10 +237,10 @@ describe('clipboard', () => {
   });
 
   it('pastes into the same model with new ids, an offset and the values', () => {
-    const { tool, store, a, b } = build();
-    const data = copySelection(tool, store.state as Model, [a, b]);
-    const type = tool.modelTypes[(store.state as Model).manifest.modelType]!;
-    const plan = planPaste(tool, type, data, { x: 20, y: 20 });
+    const { kit, store, a, b } = build();
+    const data = copySelection(kit, store.state as Model, [a, b]);
+    const type = kit.modelTypes[(store.state as Model).manifest.modelType]!;
+    const plan = planPaste(kit, type, data, { x: 20, y: 20 });
     expect(plan.skipped).toEqual({ elements: 0, connectors: 0 });
     const result = store.execute({ type: 'batch', commands: plan.commands });
     expect(result.ok).toBe(true);
@@ -257,12 +257,12 @@ describe('clipboard', () => {
     expect(Object.keys((store.state as Model).elements)).toHaveLength(3);
   });
 
-  it('pastes into a model of another tool library by key, and skips what does not fit', () => {
-    const { tool, store, a, b } = build();
-    const data = copySelection(tool, store.state as Model, [a, b]);
-    const er = loadTool('er-lite');
+  it('pastes into a model of another Kit by key, and skips what does not fit', () => {
+    const { kit, store, a, b } = build();
+    const data = copySelection(kit, store.state as Model, [a, b]);
+    const er = loadKit('er-lite');
     const erModel = emptyModel(er);
-    const erStore = createModelStore(erModel, { tool: er });
+    const erStore = createModelStore(erModel, { kit: er });
     const type = er.modelTypes[erModel.manifest.modelType]!;
     const plan = planPaste(er, type, data, { x: 0, y: 0 });
     expect(plan.skipped.elements).toBe(2);
@@ -274,12 +274,12 @@ describe('clipboard', () => {
   });
 
   it('matches classes by key when the ids differ', () => {
-    const { tool, store, a } = build();
-    const data = copySelection(tool, store.state as Model, [a]);
-    data.tool = 'tool_other0000';
+    const { kit, store, a } = build();
+    const data = copySelection(kit, store.state as Model, [a]);
+    data.kit = 'tool_other0000';
     data.elements[0]!.class = 'cls_unknown00';
-    const type = tool.modelTypes[(store.state as Model).manifest.modelType]!;
-    const plan = planPaste(tool, type, data, { x: 0, y: 0 });
+    const type = kit.modelTypes[(store.state as Model).manifest.modelType]!;
+    const plan = planPaste(kit, type, data, { x: 0, y: 0 });
     expect(plan.commands).toHaveLength(1);
   });
 });

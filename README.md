@@ -1,104 +1,243 @@
+<div align="center">
+
 # MetaKit
 
-MetaKit is a browser-only metamodelling and modelling tool. Method engineers build modelling tools in Build mode; modellers use them in Model mode. Tool libraries and models are plain JSON files in a shared folder (OneDrive, SharePoint, Google Drive, Dropbox) or, for tool libraries, in GitHub or GitLab.
+**Build your own modelling language. Then model with it, together.**
 
-The project is in phase 7. Build mode lets method engineers make tool libraries without writing JSON: classes, relation classes, model types, shapes, panel layouts, rules and scripts, with a live preview. In Model mode you open a workspace folder, create a model from a tool library, place and connect objects and edit their attributes. Formulas give computed values, default values and constraints. Rules react to 24 events and add commands to the toolbar and menus. Scripts (TypeScript in a sandbox) can do more, and ask permission before using the network or files. You can export images (SVG, PNG, PDF), share models as files, bundles and CSV, move tool libraries between workspaces as packages, lay out a model automatically, list problems and search across models. Several people can work in one model at once: changes merge field by field, you see who else is there, and deleted models and tool libraries stay in a 30-day trash. A tool library can also live in a GitHub or GitLab repository (Git mode): commit and push, pull with a field-by-field merge, and follow tagged releases. An optional assistant, off by default and using your own API key, drafts rules, scripts, shapes and classes from a sentence. See `docs/phase-5.md` to `docs/phase-9.md` for what each phase added.
+MetaKit is a free, open-source metamodelling and modelling tool that runs entirely in your browser.
+Method engineers design **Kits**, which are modelling languages with their own concepts, notation, rules and scripts.
+Modellers use those Kits to draw models, alone or with their team, in an ordinary shared folder.
 
-Local folders need Chrome or Edge on desktop. Other browsers load the app and show a message.
+[**Open MetaKit**](https://danxmd.github.io/MetaKit/) ·
+[Quick start](#quick-start) ·
+[Features](#what-you-can-do) ·
+[How it works](#how-it-works) ·
+[Run it locally](#run-it-locally) ·
+[Support the project](#support-the-project)
 
-## Run it
+<a href="https://buymeacoffee.com/danial.amlashi"><img alt="Buy me a coffee" src="https://img.shields.io/badge/Buy%20me%20a%20coffee-support-FFDD00?logo=buymeacoffee&logoColor=000"></a>
+<img alt="Licence: Apache-2.0" src="https://img.shields.io/badge/licence-Apache--2.0-blue">
+<img alt="Runs in Chrome and Edge" src="https://img.shields.io/badge/runs%20in-Chrome%20%7C%20Edge-4263eb">
 
-You need Node.js 22 or newer (see `.nvmrc`). Then start everything with one command:
+![The model view, with a model made with the Data and AI architecture Kit: the palette of concepts on the left, data flowing from source systems through pipelines and stores to an ML model and its consumers on the canvas, and the attributes of the selected ML model on the right](docs/images/model-view.png)
+
+</div>
+
+## Why MetaKit
+
+Most modelling tools give you a fixed notation, such as BPMN, ArchiMate or UML. Real projects rarely fit one of them exactly: a data platform review, an AI use-case portfolio or a governance model each need their own concepts, attributes and checks.
+
+MetaKit lets you **make the notation fit the work**:
+
+- **Build a Kit without writing code.** Pick concepts from a catalog, give them attributes and a look, connect them with relation classes, add rules, and try it live.
+- **Model with it straight away.** Everything you change in a Kit shows in open models at once.
+- **Keep your data yours.** There is no server, no database and no account. Kits and models are plain JSON files in a folder you choose, shared through OneDrive, SharePoint, Google Drive or Dropbox, or kept in GitHub or GitLab.
+- **Work together.** Several people can edit the same model at the same time. Changes merge field by field, and you see who else is there.
+
+## Who it is for
+
+| You are…                                      | MetaKit helps you…                                                                                                                                                                           |
+| --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A **consultant** in data and AI               | map a client's data platform and lineage, score an AI use-case portfolio, set up data ownership and governance, plan migrations and roadmaps, using ready-made Kits you can adapt per client |
+| A **method engineer** or enterprise architect | design a modelling language for your organisation, with your concepts, rules and checks, and share it with your team                                                                         |
+| A **modeller** or analyst                     | draw clear models with a palette that only offers what makes sense, live checks and computed values                                                                                          |
+| A **teacher** or researcher                   | build teaching and research notations quickly and share them as a single file                                                                                                                |
+
+## Quick start
+
+1. **Open** [MetaKit](https://danxmd.github.io/MetaKit/) in Chrome or Edge on a desktop computer.
+2. **Choose a workspace folder.** Pick an empty folder (it can be inside OneDrive or Google Drive) and create a workspace.
+3. **Pick a Kit.** In **Build**, use one of the built-in Kits as it is, copy one and extend it, or start an empty one.
+4. **Model.** In **Model**, choose **New model**, pick the Kit, then drag concepts from the palette onto the canvas and connect them.
+
+Press **F1** at any time for help on the page you are on.
+
+## What you can do
+
+### Build Kits, without code
+
+![Build mode: the sections of a Kit on the left, the class editor in the middle and a live preview on the right](docs/images/build-view.png)
+
+- **Concepts and relations.**
+  - Classes with typed attributes: text, numbers, choices, dates, references, tables, links and formulas.
+  - Relation classes with allowed ends.
+  - Model types with views and cardinalities.
+- **Add from catalog.** Ready-made, generic concepts in topic tabs, such as Dataset, Data pipeline, ML model, KPI, Risk, Stakeholder and Decision, each with attributes and a look. Add them in one step, then edit them freely.
+
+  ![The catalog: concepts in topic tabs, with a preview of the look, the help text and the attributes of the focused concept](docs/images/catalog.png)
+
+- **Looks without drawing.** Pick a base form, colours, an icon and the fields to show; colour by any attribute; add badges. An advanced drawing editor is there when you need it.
+- **Panel layouts** for the attribute panel, with tabs, groups and fields that show only when they apply.
+- **Formulas** for computed values, defaults and constraints, such as `Likelihood * Impact` or `sum(children().Effort)`.
+- **Rules** that react to 24 kinds of event and add commands to menus.
+- **Scripts** in TypeScript for anything more, run in a sandbox, with permission prompts for the network and files.
+- **Try it**: a live model of your Kit next to the editor while you build.
+
+### Model, alone or together
+
+- A palette with a preview of every concept, placing, connecting, containers and swimlanes, alignment and auto-layout.
+- An attribute panel generated from the Kit, with inline checks.
+- A problems list, find in a model, find across all models, folders, and a 30-day trash.
+- Export as SVG, PNG or PDF; share models as files, bundles or CSV.
+- Live collaboration in a shared folder, with presence and a field-by-field merge.
+
+### Built-in Kits
+
+| Kit                                 | What it is for                                                                                                    |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| **Data and AI strategy**            | Vision, goals and objectives, value drivers, AI use cases and capabilities, a roadmap of initiatives and benefits |
+| **Data and AI maturity assessment** | Capabilities scored now and as a target, with the gap, a priority and the actions that close it                   |
+| **AI use-case portfolio**           | Use cases scored on value, feasibility, data readiness and risk, with a priority score and quadrants              |
+| **KPI and metric tree**             | Outcome KPIs explained by driver and operational metrics, with targets and an on-track colour                     |
+| **Data and AI architecture**        | Sources, pipelines, stores, datasets, ML models, AI services and consumers, with lineage and personal-data checks |
+| **Data governance and ownership**   | Domains, data products, owners and stewards, policies, classifications and quality rules                          |
+| **Agent pipeline**                  | AI agents and people performing tasks, handing over work and approving results                                    |
+| **BPMN lite**                       | Business processes with tasks, events, gateways and lanes                                                         |
+| **ER lite**                         | Entities, attributes and relationships                                                                            |
+
+![The Kits page: the workspace's own Kits first, then the built-in Kits, which you can use as they are or copy and extend](docs/images/kits-page.png)
+
+### Git mode and the assistant
+
+- **Git mode:** keep a Kit in a GitHub or GitLab repository. Commit and push, pull with a field-by-field merge, and follow tagged releases.
+- **Assistant (optional):** off by default, and uses your own API key. It drafts rules, scripts, shapes and classes from one sentence. You review every draft before anything changes.
+
+## How it works
+
+MetaKit is a set of static files. Everything runs in your browser, and your files go straight from the browser to your folder or Git host.
+
+```mermaid
+flowchart LR
+  subgraph Browser["Your browser"]
+    B["Build mode<br/>design a Kit"]
+    M["Model mode<br/>draw models"]
+  end
+  subgraph Folder["Your shared workspace folder<br/>(OneDrive, SharePoint, Google Drive, Dropbox)"]
+    K[("kits/…<br/>Kits")]
+    D[("models/…<br/>models")]
+  end
+  G[("GitHub / GitLab<br/>optional")]
+  B -- "writes" --> K
+  K -- "defines the palette, looks and rules of" --> M
+  M -- "writes" --> D
+  B <-. "commit, pull" .-> G
+```
+
+**Several people, one folder.** Each open copy of MetaKit writes only its own small change files. Everyone reads everyone else's and merges them field by field, so two people can edit the same model without overwriting each other. There is nothing to install on a server, and no lock to wait for.
+
+```mermaid
+sequenceDiagram
+  participant A as Anna's browser
+  participant F as Shared folder
+  participant B as Ben's browser
+  A->>F: writes her change file (Task 3: Priority = High)
+  B->>F: writes his change file (Task 3: Owner = Ben)
+  F-->>A: Ben's change arrives
+  F-->>B: Anna's change arrives
+  Note over A,B: Both now see Priority = High and Owner = Ben
+```
+
+**One change path.** Every change, whether from you, a rule, a script or the assistant, is a command. That gives you undo for everything, the same checks everywhere, and a clean history.
+
+```mermaid
+flowchart LR
+  UI["Buttons and canvas"] --> C["Commands"]
+  R["Rules"] --> C
+  S["Scripts"] --> C
+  AI["Assistant drafts<br/>(after you accept)"] --> C
+  C --> ST["Document store<br/>undo · validation"]
+  ST --> SY["Sync<br/>change files"]
+  ST --> CV["Canvas<br/>drawn from the Kit's looks"]
+```
+
+## Run it locally
+
+You need [Node.js](https://nodejs.org) 22 or newer. Then start everything with one command:
 
 - **Windows:** double-click `start.cmd`.
 - **macOS or Linux:** run `./start.sh`.
-- **Anywhere:** `node scripts/start.js` (or `pnpm start`).
+- **Anywhere:** `pnpm start` (or `node scripts/start.js`).
 
-It checks Node, installs or updates the dependencies (using [pnpm](https://pnpm.io) 10, through Corepack if pnpm is not installed), starts the web app and opens it in your browser. MetaKit has no server or database, so that is the whole system. Press Ctrl+C to stop.
+It checks Node, installs or updates the dependencies (with [pnpm](https://pnpm.io), through Corepack if needed), starts the app and opens your browser. MetaKit has no server or database, so that is the whole system. Press Ctrl+C to stop.
 
-| Option         | What it does                                                                 |
-| -------------- | ---------------------------------------------------------------------------- |
-| `--preview`    | Build for production and serve that, as GitHub Pages would                   |
-| `--port 5200`  | Use another port (or set `PORT`); the default is 5173, 4173 with `--preview` |
-| `--no-install` | Skip the dependency check                                                    |
-| `--no-open`    | Do not open the browser                                                      |
+| Option         | What it does                                              |
+| -------------- | --------------------------------------------------------- |
+| `--preview`    | Build for production and serve that, as GitHub Pages does |
+| `--port 5200`  | Use another port (or set `PORT`)                          |
+| `--no-install` | Skip the dependency check                                 |
+| `--no-open`    | Do not open the browser                                   |
 
-## Development setup
+### Browsers
 
-You need Node.js 22 or newer (see `.nvmrc`) and [pnpm](https://pnpm.io) 10 (`corepack enable` picks the pinned version).
+MetaKit needs the File System Access API to work with folders, so use **Chrome or Edge on a desktop computer**. Other browsers load the app and say so.
+
+## For developers
+
+<details>
+<summary>Development setup, commands, layout and command line</summary>
+
+You need Node.js 22 or newer and [pnpm](https://pnpm.io) 10 (`corepack enable` picks the pinned version).
 
 ```sh
 pnpm install
 pnpm dev          # serve the web app locally
 ```
 
-| Command          | What it does                                                     |
-| ---------------- | ---------------------------------------------------------------- |
-| `pnpm typecheck` | `tsc -b` for packages, `tsc` for the CLI, `svelte-check` for web |
-| `pnpm lint`      | ESLint, then a Prettier check                                    |
-| `pnpm format`    | Apply Prettier                                                   |
-| `pnpm test`      | Unit tests (Vitest)                                              |
-| `pnpm test:e2e`  | End-to-end tests (Playwright, Chromium), web app and spikes      |
-| `pnpm bench`     | Canvas benchmark; fails when `bench/budget.json` is exceeded     |
-| `pnpm build`     | Build the web app and the CLI                                    |
+| Command          | What it does                                                             |
+| ---------------- | ------------------------------------------------------------------------ |
+| `pnpm typecheck` | `tsc -b` for packages, `tsc` for the CLI, `svelte-check` for the web app |
+| `pnpm lint`      | ESLint, then a Prettier check                                            |
+| `pnpm format`    | Apply Prettier                                                           |
+| `pnpm test`      | Unit and property tests (Vitest)                                         |
+| `pnpm test:e2e`  | End-to-end tests (Playwright, Chromium)                                  |
+| `pnpm bench`     | Canvas benchmark; fails when `bench/budget.json` is exceeded             |
+| `pnpm build`     | Build the web app and the CLI                                            |
 
-The first `pnpm test:e2e` needs Chromium: `pnpm --filter @metakit-app/web exec playwright install chromium`. If Chromium is already installed, set `PW_CHROMIUM_PATH` to its executable instead.
+The first `pnpm test:e2e` needs Chromium: `pnpm --filter @metakit-app/web exec playwright install chromium`, or set `PW_CHROMIUM_PATH` to an installed Chromium.
 
-## Using Model mode
-
-1. Start MetaKit (`start.cmd`, `./start.sh` or `pnpm start`); it opens in your browser. Use Chrome or Edge.
-2. **Open workspace folder** and pick a folder. In a folder without `workspace.json` you can start a new workspace.
-3. **Add tool library** (once per workspace) and pick a tool library file, then **New model**: choose the tool library, a model type and a name.
-4. Click an object in the palette and click the canvas, or drag it there. Choose a relation and drag from one object to another, or select an object and drag from its edge. Double-click an object to edit its text; the panel on the right edits every attribute. Ctrl+Z and Ctrl+Shift+Z undo and redo; Ctrl+F finds.
-
-Changes are saved to the workspace about half a second after each edit. Deleted models stay in the workspace and can be restored from "Deleted models".
-
-## Command line
-
-After `pnpm build`:
-
-```sh
-node apps/cli/dist/bin.js validate tools/bpmn-lite            # a tool library
-node apps/cli/dist/bin.js validate tools/bpmn-lite/order-process.mkmodel.json --strict
-node apps/cli/dist/bin.js validate my-workspace --json        # a whole workspace folder
-node apps/cli/dist/bin.js export my-workspace/models/order --format json --out order.mkmodel.json
-```
-
-`validate` exits with 1 on errors (or on warnings with `--strict`). Files are in the formats described in `openspec/specs/` once the phase-1 changes are archived, and the sample tools are in `tools/`.
-
-Known limits in phase 1: when two instances have written snapshots of one tool library, the newest snapshot wins and a warning is shown (merging arrives in phase 3). Chromium on Linux needs a UTF-8 locale to store non-ASCII file names.
-
-## Layout
+**Layout**
 
 ```text
 apps/web        the static web app (Vite + Svelte 5)
-apps/cli        headless export and validation (Node.js)
-packages/       core, sync, storage, formula, shapes, canvas, behaviour, assistant, ui
-spikes/         phase-0 experiments (canvas, sync, behaviour, git); never imported by packages/ or apps/
-tools/          sample tool libraries used as test fixtures
-bench/          canvas and merge benchmarks
-docs/           plan, phase briefs, decisions
+apps/cli        headless validation, export and import (Node.js)
+packages/       core, sync, storage, formula, shapes, canvas, behaviour, assistant, ui, docs
+kits/           the built-in Kits and their sample models
+docs/           plan, phase briefs, decisions (ADRs)
 openspec/       specs and change proposals
+bench/          canvas and merge benchmarks
+spikes/         phase-0 experiments
 ```
 
-Read `CLAUDE.md` for the architecture rules and `docs/implementation-plan.md` for the plan.
+**Command line** (after `pnpm build`)
 
-## Continuous integration and deploy
+```sh
+node apps/cli/dist/bin.js validate kits/bpmn-lite
+node apps/cli/dist/bin.js validate kits/bpmn-lite/order-process.mkmodel.json --strict
+node apps/cli/dist/bin.js validate my-workspace --json
+node apps/cli/dist/bin.js export my-workspace/models/order --format json --out order.mkmodel.json
+node apps/cli/dist/bin.js export-kit kits/bpmn-lite --out bpmn-lite.mkkit
+node apps/cli/dist/bin.js import-kit bpmn-lite.mkkit --workspace my-workspace
+```
 
-- Pull requests run install, typecheck, lint, unit tests, build, end-to-end tests and a bundle-size report (see the job summary).
-- Pushes to `main` deploy `apps/web` to GitHub Pages. In the repository settings, set Pages source to **GitHub Actions**. On a private repository this only works on a paid GitHub plan; the deploy job stays in place and fails until then.
+`--help` lists every command. `validate` exits with 1 on errors (or on warnings with `--strict`). The names from before the Kit rename, `export-tool`, `import-tool`, `--tool` and `--no-tool`, still work.
+
+**How the project is built**
+
+- Every feature starts as an OpenSpec change in `openspec/changes/` and is approved before it is built.
+- Architecture rules are in `CLAUDE.md`, decisions in `docs/decisions/`, and the full plan in `docs/implementation-plan.md`.
+- Pull requests run typecheck, lint, unit tests, build, end-to-end tests, a canvas performance budget and a bundle-size report.
+- Pushes to `main` deploy the app to GitHub Pages.
+
+</details>
+
+## Support the project
+
+MetaKit is free and open source. If it saves you time, you can support its development:
+
+<a href="https://buymeacoffee.com/danial.amlashi"><img alt="Buy me a coffee" src="https://img.shields.io/badge/Buy%20me%20a%20coffee-%E2%98%95-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=000"></a>
+
+[buymeacoffee.com/danial.amlashi](https://buymeacoffee.com/danial.amlashi)
 
 ## Licence
 
-Apache-2.0. See `LICENSE` and `NOTICE`.
-
-## Spikes
-
-Phase-0 experiments, each with a report in `docs/spikes/`:
-
-- `spikes/canvas`: `pnpm --filter @metakit-app/spike-canvas dev`, then open `http://localhost:4174/?bench` in Chrome or Edge and press **Run benchmark**.
-- `spikes/sync`: `pnpm --filter @metakit-app/spike-sync dev` (port 4175). The test protocol for real sync services is in `docs/spikes/sync.md`.
-- `spikes/behaviour`: `pnpm --filter @metakit-app/spike-behaviour dev` (port 4176), formula engine and QuickJS sandbox; `pnpm --filter @metakit-app/spike-behaviour measure` records sizes and timings.
-- `spikes/git`: `pnpm --filter @metakit-app/spike-git dev` (port 4177). Steps for running it against throwaway GitHub and GitLab repositories are in `docs/spikes/git.md`.
-
-The phase 0 decision report is `docs/spikes/phase-0-report.md`.
+Apache-2.0. See [`LICENSE`](LICENSE) and [`NOTICE`](NOTICE).

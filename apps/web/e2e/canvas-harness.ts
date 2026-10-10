@@ -1,5 +1,5 @@
 // Bundled and run inside Chromium by canvas.spec.ts. It mounts the canvas, the editor and the
-// minimap on a sample tool library so that the tests can drive them with a real mouse and keyboard.
+// minimap on a sample Kit so that the tests can drive them with a real mouse and keyboard.
 import {
   createModelStore,
   MODEL_FORMAT_VERSION,
@@ -10,7 +10,7 @@ import {
   type ModelCommand,
   type ModelStore,
   type Point,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 import {
   CanvasView,
@@ -29,7 +29,7 @@ import {
 } from '@metakit-app/canvas';
 
 interface Mounted {
-  tool: ToolLibrary;
+  kit: Kit;
   store: ModelStore;
   scene: Scene;
   view: CanvasView;
@@ -41,15 +41,15 @@ interface Mounted {
 
 let current: Mounted | null = null;
 
-function newModel(tool: ToolLibrary): Model {
-  const modelType = Object.values(tool.modelTypes)[0]!;
+function newModel(kit: Kit): Model {
+  const modelType = Object.values(kit.modelTypes)[0]!;
   return {
     formatVersion: MODEL_FORMAT_VERSION,
     manifest: {
       id: 'mdl_harness001',
       name: 'Harness',
-      tool: tool.manifest.id,
-      toolVersion: tool.manifest.version,
+      kit: kit.manifest.id,
+      kitVersion: kit.manifest.version,
       modelType: modelType.id,
     },
     attrs: {},
@@ -62,7 +62,7 @@ function newModel(tool: ToolLibrary): Model {
  * `workerSource` is the bundled ELK worker as text: this harness is itself bundled without the
  * app's build tool, which is what resolves `new Worker(new URL(...))` in the app.
  */
-function mount(tool: ToolLibrary, workerSource?: string): void {
+function mount(kit: Kit, workerSource?: string): void {
   current?.editor.destroy();
   current?.minimap.destroy();
   current?.view.destroy();
@@ -72,15 +72,15 @@ function mount(tool: ToolLibrary, workerSource?: string): void {
   host.style.cssText =
     'position:fixed;left:0;top:0;width:1000px;height:700px;z-index:1000;background:#fff;';
   document.body.append(host);
-  const store = createModelStore(newModel(tool), { tool });
-  const scene = new Scene(store.state as Model, tool);
+  const store = createModelStore(newModel(kit), { kit });
+  const scene = new Scene(store.state as Model, kit);
   scene.attach(store);
-  const view = new CanvasView(host, scene, { grid: tool.settings.grid });
+  const view = new CanvasView(host, scene, { grid: kit.settings.grid });
   view.setView({ s: 1, ox: 0, oy: 0 }, false);
   const messages: string[] = [];
   const editor = new Editor({
     store,
-    tool,
+    kit,
     view,
     host: { onMessage: (t) => messages.push(t) },
     layout: workerSource
@@ -98,7 +98,7 @@ function mount(tool: ToolLibrary, workerSource?: string): void {
   mapHost.style.cssText = 'position:absolute;right:8px;bottom:8px;';
   host.append(mapHost);
   const minimap = new Minimap(mapHost, view);
-  current = { tool, store, scene, view, editor, minimap, host, messages };
+  current = { kit, store, scene, view, editor, minimap, host, messages };
   view.paint();
 }
 

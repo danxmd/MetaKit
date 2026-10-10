@@ -8,13 +8,13 @@ contexts: []
 order: 90
 ---
 
-The palette is your toolbox. It shows what the tool library lets you put into this kind of model.
+The palette is your toolbox. It shows what the Kit lets you put into this kind of model.
 
 ## What it is
 
 A narrow column on the left of the [[page-model-view|model view]]. It has three parts: the **Select** tool at the top, a list headed **Objects** and a list headed **Relations**. Each entry shows a small drawing of the shape and its name.
 
-The tool library decides the content. The palette shows only the classes and relations that the [[model-types|model type]] allows. Abstract classes (those that only exist to be inherited from, see [[abstract-classes]]) are not listed. Entries are sorted alphabetically.
+The Kit decides the content. The palette shows only the classes and relations that the [[model-types|model type]] allows. Abstract classes (those that only exist to be inherited from, see [[abstract-classes]]) are not listed. Entries are sorted alphabetically.
 
 ## Where to find it
 
@@ -51,13 +51,13 @@ Objects of kind container or swimlane show as normal entries. They are placed th
 
 ## Examples
 
-In the Agent pipeline tool the **Objects** list shows **Agent**, **Artifact**, **Gate**, **Human**, **Stage**, **Task**. The class **Actor** is missing: it is abstract, and **Agent** and **Human** inherit from it. The **Relations** list shows **Approves**, **Delegates to**, **Feeds**, **Hands over to**, **Performs**, **Produces**. With the view **Flow** chosen the list shrinks (see [[menu-view]]).
+In the Agent pipeline Kit the **Objects** list shows **Agent**, **Artifact**, **Gate**, **Human**, **Stage**, **Task**. The class **Actor** is missing: it is abstract, and **Agent** and **Human** inherit from it. The **Relations** list shows **Approves**, **Delegates to**, **Feeds**, **Hands over to**, **Performs**, **Produces**. With the view **Flow** chosen the list shrinks (see [[menu-view]]).
 
 ## Good to know
 
 - Choosing an entry does not change the model. Only the click on the canvas does.
-- The palette never shows classes the model type forbids. If something you expect is missing, ask who maintains the tool, or check the model type in Build mode. See [[model-types]].
-- The names are the labels the tool builder gave to the classes and relations.
+- The palette never shows classes the model type forbids. If something you expect is missing, ask who maintains the Kit, or check the model type in Build mode. See [[model-types]].
+- The names are the labels the method engineer gave to the classes and relations.
 
 > **Tip**: Hover over a relation to read, for example, "Performs: from Actor to Task". That tells you what it can connect. An abstract class such as Actor stands for all its subclasses, here Agent and Human.
 

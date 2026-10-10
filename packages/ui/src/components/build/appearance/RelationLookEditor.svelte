@@ -6,7 +6,7 @@
     type MarkerType,
     type RelationId,
     type RelationLook,
-    type ToolLibrary,
+    type Kit,
   } from '@metakit-app/core';
   import { defaultRelationLook } from '@metakit-app/shapes';
   import {
@@ -26,20 +26,20 @@
   import ColourRule from './ColourRule.svelte';
 
   let {
-    tool,
+    kit,
     relationId,
     run,
     onClose,
   }: {
-    tool: ToolLibrary;
+    kit: Kit;
     relationId: RelationId;
     run: (command: never) => CommandResult;
     onClose: () => void;
   } = $props();
 
-  const rel = $derived(tool.relations[relationId]);
-  const attributes = $derived(effectiveRelationAttributes(tool, relationId));
-  const appearance = $derived(appearanceOfRelation(tool, relationId));
+  const rel = $derived(kit.relations[relationId]);
+  const attributes = $derived(effectiveRelationAttributes(kit, relationId));
+  const appearance = $derived(appearanceOfRelation(kit, relationId));
   let pending = $state<RelationLook | null>(null);
   const look = $derived.by((): RelationLook => {
     if (appearance.kind === 'look') return appearance.look;
@@ -51,7 +51,7 @@
   function change(next: RelationLook) {
     if (!rel) return;
     if (appearance.kind !== 'look') pending = next;
-    const result = run(saveRelationLook(tool, relationId, next) as never);
+    const result = run(saveRelationLook(kit, relationId, next) as never);
     error = result.ok ? null : result.error;
   }
 

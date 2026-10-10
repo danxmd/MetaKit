@@ -1,13 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createModelStore } from '../model/commands';
-import { SAMPLE, emptySampleModel, sampleTool } from '../testing/sample-tool';
+import { SAMPLE, emptySampleModel, sampleKit } from '../testing/sample-kit';
 import type { ElementId } from '../ids';
 import { MAX_NESTING } from './store';
 import { CommandError } from './tx';
 
-const tool = sampleTool();
+const kit = sampleKit();
 const make = (user?: string) =>
-  createModelStore(emptySampleModel(), { tool, ...(user ? { user } : {}) });
+  createModelStore(emptySampleModel(), { kit, ...(user ? { user } : {}) });
 const add = (store: ReturnType<typeof make>, x = 0, user?: string) => {
   const r = store.execute(
     { type: 'createElement', class: SAMPLE.task, x, y: 0 },
@@ -53,7 +53,7 @@ describe('history', () => {
 
   it('keeps a limited number of steps', () => {
     const store = createModelStore(emptySampleModel(), {
-      tool,
+      kit,
       historyLimit: 3,
     });
     for (let i = 0; i < 10; i++) add(store, i);
