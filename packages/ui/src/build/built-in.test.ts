@@ -24,8 +24,13 @@ describe('finding a built-in Kit', () => {
 
   it('matches every word in the name or description, in any case', () => {
     expect(names('lineage')).toContain('Data and AI architecture');
+    expect(names('lineage')).toContain('Data pipelines and lineage');
     expect(names('lineage')).not.toContain('ER lite');
     expect(names('MATURITY gap')).toEqual(['Data and AI maturity assessment']);
+    expect(names('acceptance criteria')).toEqual([
+      'Requirements and user stories',
+    ]);
+    expect(names('stride')).toEqual(['Security threat model']);
     expect(names('  ')).toHaveLength(BUILT_IN_KITS.length);
     expect(names('nothing like this')).toEqual([]);
   });
@@ -34,13 +39,18 @@ describe('finding a built-in Kit', () => {
     expect(groupBuiltIns(BUILT_IN_KITS).map((g) => g.label)).toEqual([
       'Data and AI',
       'Business and strategy',
+      'Delivery',
       'Architecture',
+      'General',
     ]);
     expect(
       groupBuiltIns(searchBuiltIns(BUILT_IN_KITS, 'entities')).map((g) => [
         g.id,
         g.kits.map((k) => k.name),
       ]),
-    ).toEqual([['architecture', ['ER lite']]]);
+    ).toEqual([
+      ['data-ai', ['Data modelling']],
+      ['architecture', ['ER lite']],
+    ]);
   });
 });

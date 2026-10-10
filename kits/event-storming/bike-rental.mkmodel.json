@@ -1,0 +1,379 @@
+{
+  "attributes": {
+    "Facilitator": "Lead developer",
+    "SessionDate": "2027-02-18",
+    "Title": "Bike rental"
+  },
+  "connectors": [
+    {
+      "from": "el_a_rider1",
+      "id": "cn_001",
+      "relation": "Issues",
+      "to": "el_c_reserve"
+    },
+    {
+      "from": "el_c_reserve",
+      "id": "cn_002",
+      "relation": "HandledBy",
+      "to": "el_g_rental"
+    },
+    {
+      "from": "el_g_rental",
+      "id": "cn_003",
+      "relation": "Raises",
+      "to": "el_ev_reserved"
+    },
+    {
+      "from": "el_ev_reserved",
+      "id": "cn_004",
+      "relation": "Updates",
+      "to": "el_rm_bikes"
+    },
+    {
+      "from": "el_a_rider2",
+      "id": "cn_005",
+      "relation": "Issues",
+      "to": "el_c_unlock"
+    },
+    {
+      "from": "el_a_rider2",
+      "id": "cn_006",
+      "relation": "Issues",
+      "to": "el_c_damage"
+    },
+    {
+      "from": "el_c_unlock",
+      "id": "cn_007",
+      "relation": "Raises",
+      "to": "el_ev_unlocked"
+    },
+    {
+      "from": "el_a_rider3",
+      "id": "cn_008",
+      "relation": "Issues",
+      "to": "el_c_end"
+    },
+    {
+      "from": "el_c_end",
+      "id": "cn_009",
+      "relation": "Raises",
+      "to": "el_ev_ended"
+    },
+    {
+      "from": "el_h_station",
+      "id": "cn_010",
+      "relation": "About",
+      "to": "el_c_end"
+    },
+    {
+      "from": "el_ev_ended",
+      "id": "cn_011",
+      "relation": "Triggers",
+      "to": "el_pol_charge"
+    },
+    {
+      "from": "el_ev_ended",
+      "id": "cn_012",
+      "relation": "LeadsTo",
+      "to": "el_ev_charged"
+    },
+    {
+      "from": "el_pol_charge",
+      "id": "cn_013",
+      "relation": "Issues",
+      "to": "el_c_charge"
+    },
+    {
+      "from": "el_c_charge",
+      "id": "cn_014",
+      "relation": "HandledBy",
+      "to": "el_g_account"
+    },
+    {
+      "from": "el_g_account",
+      "id": "cn_015",
+      "relation": "Raises",
+      "to": "el_ev_charged"
+    },
+    {
+      "from": "el_x_payments",
+      "id": "cn_016",
+      "relation": "Raises",
+      "to": "el_ev_failed"
+    }
+  ],
+  "elements": [
+    {
+      "attributes": {
+        "Name": "Rental",
+        "Team": "Rental team"
+      },
+      "class": "BoundedContext",
+      "h": 300,
+      "id": "el_ctx_rental",
+      "w": 1920,
+      "x": 20,
+      "y": 20
+    },
+    {
+      "attributes": {
+        "Name": "Rider"
+      },
+      "class": "Actor",
+      "h": 90,
+      "id": "el_a_rider1",
+      "parent": "el_ctx_rental",
+      "w": 80,
+      "x": 60,
+      "y": 45
+    },
+    {
+      "attributes": {
+        "Name": "Reserve bike"
+      },
+      "class": "Command",
+      "h": 80,
+      "id": "el_c_reserve",
+      "parent": "el_ctx_rental",
+      "w": 140,
+      "x": 150,
+      "y": 50
+    },
+    {
+      "attributes": {
+        "Name": "Rental",
+        "Rules": "A bike has one rider at a time. A reservation lasts 15 minutes."
+      },
+      "class": "Aggregate",
+      "h": 80,
+      "id": "el_g_rental",
+      "parent": "el_ctx_rental",
+      "w": 140,
+      "x": 150,
+      "y": 190
+    },
+    {
+      "attributes": {
+        "Name": "Bike reserved",
+        "Step": 1
+      },
+      "class": "DomainEvent",
+      "h": 80,
+      "id": "el_ev_reserved",
+      "parent": "el_ctx_rental",
+      "w": 140,
+      "x": 310,
+      "y": 50
+    },
+    {
+      "attributes": {
+        "Name": "Free bikes near me"
+      },
+      "class": "ReadModel",
+      "h": 80,
+      "id": "el_rm_bikes",
+      "parent": "el_ctx_rental",
+      "w": 140,
+      "x": 310,
+      "y": 190
+    },
+    {
+      "attributes": {
+        "Name": "Rider"
+      },
+      "class": "Actor",
+      "h": 90,
+      "id": "el_a_rider2",
+      "parent": "el_ctx_rental",
+      "w": 80,
+      "x": 470,
+      "y": 45
+    },
+    {
+      "attributes": {
+        "Name": "Unlock bike"
+      },
+      "class": "Command",
+      "h": 80,
+      "id": "el_c_unlock",
+      "parent": "el_ctx_rental",
+      "w": 140,
+      "x": 560,
+      "y": 50
+    },
+    {
+      "attributes": {
+        "Name": "Report damage"
+      },
+      "class": "Command",
+      "h": 80,
+      "id": "el_c_damage",
+      "parent": "el_ctx_rental",
+      "w": 140,
+      "x": 560,
+      "y": 190
+    },
+    {
+      "attributes": {
+        "Name": "Bike unlocked",
+        "Step": 2
+      },
+      "class": "DomainEvent",
+      "h": 80,
+      "id": "el_ev_unlocked",
+      "parent": "el_ctx_rental",
+      "w": 140,
+      "x": 720,
+      "y": 50
+    },
+    {
+      "attributes": {
+        "Name": "Rider"
+      },
+      "class": "Actor",
+      "h": 90,
+      "id": "el_a_rider3",
+      "parent": "el_ctx_rental",
+      "w": 80,
+      "x": 880,
+      "y": 45
+    },
+    {
+      "attributes": {
+        "Name": "End ride"
+      },
+      "class": "Command",
+      "h": 80,
+      "id": "el_c_end",
+      "parent": "el_ctx_rental",
+      "w": 140,
+      "x": 970,
+      "y": 50
+    },
+    {
+      "attributes": {
+        "Name": "Ride ends off station?",
+        "Question": "What happens when a rider ends a ride away from a station?",
+        "Status": "Open"
+      },
+      "class": "Hotspot",
+      "h": 110,
+      "id": "el_h_station",
+      "parent": "el_ctx_rental",
+      "w": 180,
+      "x": 950,
+      "y": 175
+    },
+    {
+      "attributes": {
+        "Name": "Ride ended",
+        "Step": 3
+      },
+      "class": "DomainEvent",
+      "h": 80,
+      "id": "el_ev_ended",
+      "parent": "el_ctx_rental",
+      "w": 140,
+      "x": 1130,
+      "y": 50
+    },
+    {
+      "attributes": {
+        "Name": "Billing",
+        "Team": "Payments team"
+      },
+      "class": "BoundedContext",
+      "h": 290,
+      "id": "el_ctx_billing",
+      "w": 1920,
+      "x": 20,
+      "y": 350
+    },
+    {
+      "attributes": {
+        "Kind": "Automatic",
+        "Name": "When a ride ends, charge it"
+      },
+      "class": "Policy",
+      "h": 80,
+      "id": "el_pol_charge",
+      "parent": "el_ctx_billing",
+      "w": 140,
+      "x": 1290,
+      "y": 390
+    },
+    {
+      "attributes": {
+        "Name": "Charge ride"
+      },
+      "class": "Command",
+      "h": 80,
+      "id": "el_c_charge",
+      "parent": "el_ctx_billing",
+      "w": 140,
+      "x": 1450,
+      "y": 390
+    },
+    {
+      "attributes": {
+        "Name": "Account",
+        "Rules": "A ride is charged once."
+      },
+      "class": "Aggregate",
+      "h": 80,
+      "id": "el_g_account",
+      "parent": "el_ctx_billing",
+      "w": 140,
+      "x": 1450,
+      "y": 520
+    },
+    {
+      "attributes": {
+        "Name": "Ride charged",
+        "Step": 4
+      },
+      "class": "DomainEvent",
+      "h": 80,
+      "id": "el_ev_charged",
+      "parent": "el_ctx_billing",
+      "w": 140,
+      "x": 1610,
+      "y": 390
+    },
+    {
+      "attributes": {
+        "Name": "Payment failed",
+        "Step": 5
+      },
+      "class": "DomainEvent",
+      "h": 80,
+      "id": "el_ev_failed",
+      "parent": "el_ctx_billing",
+      "w": 140,
+      "x": 1610,
+      "y": 520
+    },
+    {
+      "attributes": {
+        "Name": "Payment provider"
+      },
+      "class": "ExternalSystem",
+      "h": 80,
+      "id": "el_x_payments",
+      "parent": "el_ctx_billing",
+      "w": 140,
+      "x": 1770,
+      "y": 520
+    }
+  ],
+  "formatVersion": 2,
+  "id": "mdl_bikerental",
+  "kind": "mkmodel",
+  "kit": {
+    "id": "kit_eventstorming",
+    "name": "Event storming",
+    "version": "1.0.0"
+  },
+  "modelType": "EventStorm",
+  "name": "Bike rental"
+}

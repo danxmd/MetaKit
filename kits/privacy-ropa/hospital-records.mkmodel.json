@@ -1,0 +1,553 @@
+{
+  "attributes": {
+    "Organisation": "A hospital group",
+    "PrivacyContact": "Data protection officer",
+    "Title": "Records of processing"
+  },
+  "connectors": [
+    {
+      "from": "el_act_care",
+      "id": "cn_001",
+      "relation": "ForPurpose",
+      "to": "el_pur_care"
+    },
+    {
+      "from": "el_pur_care",
+      "id": "cn_002",
+      "relation": "ReliesOn",
+      "to": "el_lb_care"
+    },
+    {
+      "from": "el_act_care",
+      "id": "cn_003",
+      "relation": "Processes",
+      "to": "el_cat_health"
+    },
+    {
+      "from": "el_act_care",
+      "id": "cn_004",
+      "relation": "Processes",
+      "to": "el_cat_insurance"
+    },
+    {
+      "from": "el_act_care",
+      "id": "cn_005",
+      "relation": "Processes",
+      "to": "el_cat_contact"
+    },
+    {
+      "from": "el_act_care",
+      "id": "cn_006",
+      "relation": "About",
+      "to": "el_sub_patients"
+    },
+    {
+      "from": "el_act_care",
+      "id": "cn_007",
+      "relation": "DisclosesTo",
+      "to": "el_rcp_lab"
+    },
+    {
+      "from": "el_act_care",
+      "id": "cn_008",
+      "relation": "KeptFor",
+      "to": "el_ret_care"
+    },
+    {
+      "from": "el_act_care",
+      "id": "cn_009",
+      "relation": "UsesSystem",
+      "to": "el_sys_ehr"
+    },
+    {
+      "from": "el_act_payroll",
+      "id": "cn_010",
+      "relation": "ForPurpose",
+      "to": "el_pur_salary"
+    },
+    {
+      "from": "el_act_payroll",
+      "id": "cn_011",
+      "relation": "ForPurpose",
+      "to": "el_pur_tax"
+    },
+    {
+      "from": "el_pur_salary",
+      "id": "cn_012",
+      "relation": "ReliesOn",
+      "to": "el_lb_contract"
+    },
+    {
+      "from": "el_pur_tax",
+      "id": "cn_013",
+      "relation": "ReliesOn",
+      "to": "el_lb_tax"
+    },
+    {
+      "from": "el_act_payroll",
+      "id": "cn_014",
+      "relation": "Processes",
+      "to": "el_cat_contact"
+    },
+    {
+      "from": "el_act_payroll",
+      "id": "cn_015",
+      "relation": "Processes",
+      "to": "el_cat_salary"
+    },
+    {
+      "from": "el_act_payroll",
+      "id": "cn_016",
+      "relation": "Processes",
+      "to": "el_cat_bank"
+    },
+    {
+      "from": "el_act_payroll",
+      "id": "cn_017",
+      "relation": "About",
+      "to": "el_sub_staff"
+    },
+    {
+      "from": "el_act_payroll",
+      "id": "cn_018",
+      "relation": "DisclosesTo",
+      "to": "el_rcp_payroll"
+    },
+    {
+      "from": "el_act_payroll",
+      "id": "cn_019",
+      "relation": "DisclosesTo",
+      "to": "el_rcp_taxoffice"
+    },
+    {
+      "from": "el_act_payroll",
+      "id": "cn_020",
+      "relation": "KeptFor",
+      "to": "el_ret_payroll"
+    },
+    {
+      "from": "el_act_remind",
+      "id": "cn_021",
+      "relation": "ForPurpose",
+      "to": "el_pur_remind"
+    },
+    {
+      "from": "el_pur_remind",
+      "id": "cn_022",
+      "relation": "ReliesOn",
+      "to": "el_lb_interest"
+    },
+    {
+      "from": "el_act_remind",
+      "id": "cn_023",
+      "relation": "Processes",
+      "to": "el_cat_contact"
+    },
+    {
+      "from": "el_act_remind",
+      "id": "cn_024",
+      "relation": "Processes",
+      "to": "el_cat_appointments"
+    },
+    {
+      "from": "el_act_remind",
+      "id": "cn_025",
+      "relation": "About",
+      "to": "el_sub_patients"
+    },
+    {
+      "from": "el_act_remind",
+      "id": "cn_026",
+      "relation": "DisclosesTo",
+      "to": "el_rcp_sms"
+    },
+    {
+      "from": "el_act_remind",
+      "id": "cn_027",
+      "relation": "KeptFor",
+      "to": "el_ret_remind"
+    },
+    {
+      "from": "el_act_remind",
+      "id": "cn_028",
+      "relation": "UsesSystem",
+      "to": "el_sys_appointments"
+    }
+  ],
+  "elements": [
+    {
+      "attributes": {
+        "Basis": "Public task",
+        "Name": "Health care law",
+        "Reference": "The national law on health care"
+      },
+      "class": "LegalBasis",
+      "h": 70,
+      "id": "el_lb_care",
+      "w": 170,
+      "x": 40,
+      "y": 90
+    },
+    {
+      "attributes": {
+        "Name": "Diagnosis and treatment"
+      },
+      "class": "Purpose",
+      "h": 50,
+      "id": "el_pur_care",
+      "w": 190,
+      "x": 280,
+      "y": 100
+    },
+    {
+      "attributes": {
+        "DPIAStatus": "Done",
+        "LargeScale": true,
+        "Name": "Patient care records",
+        "Owner": "Medical director",
+        "Role": "Controller"
+      },
+      "class": "ProcessingActivity",
+      "h": 126,
+      "id": "el_act_care",
+      "w": 220,
+      "x": 560,
+      "y": 60
+    },
+    {
+      "attributes": {
+        "Months": 240,
+        "Name": "Medical records",
+        "Period": "20 years",
+        "StartsAt": "the last treatment",
+        "Then": "Delete"
+      },
+      "class": "RetentionRule",
+      "h": 50,
+      "id": "el_ret_care",
+      "w": 190,
+      "x": 280,
+      "y": 230
+    },
+    {
+      "attributes": {
+        "Country": "Home country",
+        "Name": "Laboratory service",
+        "RecipientType": "Processor"
+      },
+      "class": "Recipient",
+      "h": 64,
+      "id": "el_rcp_lab",
+      "w": 170,
+      "x": 470,
+      "y": 250
+    },
+    {
+      "attributes": {
+        "HostingCountry": "Home country",
+        "Name": "Electronic health record"
+      },
+      "class": "Application",
+      "h": 70,
+      "id": "el_sys_ehr",
+      "w": 150,
+      "x": 680,
+      "y": 250
+    },
+    {
+      "attributes": {
+        "Examples": "Diagnoses, test results, medication",
+        "Name": "Health data",
+        "Sensitivity": "Special category"
+      },
+      "class": "DataCategory",
+      "h": 60,
+      "id": "el_cat_health",
+      "w": 170,
+      "x": 900,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "Examples": "Insurer and policy number",
+        "Name": "Insurance details"
+      },
+      "class": "DataCategory",
+      "h": 60,
+      "id": "el_cat_insurance",
+      "w": 170,
+      "x": 900,
+      "y": 120
+    },
+    {
+      "attributes": {
+        "Examples": "Name, address, phone, email",
+        "Name": "Contact details"
+      },
+      "class": "DataCategory",
+      "h": 60,
+      "id": "el_cat_contact",
+      "w": 170,
+      "x": 900,
+      "y": 330
+    },
+    {
+      "attributes": {
+        "Name": "Patients",
+        "Number": "About 300,000 a year",
+        "Vulnerable": true
+      },
+      "class": "DataSubject",
+      "h": 110,
+      "id": "el_sub_patients",
+      "w": 100,
+      "x": 1160,
+      "y": 230
+    },
+    {
+      "attributes": {
+        "Basis": "Contract",
+        "Name": "Employment contract"
+      },
+      "class": "LegalBasis",
+      "h": 70,
+      "id": "el_lb_contract",
+      "w": 170,
+      "x": 40,
+      "y": 400
+    },
+    {
+      "attributes": {
+        "Basis": "Legal obligation",
+        "Name": "Tax law",
+        "Reference": "The national tax law"
+      },
+      "class": "LegalBasis",
+      "h": 70,
+      "id": "el_lb_tax",
+      "w": 170,
+      "x": 40,
+      "y": 490
+    },
+    {
+      "attributes": {
+        "Name": "Paying salaries"
+      },
+      "class": "Purpose",
+      "h": 50,
+      "id": "el_pur_salary",
+      "w": 190,
+      "x": 280,
+      "y": 410
+    },
+    {
+      "attributes": {
+        "Name": "Tax reporting"
+      },
+      "class": "Purpose",
+      "h": 50,
+      "id": "el_pur_tax",
+      "w": 190,
+      "x": 280,
+      "y": 500
+    },
+    {
+      "attributes": {
+        "DPIAStatus": "Not needed",
+        "Name": "Staff payroll",
+        "Owner": "Head of human resources",
+        "Role": "Controller"
+      },
+      "class": "ProcessingActivity",
+      "h": 126,
+      "id": "el_act_payroll",
+      "w": 220,
+      "x": 560,
+      "y": 420
+    },
+    {
+      "attributes": {
+        "Months": 84,
+        "Name": "Payroll records",
+        "Period": "7 years",
+        "StartsAt": "the end of the tax year",
+        "Then": "Delete"
+      },
+      "class": "RetentionRule",
+      "h": 50,
+      "id": "el_ret_payroll",
+      "w": 190,
+      "x": 280,
+      "y": 610
+    },
+    {
+      "attributes": {
+        "Country": "Neighbouring country",
+        "Name": "Payroll provider",
+        "OtherCountry": true,
+        "RecipientType": "Processor",
+        "Safeguard": "Standard contractual clauses"
+      },
+      "class": "Recipient",
+      "h": 64,
+      "id": "el_rcp_payroll",
+      "w": 170,
+      "x": 470,
+      "y": 610
+    },
+    {
+      "attributes": {
+        "Country": "Home country",
+        "Name": "Tax authority",
+        "RecipientType": "Public authority"
+      },
+      "class": "Recipient",
+      "h": 64,
+      "id": "el_rcp_taxoffice",
+      "w": 170,
+      "x": 680,
+      "y": 610
+    },
+    {
+      "attributes": {
+        "Examples": "Salary, tax code, deductions",
+        "Name": "Salary and tax"
+      },
+      "class": "DataCategory",
+      "h": 60,
+      "id": "el_cat_salary",
+      "w": 170,
+      "x": 900,
+      "y": 430
+    },
+    {
+      "attributes": {
+        "Examples": "Account number",
+        "Name": "Bank details"
+      },
+      "class": "DataCategory",
+      "h": 60,
+      "id": "el_cat_bank",
+      "w": 170,
+      "x": 900,
+      "y": 510
+    },
+    {
+      "attributes": {
+        "Name": "Employees",
+        "Number": "About 9,000",
+        "Vulnerable": false
+      },
+      "class": "DataSubject",
+      "h": 110,
+      "id": "el_sub_staff",
+      "w": 100,
+      "x": 1160,
+      "y": 440
+    },
+    {
+      "attributes": {
+        "Basis": "Legitimate interests",
+        "Name": "Fewer missed appointments",
+        "Notes": "Reminders help patients and cost them nothing; they can turn them off."
+      },
+      "class": "LegalBasis",
+      "h": 70,
+      "id": "el_lb_interest",
+      "w": 170,
+      "x": 40,
+      "y": 790
+    },
+    {
+      "attributes": {
+        "Name": "Reminding patients of appointments"
+      },
+      "class": "Purpose",
+      "h": 50,
+      "id": "el_pur_remind",
+      "w": 190,
+      "x": 280,
+      "y": 800
+    },
+    {
+      "attributes": {
+        "DPIAStatus": "Not started",
+        "LargeScale": true,
+        "Name": "Appointment reminders",
+        "NewTechnology": true,
+        "Owner": "Head of outpatient clinics",
+        "Role": "Controller"
+      },
+      "class": "ProcessingActivity",
+      "h": 126,
+      "id": "el_act_remind",
+      "w": 220,
+      "x": 560,
+      "y": 780
+    },
+    {
+      "attributes": {
+        "Months": 3,
+        "Name": "Reminder log",
+        "Period": "3 months",
+        "StartsAt": "the appointment",
+        "Then": "Delete"
+      },
+      "class": "RetentionRule",
+      "h": 50,
+      "id": "el_ret_remind",
+      "w": 190,
+      "x": 280,
+      "y": 960
+    },
+    {
+      "attributes": {
+        "Country": "Overseas",
+        "Name": "Text message service",
+        "OtherCountry": true,
+        "RecipientType": "Processor",
+        "Safeguard": "None yet"
+      },
+      "class": "Recipient",
+      "h": 64,
+      "id": "el_rcp_sms",
+      "w": 170,
+      "x": 470,
+      "y": 970
+    },
+    {
+      "attributes": {
+        "HostingCountry": "Home country",
+        "Name": "Appointment system"
+      },
+      "class": "Application",
+      "h": 70,
+      "id": "el_sys_appointments",
+      "w": 150,
+      "x": 680,
+      "y": 970
+    },
+    {
+      "attributes": {
+        "Examples": "Date, time and clinic",
+        "Name": "Appointment times"
+      },
+      "class": "DataCategory",
+      "h": 60,
+      "id": "el_cat_appointments",
+      "w": 170,
+      "x": 900,
+      "y": 800
+    }
+  ],
+  "formatVersion": 2,
+  "id": "mdl_hospitalrecords",
+  "kind": "mkmodel",
+  "kit": {
+    "id": "kit_privacyropa",
+    "name": "Privacy and records of processing",
+    "version": "1.0.0"
+  },
+  "modelType": "Records",
+  "name": "Records of processing"
+}

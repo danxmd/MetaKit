@@ -1,0 +1,611 @@
+{
+  "attributes": {
+    "Organisation": "A telecom provider",
+    "Team": "Customer analytics",
+    "Title": "Customer churn model"
+  },
+  "connectors": [
+    {
+      "from": "el_uc_churn",
+      "id": "cn_001",
+      "relation": "UsesModel",
+      "to": "el_model"
+    },
+    {
+      "from": "el_exp_churn",
+      "id": "cn_002",
+      "relation": "Addresses",
+      "to": "el_uc_churn"
+    },
+    {
+      "from": "el_f_tenure",
+      "id": "cn_003",
+      "relation": "DerivedFrom",
+      "to": "el_ds_accounts"
+    },
+    {
+      "from": "el_f_spend",
+      "id": "cn_004",
+      "relation": "DerivedFrom",
+      "to": "el_ds_accounts"
+    },
+    {
+      "from": "el_f_calls",
+      "id": "cn_005",
+      "relation": "DerivedFrom",
+      "to": "el_ds_usage"
+    },
+    {
+      "from": "el_f_trend",
+      "id": "cn_006",
+      "relation": "DerivedFrom",
+      "to": "el_ds_usage"
+    },
+    {
+      "from": "el_run_11",
+      "id": "cn_007",
+      "relation": "TrainsOn",
+      "to": "el_ds_labels"
+    },
+    {
+      "from": "el_run_12",
+      "id": "cn_008",
+      "relation": "TrainsOn",
+      "to": "el_ds_labels"
+    },
+    {
+      "from": "el_run_13",
+      "id": "cn_009",
+      "relation": "TrainsOn",
+      "to": "el_ds_labels"
+    },
+    {
+      "from": "el_run_14",
+      "id": "cn_010",
+      "relation": "TrainsOn",
+      "to": "el_ds_labels"
+    },
+    {
+      "from": "el_run_12",
+      "id": "cn_011",
+      "relation": "Produces",
+      "to": "el_v3"
+    },
+    {
+      "from": "el_run_14",
+      "id": "cn_012",
+      "relation": "Produces",
+      "to": "el_v4"
+    },
+    {
+      "from": "el_v3",
+      "id": "cn_013",
+      "relation": "VersionOf",
+      "to": "el_model"
+    },
+    {
+      "from": "el_v4",
+      "id": "cn_014",
+      "relation": "VersionOf",
+      "to": "el_model"
+    },
+    {
+      "from": "el_ev_v3_auc",
+      "id": "cn_015",
+      "relation": "Evaluates",
+      "to": "el_v3"
+    },
+    {
+      "from": "el_ev_v4_auc",
+      "id": "cn_016",
+      "relation": "Evaluates",
+      "to": "el_v4"
+    },
+    {
+      "from": "el_ev_v4_fair",
+      "id": "cn_017",
+      "relation": "Evaluates",
+      "to": "el_v4"
+    },
+    {
+      "from": "el_gate_v3",
+      "id": "cn_018",
+      "relation": "Approves",
+      "to": "el_v3"
+    },
+    {
+      "from": "el_gate_v4",
+      "id": "cn_019",
+      "relation": "Approves",
+      "to": "el_v4"
+    },
+    {
+      "from": "el_v4",
+      "id": "cn_020",
+      "relation": "DeployedAs",
+      "to": "el_dep_staging"
+    },
+    {
+      "from": "el_v3",
+      "id": "cn_021",
+      "relation": "DeployedAs",
+      "to": "el_dep_prod"
+    },
+    {
+      "from": "el_mon_drift",
+      "id": "cn_022",
+      "relation": "Monitors",
+      "to": "el_dep_prod"
+    },
+    {
+      "from": "el_mon_latency",
+      "id": "cn_023",
+      "relation": "Monitors",
+      "to": "el_dep_prod"
+    },
+    {
+      "from": "el_mon_drift",
+      "id": "cn_024",
+      "relation": "Raises",
+      "to": "el_inc_drift"
+    },
+    {
+      "from": "el_inc_drift",
+      "id": "cn_025",
+      "relation": "LeadsTo",
+      "to": "el_run_14"
+    }
+  ],
+  "elements": [
+    {
+      "attributes": {
+        "BusinessMetric": "Monthly churn rate",
+        "Feasibility": 4,
+        "Name": "Predict which customers will leave",
+        "Owner": "Head of customer retention",
+        "Status": "In production",
+        "Value": 5
+      },
+      "class": "AIUseCase",
+      "h": 110,
+      "id": "el_uc_churn",
+      "w": 170,
+      "x": 615,
+      "y": 10
+    },
+    {
+      "attributes": {
+        "Classification": "Confidential",
+        "ContainsPersonalData": true,
+        "Format": "Table",
+        "Name": "Customer accounts",
+        "Refresh": "Daily",
+        "Version": "2027-03"
+      },
+      "class": "Dataset",
+      "h": 110,
+      "id": "el_ds_accounts",
+      "w": 170,
+      "x": 40,
+      "y": 170
+    },
+    {
+      "attributes": {
+        "Classification": "Internal",
+        "Format": "Table",
+        "Name": "Network usage",
+        "Refresh": "Daily",
+        "Version": "2027-03"
+      },
+      "class": "Dataset",
+      "h": 110,
+      "id": "el_ds_usage",
+      "w": 170,
+      "x": 40,
+      "y": 310
+    },
+    {
+      "attributes": {
+        "Classification": "Internal",
+        "Format": "Table",
+        "Name": "Churn labels",
+        "Refresh": "Monthly",
+        "Version": "2027-03"
+      },
+      "class": "Dataset",
+      "h": 110,
+      "id": "el_ds_labels",
+      "w": 170,
+      "x": 615,
+      "y": 510
+    },
+    {
+      "attributes": {
+        "Name": "Feature store",
+        "Serving": "Offline and online"
+      },
+      "class": "FeatureStore",
+      "h": 290,
+      "id": "el_store",
+      "w": 200,
+      "x": 250,
+      "y": 150
+    },
+    {
+      "attributes": {
+        "Name": "Months as customer",
+        "Type": "Numeric"
+      },
+      "class": "Feature",
+      "h": 44,
+      "id": "el_f_tenure",
+      "parent": "el_store",
+      "w": 140,
+      "x": 280,
+      "y": 195
+    },
+    {
+      "attributes": {
+        "Name": "Monthly spend",
+        "Type": "Numeric"
+      },
+      "class": "Feature",
+      "h": 44,
+      "id": "el_f_spend",
+      "parent": "el_store",
+      "w": 140,
+      "x": 280,
+      "y": 255
+    },
+    {
+      "attributes": {
+        "Name": "Support calls, 90 days",
+        "Type": "Numeric"
+      },
+      "class": "Feature",
+      "h": 44,
+      "id": "el_f_calls",
+      "parent": "el_store",
+      "w": 140,
+      "x": 280,
+      "y": 315
+    },
+    {
+      "attributes": {
+        "Name": "Usage trend",
+        "Type": "Numeric"
+      },
+      "class": "Feature",
+      "h": 44,
+      "id": "el_f_trend",
+      "parent": "el_store",
+      "w": 140,
+      "x": 280,
+      "y": 375
+    },
+    {
+      "attributes": {
+        "Direction": "Higher is better",
+        "Hypothesis": "Usage and support history predict who leaves within three months.",
+        "Metric": "AUC",
+        "Name": "Churn prediction"
+      },
+      "class": "Experiment",
+      "h": 310,
+      "id": "el_exp_churn",
+      "w": 420,
+      "x": 490,
+      "y": 150
+    },
+    {
+      "attributes": {
+        "Algorithm": "Logistic regression",
+        "ComputeCost": 4,
+        "DurationMinutes": 12,
+        "Name": "Run 11",
+        "Score": 0.78,
+        "StartedOn": "2026-11-03"
+      },
+      "class": "TrainingRun",
+      "h": 110,
+      "id": "el_run_11",
+      "parent": "el_exp_churn",
+      "w": 170,
+      "x": 510,
+      "y": 195
+    },
+    {
+      "attributes": {
+        "Algorithm": "Gradient boosting",
+        "ComputeCost": 19,
+        "DurationMinutes": 48,
+        "Name": "Run 12",
+        "Score": 0.84,
+        "StartedOn": "2026-11-05"
+      },
+      "class": "TrainingRun",
+      "h": 110,
+      "id": "el_run_12",
+      "parent": "el_exp_churn",
+      "w": 170,
+      "x": 720,
+      "y": 195
+    },
+    {
+      "attributes": {
+        "Algorithm": "Neural network",
+        "ComputeCost": 85,
+        "DurationMinutes": 130,
+        "Name": "Run 13",
+        "Score": 0.83,
+        "StartedOn": "2026-11-09"
+      },
+      "class": "TrainingRun",
+      "h": 110,
+      "id": "el_run_13",
+      "parent": "el_exp_churn",
+      "w": 170,
+      "x": 510,
+      "y": 325
+    },
+    {
+      "attributes": {
+        "Algorithm": "Gradient boosting",
+        "ComputeCost": 22,
+        "DurationMinutes": 55,
+        "Name": "Run 14: retrained",
+        "Parameters": "Same settings as run 12, on data up to March 2027.",
+        "Score": 0.87,
+        "StartedOn": "2027-04-02"
+      },
+      "class": "TrainingRun",
+      "h": 110,
+      "id": "el_run_14",
+      "parent": "el_exp_churn",
+      "w": 170,
+      "x": 720,
+      "y": 325
+    },
+    {
+      "attributes": {
+        "Name": "Model registry"
+      },
+      "class": "ModelRegistry",
+      "h": 300,
+      "id": "el_registry",
+      "w": 420,
+      "x": 950,
+      "y": 150
+    },
+    {
+      "attributes": {
+        "Metric": "AUC",
+        "Name": "Churn model",
+        "Owner": "Customer analytics",
+        "Task": "Classification"
+      },
+      "class": "MLModel",
+      "h": 80,
+      "id": "el_model",
+      "parent": "el_registry",
+      "w": 170,
+      "x": 1075,
+      "y": 190
+    },
+    {
+      "attributes": {
+        "Name": "Churn model 3",
+        "RegisteredOn": "2026-11-12",
+        "Stage": "Production",
+        "Version": "3"
+      },
+      "class": "ModelVersion",
+      "h": 110,
+      "id": "el_v3",
+      "parent": "el_registry",
+      "w": 170,
+      "x": 970,
+      "y": 310
+    },
+    {
+      "attributes": {
+        "Name": "Churn model 4",
+        "RegisteredOn": "2027-04-06",
+        "Stage": "Staging",
+        "Version": "4"
+      },
+      "class": "ModelVersion",
+      "h": 110,
+      "id": "el_v4",
+      "parent": "el_registry",
+      "w": 170,
+      "x": 1180,
+      "y": 310
+    },
+    {
+      "attributes": {
+        "Kind": "Accuracy",
+        "Metric": "AUC",
+        "Name": "Accuracy of version 3",
+        "Score": 0.84,
+        "TestSet": "Hold-out 2026",
+        "Threshold": 0.8
+      },
+      "class": "Evaluation",
+      "h": 70,
+      "id": "el_ev_v3_auc",
+      "w": 220,
+      "x": 1420,
+      "y": 150
+    },
+    {
+      "attributes": {
+        "Kind": "Accuracy",
+        "Metric": "AUC",
+        "Name": "Accuracy of version 4",
+        "Score": 0.87,
+        "TestSet": "Hold-out 2027",
+        "Threshold": 0.8
+      },
+      "class": "Evaluation",
+      "h": 70,
+      "id": "el_ev_v4_auc",
+      "w": 220,
+      "x": 1420,
+      "y": 250
+    },
+    {
+      "attributes": {
+        "Direction": "Lower is better",
+        "Kind": "Fairness",
+        "Metric": "Recall gap by age",
+        "Name": "Fairness of version 4",
+        "Score": 0.03,
+        "TestSet": "Hold-out 2027",
+        "Threshold": 0.05
+      },
+      "class": "Evaluation",
+      "h": 70,
+      "id": "el_ev_v4_fair",
+      "w": 220,
+      "x": 1420,
+      "y": 350
+    },
+    {
+      "attributes": {
+        "Approver": "Model risk board",
+        "DecidedOn": "2026-11-20",
+        "Decision": "Approved",
+        "Name": "Release of version 3"
+      },
+      "class": "ApprovalGate",
+      "h": 100,
+      "id": "el_gate_v3",
+      "w": 130,
+      "x": 1680,
+      "y": 150
+    },
+    {
+      "attributes": {
+        "Approver": "Model risk board",
+        "Conditions": "Review the fairness results with the customer team.",
+        "Decision": "Pending",
+        "Name": "Release of version 4"
+      },
+      "class": "ApprovalGate",
+      "h": 100,
+      "id": "el_gate_v4",
+      "w": 130,
+      "x": 1680,
+      "y": 320
+    },
+    {
+      "attributes": {
+        "Name": "Staging",
+        "Stage": "Test"
+      },
+      "class": "Environment",
+      "h": 160,
+      "id": "el_env_staging",
+      "w": 250,
+      "x": 950,
+      "y": 540
+    },
+    {
+      "attributes": {
+        "Name": "Production",
+        "Stage": "Production"
+      },
+      "class": "Environment",
+      "h": 160,
+      "id": "el_env_prod",
+      "w": 250,
+      "x": 1240,
+      "y": 540
+    },
+    {
+      "attributes": {
+        "Endpoint": "/test/churn-score",
+        "Name": "Churn scoring (test)",
+        "Status": "Live"
+      },
+      "class": "ModelDeployment",
+      "h": 110,
+      "id": "el_dep_staging",
+      "parent": "el_env_staging",
+      "w": 170,
+      "x": 990,
+      "y": 580
+    },
+    {
+      "attributes": {
+        "Endpoint": "/churn-score",
+        "Name": "Churn scoring",
+        "Status": "Live"
+      },
+      "class": "ModelDeployment",
+      "h": 110,
+      "id": "el_dep_prod",
+      "parent": "el_env_prod",
+      "w": 170,
+      "x": 1280,
+      "y": 580
+    },
+    {
+      "attributes": {
+        "AlertChannel": "Analytics on-call",
+        "CurrentValue": 0.27,
+        "Name": "Data drift",
+        "Signal": "Drift",
+        "Threshold": 0.2
+      },
+      "class": "Monitor",
+      "h": 70,
+      "id": "el_mon_drift",
+      "w": 180,
+      "x": 1240,
+      "y": 760
+    },
+    {
+      "attributes": {
+        "AlertChannel": "Platform on-call",
+        "CurrentValue": 240,
+        "Name": "Prediction latency",
+        "Signal": "Latency",
+        "Threshold": 200
+      },
+      "class": "Monitor",
+      "h": 70,
+      "id": "el_mon_latency",
+      "w": 180,
+      "x": 1460,
+      "y": 760
+    },
+    {
+      "attributes": {
+        "Description": "A new tariff changed how customers use the network, so the model no longer saw familiar data.",
+        "Name": "Usage pattern changed",
+        "OpenedOn": "2027-03-18",
+        "Response": "Retrain",
+        "Severity": "Medium",
+        "Status": "Resolved"
+      },
+      "class": "Incident",
+      "h": 70,
+      "id": "el_inc_drift",
+      "w": 170,
+      "x": 950,
+      "y": 760
+    }
+  ],
+  "formatVersion": 2,
+  "id": "mdl_churnmodel",
+  "kind": "mkmodel",
+  "kit": {
+    "id": "kit_mllifecycle",
+    "name": "ML lifecycle (MLOps)",
+    "version": "1.0.0"
+  },
+  "modelType": "MLLifecycle",
+  "name": "Customer churn model"
+}

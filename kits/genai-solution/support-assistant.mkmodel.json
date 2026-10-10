@@ -1,0 +1,563 @@
+{
+  "attributes": {
+    "Organisation": "An online retailer",
+    "Owner": "Head of customer service",
+    "Title": "Customer support assistant"
+  },
+  "connectors": [
+    {
+      "from": "el_orch",
+      "id": "cn_001",
+      "relation": "Handles",
+      "to": "el_uc_orders"
+    },
+    {
+      "from": "el_orch",
+      "id": "cn_002",
+      "relation": "Handles",
+      "to": "el_uc_returns"
+    },
+    {
+      "from": "el_g_in",
+      "id": "cn_003",
+      "relation": "Protects",
+      "to": "el_orch"
+    },
+    {
+      "from": "el_g_out",
+      "id": "cn_004",
+      "relation": "Protects",
+      "to": "el_orch"
+    },
+    {
+      "from": "el_orch",
+      "id": "cn_005",
+      "relation": "Calls",
+      "to": "el_p_route"
+    },
+    {
+      "from": "el_orch",
+      "id": "cn_006",
+      "relation": "Calls",
+      "to": "el_p_answer"
+    },
+    {
+      "from": "el_p_route",
+      "id": "cn_007",
+      "relation": "UsesModel",
+      "to": "el_fm_small"
+    },
+    {
+      "from": "el_p_answer",
+      "id": "cn_008",
+      "relation": "UsesModel",
+      "to": "el_fm_large"
+    },
+    {
+      "from": "el_p_returns",
+      "id": "cn_009",
+      "relation": "UsesModel",
+      "to": "el_fm_large"
+    },
+    {
+      "from": "el_orch",
+      "id": "cn_010",
+      "relation": "Retrieves",
+      "to": "el_pipeline"
+    },
+    {
+      "from": "el_orch",
+      "id": "cn_011",
+      "relation": "Coordinates",
+      "to": "el_a_returns"
+    },
+    {
+      "from": "el_a_returns",
+      "id": "cn_012",
+      "relation": "Calls",
+      "to": "el_p_returns"
+    },
+    {
+      "from": "el_a_returns",
+      "id": "cn_013",
+      "relation": "CanUse",
+      "to": "el_t_lookup"
+    },
+    {
+      "from": "el_a_returns",
+      "id": "cn_014",
+      "relation": "CanUse",
+      "to": "el_t_label"
+    },
+    {
+      "from": "el_a_returns",
+      "id": "cn_015",
+      "relation": "CanUse",
+      "to": "el_t_refund"
+    },
+    {
+      "from": "el_hr_lead",
+      "id": "cn_016",
+      "relation": "Reviews",
+      "to": "el_t_refund"
+    },
+    {
+      "from": "el_ev_correct",
+      "id": "cn_017",
+      "relation": "Evaluates",
+      "to": "el_orch"
+    },
+    {
+      "from": "el_ev_ground",
+      "id": "cn_018",
+      "relation": "Evaluates",
+      "to": "el_orch"
+    },
+    {
+      "from": "el_ev_hit",
+      "id": "cn_019",
+      "relation": "Evaluates",
+      "to": "el_ret"
+    },
+    {
+      "from": "el_src_help",
+      "id": "cn_020",
+      "relation": "Feeds",
+      "to": "el_chunk"
+    },
+    {
+      "from": "el_src_policy",
+      "id": "cn_021",
+      "relation": "Feeds",
+      "to": "el_chunk"
+    },
+    {
+      "from": "el_chunk",
+      "id": "cn_022",
+      "relation": "Feeds",
+      "to": "el_emb"
+    },
+    {
+      "from": "el_emb",
+      "id": "cn_023",
+      "relation": "Feeds",
+      "to": "el_idx"
+    },
+    {
+      "from": "el_idx",
+      "id": "cn_024",
+      "relation": "Feeds",
+      "to": "el_ret"
+    },
+    {
+      "from": "el_ret",
+      "id": "cn_025",
+      "relation": "Feeds",
+      "to": "el_rr"
+    }
+  ],
+  "elements": [
+    {
+      "attributes": {
+        "Channel": "Web chat",
+        "Feasibility": 5,
+        "Name": "Answer questions about orders",
+        "Persona": "Customer",
+        "Status": "In production",
+        "SuccessMeasure": "Questions solved without an agent",
+        "Value": 4
+      },
+      "class": "AIUseCase",
+      "h": 110,
+      "id": "el_uc_orders",
+      "w": 170,
+      "x": 730,
+      "y": 20
+    },
+    {
+      "attributes": {
+        "Channel": "Web chat",
+        "Feasibility": 3,
+        "Name": "Arrange a return",
+        "Persona": "Customer",
+        "Status": "Pilot",
+        "SuccessMeasure": "Returns arranged in the chat",
+        "Value": 4
+      },
+      "class": "AIUseCase",
+      "h": 110,
+      "id": "el_uc_returns",
+      "w": 170,
+      "x": 920,
+      "y": 20
+    },
+    {
+      "attributes": {
+        "Action": "Rewrite",
+        "Name": "Mask personal data",
+        "Rule": "Replace card numbers and passwords in the question before it reaches a model.",
+        "Type": "Input"
+      },
+      "class": "Guardrail",
+      "h": 70,
+      "id": "el_g_in",
+      "w": 170,
+      "x": 350,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "Action": "Flag for review",
+        "Name": "Answer from sources only",
+        "Rule": "Every answer cites a help article or order record; otherwise hand over to a person.",
+        "Type": "Output"
+      },
+      "class": "Guardrail",
+      "h": 70,
+      "id": "el_g_out",
+      "w": 170,
+      "x": 540,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "Description": "Routes each question, answers from the help centre, and hands returns to the returns agent.",
+        "Name": "Support assistant",
+        "Pattern": "Retrieval and answer",
+        "RequestsPerDay": 4000
+      },
+      "class": "Orchestration",
+      "h": 126,
+      "id": "el_orch",
+      "w": 230,
+      "x": 420,
+      "y": 190
+    },
+    {
+      "attributes": {
+        "CallsPerRequest": 1,
+        "InputTokens": 400,
+        "Name": "Route the question",
+        "OutputTokens": 20,
+        "Owner": "Support product team",
+        "Version": "2"
+      },
+      "class": "Prompt",
+      "h": 80,
+      "id": "el_p_route",
+      "w": 150,
+      "x": 360,
+      "y": 380
+    },
+    {
+      "attributes": {
+        "CallsPerRequest": 0.8,
+        "InputTokens": 3000,
+        "Name": "Answer with sources",
+        "OutputTokens": 300,
+        "Owner": "Support product team",
+        "Version": "5"
+      },
+      "class": "Prompt",
+      "h": 80,
+      "id": "el_p_answer",
+      "w": 150,
+      "x": 560,
+      "y": 380
+    },
+    {
+      "attributes": {
+        "ContextWindow": 32000,
+        "CostPer1kTokens": 0.0005,
+        "Hosting": "Private cloud",
+        "Name": "Small fast model",
+        "OutputTokensPerSecond": 150,
+        "Provider": "Open model, run in-house",
+        "TimeToFirstToken": 200
+      },
+      "class": "FoundationModel",
+      "h": 80,
+      "id": "el_fm_small",
+      "w": 180,
+      "x": 370,
+      "y": 540
+    },
+    {
+      "attributes": {
+        "ContextWindow": 200000,
+        "CostPer1kTokens": 0.01,
+        "Hosting": "Provider service",
+        "Name": "Large language model",
+        "OutputTokensPerSecond": 100,
+        "Provider": "External model service",
+        "TimeToFirstToken": 600
+      },
+      "class": "FoundationModel",
+      "h": 80,
+      "id": "el_fm_large",
+      "w": 180,
+      "x": 760,
+      "y": 540
+    },
+    {
+      "attributes": {
+        "Autonomy": "Acts with approval",
+        "CostLimit": 0.05,
+        "MaxSteps": 5,
+        "Name": "Returns agent"
+      },
+      "class": "AIAgent",
+      "h": 110,
+      "id": "el_a_returns",
+      "w": 90,
+      "x": 1000,
+      "y": 200
+    },
+    {
+      "attributes": {
+        "CallsPerRequest": 0.6,
+        "InputTokens": 2000,
+        "Name": "Returns agent instructions",
+        "OutputTokens": 200,
+        "Owner": "Support product team",
+        "Version": "1"
+      },
+      "class": "Prompt",
+      "h": 80,
+      "id": "el_p_returns",
+      "w": 150,
+      "x": 1000,
+      "y": 400
+    },
+    {
+      "attributes": {
+        "Name": "Look up order",
+        "SideEffects": "Read only",
+        "System": "Order system"
+      },
+      "class": "Tool",
+      "h": 50,
+      "id": "el_t_lookup",
+      "w": 170,
+      "x": 1180,
+      "y": 170
+    },
+    {
+      "attributes": {
+        "Name": "Create return label",
+        "RequiresApproval": true,
+        "SideEffects": "Changes data",
+        "System": "Shipping system"
+      },
+      "class": "Tool",
+      "h": 50,
+      "id": "el_t_label",
+      "w": 170,
+      "x": 1180,
+      "y": 240
+    },
+    {
+      "attributes": {
+        "Name": "Issue refund",
+        "RequiresApproval": true,
+        "SideEffects": "Acts outside",
+        "System": "Payment system"
+      },
+      "class": "Tool",
+      "h": 50,
+      "id": "el_t_refund",
+      "w": 170,
+      "x": 1180,
+      "y": 310
+    },
+    {
+      "attributes": {
+        "Name": "Support team lead",
+        "Reviewer": "Team lead on duty",
+        "When": "Before it happens"
+      },
+      "class": "HumanReview",
+      "h": 110,
+      "id": "el_hr_lead",
+      "w": 90,
+      "x": 1220,
+      "y": 420
+    },
+    {
+      "attributes": {
+        "Metric": "Correct",
+        "Name": "Answer correctness",
+        "Score": 0.91,
+        "TestSet": "500 real questions with checked answers",
+        "Threshold": 0.9
+      },
+      "class": "Evaluation",
+      "h": 70,
+      "id": "el_ev_correct",
+      "w": 200,
+      "x": 1000,
+      "y": 570
+    },
+    {
+      "attributes": {
+        "Metric": "Grounded",
+        "Name": "Answers backed by sources",
+        "Score": 0.96,
+        "TestSet": "500 real questions with checked answers",
+        "Threshold": 0.95
+      },
+      "class": "Evaluation",
+      "h": 70,
+      "id": "el_ev_ground",
+      "w": 200,
+      "x": 1000,
+      "y": 660
+    },
+    {
+      "attributes": {
+        "Metric": "Hit rate",
+        "Name": "Right article found",
+        "Score": 0.88,
+        "TestSet": "300 questions with their article",
+        "Threshold": 0.85
+      },
+      "class": "Evaluation",
+      "h": 70,
+      "id": "el_ev_hit",
+      "w": 200,
+      "x": 360,
+      "y": 690
+    },
+    {
+      "attributes": {
+        "Name": "Help centre search"
+      },
+      "class": "RetrievalPipeline",
+      "h": 620,
+      "id": "el_pipeline",
+      "w": 280,
+      "x": 40,
+      "y": 170
+    },
+    {
+      "attributes": {
+        "DocumentCount": 1200,
+        "Name": "Help articles",
+        "Owner": "Customer service",
+        "Refresh": "Daily",
+        "SourceType": "Web pages"
+      },
+      "class": "KnowledgeSource",
+      "h": 80,
+      "id": "el_src_help",
+      "parent": "el_pipeline",
+      "w": 120,
+      "x": 55,
+      "y": 220
+    },
+    {
+      "attributes": {
+        "DocumentCount": 12,
+        "Name": "Returns policy",
+        "Owner": "Legal team",
+        "Refresh": "Monthly",
+        "SourceType": "Documents"
+      },
+      "class": "KnowledgeSource",
+      "h": 80,
+      "id": "el_src_policy",
+      "parent": "el_pipeline",
+      "w": 120,
+      "x": 185,
+      "y": 220
+    },
+    {
+      "attributes": {
+        "ChunkSize": 400,
+        "Name": "Split by heading",
+        "Overlap": 40,
+        "Strategy": "By heading"
+      },
+      "class": "Chunking",
+      "h": 50,
+      "id": "el_chunk",
+      "parent": "el_pipeline",
+      "w": 210,
+      "x": 75,
+      "y": 350
+    },
+    {
+      "attributes": {
+        "CostPer1kTokens": 0.0001,
+        "Dimensions": 1024,
+        "LatencyMs": 40,
+        "Name": "Embedding model",
+        "Provider": "External model service"
+      },
+      "class": "EmbeddingModel",
+      "h": 70,
+      "id": "el_emb",
+      "parent": "el_pipeline",
+      "w": 210,
+      "x": 75,
+      "y": 430
+    },
+    {
+      "attributes": {
+        "ChunkCount": 9800,
+        "Dimensions": 1024,
+        "Name": "Article index",
+        "SimilarityMeasure": "Cosine"
+      },
+      "class": "VectorIndex",
+      "h": 70,
+      "id": "el_idx",
+      "parent": "el_pipeline",
+      "w": 210,
+      "x": 75,
+      "y": 525
+    },
+    {
+      "attributes": {
+        "LatencyMs": 80,
+        "MinScore": 0.3,
+        "Name": "Hybrid search",
+        "SearchType": "Hybrid",
+        "TopK": 20
+      },
+      "class": "Retriever",
+      "h": 50,
+      "id": "el_ret",
+      "parent": "el_pipeline",
+      "w": 210,
+      "x": 75,
+      "y": 620
+    },
+    {
+      "attributes": {
+        "CostPerQuery": 0.001,
+        "LatencyMs": 150,
+        "Model": "Cross-encoder",
+        "Name": "Re-ranker",
+        "TopN": 5
+      },
+      "class": "Reranker",
+      "h": 50,
+      "id": "el_rr",
+      "parent": "el_pipeline",
+      "w": 210,
+      "x": 75,
+      "y": 705
+    }
+  ],
+  "formatVersion": 2,
+  "id": "mdl_supportassistant",
+  "kind": "mkmodel",
+  "kit": {
+    "id": "kit_genaisolution",
+    "name": "Generative AI solution",
+    "version": "1.0.0"
+  },
+  "modelType": "GenAISolution",
+  "name": "Customer support assistant"
+}

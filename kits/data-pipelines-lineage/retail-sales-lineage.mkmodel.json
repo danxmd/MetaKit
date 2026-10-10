@@ -1,0 +1,481 @@
+{
+  "attributes": {
+    "Organisation": "A supermarket chain",
+    "Title": "Sales reporting pipelines"
+  },
+  "connectors": [
+    {
+      "from": "el_src_pos",
+      "id": "cn_001",
+      "relation": "FlowsTo",
+      "to": "el_job_loadpos"
+    },
+    {
+      "from": "el_job_loadpos",
+      "id": "cn_002",
+      "relation": "FlowsTo",
+      "to": "el_ds_rawpos"
+    },
+    {
+      "from": "el_src_web",
+      "id": "cn_003",
+      "relation": "FlowsTo",
+      "to": "el_job_loadweb"
+    },
+    {
+      "from": "el_job_loadweb",
+      "id": "cn_004",
+      "relation": "FlowsTo",
+      "to": "el_ds_rawweb"
+    },
+    {
+      "from": "el_ds_rawpos",
+      "id": "cn_005",
+      "relation": "FlowsTo",
+      "to": "el_job_sales"
+    },
+    {
+      "from": "el_ds_rawweb",
+      "id": "cn_006",
+      "relation": "FlowsTo",
+      "to": "el_job_sales"
+    },
+    {
+      "from": "el_job_sales",
+      "id": "cn_007",
+      "relation": "FlowsTo",
+      "to": "el_ds_sales"
+    },
+    {
+      "from": "el_ds_sales",
+      "id": "cn_008",
+      "relation": "FlowsTo",
+      "to": "el_job_revenue"
+    },
+    {
+      "from": "el_job_revenue",
+      "id": "cn_009",
+      "relation": "FlowsTo",
+      "to": "el_ds_revenue"
+    },
+    {
+      "attributes": {
+        "Frequency": "Daily"
+      },
+      "from": "el_ds_revenue",
+      "id": "cn_010",
+      "relation": "FlowsTo",
+      "to": "el_rep_dashboard"
+    },
+    {
+      "attributes": {
+        "Frequency": "Weekly"
+      },
+      "from": "el_ds_revenue",
+      "id": "cn_011",
+      "relation": "FlowsTo",
+      "to": "el_rep_stores"
+    },
+    {
+      "from": "el_ds_sales",
+      "id": "cn_012",
+      "relation": "FlowsTo",
+      "to": "el_job_export"
+    },
+    {
+      "from": "el_job_export",
+      "id": "cn_013",
+      "relation": "FlowsTo",
+      "to": "el_app_finance"
+    },
+    {
+      "from": "el_sch_nightly",
+      "id": "cn_014",
+      "relation": "Triggers",
+      "to": "el_job_loadpos"
+    },
+    {
+      "from": "el_sch_nightly",
+      "id": "cn_015",
+      "relation": "Triggers",
+      "to": "el_job_sales"
+    },
+    {
+      "from": "el_sch_quarter",
+      "id": "cn_016",
+      "relation": "Triggers",
+      "to": "el_job_loadweb"
+    },
+    {
+      "from": "el_job_revenue",
+      "id": "cn_017",
+      "relation": "RunsAfter",
+      "to": "el_job_sales"
+    },
+    {
+      "from": "el_f_amount",
+      "id": "cn_018",
+      "relation": "PartOf",
+      "to": "el_ds_rawpos"
+    },
+    {
+      "from": "el_f_total",
+      "id": "cn_019",
+      "relation": "PartOf",
+      "to": "el_ds_rawweb"
+    },
+    {
+      "from": "el_f_net",
+      "id": "cn_020",
+      "relation": "PartOf",
+      "to": "el_ds_sales"
+    },
+    {
+      "from": "el_f_revenue",
+      "id": "cn_021",
+      "relation": "PartOf",
+      "to": "el_ds_revenue"
+    },
+    {
+      "from": "el_f_dashrevenue",
+      "id": "cn_022",
+      "relation": "PartOf",
+      "to": "el_rep_dashboard"
+    },
+    {
+      "attributes": {
+        "Transformation": "amount_cents / 100 minus discounts"
+      },
+      "from": "el_f_amount",
+      "id": "cn_023",
+      "relation": "MapsTo",
+      "to": "el_f_net"
+    },
+    {
+      "attributes": {
+        "Transformation": "order_total minus tax"
+      },
+      "from": "el_f_total",
+      "id": "cn_024",
+      "relation": "MapsTo",
+      "to": "el_f_net"
+    },
+    {
+      "attributes": {
+        "Transformation": "sum per store and day"
+      },
+      "from": "el_f_net",
+      "id": "cn_025",
+      "relation": "MapsTo",
+      "to": "el_f_revenue"
+    },
+    {
+      "from": "el_f_revenue",
+      "id": "cn_026",
+      "relation": "MapsTo",
+      "to": "el_f_dashrevenue"
+    }
+  ],
+  "elements": [
+    {
+      "attributes": {
+        "Hosting": "On-premises",
+        "Name": "Till system"
+      },
+      "class": "SourceSystem",
+      "h": 70,
+      "id": "el_src_pos",
+      "w": 150,
+      "x": 40,
+      "y": 170
+    },
+    {
+      "attributes": {
+        "Hosting": "Software as a service",
+        "Name": "Online shop"
+      },
+      "class": "SourceSystem",
+      "h": 70,
+      "id": "el_src_web",
+      "w": 150,
+      "x": 40,
+      "y": 388
+    },
+    {
+      "attributes": {
+        "Cron": "0 2 * * *",
+        "Frequency": "Daily",
+        "Name": "Nightly at 02:00",
+        "Timezone": "Local time"
+      },
+      "class": "Schedule",
+      "h": 50,
+      "id": "el_sch_nightly",
+      "w": 170,
+      "x": 440,
+      "y": 30
+    },
+    {
+      "attributes": {
+        "Cron": "*/15 * * * *",
+        "Frequency": "Every 15 minutes",
+        "Name": "Every 15 minutes"
+      },
+      "class": "Schedule",
+      "h": 50,
+      "id": "el_sch_quarter",
+      "w": 170,
+      "x": 225,
+      "y": 520
+    },
+    {
+      "attributes": {
+        "AverageMinutes": 12,
+        "Kind": "Ingestion",
+        "LastRunStatus": "Succeeded",
+        "Name": "Load till sales"
+      },
+      "class": "Job",
+      "h": 60,
+      "id": "el_job_loadpos",
+      "w": 160,
+      "x": 230,
+      "y": 175
+    },
+    {
+      "attributes": {
+        "AverageMinutes": 2,
+        "Kind": "Ingestion",
+        "LastRunStatus": "Succeeded",
+        "Name": "Load web orders"
+      },
+      "class": "Job",
+      "h": 60,
+      "id": "el_job_loadweb",
+      "w": 160,
+      "x": 230,
+      "y": 393
+    },
+    {
+      "attributes": {
+        "Layer": "Raw",
+        "Location": "raw.till_sales",
+        "Name": "raw_till_sales",
+        "Refresh": "Daily"
+      },
+      "class": "Dataset",
+      "h": 126,
+      "id": "el_ds_rawpos",
+      "w": 170,
+      "x": 440,
+      "y": 142
+    },
+    {
+      "attributes": {
+        "Layer": "Raw",
+        "Location": "raw.web_orders",
+        "Name": "raw_web_orders",
+        "Refresh": "Real time"
+      },
+      "class": "Dataset",
+      "h": 126,
+      "id": "el_ds_rawweb",
+      "w": 170,
+      "x": 440,
+      "y": 360
+    },
+    {
+      "attributes": {
+        "AverageMinutes": 25,
+        "Kind": "Transformation",
+        "LastRunStatus": "Succeeded",
+        "Logic": "Combine till sales and web orders, convert to net amounts and remove test orders.",
+        "Name": "Build sales",
+        "Owner": "Sales data team"
+      },
+      "class": "Job",
+      "h": 60,
+      "id": "el_job_sales",
+      "w": 160,
+      "x": 660,
+      "y": 255
+    },
+    {
+      "attributes": {
+        "Classification": "Internal",
+        "Layer": "Curated",
+        "Location": "curated.sales",
+        "Name": "sales",
+        "Refresh": "Daily"
+      },
+      "class": "Dataset",
+      "h": 126,
+      "id": "el_ds_sales",
+      "w": 170,
+      "x": 870,
+      "y": 222
+    },
+    {
+      "attributes": {
+        "AverageMinutes": 8,
+        "Kind": "Transformation",
+        "LastRunStatus": "Failed",
+        "Name": "Build daily revenue",
+        "Owner": "Sales data team"
+      },
+      "class": "Job",
+      "h": 60,
+      "id": "el_job_revenue",
+      "w": 160,
+      "x": 1090,
+      "y": 60
+    },
+    {
+      "attributes": {
+        "Layer": "Serving",
+        "Location": "serving.daily_revenue",
+        "Name": "daily_revenue",
+        "Refresh": "Daily"
+      },
+      "class": "Dataset",
+      "h": 126,
+      "id": "el_ds_revenue",
+      "w": 170,
+      "x": 1300,
+      "y": 142
+    },
+    {
+      "attributes": {
+        "Kind": "Export",
+        "LastRunStatus": "Not run yet",
+        "Name": "Export to finance"
+      },
+      "class": "Job",
+      "h": 60,
+      "id": "el_job_export",
+      "w": 160,
+      "x": 1090,
+      "y": 480
+    },
+    {
+      "attributes": {
+        "Name": "Finance system",
+        "Owner": "Finance"
+      },
+      "class": "Application",
+      "h": 70,
+      "id": "el_app_finance",
+      "w": 150,
+      "x": 1300,
+      "y": 480
+    },
+    {
+      "attributes": {
+        "Audience": "Store managers",
+        "Name": "Daily sales dashboard",
+        "Refresh": "Daily"
+      },
+      "class": "ReportOrDashboard",
+      "h": 90,
+      "id": "el_rep_dashboard",
+      "w": 150,
+      "x": 1520,
+      "y": 150
+    },
+    {
+      "attributes": {
+        "Audience": "Regional managers",
+        "Name": "Store performance report",
+        "Refresh": "Weekly"
+      },
+      "class": "ReportOrDashboard",
+      "h": 90,
+      "id": "el_rep_stores",
+      "w": 150,
+      "x": 1520,
+      "y": 380
+    },
+    {
+      "attributes": {
+        "Layer": "Raw",
+        "Location": "raw.promotions_2019",
+        "Name": "old_promotions"
+      },
+      "class": "Dataset",
+      "h": 126,
+      "id": "el_ds_promotions",
+      "w": 170,
+      "x": 40,
+      "y": 600
+    },
+    {
+      "attributes": {
+        "DataType": "integer",
+        "Name": "amount_cents"
+      },
+      "class": "Field",
+      "h": 44,
+      "id": "el_f_amount",
+      "w": 160,
+      "x": 445,
+      "y": 280
+    },
+    {
+      "attributes": {
+        "DataType": "decimal",
+        "Name": "order_total"
+      },
+      "class": "Field",
+      "h": 44,
+      "id": "el_f_total",
+      "w": 160,
+      "x": 445,
+      "y": 500
+    },
+    {
+      "attributes": {
+        "DataType": "decimal",
+        "Name": "net_amount"
+      },
+      "class": "Field",
+      "h": 44,
+      "id": "el_f_net",
+      "w": 160,
+      "x": 875,
+      "y": 370
+    },
+    {
+      "attributes": {
+        "DataType": "decimal",
+        "Name": "revenue"
+      },
+      "class": "Field",
+      "h": 44,
+      "id": "el_f_revenue",
+      "w": 160,
+      "x": 1305,
+      "y": 290
+    },
+    {
+      "attributes": {
+        "Name": "Revenue today"
+      },
+      "class": "Field",
+      "h": 44,
+      "id": "el_f_dashrevenue",
+      "w": 160,
+      "x": 1515,
+      "y": 260
+    }
+  ],
+  "formatVersion": 2,
+  "id": "mdl_retailsaleslineage",
+  "kind": "mkmodel",
+  "kit": {
+    "id": "kit_datalineage",
+    "name": "Data pipelines and lineage",
+    "version": "1.0.0"
+  },
+  "modelType": "Lineage",
+  "name": "Sales reporting pipelines"
+}
