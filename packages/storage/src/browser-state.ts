@@ -47,6 +47,23 @@ export async function kvSet(
   }
 }
 
+export async function kvDelete(
+  key: string,
+  factory: IDBFactory = indexedDB,
+): Promise<void> {
+  const db = await open(factory);
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(STORE, 'readwrite');
+      tx.objectStore(STORE).delete(key);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  } finally {
+    db.close();
+  }
+}
+
 /** The id of this browser profile as an app instance; created once and kept. */
 export async function getInstanceId(
   factory: IDBFactory = indexedDB,
@@ -168,7 +185,7 @@ export function setProfile(
  * the repository, so a shared Kit cannot arrive with permissions already granted (rule 9).
  */
 export interface KitPermissionRecord {
-  toolId: string;
+  kitId: string;
   granted: { network: boolean; files: boolean };
   /** What was ever asked, so that a refusal is not asked again and a new permission is. */
   asked: { network: boolean; files: boolean };
@@ -178,15 +195,19 @@ export interface KitPermissionRecord {
 export interface KeyValue {
   get<T>(key: string): Promise<T | undefined>;
   set(key: string, value: unknown): Promise<void>;
+  /** Removes a key; without it, a key is cleared by setting it to undefined. */
+  remove?(key: string): Promise<void>;
 }
 
-const PERMISSIONS_KEY = 'toolPermissions';
+const PERMISSIONS_KEY = 'kitPermissions';
+/** Where releases before the Kit rename kept the permissions, as records with `toolId` (ADR 0011). */
+const OLDER_PERMISSIONS_KEY = 'toolPermissions';
 
 const isPermissionRecord = (r: unknown): r is KitPermissionRecord => {
   const x = r as Partial<KitPermissionRecord> | null;
   return (
     !!x &&
-    typeof x.toolId === 'string' &&
+    typeof x.kitId === 'string' &&
     typeof x.decidedAt === 'string' &&
     typeof x.granted?.network === 'boolean' &&
     typeof x.granted.files === 'boolean' &&
@@ -195,19 +216,46 @@ const isPermissionRecord = (r: unknown): r is KitPermissionRecord => {
   );
 };
 
-/** The store that the permission logic of the behaviour package saves through. */
+/**
+ * The store that the permission logic of the behaviour package saves through. The first read
+ * takes over what a release before the Kit rename kept under `toolPermissions`, and then removes
+ * that key, so nobody is asked again.
+ */
 export function createKitPermissionBacking(
-  kv: KeyValue = { get: (k) => kvGet(k), set: (k, v) => kvSet(k, v) },
+  kv: KeyValue = {
+    get: (k) => kvGet(k),
+    set: (k, v) => kvSet(k, v),
+    remove: (k) => kvDelete(k),
+  },
 ): {
   load(): Promise<KitPermissionRecord[]>;
   save(record: KitPermissionRecord): Promise<void>;
   remove(kitId: string): Promise<void>;
 } {
+  let checkedOlder = false;
+  const takeOverOlder = async (): Promise<void> => {
+    if (checkedOlder) return;
+    checkedOlder = true;
+    const older = await kv.get<Record<string, unknown>>(OLDER_PERMISSIONS_KEY);
+    if (older === undefined) return;
+    const current =
+      (await kv.get<Record<string, unknown>>(PERMISSIONS_KEY)) ?? {};
+    const merged: Record<string, unknown> = { ...current };
+    for (const [id, r] of Object.entries(older)) {
+      if (id in merged || r === null || typeof r !== 'object') continue;
+      const { toolId, ...rest } = r as Record<string, unknown>;
+      merged[id] = toolId === undefined ? r : { ...rest, kitId: toolId };
+    }
+    await kv.set(PERMISSIONS_KEY, merged);
+    if (kv.remove) await kv.remove(OLDER_PERMISSIONS_KEY);
+    else await kv.set(OLDER_PERMISSIONS_KEY, undefined);
+  };
   const all = async (): Promise<Record<string, KitPermissionRecord>> => {
+    await takeOverOlder();
     const stored = await kv.get<Record<string, unknown>>(PERMISSIONS_KEY);
     const out: Record<string, KitPermissionRecord> = {};
     for (const [id, r] of Object.entries(stored ?? {}))
-      if (isPermissionRecord(r) && r.toolId === id) out[id] = r;
+      if (isPermissionRecord(r) && r.kitId === id) out[id] = r;
     return out;
   };
   return {
@@ -215,7 +263,7 @@ export function createKitPermissionBacking(
     save: async (record) => {
       await kv.set(PERMISSIONS_KEY, {
         ...(await all()),
-        [record.toolId]: record,
+        [record.kitId]: record,
       });
     },
     remove: async (kitId) => {

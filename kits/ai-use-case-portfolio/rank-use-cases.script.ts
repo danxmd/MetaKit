@@ -1,4 +1,4 @@
-// For the tool "AI use-case portfolio". The command "Rank use cases" lists the use cases from the
+// For the Kit "AI use-case portfolio". The command "Rank use cases" lists the use cases from the
 // highest priority score down, with their quadrant and status, and counts them per quadrant.
 // Sorting and counting need a loop, which is why this is a script and not a rule.
 import { commands, model, ui } from 'metakit';

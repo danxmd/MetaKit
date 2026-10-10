@@ -9,22 +9,25 @@ import {
 } from '@metakit-app/core';
 import { FormatError, NewerFormatError } from './errors';
 import { stringifyCanonical } from './json';
-import { migrate } from './migrate';
+import { CURRENT_FORMAT, migrate } from './migrate';
 import {
-  KIT_FOLDER,
   KIT_PACKAGE_EXTENSION,
   KIT_PACKAGE_FILE,
   KIT_PACKAGE_KIND,
+  OLDER_KIT_PACKAGE_FILE,
 } from './names';
 import { slugify } from './slugify';
 import type { Workspace } from './workspace';
 import { unzipFiles, zipFiles } from './zip';
 
-/** `package.json` in a `.mktool`: what the package is and what it holds. */
+/**
+ * `package.json` in a `.mkkit`: what the package is and what it holds. A `.mktool` from a release
+ * before the Kit rename (format 1) said `kind: "mktool"` and `tool`; it is read as this.
+ */
 export interface KitPackageInfo {
   formatVersion: number;
   kind: typeof KIT_PACKAGE_KIND;
-  tool: { id: string; name: string; version: string };
+  kit: { id: string; name: string; version: string };
   created: string;
   /** Every file in the package except `package.json` itself. */
   contents: string[];
@@ -41,7 +44,7 @@ export interface ExportKitPackageOptions {
 const json = (value: unknown): string => stringifyCanonical(value as Json);
 
 /**
- * Packs a Kit into one `.mktool` file: `package.json`, `tool.json` (definitions, shapes,
+ * Packs a Kit into one `.mkkit` file: `package.json`, `kit.json` (definitions, shapes,
  * panels, rules, settings, manifest, and any other field the library has, such as `scripts`),
  * and the folders `scripts/` and `assets/`.
  */
@@ -57,9 +60,9 @@ export function exportKitPackage(
   for (const [name, bytes] of Object.entries(options.assets ?? {}))
     files[`assets/${name}`] = bytes;
   const info: KitPackageInfo = {
-    formatVersion: 1,
+    formatVersion: CURRENT_FORMAT['kit-package'],
     kind: KIT_PACKAGE_KIND,
-    tool: {
+    kit: {
       id: kit.manifest.id,
       name: kit.manifest.name,
       version: kit.manifest.version,
@@ -94,32 +97,38 @@ function parse(bytes: Uint8Array, what: string): unknown {
 }
 
 /**
- * Reads a `.mktool`. A package from an older release is brought up to date; one from a newer
- * release is refused. Problems in the Kit itself are returned as `issues` so that they
- * can be shown; a package that is not a package at all raises a `FormatError`.
+ * Reads a `.mkkit`, or a `.mktool` from a release before the Kit rename (with `tool.json` in it).
+ * A package from an older release is brought up to date; one from a newer release is refused.
+ * Problems in the Kit itself are returned as `issues` so that they can be shown; a package that
+ * is not a package at all raises a `FormatError`.
  */
 export function readKitPackage(bytes: Uint8Array): ReadKitPackage {
   const files = unzipFiles(bytes);
   const infoFile = files['package.json'];
-  const kitFile = files[KIT_PACKAGE_FILE];
+  const kitName = files[KIT_PACKAGE_FILE]
+    ? KIT_PACKAGE_FILE
+    : files[OLDER_KIT_PACKAGE_FILE]
+      ? OLDER_KIT_PACKAGE_FILE
+      : null;
   if (!infoFile)
     throw new FormatError(
       'This is not a Kit package: there is no package.json in it.',
     );
-  if (!kitFile)
+  if (kitName === null)
     throw new FormatError(
       `This Kit package is incomplete: there is no ${KIT_PACKAGE_FILE} in it.`,
     );
+  const kitFile = files[kitName]!;
   let info: KitPackageInfo;
   let kit: Kit;
   try {
-    info = migrate('tool-package', parse(infoFile, 'package.json'))
+    info = migrate('kit-package', parse(infoFile, 'package.json'))
       .value as unknown as KitPackageInfo;
     if (info.kind !== KIT_PACKAGE_KIND)
       throw new FormatError(
         'This is not a Kit package (package.json has the wrong kind).',
       );
-    kit = migrate('tool-document', parse(kitFile, KIT_PACKAGE_FILE))
+    kit = migrate('kit-document', parse(kitFile, kitName))
       .value as unknown as Kit;
   } catch (error) {
     if (error instanceof NewerFormatError)
@@ -129,9 +138,9 @@ export function readKitPackage(bytes: Uint8Array): ReadKitPackage {
     throw error;
   }
   const issues = validateKit(kit);
-  if (issues.length === 0 && info.tool?.id !== kit.manifest.id)
+  if (issues.length === 0 && info.kit?.id !== kit.manifest.id)
     throw new FormatError(
-      `This Kit package is damaged: package.json and ${KIT_PACKAGE_FILE} name different Kits.`,
+      `This Kit package is damaged: package.json and ${kitName} name different Kits.`,
     );
   const scripts: Record<string, string> = {};
   const assets: Record<string, Uint8Array> = {};
@@ -536,7 +545,7 @@ export interface PreparedKitImport {
 }
 
 /**
- * Reads a `.mktool` and works out what importing it would change, without changing anything. Show
+ * Reads a `.mkkit` (or `.mktool`) and works out what importing it would change, without changing anything. Show
  * `plan` to the person, then call `applyKitUpdate` once they confirm.
  */
 export async function prepareKitImport(
@@ -602,10 +611,7 @@ export async function exportKitPackageFrom(
 ): Promise<{ bytes: Uint8Array; fileName: string }> {
   const { document } = await workspace.loadKit(kitSlug);
   const assets: Record<string, Uint8Array> = {};
-  const folder = `${KIT_FOLDER}/${kitSlug}/assets`;
-  // Listing a folder that does not exist gives nothing, so a Kit without assets needs no check.
-  for (const entry of await workspace.adapter.list(folder))
-    if (entry.kind === 'file')
-      assets[entry.name] = await workspace.readKitAsset(kitSlug, entry.name);
+  for (const name of await workspace.listKitAssets(kitSlug))
+    assets[name] = await workspace.readKitAsset(kitSlug, name);
   return exportKitPackage(document, { assets, ...options });
 }

@@ -38,7 +38,13 @@ import {
 import { jsonBytes, readJsonFile, type ReadOptions } from './json';
 import { exportMkModel, importMkModel } from './mkmodel';
 import { CURRENT_FORMAT, migrate } from './migrate';
-import { KIT_FOLDER, KIT_IDENTITY_FILE, KIT_KIND } from './names';
+import {
+  KIT_FOLDER,
+  KIT_IDENTITY_FILE,
+  KIT_KIND,
+  OLDER_KIT_FOLDER,
+  OLDER_KIT_IDENTITY_FILE,
+} from './names';
 import { joinPath } from './paths';
 import { slugify } from './slugify';
 
@@ -113,14 +119,20 @@ function newerAsStorageError(error: unknown): never {
   throw error;
 }
 
+/** Where new documents of each kind are made. A Kit made before the Kit rename stays in `tools/`. */
 const FOLDERS: Record<DocumentKind, string> = {
   [KIT_KIND]: KIT_FOLDER,
   model: 'models',
 };
-const IDENTITY_FILE: Record<DocumentKind, string> = {
-  [KIT_KIND]: KIT_IDENTITY_FILE,
-  model: 'model.json',
-};
+const MODEL_IDENTITY_FILE = 'model.json';
+
+/** The identity file of a document folder: `tool.json` in a Kit folder under `tools/` (ADR 0011). */
+function identityFile(kind: DocumentKind, folder: string): string {
+  if (kind === 'model') return MODEL_IDENTITY_FILE;
+  return folder.startsWith(`${OLDER_KIT_FOLDER}/`)
+    ? OLDER_KIT_IDENTITY_FILE
+    : KIT_IDENTITY_FILE;
+}
 /** How messages name each kind. */
 const KIND_WORDS: Record<DocumentKind, string> = {
   [KIT_KIND]: 'Kit',
@@ -144,9 +156,12 @@ function randomSuffix(): string {
 /**
  * A workspace folder: Kits and models, each in its own folder that never changes name.
  *
- * Until change files arrive (phase 3), a document is saved as one snapshot, written by the
- * instance that saved it to `<folder>/_state/<instance>/snapshot.json`. The identity files
- * (`tool.json`, `model.json`) are written once.
+ * Each document is saved as change files and snapshots of the instances that edit it, under
+ * `<folder>/_state/<instance>/`. The identity files (`kit.json`, `model.json`) are written once.
+ *
+ * New Kits are made in `kits/<slug>/`. A Kit made by a release before the Kit rename lives in
+ * `tools/<slug>/` with a `tool.json`, and is read and edited where it is: moving it would mean
+ * moving files that other instances wrote (rule 6, ADR 0011). Slugs are unique over both folders.
  */
 export class Workspace {
   private constructor(
@@ -216,15 +231,67 @@ export class Workspace {
 
   // --- documents ---------------------------------------------------------------------------
 
-  private folder(kind: DocumentKind, slug: string): string {
+  /** Where a new document of this kind and slug goes. */
+  private newFolder(kind: DocumentKind, slug: string): string {
     if (!SLUG.test(slug))
       throw new FormatError(
-        `"${slug}" is not a valid folder name for a ${kind}.`,
+        `"${slug}" is not a valid folder name for a ${KIND_WORDS[kind]}.`,
       );
     return joinPath(FOLDERS[kind], slug);
   }
 
+  /** Slug to folder of every Kit, in `kits/` and `tools/`; read again when a slug is not in it. */
+  private kitFolders: Map<string, string> | null = null;
+
+  /**
+   * Finds the Kit folders. A name in `kits/` is its slug. A name in `tools/` is too, unless `kits/`
+   * has the same name (a release before the rename does not look in `kits/`); then it gets the
+   * suffix `-tools`, so that every slug names one folder.
+   */
+  private async scanKitFolders(): Promise<Map<string, string>> {
+    const names = async (folder: string) =>
+      (await this.adapter.list(folder))
+        .filter((e) => e.kind === 'directory' && SLUG.test(e.name))
+        .map((e) => e.name)
+        .sort();
+    const map = new Map<string, string>();
+    for (const name of await names(KIT_FOLDER))
+      map.set(name, joinPath(KIT_FOLDER, name));
+    for (const name of await names(OLDER_KIT_FOLDER)) {
+      let slug = name;
+      for (let i = 1; map.has(slug); i++)
+        slug = i === 1 ? `${name}-tools` : `${name}-tools-${i}`;
+      map.set(slug, joinPath(OLDER_KIT_FOLDER, name));
+    }
+    this.kitFolders = map;
+    return map;
+  }
+
+  /** The folder of a document, wherever it lives; for a Kit that is not there, where it would be made. */
+  private async folder(kind: DocumentKind, slug: string): Promise<string> {
+    if (kind === KIT_KIND) {
+      const known =
+        this.kitFolders?.get(slug) ?? (await this.scanKitFolders()).get(slug);
+      if (known !== undefined) return known;
+    }
+    return this.newFolder(kind, slug);
+  }
+
+  /** The folder of a Kit in the workspace, such as `kits/process` or `tools/bpmn-lite`. */
+  kitFolder(slug: string): Promise<string> {
+    return this.folder(KIT_KIND, slug);
+  }
+
+  /** Every Kit folder with its slug, readable or not, in `kits/` and then `tools/`. */
+  async listKitFolders(): Promise<{ slug: string; folder: string }[]> {
+    return [...(await this.scanKitFolders())].map(([slug, folder]) => ({
+      slug,
+      folder,
+    }));
+  }
+
   private async slugs(kind: DocumentKind): Promise<string[]> {
+    if (kind === KIT_KIND) return [...(await this.scanKitFolders()).keys()];
     return (await this.adapter.list(FOLDERS[kind]))
       .filter((e) => e.kind === 'directory')
       .map((e) => e.name);
@@ -247,10 +314,10 @@ export class Workspace {
     throw new Error('Could not find a free folder name.');
   }
 
-  private syncOptions(kind: DocumentKind, slug: string) {
+  private async syncOptions(kind: DocumentKind, slug: string) {
     return {
       adapter: this.adapter,
-      folder: this.folder(kind, slug),
+      folder: await this.folder(kind, slug),
       kind,
       now: () => this.now.getTime(),
       ...(this.options.read?.retries === undefined
@@ -266,10 +333,11 @@ export class Workspace {
     kind: DocumentKind,
     slug: string,
   ): Promise<Record<string, unknown>> {
-    const identityPath = joinPath(this.folder(kind, slug), IDENTITY_FILE[kind]);
+    const folder = await this.folder(kind, slug);
+    const identityPath = joinPath(folder, identityFile(kind, folder));
     if (!(await this.adapter.exists(identityPath)))
       throw new NotFoundError(
-        `There is no ${kind} "${slug}" in this workspace.`,
+        `There is no ${KIND_WORDS[kind]} "${slug}" in this workspace.`,
       );
     return migrate(
       kind,
@@ -282,7 +350,7 @@ export class Workspace {
     slug: string,
   ): Promise<{ identity: Record<string, unknown>; loaded: Loaded<T> }> {
     const identity = await this.readIdentity(kind, slug);
-    const options = this.syncOptions(kind, slug);
+    const options = await this.syncOptions(kind, slug);
     const { state, warnings } = await loadDocument(
       this.adapter,
       options.folder,
@@ -296,10 +364,12 @@ export class Workspace {
       throw new NotFoundError(
         `The ${KIND_WORDS[kind]} "${slug}" has no saved content yet.${warnings.length ? ` ${warnings.join(' ')}` : ''}`,
       );
-    // Kits from earlier formats are brought up to date in memory; saving writes the new one.
+    // Documents from earlier formats are brought up to date in memory; saving writes the new one.
     const stored = materialize(state);
-    const document =
-      kind === KIT_KIND ? migrate('tool-document', stored).value : stored;
+    const document = migrate(
+      kind === KIT_KIND ? 'kit-document' : 'model-document',
+      stored,
+    ).value;
     const issues =
       kind === KIT_KIND
         ? validateKit(document)
@@ -342,14 +412,18 @@ export class Workspace {
     return entries;
   }
 
-  /** Adds a Kit and returns its folder name. Pass a `slug` to choose it. */
+  /** Adds a Kit in `kits/` and returns its folder name. Pass a `slug` to choose it. */
   async createKit(kit: Kit, options: { slug?: string } = {}): Promise<string> {
     const slug =
       options.slug ??
       (await this.uniqueSlug(KIT_KIND, kit.manifest.name, false));
-    const folder = this.folder(KIT_KIND, slug);
+    const folder = this.newFolder(KIT_KIND, slug);
+    if ((await this.scanKitFolders()).has(slug))
+      throw new AlreadyExistsError(
+        `There is already a Kit "${slug}" in this workspace.`,
+      );
     await this.adapter.writeNew(
-      joinPath(folder, IDENTITY_FILE[KIT_KIND]),
+      joinPath(folder, KIT_IDENTITY_FILE),
       jsonBytes({
         formatVersion: CURRENT_FORMAT[KIT_KIND],
         kind: KIT_KIND,
@@ -365,6 +439,7 @@ export class Workspace {
       kit as unknown as Record<string, Json>,
       () => this.now.getTime(),
     );
+    this.kitFolders?.set(slug, folder);
     return slug;
   }
 
@@ -380,7 +455,7 @@ export class Workspace {
       );
     });
     await replaceDocument(
-      this.syncOptions(KIT_KIND, slug),
+      await this.syncOptions(KIT_KIND, slug),
       kit as unknown as Record<string, Json>,
     );
   }
@@ -395,7 +470,7 @@ export class Workspace {
   ): Promise<OpenedDocument<KitStore>> {
     await this.readIdentity(KIT_KIND, slug);
     const opened = await SyncSession.open(
-      { ...this.syncOptions(KIT_KIND, slug), ...session },
+      { ...(await this.syncOptions(KIT_KIND, slug)), ...session },
       (doc) => createKitStore(doc as unknown as Kit),
     ).catch(newerAsStorageError);
     return {
@@ -412,25 +487,33 @@ export class Workspace {
     return null;
   }
 
-  addKitAsset(
+  async addKitAsset(
     slug: string,
     fileName: string,
     bytes: Uint8Array,
   ): Promise<string> {
     return addAsset(
       this.adapter,
-      joinPath(this.folder(KIT_KIND, slug), 'assets'),
+      joinPath(await this.folder(KIT_KIND, slug), 'assets'),
       fileName,
       bytes,
     );
   }
 
-  readKitAsset(slug: string, name: string): Promise<Uint8Array> {
+  async readKitAsset(slug: string, name: string): Promise<Uint8Array> {
     return readAsset(
       this.adapter,
-      joinPath(this.folder(KIT_KIND, slug), 'assets'),
+      joinPath(await this.folder(KIT_KIND, slug), 'assets'),
       name,
     );
+  }
+
+  /** The file names of the assets of a Kit; none when it has no `assets` folder. */
+  async listKitAssets(slug: string): Promise<string[]> {
+    const folder = joinPath(await this.folder(KIT_KIND, slug), 'assets');
+    return (await this.adapter.list(folder))
+      .filter((e) => e.kind === 'file')
+      .map((e) => e.name);
   }
 
   // --- models ------------------------------------------------------------------------------
@@ -449,7 +532,7 @@ export class Workspace {
           slug,
           id: m.id,
           name: m.name,
-          kit: m.tool,
+          kit: m.kit,
           modelType: m.modelType,
           ...(m.folder === undefined ? {} : { folder: m.folder }),
           ...(options.includeTrashed ? this.trashFields(trash) : {}),
@@ -470,10 +553,12 @@ export class Workspace {
     slug: string,
     trashed: boolean,
   ): Promise<void> {
-    const folder = this.folder(kind, slug);
-    if (!(await this.adapter.exists(joinPath(folder, IDENTITY_FILE[kind]))))
+    const folder = await this.folder(kind, slug);
+    if (
+      !(await this.adapter.exists(joinPath(folder, identityFile(kind, folder))))
+    )
       throw new NotFoundError(
-        `There is no ${kind} "${slug}" in this workspace.`,
+        `There is no ${KIND_WORDS[kind]} "${slug}" in this workspace.`,
       );
     await this.adapter.overwrite(
       this.trashPath(folder),
@@ -523,7 +608,7 @@ export class Workspace {
     kind: DocumentKind,
     slug: string,
   ): Promise<{ trashed: boolean; at?: string }> {
-    const state = joinPath(this.folder(kind, slug), '_state');
+    const state = joinPath(await this.folder(kind, slug), '_state');
     let newest: { at: string; instance: string; trashed: boolean } | null =
       null;
     for (const entry of await this.adapter.list(state)) {
@@ -566,14 +651,14 @@ export class Workspace {
   ): Promise<string> {
     const slug =
       options.slug ?? `${slugify(model.manifest.name)}-${randomSuffix()}`;
-    const folder = this.folder('model', slug);
+    const folder = this.newFolder('model', slug);
     await this.adapter.writeNew(
-      joinPath(folder, IDENTITY_FILE.model),
+      joinPath(folder, MODEL_IDENTITY_FILE),
       jsonBytes({
         formatVersion: CURRENT_FORMAT.model,
         kind: 'model',
         id: model.manifest.id,
-        tool: model.manifest.tool,
+        kit: model.manifest.kit,
         modelType: model.manifest.modelType,
         name: model.manifest.name,
         created: this.now.toISOString(),
@@ -601,7 +686,7 @@ export class Workspace {
       );
     });
     await replaceDocument(
-      this.syncOptions('model', slug),
+      await this.syncOptions('model', slug),
       model as unknown as Record<string, Json>,
     );
   }
@@ -618,7 +703,7 @@ export class Workspace {
   ): Promise<OpenedDocument<ModelStore>> {
     await this.readIdentity('model', slug);
     const opened = await SyncSession.open(
-      { ...this.syncOptions('model', slug), ...session },
+      { ...(await this.syncOptions('model', slug)), ...session },
       (doc) => createModelStore(doc as unknown as Model, { kit }),
     ).catch(newerAsStorageError);
     return { ...opened, issues: validateModelDocument(opened.store.state) };
@@ -627,10 +712,10 @@ export class Workspace {
   /** The model as an editable `.mkmodel.json` text, using the Kit it was made with. */
   async exportModel(slug: string): Promise<string> {
     const { document: model } = await this.loadModel(slug);
-    const kitSlug = await this.findKitSlug(model.manifest.tool);
+    const kitSlug = await this.findKitSlug(model.manifest.kit);
     if (!kitSlug)
       throw new NotFoundError(
-        `The Kit ${model.manifest.tool} that this model was made with is not in this workspace.`,
+        `The Kit ${model.manifest.kit} that this model was made with is not in this workspace.`,
       );
     return exportMkModel((await this.loadKit(kitSlug)).document, model);
   }

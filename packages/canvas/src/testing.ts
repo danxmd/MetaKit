@@ -21,8 +21,8 @@ export function emptyModel(kit: Kit): Model {
     manifest: {
       id: 'mdl_testmodel1',
       name: 'Test',
-      tool: kit.manifest.id,
-      toolVersion: kit.manifest.version,
+      kit: kit.manifest.id,
+      kitVersion: kit.manifest.version,
       modelType: modelType.id,
     },
     attrs: {},

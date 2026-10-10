@@ -77,7 +77,7 @@ You add a relation class **Reviews** in the Agent pipeline Kit and forget to set
 
 ## Good to know
 
-- You can check Kits without the browser: the command line tool validates a folder with `metakit validate <folder>` ([[file-formats]]).
+- You can check Kits without the browser: the command line tool validates a folder with `metakit validate <folder>` ([[file-formats]]). With `--json` it prints a report in which each checked document has the kind `kit`, `model` or `workspace`; releases before the Kit rename said `tool`. `metakit export-kit` and `metakit import-kit` write and read `.mkkit` packages; the older names `export-tool` and `import-tool` still work.
 - A Kit with problems can still be opened and edited, so you can repair it in the Build view.
 - The banner counts problems in the current state. **Undo** can remove a problem as well as a change that caused it ([[page-build-view]]).
 - After a Git pull the banner shows problems of the merged result ([[git-pull-conflicts]]).

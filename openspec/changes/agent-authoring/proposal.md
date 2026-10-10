@@ -52,7 +52,7 @@ The assistant today (ADR 0008) drafts one rule, script, shape or class at a time
 
 ## Impact
 
-- **ADR 0011 changes ADR 0008:** the assistant may send model content after the per-model notice; it may build whole Kits and edit models. The MCP bridge is a local program, not a server (rule 1 holds).
+- **ADR 0012 changes ADR 0008:** the assistant may send model content after the per-model notice; it may build whole Kits and edit models. The MCP bridge is a local program, not a server (rule 1 holds).
 - **No file format change:** plans are not stored.
 - **No new runtime dependency:** the MCP stdio protocol (JSON-RPC 2.0 over stdin and stdout) is written by hand in the CLI.
 - **Builds on `ai-data-catalog`:** "add from catalog" and "create from a copy" use its catalog and `cloneToolLibrary`, so this change starts after that one's first two PRs.

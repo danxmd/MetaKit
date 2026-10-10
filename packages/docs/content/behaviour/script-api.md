@@ -15,7 +15,7 @@ Scripts import everything from one module called `metakit`. This page lists all 
 The module has these exports:
 
 ```ts
-import { on, cancel, model, tool, ui, files, http, commands } from "metakit";
+import { on, cancel, model, kit, ui, files, http, commands } from "metakit";
 ```
 
 Everything crosses a narrow bridge as plain JSON. The host checks every request again (names, permissions, sizes), so a script gains nothing by trying to reach the bridge by other means.
@@ -115,9 +115,18 @@ All 24 are described in [[rule-triggers]]. Every payload has `event`, `target` (
 
 Writing checks the value. A wrong one fails with `The attribute "X" ...`, for example about a type or a choice that is not an option. Writing a formula attribute fails with `The attribute "X" is calculated and cannot be set.`
 
-### `tool`
+### `kit`
 
-`tool` gives access to the Kit. It holds read-only facts about its meta-model: `tool.name`, `tool.version`, `tool.classes()`, `tool.class(key)`, `tool.relations()`, `tool.relation(key)`, `tool.modelTypes()`, `tool.modelType(key)` and `tool.attribute(owner, key)`. They return `ClassInfo`, `RelationInfo`, `ModelTypeInfo` and `AttributeInfo` records. `ClassInfo.attributes` includes inherited attributes.
+`kit` gives access to the Kit. It holds read-only facts about its meta-model: `kit.name`, `kit.version`, `kit.classes()`, `kit.class(key)`, `kit.relations()`, `kit.relation(key)`, `kit.modelTypes()`, `kit.modelType(key)` and `kit.attribute(owner, key)`. They return `ClassInfo`, `RelationInfo`, `ModelTypeInfo` and `AttributeInfo` records. `ClassInfo.attributes` includes inherited attributes.
+
+```ts
+import { kit, ui } from "metakit";
+
+const task = kit.class("Task");
+ui.message(`${kit.name} ${kit.version}: Task has ${task.attributes.length} attributes.`);
+```
+
+**Older name `tool`.** Scripts written before the tool library was called a Kit import `tool`. It is the same object, so these scripts keep running unchanged. The editor shows `tool` struck through; hover over it to read `Deprecated. Use kit.` Replace `tool` with `kit` when you next edit such a script.
 
 ### `ui`
 

@@ -3,7 +3,7 @@ id: concepts-kit
 title: Kit
 category: start
 summary: A Kit is the modelling language: it says which objects and connections a model can have, how they look and which rules apply.
-keywords: [kits, tool library, tool libraries, modelling language, notation, tool.json, metamodel]
+keywords: [kits, tool library, tool libraries, modelling language, notation, kit.json, tool.json, metamodel]
 contexts: []
 order: 30
 ---
@@ -12,7 +12,7 @@ A Kit defines a modelling language. Before anyone can draw a model, someone has 
 
 ## What it is
 
-A Kit is stored as one document in your [[concepts-workspace|workspace folder]], under `tools/<name>/`. It holds these parts:
+A Kit is stored as one document in your [[concepts-workspace|workspace folder]], under `kits/<name>/` (a Kit made before the Kit rename stays under `tools/<name>/`). It holds these parts:
 
 | Part | What it decides | Where to learn more |
 | --- | --- | --- |
@@ -31,7 +31,7 @@ Every Kit has a name and a version number such as `1.0.0`. Models remember which
 
 - The [[page-kits|Kits page]] lists every Kit of the workspace as a card with the version and the number of models that use it.
 - **Edit** on a card opens the Kit in the [[page-build-view|Build view]].
-- Kits can also be shared as `.mktool` files ([[import-export]]) or kept in GitHub or GitLab ([[git-mode]]).
+- Kits can also be shared as `.mkkit` files ([[import-export]]) or kept in GitHub or GitLab ([[git-mode]]).
 
 ## How to use it
 

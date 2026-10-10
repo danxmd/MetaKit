@@ -1,8 +1,8 @@
 {
-  "formatVersion": 1,
+  "formatVersion": 2,
   "kind": "mkmodel",
   "name": "Library",
-  "tool": { "id": "tool_erlite", "version": "1.0.0" },
+  "kit": { "id": "tool_erlite", "version": "1.0.0" },
   "modelType": "ERDiagram",
   "attributes": { "Title": "A small library", "Author": "Ben" },
   "elements": [

@@ -8,7 +8,7 @@ contexts: [dialog.kit-import]
 order: 90
 ---
 
-When you import a `.mktool` package, MetaKit does not change anything straight away. It first shows this dialog, which says in plain English what will happen. You then choose **Add** or **Update**, or **Cancel**.
+When you import a `.mkkit` package (or a `.mktool` from a release before the Kit rename), MetaKit does not change anything straight away. It first shows this dialog, which says in plain English what will happen. You then choose **Add** or **Update**, or **Cancel**.
 
 ## What it is
 
@@ -16,11 +16,11 @@ A dialog whose title is **Add Kit: Name** when the Kit is new to the workspace, 
 
 ## Where to find it
 
-It opens after you choose a `.mktool` file with **Import / Export**, then **Import file(s)…** on the [[page-models|Models page]] ([[import-export]]). It does not open for the simpler **Add > From file…** route of the [[page-kits|Kits page]], which adds a plain Kit file (`.json`) directly.
+It opens after you choose a `.mkkit` or `.mktool` file with **Import / Export**, then **Import file(s)…** on the [[page-models|Models page]] ([[import-export]]). It does not open for the simpler **Add > From file…** route of the [[page-kits|Kits page]], which adds a plain Kit file (`.json`) directly.
 
 ## How to use it
 
-1. Import a `.mktool` file.
+1. Import a `.mkkit` file.
 2. Read the version line and the list of changes.
 3. Read **Please check** and **Models affected**, if shown.
 4. Choose **Add** or **Update** to apply it, or **Cancel** to leave everything as it is.
@@ -66,7 +66,7 @@ A list of your models that use the Kit, each with what will happen to it, in one
 
 ## Examples
 
-Anna sends Ben `agent-pipeline-1.1.0.mktool`. Ben imports it. The dialog says **Update Kit: Agent pipeline**, `Version 1.0.0 to 1.1.0`, lists "**Added** attribute `Task.Priority`", and under **Models affected** names "Code review pipeline". Ben chooses **Update**.
+Anna sends Ben `agent-pipeline-1.1.0.mkkit`. Ben imports it. The dialog says **Update Kit: Agent pipeline**, `Version 1.0.0 to 1.1.0`, lists "**Added** attribute `Task.Priority`", and under **Models affected** names "Code review pipeline". Ben chooses **Update**.
 
 ## Good to know
 

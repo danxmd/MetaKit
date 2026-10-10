@@ -114,9 +114,9 @@ This is a new package that depends only on `core`, `formula`, `shapes` and `stor
 - Errors name the step.
 - **Copy the errors for the AI** puts a follow-up prompt on the clipboard, so a second round is easy.
 
-## ADR 0011
+## ADR 0012
 
-ADR 0011 records four things:
+ADR 0012 records four things:
 - The assistant may now send model content after a per-model notice, and may build whole Kits. This replaces decision 3 and "cannot touch models" in ADR 0008.
 - Plans and operations are the single agent interface.
 - The MCP bridge is a local program started by the person, so rule 1 (no server) holds.

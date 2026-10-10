@@ -11,7 +11,7 @@ describe('cloneKit', () => {
     const source = bpmn();
     const copy = cloneKit(source, 'Our processes');
     expect(copy.manifest.id).not.toBe(source.manifest.id);
-    expect(copy.manifest.id).toMatch(/^tool_/);
+    expect(copy.manifest.id).toMatch(/^kit_/);
     expect(copy.manifest.name).toBe('Our processes');
     expect(copy.manifest.version).toBe('1.0.0');
     expect(copy.manifest.basedOn).toEqual({

@@ -8,6 +8,7 @@ import {
 } from '@metakit-app/core';
 import {
   KIT_IDENTITY_FILE,
+  OLDER_KIT_IDENTITY_FILE,
   MkModelError,
   migrate,
   importMkModel,
@@ -42,10 +43,13 @@ export async function readJsonFileAt(path: string): Promise<unknown> {
 }
 
 /**
- * The file names of a Kit in a folder, in the order they are looked for: `kit.json`, the name of
- * the repository's samples, then the name a workspace and earlier releases use.
+ * The file names of a Kit in a folder, in the order they are looked for: `kit.json`, then
+ * `tool.json`, the name that releases before the Kit rename used.
  */
-export const KIT_FILE_NAMES = ['kit.json', KIT_IDENTITY_FILE] as const;
+export const KIT_FILE_NAMES = [
+  KIT_IDENTITY_FILE,
+  OLDER_KIT_IDENTITY_FILE,
+] as const;
 
 /** The Kit file in a folder, or null when the folder has none. */
 export async function kitFileIn(folder: string): Promise<string | null> {
@@ -71,14 +75,14 @@ export async function readKitFile(path: string): Promise<KitFile> {
   const raw = await readJsonFileAt(file);
   let value: unknown;
   try {
-    value = migrate('tool-document', raw).value;
+    value = migrate('kit-document', raw).value;
   } catch (error) {
     throw new CliError(`${file}: ${(error as Error).message}`);
   }
   return { kit: value as Kit, issues: validateKit(value) };
 }
 
-/** Finds the Kit for a model file: the one given with --tool, or `kit.json` (or `tool.json`) next to the model. */
+/** Finds the Kit for a model file: the one given with --kit, or `kit.json` (or `tool.json`) next to the model. */
 export async function findKitFor(
   modelPath: string,
   kitOption: string | undefined,
@@ -87,7 +91,7 @@ export async function findKitFor(
   const sibling = await kitFileIn(dirname(modelPath));
   if (sibling) return sibling;
   throw new CliError(
-    `Cannot find the Kit for "${modelPath}": there is no kit.json or tool.json next to it. Give one with --tool <path>.`,
+    `Cannot find the Kit for "${modelPath}": there is no kit.json or tool.json next to it. Give one with --kit <path>.`,
   );
 }
 

@@ -50,12 +50,20 @@ describe('generateDeclarations', () => {
       'model',
       'ui',
       'commands',
+      'kit',
       'tool',
       'files',
       'http',
       'cancel',
     ])
       expect(text).toMatch(new RegExp(`export (const|function) ${name}\\b`));
+  });
+
+  it('declares "kit" and marks the old name "tool" as deprecated', () => {
+    expect(text).toContain('export const kit: KitInfo;');
+    expect(text).toMatch(
+      /\/\*\* @deprecated Use kit\.[^*]*\*\/\n\s*export const tool: KitInfo;/,
+    );
   });
 
   it('names the classes, relation classes and model types of the Kit', () => {

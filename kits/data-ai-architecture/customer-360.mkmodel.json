@@ -460,14 +460,14 @@
       "y": 520
     }
   ],
-  "formatVersion": 1,
+  "formatVersion": 2,
   "id": "mdl_m42xmps0m3",
   "kind": "mkmodel",
-  "modelType": "Architecture",
-  "name": "Customer 360 and churn model",
-  "tool": {
+  "kit": {
     "id": "tool_dataaiarch",
     "name": "Data and AI architecture",
     "version": "1.0.0"
-  }
+  },
+  "modelType": "Architecture",
+  "name": "Customer 360 and churn model"
 }

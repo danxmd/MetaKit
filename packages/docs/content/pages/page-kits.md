@@ -57,7 +57,7 @@ Choose **Build** in the [[top-bar]] when no Kit is open. **← Kits** in the [[p
 **Edit, export or delete**
 
 1. Choose **Edit** on a card to open the Build view.
-2. Choose **…** on a card for **Export package** (saves a `.mktool` file) or **Delete**.
+2. Choose **…** on a card for **Export package** (saves a `.mkkit` file) or **Delete**.
 
 ## Every option explained
 
@@ -75,7 +75,7 @@ Choose **Build** in the [[top-bar]] when no Kit is open. **← Kits** in the [[p
 | Card line | "No models use it yet." or "Used by n model(s)." |
 | **Edit** | Opens the Kit in Build. |
 | **… > Copy and extend…** | Opens the dialog with this Kit chosen under **Start from**. |
-| **… > Export package** | Downloads `name-version.mktool`. See [[import-export]]. |
+| **… > Export package** | Downloads `name-version.mkkit`. See [[import-export]]. |
 | **… > Delete** | Moves the Kit to **Deleted Kits**. |
 | **Deleted Kits (n), kept for 30 days** | Collapsible list with a **Restore** button for each. See [[trash-and-restore]]. |
 
@@ -103,12 +103,12 @@ The same messages area shows warnings and sharing problems as on the Models page
 
 Anna wants her own version of the agent Kit. On the Kits page she chooses **Copy and extend…** on the built-in **Agent pipeline**, names the copy "Our agents" and chooses **Create and edit**. The copy opens in Build, where she adds a **Reviewer** class. Back on the page, the card **Our agents** says **Based on Agent pipeline 1.0.0**, and the built-in card still offers **Use in this workspace**.
 
-The workspace has one card: **Agent pipeline**, **Version 1.0.0**, "Used by 2 models." Choosing **Edit** opens it in Build, where you can add a Priority attribute to **Task**. Choosing **… > Export package** saves `agent-pipeline-1.0.0.mktool`, which a colleague can add with **Import / Export** on their Models page ([[dialog-kit-import]]).
+The workspace has one card: **Agent pipeline**, **Version 1.0.0**, "Used by 2 models." Choosing **Edit** opens it in Build, where you can add a Priority attribute to **Task**. Choosing **… > Export package** saves `agent-pipeline-1.0.0.mkkit`, which a colleague can add with **Import / Export** on their Models page ([[dialog-kit-import]]).
 
 ## Good to know
 
 - **Footer.** At the bottom of the page are a link to the source code on GitHub and **Buy me a coffee**, where you can support MetaKit's development. Both open in a new tab; MetaKit stays free either way.
-- **File route versus package route.** A plain Kit file (`.json`) is added directly and only when the Kit is not yet in the workspace. A `.mktool` package is imported on the Models page and shows a review dialog first, which also lets you update an existing Kit.
+- **File route versus package route.** A plain Kit file (`.json`) is added directly and only when the Kit is not yet in the workspace. A `.mkkit` package (or an older `.mktool`) is imported on the Models page and shows a review dialog first, which also lets you update an existing Kit.
 - **Deleting a Kit does not delete its models.** They stay in the list but show **Kit not found** until you restore the Kit.
 - **Version badge.** It shows the version typed in the Build bar of that Kit.
 - Kits are shared through the workspace folder like models ([[sync-overview]]). Built-in Kits are part of MetaKit itself; only the ones you use or copy are written to the folder.

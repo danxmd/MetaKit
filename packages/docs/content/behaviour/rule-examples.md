@@ -8,7 +8,7 @@ contexts: []
 order: 35
 ---
 
-This page walks through rules that really ship with the sample Kits in the repository folder `tools/`. They show the three usual shapes: a hint that reacts to a change, a status button, and a calculation on demand.
+This page walks through rules that really ship with the sample Kits in the repository folder `kits/`. They show the three usual shapes: a hint that reacts to a change, a status button, and a calculation on demand.
 
 ## What it is
 

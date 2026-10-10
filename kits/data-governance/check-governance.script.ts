@@ -1,4 +1,4 @@
-// For the tool "Data governance and ownership". The command "Check governance" lists the gaps
+// For the Kit "Data governance and ownership". The command "Check governance" lists the gaps
 // that matter most: data products nobody owns, sensitive data assets without a policy, quality
 // rules that fail or check nothing, and glossary terms that define no data.
 import { commands, model, ui } from 'metakit';

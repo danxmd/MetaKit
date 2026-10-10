@@ -92,7 +92,7 @@ describe('structure', () => {
     const kit = base();
     delete kit.manifest.id;
     expect(messageAt(kit, 'manifest.id')[0]).toMatch(
-      /Kit id must be an id of the form tool_/,
+      /Kit id must be an id of the form kit_/,
     );
   });
 

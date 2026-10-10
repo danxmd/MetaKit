@@ -44,14 +44,14 @@ export function validateModelDocument(value: unknown): Issue[] {
   const m = c.object(
     root.manifest,
     'manifest',
-    ['id', 'name', 'tool', 'toolVersion', 'modelType', 'folder'],
+    ['id', 'name', 'kit', 'kitVersion', 'modelType', 'folder'],
     'The manifest',
   );
   if (m) {
     c.id('model', m.id, 'manifest.id', 'The model id');
     c.string(m.name, 'manifest.name', 'The model name');
-    c.id('tool', m.tool, 'manifest.tool', 'The Kit id');
-    c.string(m.toolVersion, 'manifest.toolVersion', 'The Kit version');
+    c.id('kit', m.kit, 'manifest.kit', 'The Kit id');
+    c.string(m.kitVersion, 'manifest.kitVersion', 'The Kit version');
     c.id('modelType', m.modelType, 'manifest.modelType', 'The model type id');
     if (m.folder !== undefined)
       c.string(m.folder, 'manifest.folder', 'The folder', { empty: true });

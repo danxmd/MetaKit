@@ -10,7 +10,6 @@ import {
 import {
   exportMkModel,
   importMkModel,
-  KIT_FOLDER,
   MkModelError,
   NodeFsAdapter,
   Workspace,
@@ -82,12 +81,11 @@ async function validateWorkspace(root: string): Promise<DocumentReport[]> {
     { path: 'workspace.json', kind: 'workspace', issues: [] },
   ];
   const kits = new Map<string, Kit>();
-  for (const entry of await ws.adapter.list(KIT_FOLDER)) {
-    if (entry.kind !== 'directory') continue;
-    const path = `${KIT_FOLDER}/${entry.name}`;
+  // Kits made before the Kit rename are in tools/, newer ones in kits/.
+  for (const { slug, folder: path } of await ws.listKitFolders()) {
     const issues: ReportIssue[] = [];
     try {
-      const loaded = await ws.loadKit(entry.name);
+      const loaded = await ws.loadKit(slug);
       kits.set(loaded.document.manifest.id, loaded.document);
       issues.push(
         ...loaded.issues.map((i): ReportIssue => ({
@@ -110,7 +108,7 @@ async function validateWorkspace(root: string): Promise<DocumentReport[]> {
         message: (error as Error).message,
       });
     }
-    reports.push({ path, kind: 'tool', issues });
+    reports.push({ path, kind: 'kit', issues });
   }
   for (const entry of await ws.adapter.list('models')) {
     if (entry.kind !== 'directory') continue;
@@ -132,12 +130,12 @@ async function validateWorkspace(root: string): Promise<DocumentReport[]> {
           message: w,
         })),
       );
-      const kit = kits.get(loaded.document.manifest.tool);
+      const kit = kits.get(loaded.document.manifest.kit);
       if (!kit)
         issues.push({
           severity: 'error',
-          location: 'manifest.tool',
-          message: `The Kit ${loaded.document.manifest.tool} is not in this workspace, so the model cannot be checked.`,
+          location: 'manifest.kit',
+          message: `The Kit ${loaded.document.manifest.kit} is not in this workspace, so the model cannot be checked.`,
         });
       else if (loaded.issues.length === 0)
         issues.push(...modelIssues(kit, loaded.document));
@@ -165,7 +163,7 @@ async function validateModelFile(
     location: i.path || '(top level)',
     message: i.message,
   }));
-  reports.push({ path: kitPath, kind: 'tool', issues: kitIssuesOut });
+  reports.push({ path: kitPath, kind: 'kit', issues: kitIssuesOut });
   const issues: ReportIssue[] = [];
   if (kitIssues.length > 0) {
     issues.push({
@@ -210,7 +208,7 @@ export async function validateCommand(
   args: ParsedArgs,
   io: Io,
 ): Promise<number> {
-  checkFlags(args, ['strict', 'json', 'tool']);
+  checkFlags(args, ['strict', 'json', 'kit']);
   if (args.positionals.length !== 1)
     throw new UsageError(
       'validate needs exactly one path: a workspace folder, a Kit, or a model file.',
@@ -226,7 +224,7 @@ export async function validateCommand(
     reports = [
       {
         path: (await kitFileIn(path)) ?? path,
-        kind: 'tool',
+        kind: 'kit',
         issues: issues.map((i): ReportIssue => ({
           severity: 'error',
           location: i.path || '(top level)',
@@ -246,7 +244,7 @@ export async function validateCommand(
       reports = [
         {
           path,
-          kind: 'tool',
+          kind: 'kit',
           issues: issues.map((i): ReportIssue => ({
             severity: 'error',
             location: i.path || '(top level)',
@@ -255,7 +253,7 @@ export async function validateCommand(
         },
       ];
     } else {
-      reports = await validateModelFile(path, stringFlag(args, 'tool'));
+      reports = await validateModelFile(path, stringFlag(args, 'kit'));
     }
   }
   io.out(
@@ -267,7 +265,7 @@ export async function validateCommand(
 }
 
 export async function exportCommand(args: ParsedArgs, io: Io): Promise<number> {
-  checkFlags(args, ['format', 'out', 'tool', 'workspace']);
+  checkFlags(args, ['format', 'out', 'kit', 'workspace']);
   if (args.positionals.length !== 1)
     throw new UsageError(
       'export needs exactly one model: a .mkmodel.json file, or a model folder name together with --workspace.',
@@ -284,7 +282,7 @@ export async function exportCommand(args: ParsedArgs, io: Io): Promise<number> {
     const ws = await Workspace.open(new NodeFsAdapter(workspace));
     text = await ws.exportModel(subject);
   } else {
-    const kitPath = await findKitFor(subject, stringFlag(args, 'tool'));
+    const kitPath = await findKitFor(subject, stringFlag(args, 'kit'));
     const { kit, issues } = await readKitFile(kitPath);
     if (issues.length > 0)
       throw new CliError(

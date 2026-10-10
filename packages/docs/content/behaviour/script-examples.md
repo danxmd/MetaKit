@@ -8,7 +8,7 @@ contexts: []
 order: 55
 ---
 
-Four scripts ship with the sample Kits in the repository folder `tools/`. They are small, they only read the model (the last one also writes a file), and each one is a good starting point.
+Four scripts ship with the sample Kits in the repository folder `kits/`. They are small, they only read the model (the last one also writes a file), and each one is a good starting point.
 
 ## What it is
 

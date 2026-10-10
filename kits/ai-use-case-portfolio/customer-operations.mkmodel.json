@@ -847,14 +847,14 @@
       "y": 940
     }
   ],
-  "formatVersion": 1,
+  "formatVersion": 2,
   "id": "mdl_e919mejpjz",
   "kind": "mkmodel",
-  "modelType": "Portfolio",
-  "name": "Customer operations AI portfolio",
-  "tool": {
+  "kit": {
     "id": "tool_aiportfolio",
     "name": "AI use-case portfolio",
     "version": "1.0.0"
-  }
+  },
+  "modelType": "Portfolio",
+  "name": "Customer operations AI portfolio"
 }

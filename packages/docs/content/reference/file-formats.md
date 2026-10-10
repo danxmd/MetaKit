@@ -17,7 +17,7 @@ All files follow a few rules.
 - **Canonical JSON.** Keys are sorted at every level, indentation is two spaces, and the file ends with one new line. The same data always gives the same bytes, so diffs stay small.
 - **Versioned.** Every file kind has a number, `formatVersion`. An older file is brought up to date in memory when read. A newer file is refused, not guessed at. See [[format-versions]].
 - **Write once.** Documents and change files are created once and never replaced. Only an instance's own `snapshot.json`, `trash.json` and presence file are rewritten, by that instance only. See [[sync-overview]].
-- **Stable ids.** Things have random ids with a kind prefix: `tool_`, `cls_`, `rel_`, `att_`, `mt_`, `mdl_`, `vw_`, `shp_`, `rule_`, `scr_`, `el_`, `cn_`. After the prefix come ten characters from `0-9` and `a-z` without `i`, `l`, `o` and `u`. Keys, the human names used in formulas and scripts, are separate from ids.
+- **Stable ids.** Things have random ids with a kind prefix: `kit_`, `cls_`, `rel_`, `att_`, `mt_`, `mdl_`, `vw_`, `shp_`, `rule_`, `scr_`, `el_`, `cn_`. After the prefix come ten characters from `0-9` and `a-z` without `i`, `l`, `o` and `u`. Keys, the human names used in formulas and scripts, are separate from ids. Kits made before the Kit rename have ids that start with `tool_`; they stay valid and are never rewritten.
 - **Safe names.** Paths are relative, use `/`, have no empty, `.` or `..` parts, and no part starts with a dot or ends with a dot or space. These characters are refused: `< > : " | ? * \` and control characters. A part may have 200 characters at most. (Some sync tools skip files that start with a dot, and Windows refuses the other names.)
 
 ## Where to find it
@@ -37,8 +37,8 @@ In the folder you picked with **Open workspace folder**, outside the app (see [[
 
 ```text
 workspace.json
-tools/<kit-folder>/
-  tool.json
+kits/<kit-folder>/
+  kit.json
   assets/<name>.<hash>.<ext>
   _state/<instanceId>/
     000001.jsonl
@@ -52,6 +52,8 @@ _presence/<instanceId>.json
 
 A Kit folder is named after the Kit (`bpmn-lite`). A model folder is named after the model plus four random characters (`order-process-9xk2`). Folder names match `[a-z0-9][a-z0-9-]*`, at most 61 characters. They never change when you rename the thing inside.
 
+A workspace made before the Kit rename keeps its Kits in `tools/<kit-folder>/` with a `tool.json`. MetaKit reads and edits them there and never moves them, because their files belong to other people's app instances. New Kits always go to `kits/`. A workspace can have both folders. Folder names are unique over both; if both have the same name, the one in `tools/` is shown with `-tools` added to its name.
+
 ### workspace.json
 
 ```json
@@ -62,19 +64,19 @@ A Kit folder is named after the Kit (`bpmn-lite`). A model folder is named after
 }
 ```
 
-### tool.json and model.json (identity files)
+### kit.json and model.json (identity files)
 
 Small files, written once, that say what the folder is.
 
 ```json
-{ "created": "2026-10-07T09:05:00.000Z", "formatVersion": 1, "id": "tool_k3m9q2x7ab", "kind": "tool", "name": "BPMN lite" }
+{ "created": "2026-10-07T09:05:00.000Z", "formatVersion": 2, "id": "kit_k3m9q2x7ab", "kind": "kit", "name": "BPMN lite" }
 ```
 
 ```json
-{ "created": "2026-10-07T09:10:00.000Z", "formatVersion": 1, "id": "mdl_p4q8r2t6vx", "kind": "model", "modelType": "mt_2b4d6f8hja", "name": "Order process", "tool": "tool_k3m9q2x7ab" }
+{ "created": "2026-10-07T09:10:00.000Z", "formatVersion": 2, "id": "mdl_p4q8r2t6vx", "kind": "model", "kit": "kit_k3m9q2x7ab", "modelType": "mt_2b4d6f8hja", "name": "Order process" }
 ```
 
-The real content of the document is in `_state` (below). These files only identify it.
+The real content of the document is in `_state` (below). These files only identify it. Older ones (format 1) are `tool.json` with `"kind": "tool"`, and a `model.json` that says `"tool"`; they are read as they are and never rewritten.
 
 ### Change files: `_state/<instanceId>/000001.jsonl`
 
@@ -106,7 +108,7 @@ The name is a six-digit sequence. A file counts only when it ends with a new lin
 
 ```json
 {
-  "formatVersion": 2,
+  "formatVersion": 3,
   "kind": "model",
   "instance": "7f3a1b2c",
   "savedAt": "2026-10-07T09:20:00.000Z",
@@ -119,7 +121,7 @@ The name is a six-digit sequence. A file counts only when it ends with a new lin
 }
 ```
 
-The header comes first so a reader can skip a snapshot that another one covers. Stamps are listed once and referred to by number. Each entity is on its own line. See [[history]].
+The header comes first so a reader can skip a snapshot that another one covers. Stamps are listed once and referred to by number. Each entity is on its own line. `kind` is `kit` or `model`; format 2 said `tool` for a Kit and is still read. See [[history]].
 
 ### Trash marker: `_state/<instanceId>/trash.json`
 
@@ -135,12 +137,12 @@ Name, colour, time, open document, selection, hash and `seen`. See [[instances-a
 
 ### The Kit document
 
-The content of a Kit, as you see it in a snapshot, an export or a Git checkout, is one JSON object (Kit format 4):
+The content of a Kit, as you see it in a snapshot, an export or a Git checkout, is one JSON object (Kit format 7):
 
 | Key | Holds |
 | --- | --- |
-| `formatVersion` | 4 |
-| `manifest` | `id`, `name`, `version`, `languages`, and optional `permissions` (`network`, `files`) |
+| `formatVersion` | 7 |
+| `manifest` | `id` (`kit_…`, or `tool_…` for older Kits), `name`, `version`, `languages`, and optional `permissions` (`network`, `files`) and `basedOn` |
 | `settings` | `grid` (size, snap, visible), `layers`, `numbering` (enabled, prefix, start) |
 | `classes` | Classes by id: key, kind, labels, extends, abstract, attributes, constraints, shape, panel |
 | `relations` | Relation classes by id |
@@ -154,18 +156,18 @@ See [[concepts-kit]], [[rules]] and [[scripts]]. In Git it is split into many fi
 
 ### The model document
 
-One JSON object (model format 1): `formatVersion`, `manifest` (id, name, tool, toolVersion, modelType, folder), `attrs` (model attribute values by attribute id), `elements` (by id: class, x, y, w, h, parent, attrs, pos) and `connectors` (by id: relation, from, to, bends, attrs, pos). `pos` is a position key for the drawing order. See [[concepts-model]].
+One JSON object (model format 2): `formatVersion`, `manifest` (id, name, kit, kitVersion, modelType, folder), `attrs` (model attribute values by attribute id), `elements` (by id: class, x, y, w, h, parent, attrs, pos) and `connectors` (by id: relation, from, to, bends, attrs, pos). `pos` is a position key for the drawing order. Format 1 said `tool` and `toolVersion` in the manifest; it is read with the new names. See [[concepts-model]].
 
 ### Exchange files
 
 | File | What it is | Shape |
 | --- | --- | --- |
-| `.mkmodel.json` | One model as a person would write it, with class and attribute names instead of ids | `formatVersion`, `kind: "mkmodel"`, `name`, `tool`, `modelType`, `attributes`, `elements`, `connectors` |
-| `.mkbundle` | A zip with models and their Kit | `bundle.json` (`kind: "mkbundle"`, tool, `includesTool`, models), `models/*.mkmodel.json`, optional `tool/tool.json` |
-| `.mktool` | A zip with a Kit | `package.json` (`kind: "mktool"`, tool, contents), `tool.json`, `scripts/`, `assets/` |
+| `.mkmodel.json` | One model as a person would write it, with class and attribute names instead of ids | `formatVersion`, `kind: "mkmodel"`, `name`, `kit`, `modelType`, `attributes`, `elements`, `connectors` |
+| `.mkbundle` | A zip with models and their Kit | `bundle.json` (`kind: "mkbundle"`, kit, `includesKit`, models), `models/*.mkmodel.json`, optional `kit/kit.json` |
+| `.mkkit` | A zip with a Kit | `package.json` (`kind: "mkkit"`, kit, contents), `kit.json`, `scripts/`, `assets/` |
 | CSV | One file per class and relation class, for spreadsheets | `<ClassKey>.csv`, `<RelationKey>.csv`; zipped when you export several |
 
-Zip files are limited in size and number of files, and files with unsafe names are refused. See [[import-export]].
+Zip files are limited in size and number of files, and files with unsafe names are refused. Files from before the Kit rename still import: a `.mktool` (`kind: "mktool"`, `tool`, `tool.json`), a bundle with `tool/tool.json`, and a `.mkmodel.json` that says `tool`. See [[import-export]].
 
 ### What the browser keeps (not in the folder)
 

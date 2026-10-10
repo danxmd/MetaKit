@@ -16,7 +16,8 @@ describe('toLayout', () => {
     const files = toLayout(sampleWithBehaviour());
     const paths = files.map((f) => f.path);
     expect(paths).toEqual([...paths].sort());
-    expect(paths).toContain('tool.json');
+    expect(paths).toContain('kit.json');
+    expect(paths).not.toContain('tool.json');
     expect(paths).toContain('classes/task.json');
     expect(paths).toContain('classes/start-event.json');
     expect(paths.some((p) => p.startsWith('relations/'))).toBe(true);
@@ -145,7 +146,7 @@ describe('small diffs', () => {
     expect(different).toEqual(['classes/task.json']);
   });
 
-  it('adding a class changes the new file and tool.json only', () => {
+  it('adding a class changes the new file and kit.json only', () => {
     const kit = sampleKit('er-lite');
     const first = Object.values(kit.classes)[0]!;
     const added: Kit = {
@@ -159,7 +160,7 @@ describe('small diffs', () => {
     const different = toLayout(added)
       .filter((f) => before.get(f.path) !== f.content)
       .map((f) => f.path);
-    expect(different).toEqual(['classes/fresh.json', 'tool.json']);
+    expect(different).toEqual(['classes/fresh.json', 'kit.json']);
   });
 });
 
@@ -222,21 +223,44 @@ describe('hand edits', () => {
     expect(back.kit!.scripts['scr_gateway_check']?.source).toBe('');
   });
 
-  it('cannot load without tool.json and says so', () => {
+  it('cannot load without kit.json and says so', () => {
     const back = fromLayout(
-      toLayout(sampleKit('er-lite')).filter((f) => f.path !== 'tool.json'),
+      toLayout(sampleKit('er-lite')).filter((f) => f.path !== 'kit.json'),
     );
     expect(back.kit).toBeNull();
-    expect(back.issues[0]?.path).toBe('tool.json');
+    expect(back.issues[0]?.path).toBe('kit.json');
+  });
+
+  it('reads a repository from before the Kit rename, with tool.json, and prefers kit.json', () => {
+    const kit = sampleKit('er-lite');
+    const older = toLayout(kit).map((f) =>
+      f.path === 'kit.json' ? { ...f, path: 'tool.json' } : f,
+    );
+    const back = fromLayout(older);
+    expect(back.issues).toEqual([]);
+    expect(back.kit).toEqual(kit);
+    // Both there (an older release wrote tool.json again): kit.json is the one read.
+    const renamed = { ...kit, manifest: { ...kit.manifest, name: 'Old' } };
+    const both = [
+      ...toLayout(kit),
+      ...toLayout(renamed)
+        .filter((f) => f.path === 'kit.json')
+        .map((f) => ({ ...f, path: 'tool.json' })),
+    ];
+    expect(fromLayout(both).kit?.manifest.name).toBe(kit.manifest.name);
+    const broken = older.map((f) =>
+      f.path === 'tool.json' ? { ...f, content: '{' } : f,
+    );
+    expect(fromLayout(broken).issues[0]?.path).toBe('tool.json');
   });
 
   it('refuses a newer format and ignores files outside the layout', () => {
     const files = toLayout(sampleKit('er-lite')).map((f) =>
-      f.path === 'tool.json'
+      f.path === 'kit.json'
         ? {
             ...f,
             content: f.content.replace(
-              '"formatVersion": 6',
+              '"formatVersion": 7',
               '"formatVersion": 99',
             ),
           }

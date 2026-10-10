@@ -212,7 +212,11 @@ node apps/cli/dist/bin.js validate kits/bpmn-lite
 node apps/cli/dist/bin.js validate kits/bpmn-lite/order-process.mkmodel.json --strict
 node apps/cli/dist/bin.js validate my-workspace --json
 node apps/cli/dist/bin.js export my-workspace/models/order --format json --out order.mkmodel.json
+node apps/cli/dist/bin.js export-kit kits/bpmn-lite --out bpmn-lite.mkkit
+node apps/cli/dist/bin.js import-kit bpmn-lite.mkkit --workspace my-workspace
 ```
+
+`--help` lists every command. `validate` exits with 1 on errors (or on warnings with `--strict`). The names from before the Kit rename, `export-tool`, `import-tool`, `--tool` and `--no-tool`, still work.
 
 **How the project is built**
 

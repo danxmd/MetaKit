@@ -17,7 +17,7 @@ The folder contains:
 | Path in the folder | What it holds |
 | --- | --- |
 | `workspace.json` | The workspace name, the date it was created and the format version. Written once, when the workspace is created. |
-| `tools/<name>/` | One sub-folder per [[concepts-kit|Kit]]. |
+| `kits/<name>/` | One sub-folder per [[concepts-kit|Kit]]. A workspace made before the Kit rename also has `tools/<name>/`; those Kits stay there. |
 | `models/<name>/` | One sub-folder per [[concepts-model|model]]. |
 | `_state/<id>/` inside each of those | The saved changes written by one open browser tab (its "instance"). |
 
@@ -47,7 +47,7 @@ The `_state` folders are how several people and several tabs work in the same fo
 
 ## Examples
 
-A team keeps `Agent pipeline workspace` in SharePoint. It contains `tools/agent-pipeline/` and a few models such as `models/code-review/`. Anna opens the folder on her laptop, Ben on his. When Anna adds a **Task** to the code review model, Ben sees it appear within a few seconds, because her tab writes a change file that his tab reads.
+A team keeps `Agent pipeline workspace` in SharePoint. It contains `kits/agent-pipeline/` and a few models such as `models/code-review/`. Anna opens the folder on her laptop, Ben on his. When Anna adds a **Task** to the code review model, Ben sees it appear within a few seconds, because her tab writes a change file that his tab reads.
 
 ## Good to know
 

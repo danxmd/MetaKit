@@ -342,14 +342,14 @@
       "y": 440
     }
   ],
-  "formatVersion": 1,
+  "formatVersion": 2,
   "id": "mdl_grmeq5vb2a",
   "kind": "mkmodel",
-  "modelType": "Pipeline",
-  "name": "Code review pipeline",
-  "tool": {
+  "kit": {
     "id": "tool_agentpipeline",
     "name": "Agent pipeline",
     "version": "1.0.0"
-  }
+  },
+  "modelType": "Pipeline",
+  "name": "Code review pipeline"
 }

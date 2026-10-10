@@ -253,7 +253,11 @@ export class Scanner {
         if (this.isRead(inst, seq) || this.broken.has(id)) continue;
         const path = `${instanceFolder(this.folder, inst)}/${name}`;
         try {
-          const parsed = parseChangeFile(await this.readText(path), inst);
+          const parsed = parseChangeFile(
+            await this.readText(path),
+            inst,
+            this.kind,
+          );
           result.batches.push({
             by: inst,
             seq,

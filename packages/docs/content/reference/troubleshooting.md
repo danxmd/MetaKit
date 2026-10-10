@@ -88,7 +88,7 @@ Messages appear in four places: under the form you were using, as a note above t
 - **"The branch has changed since you last pulled. Pull first, then commit again."** Press **Pull**, then commit. See [[git-commit]].
 - **"Could not reach GitHub. Check the address and your connection; the service may also refuse requests from a browser."** No connection, a wrong address for a self-managed service, or a block by the service.
 - **"There is no GitHub token for github.com in this browser. Add one in the Git settings."** Tokens are per browser. Add one. See [[git-mode]].
-- **"This folder does not hold a Kit: tool.json is missing."** Wrong folder in the repository. See [[git-layout]].
+- **"This folder does not hold a Kit: kit.json is missing."** Wrong folder in the repository. See [[git-layout]].
 - **"GitHub is limiting requests. Wait a minute and try again."** Rate limit. Wait.
 - **"The repository is too large for GitHub to list in one answer."** Use a smaller repository for the Kit.
 
@@ -102,7 +102,7 @@ Messages appear in four places: under the form you were using, as a note above t
 
 ### Import and export
 
-- **"This is not a valid zip file, or it is damaged, so it could not be opened."** The file is not a `.mkbundle` or `.mktool`, or was cut short. Download it again.
+- **"This is not a valid zip file, or it is damaged, so it could not be opened."** The file is not a `.mkbundle` or `.mkkit`, or was cut short. Download it again.
 - **"This zip file holds more than 2,000 files ..."** or **"... unsafe name ..."** The zip is refused for safety.
 - **"This is not a MetaKit bundle: there is no bundle.json in it."** Wrong file. See [[import-export]].
 - **"This bundle does not include its Kit ..."** Import the Kit package first.

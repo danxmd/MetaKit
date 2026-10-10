@@ -10,7 +10,6 @@ import {
   exportKitPackageFrom,
   importBundle,
   importMkModel,
-  KIT_FOLDER,
   NodeFsAdapter,
   prepareKitImport,
   Workspace,
@@ -52,7 +51,7 @@ export async function exportBundleCommand(
   args: ParsedArgs,
   io: Io,
 ): Promise<number> {
-  checkFlags(args, ['workspace', 'out', 'name', 'no-tool']);
+  checkFlags(args, ['workspace', 'out', 'name', 'no-kit']);
   const ws = await openWorkspace(
     need(args, 'workspace', 'export-bundle'),
     false,
@@ -66,7 +65,7 @@ export async function exportBundleCommand(
   const name = stringFlag(args, 'name');
   const { bytes } = await exportBundle(ws, {
     models,
-    includeKit: !hasFlag(args, 'no-tool'),
+    includeKit: !hasFlag(args, 'no-kit'),
     ...(name ? { name } : {}),
   });
   await writeOut(out, bytes, io);
@@ -97,9 +96,9 @@ export async function exportKitCommand(
   checkFlags(args, ['workspace', 'out']);
   if (args.positionals.length !== 1)
     throw new UsageError(
-      'export-tool needs one Kit: its folder name together with --workspace, or the path of a Kit.',
+      'export-kit needs one Kit: its folder name together with --workspace, or the path of a Kit.',
     );
-  const out = need(args, 'out', 'export-tool');
+  const out = need(args, 'out', 'export-kit');
   const subject = args.positionals[0]!;
   const workspace = stringFlag(args, 'workspace');
   let bytes: Uint8Array;
@@ -125,9 +124,11 @@ export async function importKitCommand(
 ): Promise<number> {
   checkFlags(args, ['workspace', 'create', 'yes']);
   if (args.positionals.length !== 1)
-    throw new UsageError('import-tool needs exactly one .mktool file.');
+    throw new UsageError(
+      'import-kit needs exactly one .mkkit (or older .mktool) file.',
+    );
   const ws = await openWorkspace(
-    need(args, 'workspace', 'import-tool'),
+    need(args, 'workspace', 'import-kit'),
     hasFlag(args, 'create'),
   );
   const bytes = new Uint8Array(await readFile(args.positionals[0]!));
@@ -142,10 +143,9 @@ export async function importKitCommand(
     return 1;
   }
   const { slug, created } = await applyKitUpdate(ws, prepared);
+  const folder = await ws.kitFolder(slug);
   io.out(
-    created
-      ? `Added the Kit as ${KIT_FOLDER}/${slug}.`
-      : `Updated the Kit ${KIT_FOLDER}/${slug}.`,
+    created ? `Added the Kit as ${folder}.` : `Updated the Kit ${folder}.`,
   );
   return 0;
 }
@@ -154,7 +154,7 @@ export async function exportCsvCommand(
   args: ParsedArgs,
   io: Io,
 ): Promise<number> {
-  checkFlags(args, ['workspace', 'tool', 'out', 'bom']);
+  checkFlags(args, ['workspace', 'kit', 'out', 'bom']);
   if (args.positionals.length !== 1)
     throw new UsageError(
       'export-csv needs exactly one model: a .mkmodel.json file, or a model folder name together with --workspace.',
@@ -167,14 +167,14 @@ export async function exportCsvCommand(
   if (workspace) {
     const ws = await openWorkspace(workspace, false);
     model = (await ws.loadModel(subject)).document;
-    const slug = await ws.findKitSlug(model.manifest.tool);
+    const slug = await ws.findKitSlug(model.manifest.kit);
     if (!slug)
       throw new CliError(
-        `The Kit ${model.manifest.tool} of this model is not in the workspace.`,
+        `The Kit ${model.manifest.kit} of this model is not in the workspace.`,
       );
     kit = (await ws.loadKit(slug)).document;
   } else {
-    const kitPath = await findKitFor(subject, stringFlag(args, 'tool'));
+    const kitPath = await findKitFor(subject, stringFlag(args, 'kit'));
     const read = await readKitFile(kitPath);
     if (read.issues.length > 0)
       throw new CliError(

@@ -15,8 +15,8 @@ import {
   MkModelError,
   type MkModelImportReport,
 } from './mkmodel';
-import { migrate } from './migrate';
-import { BUNDLE_KIT_PATH } from './names';
+import { CURRENT_FORMAT, migrate } from './migrate';
+import { BUNDLE_KIT_PATH, OLDER_BUNDLE_KIT_PATH } from './names';
 import { slugify } from './slugify';
 import type { Workspace } from './workspace';
 import { unzipFiles, zipFiles } from './zip';
@@ -37,15 +37,18 @@ interface BundleModelEntry {
   folder?: string;
 }
 
-/** `bundle.json`: what is in the zip. */
+/**
+ * `bundle.json`: what is in the zip. Format 1, from releases before the Kit rename, said `tool`
+ * and `includesTool` and held the Kit as `tool/tool.json`; it is read as this.
+ */
 export interface BundleManifest {
   formatVersion: number;
   kind: 'mkbundle';
   name: string;
   created: string;
-  tool: { id: string; name: string; version: string };
-  /** Whether `tool/tool.json` is in the zip. */
-  includesTool: boolean;
+  kit: { id: string; name: string; version: string };
+  /** Whether `kit/kit.json` is in the zip. */
+  includesKit: boolean;
   models: BundleModelEntry[];
 }
 
@@ -81,8 +84,8 @@ export async function exportBundle(
   const loaded: Model[] = [];
   for (const slug of options.models)
     loaded.push((await workspace.loadModel(slug)).document);
-  const kitId = loaded[0]!.manifest.tool;
-  const other = loaded.find((m) => m.manifest.tool !== kitId);
+  const kitId = loaded[0]!.manifest.kit;
+  const other = loaded.find((m) => m.manifest.kit !== kitId);
   if (other)
     throw new FormatError(
       `A bundle holds one Kit, but "${loaded[0]!.manifest.name}" and "${other.manifest.name}" were made with different ones. Make one bundle for each Kit.`,
@@ -113,16 +116,16 @@ export async function exportBundle(
   }
   const name = options.name?.trim() || loaded[0]!.manifest.name;
   const manifest: BundleManifest = {
-    formatVersion: 1,
+    formatVersion: CURRENT_FORMAT.bundle,
     kind: 'mkbundle',
     name,
     created: (options.now ?? (() => new Date()))().toISOString(),
-    tool: {
+    kit: {
       id: kit.manifest.id,
       name: kit.manifest.name,
       version: kit.manifest.version,
     },
-    includesTool: options.includeKit,
+    includesKit: options.includeKit,
     models: entries,
   };
   files[MANIFEST_PATH] = json(manifest);
@@ -186,7 +189,7 @@ export function readBundleManifest(
       'This is not a MetaKit bundle (bundle.json has the wrong kind).',
     );
   if (
-    typeof m.tool?.id !== 'string' ||
+    typeof m.kit?.id !== 'string' ||
     !Array.isArray(m.models) ||
     m.models.some(
       (e) => typeof e?.file !== 'string' || typeof e?.name !== 'string',
@@ -213,12 +216,13 @@ export async function importBundle(
   const messages: string[] = [];
 
   let bundledKit: Kit | null = null;
-  const kitText = readText(files, BUNDLE_KIT_PATH);
+  const kitPath =
+    files[BUNDLE_KIT_PATH] !== undefined
+      ? BUNDLE_KIT_PATH
+      : OLDER_BUNDLE_KIT_PATH;
+  const kitText = readText(files, kitPath);
   if (kitText !== null) {
-    const migrated = migrate(
-      'tool-document',
-      parseJson(kitText, BUNDLE_KIT_PATH),
-    ).value;
+    const migrated = migrate('kit-document', parseJson(kitText, kitPath)).value;
     const issues = validateKit(migrated);
     if (issues.length > 0)
       throw new FormatError(
@@ -228,19 +232,19 @@ export async function importBundle(
           .join('; ')}.`,
       );
     bundledKit = migrated as unknown as Kit;
-    if (bundledKit.manifest.id !== manifest.tool.id)
+    if (bundledKit.manifest.id !== manifest.kit.id)
       throw new FormatError(
         'The Kit in this bundle is not the one bundle.json names, so nothing was imported.',
       );
   }
 
-  let kitSlug = await workspace.findKitSlug(manifest.tool.id as KitId);
+  let kitSlug = await workspace.findKitSlug(manifest.kit.id as KitId);
   let kitAdded = false;
   let kitVersionDiffers = false;
   if (kitSlug === null) {
     if (!bundledKit)
       throw new FormatError(
-        `This bundle does not include its Kit "${manifest.tool.name}" (${manifest.tool.id}), and the workspace does not have it. Import the Kit package first.`,
+        `This bundle does not include its Kit "${manifest.kit.name}" (${manifest.kit.id}), and the workspace does not have it. Import the Kit package first.`,
       );
     kitSlug = await workspace.createKit(bundledKit);
     kitAdded = true;
@@ -249,7 +253,7 @@ export async function importBundle(
     );
   } else {
     const have = (await workspace.loadKit(kitSlug)).document;
-    const offered = bundledKit?.manifest.version ?? manifest.tool.version;
+    const offered = bundledKit?.manifest.version ?? manifest.kit.version;
     kitVersionDiffers = offered !== have.manifest.version;
     messages.push(
       `The workspace already has the Kit "${have.manifest.name}", so that one was used.`,
@@ -286,11 +290,12 @@ export async function importBundle(
         },
       };
       const slug = await workspace.createModel(model);
+      // What the file says about its Kit, under the name of its format (`tool` in format 1).
       const fileKit = (
-        JSON.parse(text) as {
-          tool?: { id?: string; name?: string; version?: string };
+        migrate('mkmodel', JSON.parse(text)).value as {
+          kit?: { id?: string; name?: string; version?: string };
         }
-      ).tool;
+      ).kit;
       added.push({
         name: model.manifest.name,
         slug,
@@ -319,7 +324,7 @@ export async function importBundle(
     bundleName: manifest.name,
     kitAdded,
     kitSlug,
-    kit: manifest.tool,
+    kit: manifest.kit,
     kitVersionDiffers,
     added,
     skipped,

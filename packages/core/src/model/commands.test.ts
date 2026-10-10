@@ -701,12 +701,12 @@ describe('manifest', () => {
       type: 'updateManifest',
       name: 'Order to cash',
       folder: 'Sales/2026',
-      toolVersion: '1.1.0',
+      kitVersion: '1.1.0',
     });
     expect(store.state.manifest).toMatchObject({
       name: 'Order to cash',
       folder: 'Sales/2026',
-      toolVersion: '1.1.0',
+      kitVersion: '1.1.0',
     });
     store.execute({ type: 'updateManifest', folder: null });
     expect('folder' in store.state.manifest).toBe(false);

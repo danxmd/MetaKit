@@ -97,7 +97,7 @@
     {#if kits.length === 0 && builtIns.length === 0}
       <p class="notice warning">
         This workspace has no Kit yet. Add one in Build mode, or copy a Kit
-        folder into <code>tools/</code>.
+        folder into <code>kits/</code>.
       </p>
     {:else}
       <label>

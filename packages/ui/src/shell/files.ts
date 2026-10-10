@@ -4,6 +4,8 @@ export type ImportKind = 'model' | 'bundle' | 'kit';
 const EXTENSIONS: readonly (readonly [string, ImportKind])[] = [
   ['.mkmodel.json', 'model'],
   ['.mkbundle', 'bundle'],
+  ['.mkkit', 'kit'],
+  // A Kit package from a release before the Kit rename (ADR 0011).
   ['.mktool', 'kit'],
 ];
 
@@ -46,7 +48,7 @@ export async function importFiles<M, B, T>(
         fileName,
         kind,
         ok: false,
-        message: `"${fileName}" is not a file MetaKit can import. Choose a .mkmodel.json, .mkbundle or .mktool file.`,
+        message: `"${fileName}" is not a file MetaKit can import. Choose a .mkmodel.json, .mkbundle or .mkkit file.`,
       });
       continue;
     }

@@ -84,27 +84,27 @@ function updated(): Kit {
 }
 
 describe('the package', () => {
-  it('holds package.json, tool.json and the reserved folders', () => {
+  it('holds package.json, kit.json and the reserved folders', () => {
     const { bytes, fileName } = exportKitPackage(kit, {
       scripts: { 'helper.ts': 'export const a = 1;\n' },
       assets: { 'icon.png': new Uint8Array([1, 2, 3]) },
       now: fixedNow,
     });
-    expect(fileName).toBe('sample-1.0.0.mktool');
+    expect(fileName).toBe('sample-1.0.0.mkkit');
     const files = unzipFiles(bytes);
     expect(Object.keys(files)).toEqual([
       'assets/icon.png',
+      'kit.json',
       'package.json',
       'scripts/helper.ts',
-      'tool.json',
     ]);
     const info = JSON.parse(new TextDecoder().decode(files['package.json']));
     expect(info).toEqual({
-      formatVersion: 1,
-      kind: 'mktool',
-      tool: { id: SAMPLE.kit, name: 'Sample', version: '1.0.0' },
+      formatVersion: 2,
+      kind: 'mkkit',
+      kit: { id: SAMPLE.kit, name: 'Sample', version: '1.0.0' },
       created: '2026-10-07T09:00:00.000Z',
-      contents: ['assets/icon.png', 'scripts/helper.ts', 'tool.json'],
+      contents: ['assets/icon.png', 'kit.json', 'scripts/helper.ts'],
     });
     const read = readKitPackage(bytes);
     expect(read.issues).toEqual([]);
@@ -194,7 +194,7 @@ describe('the package', () => {
           ),
         }),
       ),
-    ).toThrow(/no tool\.json/);
+    ).toThrow(/no kit\.json/);
   });
 
   it('returns the problems of an invalid Kit, and the import refuses it', async () => {
@@ -241,7 +241,7 @@ describe('moving a Kit between workspaces', () => {
     const kitBack = (await to.loadKit(applied.slug)).document;
     expect(kitBack).toEqual(kit);
     const assetNames = (
-      await to.adapter.list(`tools/${applied.slug}/assets`)
+      await to.adapter.list(`kits/${applied.slug}/assets`)
     ).map((e) => e.name);
     expect(assetNames).toHaveLength(1);
     expect([...(await to.readKitAsset(applied.slug, assetNames[0]!))]).toEqual([

@@ -36,7 +36,7 @@ const layoutOnly = (files: readonly GitFile[]): GitFile[] =>
 export function linkFromSnapshot(
   where: Pick<
     GitLink,
-    'toolSlug' | 'service' | 'host' | 'repo' | 'folder' | 'branch'
+    'kitSlug' | 'service' | 'host' | 'repo' | 'folder' | 'branch'
   >,
   snapshot: GitSnapshot,
 ): GitLink {

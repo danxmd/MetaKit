@@ -36,8 +36,8 @@ export function createEmptyModel(
     manifest: {
       id: newId('model', options.random),
       name,
-      tool: kit.manifest.id,
-      toolVersion: kit.manifest.version,
+      kit: kit.manifest.id,
+      kitVersion: kit.manifest.version,
       modelType,
       ...(options.folder ? { folder: options.folder } : {}),
     },

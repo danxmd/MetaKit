@@ -20,7 +20,7 @@ import {
 } from './sync';
 
 const where = {
-  toolSlug: 'bpmn-lite',
+  kitSlug: 'bpmn-lite',
   service: 'github' as const,
   host: 'github.com',
   repo: 'me/tools',
@@ -431,21 +431,39 @@ describe('releases', () => {
 });
 
 describe('link store', () => {
+  it('reads a link saved before the Kit rename (toolSlug) and writes it back as kitSlug', async () => {
+    const kv = memoryKv();
+    const remote = seeded();
+    const { kitSlug, ...rest } = linkFromSnapshot(
+      where,
+      await remote.read('main'),
+    );
+    await kv.set('gitLinks', { [kitSlug]: { ...rest, toolSlug: kitSlug } });
+    const store = createGitLinkStore(kv);
+    const found = await store.get('bpmn-lite');
+    expect(found?.kitSlug).toBe('bpmn-lite');
+    expect(found && 'toolSlug' in found).toBe(false);
+    const stored =
+      (await kv.get<Record<string, Record<string, unknown>>>('gitLinks'))!;
+    expect(stored['bpmn-lite']!['kitSlug']).toBe('bpmn-lite');
+    expect('toolSlug' in stored['bpmn-lite']!).toBe(false);
+  });
+
   it('keeps links by Kit and drops damaged records', async () => {
     const kv = memoryKv();
     const store = createGitLinkStore(kv);
     const remote = seeded();
     const link = linkFromSnapshot(where, await remote.read('main'));
     await store.put(link);
-    await store.put({ ...link, toolSlug: 'other' });
-    expect((await store.list()).map((l) => l.toolSlug).sort()).toEqual([
+    await store.put({ ...link, kitSlug: 'other' });
+    expect((await store.list()).map((l) => l.kitSlug).sort()).toEqual([
       'bpmn-lite',
       'other',
     ]);
     await store.remove('other');
     expect(await store.get('other')).toBeUndefined();
     expect((await store.get('bpmn-lite'))?.baseCommit).toBe(link.baseCommit);
-    await kv.set('gitLinks', { x: { toolSlug: 'x' } });
+    await kv.set('gitLinks', { x: { kitSlug: 'x' } });
     expect(await store.list()).toEqual([]);
     expect(JSON.stringify(link)).not.toMatch(/token/i);
   });

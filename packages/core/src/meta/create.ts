@@ -9,7 +9,7 @@ export function createEmptyKit(
   return {
     formatVersion: KIT_FORMAT_VERSION,
     manifest: {
-      id: newId('tool', random),
+      id: newId('kit', random),
       name: input.name,
       version: '0.1.0',
       languages: input.languages?.length ? input.languages : ['en'],
@@ -42,7 +42,7 @@ export function cloneKit(
     formatVersion: KIT_FORMAT_VERSION,
     manifest: {
       ...copy.manifest,
-      id: newId('tool', random),
+      id: newId('kit', random),
       name,
       version: '1.0.0',
       basedOn: {

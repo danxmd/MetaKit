@@ -51,7 +51,7 @@
             ...previous,
             manifest: {
               ...previous.manifest,
-              toolVersion: kit.manifest.version,
+              kitVersion: kit.manifest.version,
             },
           }
         : createEmptyModel(kit, modelType.id as ModelTypeId, {

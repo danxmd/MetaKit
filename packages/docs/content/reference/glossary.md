@@ -85,7 +85,7 @@ Open the Documentation area and choose **Glossary** under Reference. See [[docs-
 
 ### I to M
 
-- **Identity file**: the small `tool.json` or `model.json` that says what a folder is. [[file-formats]]
+- **Identity file**: the small `kit.json` (`tool.json` in older workspaces) or `model.json` that says what a folder is. [[file-formats]]
 - **Import**: bringing a model, bundle, Kit package or Kit file into the workspace. [[import-export]]
 - **IndexedDB**: the browser database that holds tokens, keys, permissions and your profile. [[file-formats]]
 - **Instance**: one open window (tab) of MetaKit. [[instances-and-presence]]
@@ -98,7 +98,7 @@ Open the Documentation area and choose **Glossary** under Reference. See [[docs-
 - **Merge**: combining the work of several people into one state. [[sync-overview]]
 - **Migration**: a step that brings an old file up to the current format. [[format-versions]]
 - **mkmodel**: the editable model file, `.mkmodel.json`. [[file-formats]]
-- **mktool**: the Kit package file, a zip. [[file-formats]]
+- **mkkit**: the Kit package file, a zip. Releases before the Kit rename made `.mktool` files, which still import. [[file-formats]]
 - **Model**: a diagram and its data, made with a Kit. [[concepts-model]]
 - **Model mode**: the part of MetaKit where modellers build models. [[concepts-modes]]
 - **Model type**: a kind of model in a Kit, with its classes and views. [[model-types]]

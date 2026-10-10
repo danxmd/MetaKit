@@ -2,8 +2,8 @@
 
 Hand-written Kits used as fixtures for tests and CI. Each folder holds:
 
-- `kit.json`: the Kit (format 6: shapes, simple looks, panel layouts, rules and scripts; every shape of the three data and AI Kits is a simple look), in the same form the app keeps in its snapshots;
-- `*.mkmodel.json`: a sample model in the editable format.
+- `kit.json`: the Kit (format 7: shapes, simple looks, panel layouts, rules and scripts; every shape of the three data and AI Kits is a simple look), in the same form the app keeps in its snapshots;
+- `*.mkmodel.json`: a sample model in the editable format (format 2).
 
 | Folder                  | Classes                                                                                                                                                                                                                                        | Sample model                       |
 | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |

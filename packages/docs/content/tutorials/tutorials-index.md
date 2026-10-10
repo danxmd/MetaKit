@@ -26,7 +26,7 @@ Start with a written tutorial, or, until the one you need exists:
 
 1. Start with the [[quick-tour]] for a first walk through the app.
 2. Read [[concepts-modes]] to see the difference between Model mode and Build mode.
-3. Try the sample Kits from the repository folder `tools/`. [[rule-examples]] and [[script-examples]] walk through the rules and scripts that come with them.
+3. Try the sample Kits from the repository folder `kits/`. [[rule-examples]] and [[script-examples]] walk through the rules and scripts that come with them.
 4. Use the reference topics for each page as you work. The Help side bar opens at the topic of the page you are on.
 
 ## Every option explained

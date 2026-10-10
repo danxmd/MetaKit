@@ -18,18 +18,18 @@ describe('the scripts of a Kit in the sync layer', () => {
   };
 
   it('is an entity collection next to rules and shapes', () => {
-    expect(COLLECTIONS.tool).toContain('scripts');
+    expect(COLLECTIONS.kit).toContain('scripts');
     expect(COLLECTIONS.model).not.toContain('scripts');
   });
 
   it('round-trips through the state, scripts included', () => {
     const doc = kit();
-    const state = stateFromDocument('tool', doc, GENESIS);
+    const state = stateFromDocument('kit', doc, GENESIS);
     expect(materialize(state)).toEqual(doc);
   });
 
   it('keeps an empty scripts table', () => {
     const doc = { ...kit(), scripts: {} };
-    expect(materialize(stateFromDocument('tool', doc, GENESIS))).toEqual(doc);
+    expect(materialize(stateFromDocument('kit', doc, GENESIS))).toEqual(doc);
   });
 });

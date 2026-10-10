@@ -25,7 +25,7 @@ Describes the headless commands that check Kits, models and workspaces and expor
 - **THEN** the exit code is 1
 
 #### Scenario: A model file finds its Kit
-- **WHEN** a `.mkmodel.json` file is validated and a `tool.json` lies next to it, or `--tool <path>` is given
+- **WHEN** a `.mkmodel.json` file is validated and a `kit.json` (or the older `tool.json`) lies next to it, or `--kit <path>` (or the older `--tool <path>`) is given
 - **THEN** the model is checked against that Kit
 
 #### Scenario: A whole workspace
@@ -34,7 +34,14 @@ Describes the headless commands that check Kits, models and workspaces and expor
 
 #### Scenario: Machine-readable output
 - **WHEN** `--json` is given
-- **THEN** the output is one JSON document with the list of problems
+- **THEN** the output is one JSON document with the list of problems, and each document in it has the kind `workspace`, `kit` or `model` (releases before the Kit rename said `tool`)
+
+### Requirement: Older command names
+The command and flag names from before the Kit rename SHALL keep working as aliases: `export-tool` and `import-tool` for `export-kit` and `import-kit`, `--tool` for `--kit`, and `--no-tool` for `--no-kit`. `--help` SHALL list them apart, under "Older names".
+
+#### Scenario: An older script
+- **WHEN** a script runs `metakit export-tool kits/bpmn-lite --out a.mkkit` and then `metakit import-tool a.mkkit --workspace ws`
+- **THEN** both commands work as `export-kit` and `import-kit` do
 
 ### Requirement: Export
 `metakit export <model> --format json` SHALL write the model as an editable model file to the standard output, or to the file given with `--out`.

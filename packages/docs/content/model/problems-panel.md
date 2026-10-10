@@ -62,7 +62,7 @@ Open **Check** and click **Problems**. A panel opens under the canvas. A number 
 | `parent-not-accepted`, `parent-not-container` | An object sits in a container that does not accept it. | Warning |
 | `dangling-parent`, `parent-loop`, `dangling-end` | A container or end point is missing, or a container loop exists. | Error |
 | `unknown-model-type` | The Kit no longer has the model type. | Error |
-| `tool-mismatch` | The model was made with another Kit. | Warning |
+| `kit-mismatch` | The model was made with another Kit. | Warning |
 | `unknown-attribute`, `unknown-class`, `unknown-relation` | The Kit lost something the model still uses. The data is kept. | Note |
 
 ## Examples

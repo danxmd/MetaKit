@@ -8,7 +8,7 @@ Starts after `ai-data-catalog` PRs 1 and 2 (copy and catalog).
 - [ ] 1.2 Model operations, refs, auto-layout.
 - [ ] 1.3 Plans: format, `runPlan`, errors by step.
 - [ ] 1.4 Tests: each operation; plans that build the three new built-in Kits and a model for each.
-- [ ] 1.5 ADR 0011.
+- [ ] 1.5 ADR 0012.
 
 ## 2. PR 2: built-in agent for Kits (`feat/agent-tools`)
 

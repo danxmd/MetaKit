@@ -129,7 +129,7 @@ export type ModelCommand =
       type: 'updateManifest';
       name?: string;
       folder?: string | null;
-      toolVersion?: string;
+      kitVersion?: string;
     };
 
 export type ModelCommandOrBatch = ModelCommand | BatchCommand<ModelCommand>;
@@ -759,10 +759,10 @@ function applyModelCommand(
           tx.set(['manifest', 'folder'], command.folder);
       }
       if (
-        command.toolVersion !== undefined &&
-        model.manifest.toolVersion !== command.toolVersion
+        command.kitVersion !== undefined &&
+        model.manifest.kitVersion !== command.kitVersion
       ) {
-        tx.set(['manifest', 'toolVersion'], command.toolVersion);
+        tx.set(['manifest', 'kitVersion'], command.kitVersion);
       }
       return undefined;
     }

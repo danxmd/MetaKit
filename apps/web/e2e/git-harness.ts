@@ -9,7 +9,13 @@ import {
 import type { Kit } from '@metakit-app/core';
 import kit from '../../../kits/bpmn-lite/kit.json';
 
-const remote = new MemoryRemote(toLayout(kit as unknown as Kit));
+// A test can ask for a repository written before the Kit rename, with tool.json for kit.json.
+const older = sessionStorage.getItem('e2e-git-layout') === 'before-kit-rename';
+const remote = new MemoryRemote(
+  toLayout(kit as unknown as Kit).map((f) =>
+    older && f.path === 'kit.json' ? { ...f, path: 'tool.json' } : f,
+  ),
+);
 
 async function otherWriterEdits(
   path: string,

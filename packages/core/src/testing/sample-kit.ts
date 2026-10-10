@@ -199,8 +199,8 @@ export function emptySampleModel(): Model {
     manifest: {
       id: 'mdl_sample',
       name: 'Order process',
-      tool: SAMPLE.kit,
-      toolVersion: '1.0.0',
+      kit: SAMPLE.kit,
+      kitVersion: '1.0.0',
       modelType: SAMPLE.process,
     },
     attrs: {},
