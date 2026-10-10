@@ -12,12 +12,12 @@ The model view opens when you click a model on the [[page-models|Models page]]. 
 
 ## What it is
 
-The model view is the main page of Model mode (see [[concepts-modes]]). It shows one model, drawn with the shapes of its [[concepts-tool-library|tool library]]. You can place objects, connect them, fill in their attributes, check the model for problems and export it as an image.
+The model view is the main page of Model mode (see [[concepts-modes]]). It shows one model, drawn with the shapes of its [[concepts-kit|Kit]]. You can place objects, connect them, fill in their attributes, check the model for problems and export it as an image.
 
 The page has four parts:
 
 - **Header** at the top: the model name, the save status, the people working in the model, the menus and the find box. See [[model-toolbar]].
-- **Palette** on the left: the kinds of objects and relations your tool library offers. See [[palette]].
+- **Palette** on the left: the kinds of objects and relations your Kit offers. See [[palette]].
 - **Canvas** in the middle: the drawing area. A small overview map sits in its bottom right corner (see [[minimap]]). A hint line may sit in its bottom left corner (see [[interaction-hints]]).
 - **Attribute panel** on the right: the values of the selected object. See [[attribute-panel]].
 
@@ -37,7 +37,7 @@ To leave the model, click **← Models** at the top left of the header. MetaKit 
 3. Click the object to select it. Its attributes appear on the right. Change a value there. See [[attribute-panel]].
 4. Pick a relation on the palette, for example **Performs**, and drag from one object to another. See [[connecting-objects]].
 5. Press **Ctrl+Z** if you change your mind. See [[undo-redo]].
-6. Open **Check** and **Problems** to see whether the model follows the rules of the tool. See [[problems-panel]].
+6. Open **Check** and **Problems** to see whether the model follows the rules of the Kit. See [[problems-panel]].
 7. Use **File** and **Export as image or PDF…** to share a picture. See [[export-image]].
 
 ## Every option explained
@@ -60,13 +60,13 @@ To leave the model, click **← Models** at the top left of the header. MetaKit 
 
 ## Examples
 
-Open the sample model **Code review pipeline** from the Agent pipeline tool. The palette lists the objects **Agent**, **Artifact**, **Gate**, **Human**, **Stage** and **Task**, and the relations **Approves**, **Delegates to**, **Feeds**, **Hands over to**, **Performs** and **Produces**. The canvas shows two stages, **Plan** and **Build**, with agents, humans, tasks and artifacts inside them. Click the task **Implement** and the panel shows its **Status**, **Priority** and effort values.
+Open the sample model **Code review pipeline** from the Agent pipeline Kit. The palette lists the objects **Agent**, **Artifact**, **Gate**, **Human**, **Stage** and **Task**, and the relations **Approves**, **Delegates to**, **Feeds**, **Hands over to**, **Performs** and **Produces**. The canvas shows two stages, **Plan** and **Build**, with agents, humans, tasks and artifacts inside them. Click the task **Implement** and the panel shows its **Status**, **Priority** and effort values.
 
 ## Good to know
 
 - You never press a save button. Every change is saved as you make it. See [[concepts-no-server]].
 - The layout is fixed: palette 13.5 rem wide, panel 20 rem wide. The canvas takes the rest.
-- If the tool library changes in Build mode while you work, the canvas and the panel follow the change at once.
+- If the Kit changes in Build mode while you work, the canvas and the panel follow the change at once.
 - Chrome and Edge on a desktop computer are supported. See [[browser-support]].
 
 > **Tip**: Not sure what a control does? Turn on **Interaction hints** in the **View** menu. A line under the canvas then explains what you can do next.

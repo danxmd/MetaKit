@@ -4,18 +4,18 @@ Owner: Danial Mohammadi Amlashi · As of 7 October 2026 · Live version: https:/
 
 ## Executive summary
 
-Build one lightweight browser app, **MetaKit**, where a method engineer builds a modelling tool and a modeller uses it, side by side, on plain files in a shared folder. It keeps the proven meta-model of classes, relation classes, attributes and model types, and drops simulation, analysis, import from other platforms, the database and user management.
+Build one lightweight browser app, **MetaKit**, where a method engineer builds a Kit and a modeller uses it, side by side, on plain files in a shared folder. It keeps the proven meta-model of classes, relation classes, attributes and model types, and drops simulation, analysis, import from other platforms, the database and user management.
 
 Six architecture bets carry the plan:
 
-1. **A folder is the workspace.** Tool libraries and models are readable JSON files plus SVG assets, in a folder synced by OneDrive, SharePoint, Google Drive or Dropbox. Tool libraries can also live in a GitHub or GitLab repository. Whoever can open the folder or repository can work with it: no server, no database, no accounts.
+1. **A folder is the workspace.** Kits and models are readable JSON files plus SVG assets, in a folder synced by OneDrive, SharePoint, Google Drive or Dropbox. Kits can also live in a GitHub or GitLab repository. Whoever can open the folder or repository can work with it: no server, no database, no accounts.
 2. **Conflict-free sharing through any sync service.** Each running app writes only its own small change files and never edits them afterwards; every app merges them the same way (last writer wins per field). Sync clients therefore never see two writers on one file.
 3. **A purpose-built canvas.** A Canvas 2D renderer with a spatial index and cached shape drawings targets 60 fps while dragging, in models of 5,000 objects. The same drawing instructions export to SVG, PNG and PDF.
 4. **Shapes instead of a notation scripting language.** Notations are declarative shape templates made in a visual editor; any property can be bound to attribute values with a one-line formula.
 5. **Three levels of behaviour instead of one proprietary scripting language.** Formulas for computed values and checks, no-code "When / If / Then" rules, and TypeScript scripts in a sandbox. An optional AI assistant drafts all three from a plain description.
-6. **One browser app, two modes, nothing to install.** A static web app for Chrome or Edge: Build mode edits a tool library, Model mode uses it, and it keeps working offline after the first visit.
+6. **One browser app, two modes, nothing to install.** A static web app for Chrome or Edge: Build mode edits a Kit, Model mode uses it, and it keeps working offline after the first visit.
 
-Claude Code writes the code in small, spec-driven steps, and you review each one. Assuming about 6 hours a week of your time, a usable version (tool building, modelling and folder sync) lands around week 12 and version 1.0 around week 22. The Decisions section records your answers and six follow-up questions.
+Claude Code writes the code in small, spec-driven steps, and you review each one. Assuming about 6 hours a week of your time, a usable version (Kit building, modelling and folder sync) lands around week 12 and version 1.0 around week 22. The Decisions section records your answers and six follow-up questions.
 
 ## Feature baseline
 
@@ -23,12 +23,12 @@ Desktop metamodelling platforms are typically installed programs, often Windows-
 
 | Typical feature | What it does | New platform |
 | --- | --- | --- |
-| Meta-model library, often split into a graph-model part and a tree-model part | Holds the whole meta-model; graph models plus tree models such as org charts | One **tool library** per tool. The graph/tree split is dropped: a model type simply lists its classes |
+| Meta-model library, often split into a graph-model part and a tree-model part | Holds the whole meta-model; graph models plus tree models such as org charts | One **Kit** per modelling method. The graph/tree split is dropped: a model type simply lists its classes |
 | Classes, single inheritance, abstract classes, predefined root classes (plain object, container, swimlane, aggregation) | Concepts and their behaviour | Keep classes, single inheritance, abstract classes. Predefined roots become three kinds a class picks: **node**, **container**, **swimlane** |
 | Relation classes (FROM/TO, always drawn, often no inheritance) | Typed connectors | Keep, including FROM/TO lists that may name abstract classes |
 | Record classes, table attributes | Tables inside an attribute | Keep as a **table** attribute with a column schema |
 | Attribute profiles | Shared reusable values outside models | After 1.0, as **shared catalogs** |
-| Class vs instance attributes | Configuration vs per-object values | Keep; class attributes become tool settings |
+| Class vs instance attributes | Configuration vs per-object values | Keep; class attributes become Kit settings |
 | Around 17 attribute types | From integer to program call | Drop distributions (simulation) and HTTP types. Merge short text, long text and large text into text with a length limit. The program call type becomes an action button |
 | Attribute constraints (regex, numeric domain, help text, row limits) | Attribute constraints | Keep as constraints on the attribute |
 | Special attributes: cardinalities, allowed objects, model pointer | Structural rules, container rules, navigation | Keep. Cardinalities become validation warnings, never hard blocks, because two people can break them concurrently |
@@ -37,22 +37,22 @@ Desktop metamodelling platforms are typically installed programs, often Windows-
 | Scripted notation language, about 60 commands, units in cm/mm, origin at the centre | Notation | Replace with **Shapes** (section on notation) |
 | Attribute dialog layout language: dialog, chapters, groups, hidden/enabled/mandatory | Attribute dialog layout | Replace with generated **attribute panels** plus optional layout |
 | Scripting language with a message-based API (hundreds of calls), dozens of events, menu items, computed attributes | Behaviour and automation | Replace with **formulas, rules and scripts** (section on behaviour) |
-| Tool-wide settings: grid, layers, layout algorithm, numbering, page layouts | Tool-wide settings | Keep grid, layers, numbering as tool settings; page layouts become export templates later |
+| Tool-wide settings: grid, layers, layout algorithm, numbering, page layouts | Tool-wide settings | Keep grid, layers, numbering as Kit settings; page layouts become export templates later |
 | Binary and text library/model exchange formats, XML; image export incl. SVG | Exchange | Own JSON formats; files from other platforms are not imported |
 | Modelling client: graphical and tabular views, explorer with folders, versions, find, layout algorithms, printing | Day-to-day modelling | Keep graphical view, explorer (= folders), find, auto-layout; tabular view in a later phase; named checkpoints in version 1.1 |
 | Query language, simulation, evaluation, acquisition | Analysis components | **Dropped**, as requested. A simple search and filter remains |
-| Administration toolkit: users, rights, components, database file store | Administration | **Dropped**. Library management becomes Build mode |
+| Administration toolkit: users, rights, components, database file store | Administration | **Dropped**. Kit management becomes Build mode |
 
 ## Product scope
 
-Version 1 is one browser app with two modes: **Build** for making a modelling tool and **Model** for using it. It is sized for models of up to 5,000 objects and about 10 people working in one shared folder.
+Version 1 is one browser app with two modes: **Build** for making a Kit and **Model** for using it. It is sized for models of up to 5,000 objects and about 10 people working in one shared folder.
 
 **In scope**
 
-- **Build mode:** classes, relation classes, attributes with constraints, model types and views, containers and swimlanes, references across models, Shapes (notation), attribute panels, formulas, rules, scripts, custom commands (menu, toolbar, context menu), tool packaging and versioning, label translations.
+- **Build mode:** classes, relation classes, attributes with constraints, model types and views, containers and swimlanes, references across models, Shapes (notation), attribute panels, formulas, rules, scripts, custom commands (menu, toolbar, context menu), Kit packaging and versioning, label translations.
 - **Model mode:** explorer with folders, new model of a chosen type, a palette filtered by model type and view, place / connect / move / resize, bend points, containers and swimlanes, inline text editing, attribute panel, multi-select, align and distribute, copy and paste across models, undo and redo, find, validation list, minimap, zoom, grid and snap, auto-layout.
-- **Collaboration:** several people on the same tool library and the same models through a shared folder, with indicators of who is editing what. Tool libraries can also be versioned in GitHub or GitLab (Git mode).
-- **Exchange:** tool packages, editable model files, images (SVG, PNG, PDF) and CSV.
+- **Collaboration:** several people on the same Kit and the same models through a shared folder, with indicators of who is editing what. Kits can also be versioned in GitHub or GitLab (Git mode).
+- **Exchange:** Kit packages, editable model files, images (SVG, PNG, PDF) and CSV.
 - **Assistant (optional):** drafts classes, shapes, rules and scripts from a description, using your own AI API key.
 
 **Out of scope**
@@ -68,9 +68,9 @@ Version 1 is one browser app with two modes: **Build** for making a modelling to
 
 - First users are project teams building their own modelling methods.
 - Browser only. Opening a local synced folder needs Chrome, Edge or another Chromium browser on a desktop computer, because [Firefox and Safari lack the folder picker](https://developer.mozilla.org/en-US/docs/Web/API/Window/showDirectoryPicker). Those browsers can still open Git workspaces, and cloud drives once direct connectors exist.
-- Open source; tool libraries carry their own licence. Independent of other platforms and their communities for now.
+- Open source; Kits carry their own licence. Independent of other platforms and their communities for now.
 - Claude Code writes the code; you review and test it.
-- English user interface first; tool libraries can carry labels in several languages.
+- English user interface first; Kits can carry labels in several languages.
 
 **Why not build on an existing platform?** The closest open-source option, Eclipse [Sirius Web](https://eclipse.dev/sirius/sirius-web.html), runs on a Spring Boot server with PostgreSQL and GraphQL. That is the opposite of the serverless, file-based tool you described, so we borrow its ideas (domain plus view definitions, low-code configuration) rather than its stack.
 
@@ -89,7 +89,7 @@ App instance (one per browser; static files from GitHub Pages, cached for offlin
 └─ Storage adapters          Local folder (File System Access API) · Git (GitHub, GitLab APIs) · Cloud drives (after 1.0)
           │  writes its own files, reads everyone's
           ▼
-Shared folder or repository  Synced: OneDrive, SharePoint, Google Drive, Dropbox · Git: GitHub, GitLab (tool libraries)
+Shared folder or repository  Synced: OneDrive, SharePoint, Google Drive, Dropbox · Git: GitHub, GitLab (Kits)
           ▲
           └─ other browsers: same app, same folder; changes arrive in seconds
 ```
@@ -98,24 +98,24 @@ Read it top-down: the interface and canvas call the core, the core persists thro
 
 Six rules keep it simple and fast:
 
-1. **Everything is a document.** A tool library and a model are both documents with the same store, undo, sync and history.
+1. **Everything is a document.** A Kit and a model are both documents with the same store, undo, sync and history.
 2. **Commands are the only way to change state.** Clicks, rules and scripts all call one command API, so undo, change files and events live in one place.
 3. **Drawing is derived, never stored.** Element state runs through the shape compiler into cached draw lists, keyed by the attribute values each shape reads.
 4. **The core runs without a UI.** The same code powers a Node.js command-line tool for batch export or for checking models in CI.
-5. **Tool changes hot-reload.** Saving a class, shape or rule in Build mode recompiles it and refreshes open models within a second.
+5. **Kit changes hot-reload.** Saving a class, shape or rule in Build mode recompiles it and refreshes open models within a second.
 6. **Nothing runs on a server.** GitHub Pages serves the app as static files, the browser keeps a copy for offline use, and storage calls go straight from the browser to the folder or service.
 
 ## Meta-model and file formats
 
-A workspace is a plain folder; every tool library and every model is a subfolder holding readable JSON. Elements carry stable random IDs, so renaming a class, attribute or model never breaks a reference.
+A workspace is a plain folder; every Kit and every model is a subfolder holding readable JSON. Elements carry stable random IDs, so renaming a class, attribute or model never breaks a reference.
 
 **Meta-model.** It keeps the established metamodelling concepts with fewer special cases:
 
-- **Tool library**: manifest (id, name, version, languages), settings (grid, layers, numbering), and the parts below.
+- **Kit**: manifest (id, name, version, languages), settings (grid, layers, numbering), and the parts below.
 - **Class**: key, labels per language, kind (`node`, `container` or `swimlane`), optional parent class, abstract flag, attributes, shape, panel layout, help text.
 - **Relation class**: allowed FROM and TO classes (abstract classes allowed), attributes, line shape. Relation classes may inherit.
 - **Model type**: allowed classes and relation classes, views (named subsets), cardinalities, model-level attributes and a canvas background shape.
-- **Behaviour**: formulas, rules, scripts and commands, all owned by the tool library.
+- **Behaviour**: formulas, rules, scripts and commands, all owned by the Kit.
 
 Every class and attribute has a fixed ID plus a **key** such as `Priority` that formulas and scripts use. Changing a label is free; changing a key triggers an automatic rewrite of the formulas and rules that use it.
 
@@ -144,7 +144,7 @@ Every class and attribute has a fixed ID plus a **key** such as `Priority` that 
 research-group/                      shared folder = workspace
   workspace.json                     name, format version
   tools/
-    bpmn-lite/                       one tool library
+    bpmn-lite/                       one Kit
       tool.json                      manifest: id, name, version
       assets/gear.3fa2c1.svg         icons, named by content hash
       _state/
@@ -189,7 +189,7 @@ Explorer folders are a field on the model, not real directories. Renaming or mov
 }
 ```
 
-**Tool changes and existing models.** Models record the tool ID and the version they were last saved with. A removed attribute keeps its values in the model, shown in a collapsed Unknown attributes group; a removed class renders as a grey placeholder box. Nothing is deleted until someone chooses to clean up, and a tool can ship a migration script for renames and type changes.
+**Kit changes and existing models.** Models record the Kit ID and the version they were last saved with. A removed attribute keeps its values in the model, shown in a collapsed Unknown attributes group; a removed class renders as a grey placeholder box. Nothing is deleted until someone chooses to clean up, and a Kit can ship a migration script for renames and type changes.
 
 ## Collaboration through a shared folder
 
@@ -230,15 +230,15 @@ There are no accounts. On first visit a person picks a display name and colour, 
 | Place | How the app reaches it | Browsers | Setup | Live editing | When |
 | --- | --- | --- | --- | --- | --- |
 | Synced folder: OneDrive, SharePoint (synced through OneDrive), Google Drive for desktop, Dropbox, Nextcloud | File System Access API; FileSystemObserver for changes | Chrome, Edge and other Chromium browsers on desktop | Pick the folder once; [Chrome 122 and later can remember it](https://developer.chrome.com/blog/persistent-permissions-for-the-file-system-access-api) | Yes, within seconds | Usable version |
-| Git repository: GitHub, GitLab | Their REST APIs, called from the browser | All modern browsers | GitHub: a fine-grained access token; GitLab: [sign-in with PKCE](https://docs.gitlab.com/api/oauth2) or a token | No: commit and pull | Version 1.0, tool libraries |
+| Git repository: GitHub, GitLab | Their REST APIs, called from the browser | All modern browsers | GitHub: a fine-grained access token; GitLab: [sign-in with PKCE](https://docs.gitlab.com/api/oauth2) or a token | No: commit and pull | Version 1.0, Kits |
 | OneDrive or SharePoint, direct | Microsoft Graph via MSAL.js | All modern browsers | App registration; admin consent in most organisations; sign-in again every 24 hours | Yes, by polling | After 1.0, if needed |
 | Google Drive, direct | Drive API and Google Picker | All modern browsers | Google's restricted-scope verification to see whole folders | Yes, by polling | After 1.0, if needed |
 
 The synced folder covers every service you named without registering anything with Microsoft or Google, because their own sync clients carry the files. Direct connections matter only for Firefox and Safari users or machines without a sync client, and they cost setup: Microsoft's [default consent policy blocks](https://learn.microsoft.com/en-us/entra/identity/enterprise-apps/manage-app-consent-policies) user consent to `Files.ReadWrite.All` and `Sites.ReadWrite.All`, [browser sign-ins expire after 24 hours](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow), and Google's non-sensitive `drive.file` scope [grants access file by file](https://developers.google.com/workspace/drive/api/guides/api-specific-auth), while the full `drive` scope is restricted.
 
-**Git mode for tool libraries**
+**Git mode for Kits**
 
-In Git mode a tool library is stored as one readable file per part, so diffs and reviews on GitHub or GitLab make sense:
+In Git mode a Kit is stored as one readable file per part, so diffs and reviews on GitHub or GitLab make sense:
 
 ```text
 bpmn-lite/                     repository root
@@ -256,7 +256,7 @@ bpmn-lite/                     repository root
 
 - Edits stay in the browser until you choose **Commit and push**, which writes every changed file as one commit ([GitHub tree API](https://docs.github.com/en/enterprise-server@3.18/rest/git/trees), [GitLab commit actions](https://docs.gitlab.com/ee/api/commits.html)).
 - **Pull** merges incoming commits field by field against the common base version; only a clash on the same field asks you to choose.
-- Branches, pull requests and releases stay in GitHub or GitLab. A tagged release becomes a tool version that models can follow.
+- Branches, pull requests and releases stay in GitHub or GitLab. A tagged release becomes a Kit version that models can follow.
 - The app calls the REST APIs instead of running Git in the browser, because cloning from github.com in a browser [needs a proxy server](https://isomorphic-git.org/docs/en/quickstart), while GitHub's REST API [accepts browser requests](https://docs.github.com/en/enterprise-cloud@latest/rest/using-the-rest-api/using-cors-and-jsonp-to-make-cross-origin-requests).
 - GitHub's OAuth sign-in [requires a client secret](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps) and so a small server; a fine-grained token limited to one repository avoids that. Tokens stay in that browser, never in the folder or repository.
 
@@ -270,7 +270,7 @@ Models stay in synced folders, where several people edit live; Git mode for mode
 | The same files carrying [Yjs](https://yjs.dev) or [Loro](https://loro.dev/blog/v1.0) updates | Proven CRDT libraries, character-level text merge | Binary files, an extra dependency | Fallback, or for script text if beta users need it |
 | One JSON file per element, edited in place | Readable, Git-friendly | Conflicted copies when two people touch one element | Used in Git mode only |
 | One file per model, rewritten on save | Simplest | Any concurrent edit creates a conflicted copy | Rejected |
-| Git as the sync layer | Real history, branches, reviews | Not live; harder for non-developers | **Chosen** for tool libraries (Git mode) |
+| Git as the sync layer | Real history, branches, reviews | Not live; harder for non-developers | **Chosen** for Kits (Git mode) |
 | Live peer-to-peer channel (WebRTC) | Sub-second updates, live cursors | Needs a signalling server, which breaks the no-server rule | Later, optional |
 
 How fast changes arrive depends on the sync service and is measured in phase 0 on OneDrive, SharePoint, Google Drive for desktop and Dropbox. Folder and file names avoid leading dots, so every sync tool shows and carries them.
@@ -297,7 +297,7 @@ A purpose-built Canvas 2D engine keeps dragging at a constant cost: while you dr
 | Pan and zoom | 60 fps | same |
 | Open a model | under 1 s | same |
 | Attribute edit shows in the shape | under 50 ms | any |
-| Tool change shows in open models | under 1 s | any |
+| Kit change shows in open models | under 1 s | any |
 | Export SVG or PNG | under 2 s | same |
 | First load / app download | under 2 s / under 1.5 MB compressed | script engine loaded only when needed |
 
@@ -423,10 +423,10 @@ A rule is a trigger, a condition and a list of actions, edited as a form: *When*
 **Level 3: Scripts (TypeScript)**
 
 - For loops over models, model-to-model transformations, custom import and export formats, and multi-step dialogs.
-- Edited in [CodeMirror 6](https://codemirror.net) with TypeScript autocomplete. Types are generated from the tool's own meta-model, so `task.attrs.Priority` autocompletes to `"Low" | "Medium" | "High"`.
+- Edited in [CodeMirror 6](https://codemirror.net) with TypeScript autocomplete. Types are generated from the Kit's own meta-model, so `task.attrs.Priority` autocompletes to `"Low" | "Medium" | "High"`.
 - The API is a handful of modules instead of a large message-based call interface: `model` (query, create, connect, delete), `tool` (meta-model), `ui` (message, confirm, prompt, choose, form, progress), `files` (inside the workspace, plus save-as), `http`, `commands` and `on` for events.
 - Scripts run in [QuickJS compiled to WebAssembly](https://github.com/justjake/quickjs-emscripten) (about 500 KB), with a time limit and a memory limit. It runs synchronously, so a "before" handler can cancel an action. Its README says it has not been audited and is still below version 1.0, so we pin a version and wrap it.
-- **Permissions:** a tool declares whether its scripts need network access or files outside the workspace. The app asks once per tool in each browser; without permission a script can only touch models and show dialogs. In a browser, scripts can call only web services that accept browser requests, reach other files only through open and save dialogs, and never start programs on the computer (follow-up question 21).
+- **Permissions:** a Kit declares whether its scripts need network access or files outside the workspace. The app asks once per Kit in each browser; without permission a script can only touch models and show dialogs. In a browser, scripts can call only web services that accept browser requests, reach other files only through open and save dialogs, and never start programs on the computer (follow-up question 21).
 
 A complete script that numbers tasks top to bottom and adds a menu command:
 
@@ -476,7 +476,7 @@ There is no save step, since every change is written at once; checks that other 
 
 **Alternatives considered.** Blockly-style blocks are approachable but clumsy beyond simple logic. Node graphs (Node-RED style) are powerful but a large UI to build. Python through Pyodide is familiar to researchers but adds several megabytes and a slow first start. Lua is small but unfamiliar. Forms for rules plus TypeScript with autocomplete covers both ends with the least to build.
 
-**Assistant (optional).** Off by default. Given a plain description ("high-priority tasks need an owner"), it drafts a rule, script, shape or class and shows it as a change you accept or discard. It uses your own API key, kept only in that browser and never written to the shared folder or repository, and it sends tool definitions but never models. Claude is the first provider: Anthropic's TypeScript SDK supports calls straight from a browser through its [`dangerouslyAllowBrowser` option](https://platform.claude.com/docs/en/cli-sdks-libraries/sdks/typescript), which suits a bring-your-own-key app. Other providers can be added behind the same interface.
+**Assistant (optional).** Off by default. Given a plain description ("high-priority tasks need an owner"), it drafts a rule, script, shape or class and shows it as a change you accept or discard. It uses your own API key, kept only in that browser and never written to the shared folder or repository, and it sends the Kit definition but never models. Claude is the first provider: Anthropic's TypeScript SDK supports calls straight from a browser through its [`dangerouslyAllowBrowser` option](https://platform.claude.com/docs/en/cli-sdks-libraries/sdks/typescript), which suits a bring-your-own-key app. Other providers can be added behind the same interface.
 
 ## Attribute panels
 
@@ -531,14 +531,14 @@ Beyond a traditional attribute dialog: editing one attribute across many selecte
 
 ## Import and export
 
-There are three everyday exchange formats: tool packages, editable model files and images. Everything except images can be re-imported without loss; files from other modelling platforms are not imported, as decided.
+There are three everyday exchange formats: Kit packages, editable model files and images. Everything except images can be re-imported without loss; files from other modelling platforms are not imported, as decided.
 
 | What | Format | Behaviour |
 | --- | --- | --- |
-| Tool package | `.mktool`: a zip of the tool's definitions, shapes, rules, scripts and assets | Versioned (1.4.0). Importing either adds a new tool or updates an existing one; IDs are kept, so existing models follow the update |
-| Tool library in Git | One readable file per class, shape, panel, rule and script | Opened directly in Git mode; tagged releases become tool versions |
-| Model file | `.mkmodel.json`: readable JSON using keys instead of IDs | Hand-editable and Git-friendly; names the tool and version; unknown keys survive re-import |
-| Model bundle | `.mkbundle`: a zip of several models plus their tool | Shares a whole case study in one file |
+| Kit package | `.mktool`: a zip of the Kit's definitions, shapes, rules, scripts and assets | Versioned (1.4.0). Importing either adds a new Kit or updates an existing one; IDs are kept, so existing models follow the update |
+| Kit in Git | One readable file per class, shape, panel, rule and script | Opened directly in Git mode; tagged releases become Kit versions |
+| Model file | `.mkmodel.json`: readable JSON using keys instead of IDs | Hand-editable and Git-friendly; names the Kit and version; unknown keys survive re-import |
+| Model bundle | `.mkbundle`: a zip of several models plus their Kit | Shares a whole case study in one file |
 | Image | SVG (text stays text), PNG (1x to 4x, optional transparency), PDF (vector, page size, fit to page) | Whole model or selection; drawn from the same draw lists as the screen |
 | Data | CSV, one file per class | For spreadsheets and reports |
 
@@ -606,7 +606,7 @@ metakit/
   apps/
     web/           the static web app
     cli/           headless export and validation (Node.js)
-  tools/           sample tool libraries used as test fixtures
+  tools/           sample Kits used as test fixtures
   bench/           canvas and merge benchmarks
 ```
 
@@ -618,13 +618,13 @@ Claude Code writes the code; you set direction, approve specs, review and test. 
 2. **Build.** Claude Code implements it on a branch, following `CLAUDE.md`: the architecture rules from this plan, package boundaries, the performance budget, and "never change a file format without a migration". Two lanes run at once in separate worktrees: canvas and interface, and data and behaviour.
 3. **Check.** GitHub Actions runs type checks, unit tests, randomised merge tests (many simulated people editing at once must end with identical models), Playwright end-to-end and screenshot tests, the 5,000-object canvas benchmark, and a size budget for the app download. A failing check goes back to Claude Code, not to you.
 4. **Review.** You review the pull request and try a preview build of the branch; small fixes go back as review comments.
-5. **Milestone test.** At each milestone you use the app on a real task, and once you watch a non-programmer build a small tool.
+5. **Milestone test.** At each milestone you use the app on a real task, and once you watch a non-programmer build a small Kit.
 
 Some work needs a person: judging how dragging and editing feel, testing sync on two real machines over OneDrive, SharePoint and Google Drive, any later app registration with Microsoft or Google, and working with the beta teams.
 
 ## Roadmap
 
-Claude Code builds in two parallel lanes, and your reviews set the pace. Assuming about 6 hours a week of your time, a usable version (tool building, modelling, folder sync) lands around week 12 and version 1.0 around week 22. Treat the dates as ±50% until phase 0 shows how fast the review cycle runs.
+Claude Code builds in two parallel lanes, and your reviews set the pace. Assuming about 6 hours a week of your time, a usable version (Kit building, modelling, folder sync) lands around week 12 and version 1.0 around week 22. Treat the dates as ±50% until phase 0 shows how fast the review cycle runs.
 
 | Phase | Lane | Weeks |
 | --- | --- | --- |
@@ -648,13 +648,13 @@ Lane A owns everything drawn on screen, lane B everything stored and executed; t
 | --- | --- | --- |
 | 0 Setup and spikes | Repository, `CLAUDE.md`, OpenSpec, CI and preview builds; canvas prototype with 5,000 objects in Chrome and Edge; write-once change files tested over OneDrive, SharePoint, Google Drive for desktop and Dropbox with three browsers; formula parser and QuickJS cancel prototypes; GitHub and GitLab API calls from the browser | Benchmarks meet the targets or plan B is chosen; follow-up questions answered |
 | 1 Core and local folder | Meta-model types, model store, command API, undo, basic validation, local-folder adapter, CLI skeleton | Models round-trip without loss; core unit tests pass |
-| 2 Canvas and modelling editor | Place, connect, move, resize, bend points, selection, undo, zoom and pan, minimap, generated attribute panels, inline text editing, using a hand-written tool | A 5,000-object model drags at 60 fps; a small process model can be built end to end |
+| 2 Canvas and modelling editor | Place, connect, move, resize, bend points, selection, undo, zoom and pan, minimap, generated attribute panels, inline text editing, using a hand-written Kit | A 5,000-object model drags at 60 fps; a small process model can be built end to end |
 | 3 Folder sync | Change files, clocks, merge, snapshots, clean-up, presence, change detection, sync status line | Randomised merge tests pass; two people edit one model over OneDrive and SharePoint without losing changes |
-| 4 Build mode and Shapes | Class, relation, model type and view editors; shape compiler and shape editor; panel layouts; containers and swimlanes; hot reload | A non-programmer builds a small ER tool in under an hour |
+| 4 Build mode and Shapes | Class, relation, model type and view editors; shape compiler and shape editor; panel layouts; containers and swimlanes; hot reload | A non-programmer builds a small ER Kit in under an hour |
 | 5 Formulas and rules | Formula engine with dependency tracking, constraints, rule editor, the 24 events, command registration | The rule examples in this plan run unchanged |
-| 6 Exports and packages | SVG, PNG, PDF; tool packages, model files and bundles; CSV; auto-layout; find; validation list | Screenshot tests show exports identical to the screen |
+| 6 Exports and packages | SVG, PNG, PDF; Kit packages, model files and bundles; CSV; auto-layout; find; validation list | Screenshot tests show exports identical to the screen |
 | 7 Scripts and sandbox | QuickJS host, script API, generated types, editor with autocomplete, permissions, console | Three behaviours from existing modelling tools are rebuilt as rules or scripts |
-| 8 Git mode | One-file-per-part layout, GitHub and GitLab adapters, commit and push, pull with field-level merge | A tool library round-trips through GitHub and GitLab, with a change merged from each side |
+| 8 Git mode | One-file-per-part layout, GitHub and GitLab adapters, commit and push, pull with field-level merge | A Kit round-trips through GitHub and GitLab, with a change merged from each side |
 | 9 AI assistant | Drafts of rules, scripts, shapes and classes; accept or discard; key handling | The examples in this plan can be drafted from one-sentence descriptions |
 | 10 Beta with project teams | Two or three teams use it on real projects; documentation, tutorials, fixes | A project team completes a project with it |
 | After 1.0 | Direct OneDrive/SharePoint and Google Drive connectors if needed; named checkpoints (1.1); tabular view; shared catalogs | — |
@@ -670,11 +670,11 @@ The two risks that could change the architecture, sync behaviour across real syn
 | Local folders need Chromium | Firefox and Safari users cannot open a synced folder | Say so on the start page; Git workspaces work in every browser; direct cloud connectors after 1.0 if teams need them |
 | Merge bugs | Two browsers show different models | Randomised tests that replay concurrent edits on simulated instances and require identical results; each presence file carries a state hash so divergence is detected live |
 | Change files pile up | Slow opening after months of use | Snapshots and clean-up, tested with a simulated year of edits |
-| Malicious script in a shared tool | Anyone with folder access can change a script | Sandbox, no network access by default, permission prompts, re-approval when a tool asks for new permissions |
-| No access control | Someone deletes a tool or model by mistake | Deleted items go to a 30-day trash; snapshots allow restore; sync services keep file history; Git history covers tool libraries |
+| Malicious script in a shared Kit | Anyone with folder access can change a script | Sandbox, no network access by default, permission prompts, re-approval when a Kit asks for new permissions |
+| No access control | Someone deletes a Kit or model by mistake | Deleted items go to a 30-day trash; snapshots allow restore; sync services keep file history; Git history covers Kits |
 | Tokens or API keys leak | A GitHub token or AI key ends up in the shared folder | Kept only in the browser's IndexedDB, never written to the workspace; fine-grained tokens limited to one repository |
 | Claude Code drifts from the architecture | Shortcuts that break speed, file formats or package boundaries | Rules in `CLAUDE.md`, specs approved before coding, CI budgets that fail the build, your review of every pull request |
-| Rules too weak | Tool builders fall back to scripts for common jobs | Rebuild three real tools in the beta and add rule actions for every gap found |
+| Rules too weak | Kit builders fall back to scripts for common jobs | Rebuild three real tools as Kits in the beta and add rule actions for every gap found |
 | QuickJS wrapper changes | Breaking API changes before its 1.0 | Pin the version behind our own interface; SES compartments as fallback |
 | Scope creep toward a full desktop metamodelling platform | Analysis or simulation requests delay version 1 | The out-of-scope list is explicit; add extension points later rather than features now |
 
@@ -685,7 +685,7 @@ You answered all 20 questions on 7 October, and the sections above now follow yo
 | # | Question | Default I would take | Your answer |
 | --- | --- | --- | --- |
 | 1 | Who builds this, how many people, and from when? | The plan assumes two full-time developers | claude code |
-| 2 | Open source or closed? | Open source (Apache 2.0) for the app; tool libraries carry their own licence | open |
+| 2 | Open source or closed? | Open source (Apache 2.0) for the app; Kits carry their own licence | open |
 | 3 | Who are the first users: courses, research projects, companies? | Teaching and research first | projects |
 | 4 | Desktop app first, or is a Chrome/Edge-only browser app enough? | Desktop first (Tauri), browser build second | browser only |
 | 5 | Is "changes arrive within seconds" fine, or do you need live cursors? | Seconds; a live channel later as an option, since it needs a server | yeah its fine |
@@ -701,9 +701,9 @@ You answered all 20 questions on 7 October, and the sections above now follow yo
 | 15 | Model versions: named versions inside the app, or snapshots and Git? | Named checkpoints in version 1.1 | Named checkpoints in version 1.1 |
 | 16 | Tabular view of models in version 1? | Version 1.1 | later |
 | 17 | Is last-writer-wins acceptable for long texts, or do descriptions and scripts need character-level merging? | Last writer wins; character-level merging for scripts only if beta users hit it | Last writer wins; character-level merging for scripts only if beta users hit it |
-| 18 | A Git mode for tool libraries, storing one readable file per class and shape? | Not in version 1; export covers Git use | i like the idea of git mode. It should work with gitlab and github |
+| 18 | A Git mode for Kits, storing one readable file per class and shape? | Not in version 1; export covers Git use | i like the idea of git mode. It should work with gitlab and github |
 | 19 | May scripts call external programs and the network, as desktop platform scripts can? | Yes on desktop, behind a permission prompt | yes |
-| 20 | An AI assistant that drafts rules, scripts and shapes from a description, using your own API key? | Optional, off by default, sends tool definitions but never models | yeah this |
+| 20 | An AI assistant that drafts rules, scripts and shapes from a description, using your own API key? | Optional, off by default, sends the Kit definition but never models | yeah this |
 
 **Follow-up questions**
 
@@ -711,9 +711,9 @@ Your answers raised six new questions. Only 24 and 25 are needed before phase 0 
 
 | # | Question | Default I would take | Your answer |
 | --- | --- | --- | --- |
-| 21 | You chose a browser-only app (question 4) and scripts that call external programs and the network (question 19). A browser cannot start programs and can only call web services that accept browser requests. Is that acceptable? | Yes for version 1; a small optional helper app later, only if a real tool needs it |  |
+| 21 | You chose a browser-only app (question 4) and scripts that call external programs and the network (question 19). A browser cannot start programs and can only call web services that accept browser requests. Is that acceptable? | Yes for version 1; a small optional helper app later, only if a real Kit needs it |  |
 | 22 | Is a synced folder enough for OneDrive, SharePoint and Google Drive in version 1? Direct connections need app registration, admin consent in most organisations and a sign-in every 24 hours (Microsoft), or verification by Google | Synced folder in version 1; direct connectors after 1.0, only for teams without sync clients or using Firefox and Safari |  |
-| 23 | Git mode for tool libraries only, or for models too? | Tool libraries only; models stay in synced folders for live editing |  |
+| 23 | Git mode for Kits only, or for models too? | Kits only; models stay in synced folders for live editing |  |
 | 24 | How many hours a week can you review and test? | The roadmap assumes about 6 |  |
 | 25 | Where should the code and the app live? | A public GitHub repository under your account; the app on GitHub Pages |  |
 | 26 | "MetaKit" is also the name of a [dormant embedded database](https://en.wikipedia.org/wiki/Metakit) (last release 2015), and `metakit` is taken on npm. Keep it? | Keep MetaKit; publish packages under a scope such as `@metakit-app/` | Keep the MetaKit name; packages go under `@metakit-app/` |

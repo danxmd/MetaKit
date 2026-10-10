@@ -6,6 +6,7 @@ export type CategoryId =
   | 'behaviour'
   | 'teamwork'
   | 'assistant'
+  | 'kits'
   | 'reference'
   | 'tutorials';
 
@@ -23,6 +24,7 @@ export const CATEGORIES: readonly Category[] = [
   { id: 'behaviour', title: 'Behaviour' },
   { id: 'teamwork', title: 'Sync, Git and history' },
   { id: 'assistant', title: 'Assistant' },
+  { id: 'kits', title: 'Kits' },
   { id: 'reference', title: 'Reference' },
   { id: 'tutorials', title: 'Tutorials' },
 ];

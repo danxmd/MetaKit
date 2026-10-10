@@ -2,14 +2,14 @@ import { kvGet, kvSet, type KeyValue } from '../browser-state';
 import type { GitFile } from './remote';
 
 /**
- * The link between a tool library of the workspace and a folder of a repository (ADR 0007). It
+ * The link between a Kit of the workspace and a folder of a repository (ADR 0007). It
  * lives in IndexedDB of this browser profile only. It holds no token: those are kept elsewhere
  * (rule 9). `baseFiles` is the layout at the last pull or push, so what differs from it is the
  * pending change.
  */
 export interface GitLink {
-  /** The tool library in the workspace. */
-  toolSlug: string;
+  /** The Kit in the workspace. Records from before the Kit rename call it `toolSlug` (ADR 0011). */
+  kitSlug: string;
   service: 'github' | 'gitlab';
   /** The host, such as `github.com` or `gitlab.example.org`. */
   host: string;
@@ -24,9 +24,9 @@ export interface GitLink {
 }
 
 export interface GitLinkStore {
-  get(toolSlug: string): Promise<GitLink | undefined>;
+  get(kitSlug: string): Promise<GitLink | undefined>;
   put(link: GitLink): Promise<void>;
-  remove(toolSlug: string): Promise<void>;
+  remove(kitSlug: string): Promise<void>;
   list(): Promise<GitLink[]>;
 }
 
@@ -36,7 +36,7 @@ const isLink = (v: unknown): v is GitLink => {
   const x = v as Partial<GitLink> | null;
   return (
     !!x &&
-    typeof x.toolSlug === 'string' &&
+    typeof x.kitSlug === 'string' &&
     (x.service === 'github' || x.service === 'gitlab') &&
     typeof x.host === 'string' &&
     typeof x.repo === 'string' &&
@@ -47,6 +47,15 @@ const isLink = (v: unknown): v is GitLink => {
   );
 };
 
+/** A record written before the Kit rename, with `toolSlug`, as it is now; anything else unchanged. */
+function currentLink(value: unknown): unknown {
+  if (value === null || typeof value !== 'object' || Array.isArray(value))
+    return value;
+  const { toolSlug, ...rest } = value as Record<string, unknown>;
+  if (toolSlug === undefined || 'kitSlug' in rest) return value;
+  return { ...rest, kitSlug: toolSlug };
+}
+
 /** A link store over the key-value store of this browser (IndexedDB unless one is passed in). */
 export function createGitLinkStore(
   kv: KeyValue = { get: (k) => kvGet(k), set: (k, v) => kvSet(k, v) },
@@ -54,15 +63,21 @@ export function createGitLinkStore(
   const all = async (): Promise<Record<string, GitLink>> => {
     const stored = await kv.get<Record<string, unknown>>(LINKS_KEY);
     const out: Record<string, GitLink> = {};
-    for (const [slug, l] of Object.entries(stored ?? {}))
-      if (isLink(l) && l.toolSlug === slug) out[slug] = l;
+    let older = false;
+    for (const [slug, raw] of Object.entries(stored ?? {})) {
+      const l = currentLink(raw);
+      if (l !== raw) older = true;
+      if (isLink(l) && l.kitSlug === slug) out[slug] = l;
+    }
+    // Records from before the Kit rename are written back in the new form, so this happens once.
+    if (older) await kv.set(LINKS_KEY, out);
     return out;
   };
   return {
     get: async (slug) => (await all())[slug],
     list: async () => Object.values(await all()),
     put: async (link) => {
-      await kv.set(LINKS_KEY, { ...(await all()), [link.toolSlug]: link });
+      await kv.set(LINKS_KEY, { ...(await all()), [link.kitSlug]: link });
     },
     remove: async (slug) => {
       const rest = await all();

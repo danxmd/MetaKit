@@ -64,7 +64,7 @@ Select the stage **Build** in the Code review pipeline. Choose **PNG image**, **
 ## Good to know
 
 - Exporting does not change the model.
-- The export uses the tool's shapes and colours, so calculated values and data-driven looks appear as on screen. See [[computed-values]].
+- The export uses the Kit's shapes and colours, so calculated values and data-driven looks appear as on screen. See [[computed-values]].
 - The file shows the objects and connections only. The grid, selection outlines, handles and the minimap are not part of it. Without **Transparent background**, a PNG has a white background.
 - Many browsers show a save dialog where you pick the folder. Others save to the download folder.
 - To get model *data* out, not a picture, see [[import-export]].

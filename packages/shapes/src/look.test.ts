@@ -1,12 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import type {
-  NodeLook,
-  NodeShape,
-  ShapeId,
-  ToolLibrary,
-} from '@metakit-app/core';
-import { createToolStore, validateToolLibrary } from '@metakit-app/core';
-import { SAMPLE, sampleTool } from '@metakit-app/core/testing';
+import type { NodeLook, NodeShape, ShapeId, Kit } from '@metakit-app/core';
+import { createKitStore, validateKit } from '@metakit-app/core';
+import { SAMPLE, sampleKit } from '@metakit-app/core/testing';
 import type { Scope, Value } from '@metakit-app/formula';
 import { compileNode } from './compile';
 import { compileRelation } from './relation';
@@ -61,7 +56,7 @@ describe('every base form', () => {
     },
   );
 
-  it('keeps the shape valid in a tool library', () => {
+  it('keeps the shape valid in a Kit', () => {
     const shapes = Object.fromEntries(
       LOOK_BASES.map((b, i) => [
         `shp_${i}`,
@@ -72,7 +67,7 @@ describe('every base form', () => {
         ),
       ]),
     );
-    const tool = {
+    const kit = {
       formatVersion: 5,
       manifest: {
         id: 'tool_t',
@@ -88,10 +83,10 @@ describe('every base form', () => {
       panels: {},
       rules: {},
       scripts: {},
-    } as unknown as ToolLibrary;
-    expect(
-      validateToolLibrary(tool).filter((i) => i.path.startsWith('shapes')),
-    ).toEqual([]);
+    } as unknown as Kit;
+    expect(validateKit(kit).filter((i) => i.path.startsWith('shapes'))).toEqual(
+      [],
+    );
   });
 });
 
@@ -256,7 +251,7 @@ describe('renaming an attribute', () => {
   });
 });
 
-describe('renaming an attribute in the tool library', () => {
+describe('renaming an attribute in the Kit', () => {
   it('keeps the shape drawing the same and equal to a fresh compile of the renamed look', () => {
     const look: NodeLook = {
       ...defaultNodeLook('node', 'rounded'),
@@ -273,8 +268,8 @@ describe('renaming an attribute in the tool library', () => {
         colour: '#900',
       },
     };
-    const base = sampleTool();
-    const tool: ToolLibrary = {
+    const base = sampleKit();
+    const kit: Kit = {
       ...base,
       shapes: { [ID]: nodeShapeFromLook(look, ID, 'Task look') },
       classes: {
@@ -282,7 +277,7 @@ describe('renaming an attribute in the tool library', () => {
         [SAMPLE.task]: { ...base.classes[SAMPLE.task]!, shape: ID },
       },
     };
-    const store = createToolStore(tool);
+    const store = createKitStore(kit);
     store.execute({
       type: 'renameKey',
       scope: {
@@ -308,7 +303,7 @@ describe('renaming an attribute in the tool library', () => {
         scope: scopeOf({ $label: 'T', [key]: 'High' }),
       }).ops;
     expect(draw(renamed, 'Urgency')).toEqual(
-      draw(tool.shapes[ID] as NodeShape, 'Priority'),
+      draw(kit.shapes[ID] as NodeShape, 'Priority'),
     );
   });
 });

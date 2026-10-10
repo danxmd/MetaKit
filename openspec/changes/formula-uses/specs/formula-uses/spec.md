@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Where formulas are used in a tool library.
+Where formulas are used in a Kit.
 
 ## ADDED Requirements
 

@@ -1,0 +1,477 @@
+{
+  "attributes": {
+    "Manager": "Programme manager",
+    "Organisation": "A mid-sized engineering firm",
+    "Title": "Head office move"
+  },
+  "connectors": [
+    {
+      "from": "el_t_network",
+      "id": "cn_001",
+      "relation": "DependsOn",
+      "to": "el_dep_line"
+    },
+    {
+      "from": "el_r_contractor",
+      "id": "cn_002",
+      "relation": "Affects",
+      "to": "el_t_fitout"
+    },
+    {
+      "from": "el_r_network",
+      "id": "cn_003",
+      "relation": "Affects",
+      "to": "el_m_itready"
+    },
+    {
+      "from": "el_r_move",
+      "id": "cn_004",
+      "relation": "Affects",
+      "to": "el_t_servers"
+    },
+    {
+      "from": "el_a_weekends",
+      "id": "cn_005",
+      "relation": "Affects",
+      "to": "el_t_fitout"
+    },
+    {
+      "from": "el_r_contractor",
+      "id": "cn_006",
+      "relation": "TurnedInto",
+      "to": "el_i_late"
+    },
+    {
+      "from": "el_dec_weekends",
+      "id": "cn_007",
+      "relation": "Addresses",
+      "to": "el_r_move"
+    }
+  ],
+  "elements": [
+    {
+      "attributes": {
+        "Description": "Move 220 staff from the old head office to two floors of a new building.",
+        "End": "2027-07-30",
+        "Manager": "Programme manager",
+        "Name": "Head office move",
+        "Sponsor": "Chief operating officer",
+        "Start": "2027-01-04",
+        "Status": "Amber"
+      },
+      "class": "Programme",
+      "h": 640,
+      "id": "el_prog",
+      "w": 1340,
+      "x": 20,
+      "y": 20
+    },
+    {
+      "attributes": {
+        "Lead": "Facilities manager",
+        "Name": "Property and fit-out",
+        "Status": "Amber"
+      },
+      "class": "Workstream",
+      "h": 430,
+      "id": "el_ws_property",
+      "parent": "el_prog",
+      "w": 420,
+      "x": 40,
+      "y": 70
+    },
+    {
+      "attributes": {
+        "Due": "2027-01-29",
+        "Effort": 16,
+        "Name": "Sign the lease",
+        "Owner": "Finance director",
+        "Status": "Done"
+      },
+      "class": "Task",
+      "h": 70,
+      "id": "el_t_lease",
+      "parent": "el_ws_property",
+      "w": 180,
+      "x": 60,
+      "y": 120
+    },
+    {
+      "attributes": {
+        "Due": "2027-02-26",
+        "Effort": 60,
+        "Name": "Design the floor plan",
+        "Owner": "Workplace designer",
+        "Status": "Done"
+      },
+      "class": "Task",
+      "h": 70,
+      "id": "el_t_design",
+      "parent": "el_ws_property",
+      "w": 180,
+      "x": 260,
+      "y": 120
+    },
+    {
+      "attributes": {
+        "Due": "2027-05-28",
+        "Effort": 400,
+        "Name": "Fit out the new floors",
+        "Owner": "Facilities manager",
+        "Status": "In progress"
+      },
+      "class": "Task",
+      "h": 70,
+      "id": "el_t_fitout",
+      "parent": "el_ws_property",
+      "w": 180,
+      "x": 60,
+      "y": 220
+    },
+    {
+      "attributes": {
+        "Due": "2027-06-11",
+        "Name": "Floors ready to use",
+        "Owner": "Facilities manager",
+        "Status": "In progress"
+      },
+      "class": "Deliverable",
+      "h": 90,
+      "id": "el_d_floors",
+      "parent": "el_ws_property",
+      "w": 180,
+      "x": 260,
+      "y": 210
+    },
+    {
+      "attributes": {
+        "Date": "2027-06-14",
+        "Name": "Building ready",
+        "Owner": "Facilities manager"
+      },
+      "class": "Milestone",
+      "h": 120,
+      "id": "el_m_handover",
+      "parent": "el_ws_property",
+      "w": 200,
+      "x": 150,
+      "y": 340
+    },
+    {
+      "attributes": {
+        "Lead": "IT manager",
+        "Name": "IT and telephony",
+        "Status": "Green"
+      },
+      "class": "Workstream",
+      "h": 430,
+      "id": "el_ws_it",
+      "parent": "el_prog",
+      "w": 420,
+      "x": 480,
+      "y": 70
+    },
+    {
+      "attributes": {
+        "Due": "2027-02-12",
+        "Effort": 24,
+        "Name": "Survey the network",
+        "Owner": "Network engineer",
+        "Status": "Done"
+      },
+      "class": "Task",
+      "h": 70,
+      "id": "el_t_survey",
+      "parent": "el_ws_it",
+      "w": 180,
+      "x": 500,
+      "y": 120
+    },
+    {
+      "attributes": {
+        "Due": "2027-06-25",
+        "Effort": 120,
+        "Name": "Install network and wifi",
+        "Owner": "Network engineer",
+        "Status": "Not started"
+      },
+      "class": "Task",
+      "h": 70,
+      "id": "el_t_network",
+      "parent": "el_ws_it",
+      "w": 180,
+      "x": 700,
+      "y": 120
+    },
+    {
+      "attributes": {
+        "Due": "2027-07-09",
+        "Effort": 80,
+        "Name": "Move the servers",
+        "Owner": "IT manager",
+        "Status": "Not started"
+      },
+      "class": "Task",
+      "h": 70,
+      "id": "el_t_servers",
+      "parent": "el_ws_it",
+      "w": 180,
+      "x": 500,
+      "y": 220
+    },
+    {
+      "attributes": {
+        "Due": "2027-06-30",
+        "Name": "Working network on all floors",
+        "Owner": "IT manager",
+        "Status": "Not started"
+      },
+      "class": "Deliverable",
+      "h": 90,
+      "id": "el_d_network",
+      "parent": "el_ws_it",
+      "w": 180,
+      "x": 700,
+      "y": 210
+    },
+    {
+      "attributes": {
+        "Date": "2027-07-02",
+        "Name": "IT ready",
+        "Owner": "IT manager"
+      },
+      "class": "Milestone",
+      "h": 120,
+      "id": "el_m_itready",
+      "parent": "el_ws_it",
+      "w": 200,
+      "x": 590,
+      "y": 340
+    },
+    {
+      "attributes": {
+        "Lead": "HR business partner",
+        "Name": "People and communication",
+        "Status": "Green"
+      },
+      "class": "Workstream",
+      "h": 430,
+      "id": "el_ws_people",
+      "parent": "el_prog",
+      "w": 420,
+      "x": 920,
+      "y": 70
+    },
+    {
+      "attributes": {
+        "Due": "2027-03-05",
+        "Effort": 12,
+        "Name": "Tell staff about the move",
+        "Owner": "HR business partner",
+        "Status": "Done"
+      },
+      "class": "Task",
+      "h": 70,
+      "id": "el_t_announce",
+      "parent": "el_ws_people",
+      "w": 180,
+      "x": 940,
+      "y": 120
+    },
+    {
+      "attributes": {
+        "Due": "2027-05-14",
+        "Effort": 40,
+        "Name": "Plan desks and teams",
+        "Owner": "Office manager",
+        "Status": "In progress"
+      },
+      "class": "Task",
+      "h": 70,
+      "id": "el_t_desks",
+      "parent": "el_ws_people",
+      "w": 180,
+      "x": 1140,
+      "y": 120
+    },
+    {
+      "attributes": {
+        "Due": "2027-06-18",
+        "Effort": 30,
+        "Name": "Run open days in the new office",
+        "Owner": "Office manager",
+        "Status": "Not started"
+      },
+      "class": "Task",
+      "h": 70,
+      "id": "el_t_opendays",
+      "parent": "el_ws_people",
+      "w": 180,
+      "x": 940,
+      "y": 220
+    },
+    {
+      "attributes": {
+        "Due": "2027-05-14",
+        "Name": "Seating plan",
+        "Owner": "Office manager",
+        "Status": "In progress"
+      },
+      "class": "Deliverable",
+      "h": 90,
+      "id": "el_d_seating",
+      "parent": "el_ws_people",
+      "w": 180,
+      "x": 1140,
+      "y": 210
+    },
+    {
+      "attributes": {
+        "Date": "2027-03-12",
+        "Name": "Staff briefed",
+        "Owner": "HR business partner",
+        "Reached": true
+      },
+      "class": "Milestone",
+      "h": 120,
+      "id": "el_m_briefed",
+      "parent": "el_ws_people",
+      "w": 200,
+      "x": 1030,
+      "y": 340
+    },
+    {
+      "attributes": {
+        "Date": "2027-07-19",
+        "Name": "Moved in",
+        "Owner": "Programme manager"
+      },
+      "class": "Milestone",
+      "h": 120,
+      "id": "el_m_movedin",
+      "parent": "el_prog",
+      "w": 200,
+      "x": 590,
+      "y": 510
+    },
+    {
+      "attributes": {
+        "Impact": 4,
+        "Likelihood": 4,
+        "Mitigation": "Weekly site meetings, and a penalty clause for late completion in the contract.",
+        "Name": "Fit-out contractor runs late",
+        "Owner": "Facilities manager",
+        "Response": "Reduce",
+        "Status": "Open"
+      },
+      "class": "Risk",
+      "h": 110,
+      "id": "el_r_contractor",
+      "w": 240,
+      "x": 40,
+      "y": 720
+    },
+    {
+      "attributes": {
+        "Impact": 5,
+        "Likelihood": 3,
+        "Name": "New network not ready in time",
+        "Owner": "IT manager",
+        "Status": "Open"
+      },
+      "class": "Risk",
+      "h": 110,
+      "id": "el_r_network",
+      "w": 240,
+      "x": 540,
+      "y": 720
+    },
+    {
+      "attributes": {
+        "Impact": 5,
+        "Likelihood": 2,
+        "Name": "Systems down after the move",
+        "Owner": "IT manager",
+        "Response": "Reduce",
+        "Status": "Open"
+      },
+      "class": "Risk",
+      "h": 110,
+      "id": "el_r_move",
+      "w": 240,
+      "x": 1060,
+      "y": 720
+    },
+    {
+      "attributes": {
+        "CheckBy": "2027-02-15",
+        "Impact": "High",
+        "Name": "The landlord allows work at weekends",
+        "Owner": "Facilities manager",
+        "Validated": false
+      },
+      "class": "Assumption",
+      "h": 50,
+      "id": "el_a_weekends",
+      "w": 200,
+      "x": 310,
+      "y": 750
+    },
+    {
+      "attributes": {
+        "Due": "2027-03-19",
+        "Name": "Fit-out started two weeks late",
+        "Owner": "Facilities manager",
+        "Resolution": "The contractor adds a second crew for four weeks to win the time back.",
+        "Severity": "Medium",
+        "Status": "Open"
+      },
+      "class": "Issue",
+      "h": 110,
+      "id": "el_i_late",
+      "w": 240,
+      "x": 40,
+      "y": 900
+    },
+    {
+      "attributes": {
+        "Name": "Network line from the provider",
+        "NeededBy": "2027-06-01",
+        "Provider": "Telecoms provider",
+        "Status": "At risk",
+        "Type": "External"
+      },
+      "class": "Dependency",
+      "h": 54,
+      "id": "el_dep_line",
+      "w": 210,
+      "x": 810,
+      "y": 748
+    },
+    {
+      "attributes": {
+        "Date": "2027-02-10",
+        "DecidedBy": "Steering group",
+        "Name": "Move over two weekends, not one",
+        "Rationale": "Moving the servers on a separate weekend halves the time the systems are down and leaves a weekend to fix problems.",
+        "Status": "Agreed"
+      },
+      "class": "Decision",
+      "h": 110,
+      "id": "el_dec_weekends",
+      "w": 240,
+      "x": 1060,
+      "y": 900
+    }
+  ],
+  "formatVersion": 2,
+  "id": "mdl_officemove",
+  "kind": "mkmodel",
+  "kit": {
+    "id": "kit_projectraid",
+    "name": "Project delivery and RAID",
+    "version": "1.0.0"
+  },
+  "modelType": "Project",
+  "name": "Head office move"
+}

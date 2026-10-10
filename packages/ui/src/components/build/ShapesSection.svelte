@@ -5,7 +5,7 @@
     newId,
     type RelationShape,
     type ShapeDef,
-    type ToolLibrary,
+    type Kit,
   } from '@metakit-app/core';
   import { copyStarter, STARTER_SHAPES } from '@metakit-app/shapes';
   import {
@@ -24,14 +24,14 @@
   import { useBuildUndo } from '../../build/undo-context';
 
   let {
-    tool,
+    kit,
     run,
     onEditShape,
     onEditAppearance,
     open = null,
     assistant,
   }: {
-    tool: ToolLibrary;
+    kit: Kit;
     run: (command: never) => CommandResult;
     onEditShape: (id: string) => void;
     /** Opens the Appearance editor of the class or relation class with this id. */
@@ -52,7 +52,7 @@
     return r.ok ? null : r.error;
   };
   const shapes = $derived(
-    Object.values(tool.shapes).sort((a, b) =>
+    Object.values(kit.shapes).sort((a, b) =>
       (a.name ?? a.id).localeCompare(b.name ?? b.id),
     ),
   );
@@ -94,16 +94,16 @@
   /** The class or relation class whose Appearance editor can edit a look: only when one uses it. */
   const ownerOf = (id: string): string | undefined => {
     const users = [
-      ...Object.values(tool.classes).filter((c) => c.shape === id),
-      ...Object.values(tool.relations).filter((r) => r.shape === id),
+      ...Object.values(kit.classes).filter((c) => c.shape === id),
+      ...Object.values(kit.relations).filter((r) => r.shape === id),
     ];
     return users.length === 1 ? users[0]!.id : undefined;
   };
   const usedBy = (id: string): string[] => [
-    ...Object.values(tool.classes)
+    ...Object.values(kit.classes)
       .filter((c) => c.shape === id)
       .map((c) => c.key),
-    ...Object.values(tool.relations)
+    ...Object.values(kit.relations)
       .filter((r) => r.shape === id)
       .map((r) => r.key),
   ];
@@ -237,7 +237,7 @@
     >
     <DraftWithAssistant
       kind="shape"
-      {tool}
+      {kit}
       {assistant}
       onAccept={(commands) => exec(asOneStep(commands) as never)}
     />

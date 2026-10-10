@@ -33,4 +33,4 @@ export function releaseLabel(tag: GitTag): string {
 }
 
 export const NO_RELEASES_TEXT =
-  'This repository has no tags yet. Tag a commit on GitHub or GitLab (for example v1.0.0) to publish a version of the tool library.';
+  'This repository has no tags yet. Tag a commit on GitHub or GitLab (for example v1.0.0) to publish a version of the Kit.';

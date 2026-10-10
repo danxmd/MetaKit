@@ -5,6 +5,7 @@
     DocsLayer,
     docsOpen,
     isTypingTarget,
+    openDocs,
     pushDocsContext,
     setDocsContext,
     toggleDocs,
@@ -15,7 +16,7 @@
     ReferenceIndex,
     type ReferenceServices,
   } from '@metakit-app/ui';
-  import type { ElementId, ToolLibrary } from '@metakit-app/core';
+  import type { ElementId, Kit } from '@metakit-app/core';
   import BuildView from '@metakit-app/ui/components/BuildView.svelte';
   import AssistantSettings from '@metakit-app/ui/components/assistant/AssistantSettings.svelte';
   import {
@@ -30,20 +31,31 @@
   import ConfirmDialog from '@metakit-app/ui/components/ConfirmDialog.svelte';
   import Toast from '@metakit-app/ui/components/Toast.svelte';
   import ModelsPage from '@metakit-app/ui/components/ModelsPage.svelte';
-  import ToolImportDialog from '@metakit-app/ui/components/ToolImportDialog.svelte';
-  import ToolLibrariesPage from '@metakit-app/ui/components/ToolLibrariesPage.svelte';
+  import KitImportDialog from '@metakit-app/ui/components/KitImportDialog.svelte';
+  import KitsPage from '@metakit-app/ui/components/KitsPage.svelte';
   import TopBar from '@metakit-app/ui/components/TopBar.svelte';
   import ModelView from '@metakit-app/ui/components/ModelView.svelte';
   import NewModelDialog from '@metakit-app/ui/components/NewModelDialog.svelte';
   import PermissionDialog from '@metakit-app/ui/components/build/scripts/PermissionDialog.svelte';
   import ProfileDialog from '@metakit-app/ui/components/ProfileDialog.svelte';
   import StartPage from '@metakit-app/ui/components/StartPage.svelte';
+  import TourLayer from '@metakit-app/ui/components/tours/TourLayer.svelte';
+  import TourOffer from '@metakit-app/ui/components/tours/TourOffer.svelte';
+  import TutorialsPage from '@metakit-app/ui/components/tours/TutorialsPage.svelte';
   import {
-    BUILT_IN_TOOLS,
+    loadTours,
+    tourBlocker,
+    tours,
+    type Tour,
+    type TourGoTo,
+    type TourWhere,
+  } from '@metakit-app/ui/tours';
+  import {
+    BUILT_IN_KITS,
     findAcrossModels,
     folderPaths,
-    type BuiltInTool,
-    type ToolStart,
+    type BuiltInKit,
+    type KitStart,
   } from '@metakit-app/ui';
   import { toasts } from '@metakit-app/ui/feedback';
   import { PROFILE_COLOURS, type Profile } from '@metakit-app/storage';
@@ -102,10 +114,13 @@
   }
 
   async function chooseProfile(chosen: Profile) {
+    const first = profile === null;
     controller.setProfile(chosen);
     // The dialog closes only once the choice is stored, so a quick reload does not ask again.
     await saveProfile(chosen);
     profile = chosen;
+    // Once per browser, after the very first "Who are you?".
+    if (first && !tours.get().offered) offerTour = true;
   }
 
   async function openHandle(handle: FileSystemDirectoryHandle) {
@@ -193,12 +208,13 @@
 
   let docs = $state<PanelState>(docsOpen.get());
   // The Documentation area is a third place next to Model and Build. Whatever is open there (a
-  // model, a tool library) stays mounted underneath, so coming back finds it unchanged.
+  // model, a Kit) stays mounted underneath, so coming back finds it unchanged.
   let docsArea = $state(false);
   let docsVisited = $state(false);
   let docsRequest = $state<{ topic: string | null } | null>(null);
 
   function showDocsArea(topic: string | null | undefined) {
+    tutorialsArea = false;
     docsVisited = true;
     docsArea = true;
     if (topic !== undefined) docsRequest = { topic };
@@ -219,13 +235,70 @@
           : app.phase === 'model' && app.open
             ? 'model'
             : area === 'build'
-              ? 'tool-libraries'
+              ? 'kits'
               : 'models',
     );
   });
   $effect(() =>
     docsArea ? pushDocsContext('docs', DocsLayer.area) : undefined,
   );
+
+  // Tutorials and guided tours -------------------------------------------------------------------
+
+  // Like the Documentation area, the Tutorials page covers the views without unmounting them.
+  let tutorialsArea = $state(false);
+  let offerTour = $state(false);
+  $effect(() =>
+    tutorialsArea ? pushDocsContext('tutorials', DocsLayer.area) : undefined,
+  );
+
+  const tourWhere: TourWhere = $derived({
+    workspace: app.phase !== 'start',
+    model: app.phase === 'model' && !!app.open,
+    kit: app.phase === 'build' && !!app.build,
+  });
+
+  function showTutorials() {
+    docsArea = false;
+    tutorialsArea = true;
+  }
+
+  /** Goes to the tour's page and starts it at its first step. */
+  async function startTour(tour: Tour) {
+    const blocked = tourBlocker(tour, tourWhere);
+    if (blocked)
+      return goToForTour(blocked.goTo, blocked.thenStart ? tour : null);
+    docsArea = false;
+    tutorialsArea = false;
+    if (tour.page === 'models') {
+      if (app.build) await controller.closeBuild();
+      if (app.open) await controller.closeModel();
+      area = 'model';
+    } else if (tour.page === 'kits') {
+      if (app.open) await controller.closeModel();
+      if (app.build) await controller.closeBuild();
+      area = 'build';
+    }
+    tours.start(tour);
+  }
+
+  /** A tour that cannot start here offers the page where it can. */
+  async function goToForTour(goTo: TourGoTo, then: Tour | null) {
+    if (goTo === 'start') {
+      if (app.phase !== 'start') await closeWorkspace();
+      tutorialsArea = false;
+    } else await chooseArea(goTo === 'models' ? 'model' : 'build');
+    if (then && !tourBlocker(then, tourWhere)) await startTour(then);
+  }
+
+  async function answerOffer(take: boolean) {
+    offerTour = false;
+    tours.markOffered();
+    if (!take) return;
+    const { tourById, FIRST_STEPS } = await loadTours();
+    const first = tourById(FIRST_STEPS);
+    if (first) await startTour(first);
+  }
 
   function onWindowKey(event: KeyboardEvent) {
     if (event.defaultPrevented) return;
@@ -244,15 +317,15 @@
     }
   }
 
-  // Which area the workspace shows. An open model or tool library decides it; with none open the
-  // person's last choice stays, so that "back" from a tool library lands on the tool libraries.
+  // Which area the workspace shows. An open model or Kit decides it; with none open the
+  // person's last choice stays, so that "back" from a Kit lands on the Kits.
   let area = $state<'model' | 'build'>('model');
   $effect(() => {
     if (app.phase === 'model') area = 'model';
     else if (app.phase === 'build') area = 'build';
   });
 
-  // Deleted models and tool libraries go to the trash, so they are removed at once and the toast
+  // Deleted models and Kits go to the trash, so they are removed at once and the toast
   // offers Undo, which restores them (ui-coherence).
   async function trashModel(slug: string) {
     const name = app.models.find((m) => m.slug === slug)?.name ?? slug;
@@ -263,18 +336,19 @@
       });
   }
 
-  async function trashTool(slug: string) {
-    const name = app.tools.find((t) => t.slug === slug)?.name ?? slug;
-    await controller.trashTool(slug);
-    if (app.trashedTools.some((t) => t.slug === slug))
-      toasts.show(`Deleted tool library ${name}`, {
-        undo: () => void controller.restoreTool(slug),
+  async function trashKit(slug: string) {
+    const name = app.kits.find((t) => t.slug === slug)?.name ?? slug;
+    await controller.trashKit(slug);
+    if (app.trashedKits.some((t) => t.slug === slug))
+      toasts.show(`Deleted Kit ${name}`, {
+        undo: () => void controller.restoreKit(slug),
       });
   }
 
   async function chooseArea(next: 'model' | 'build') {
-    const fromDocs = docsArea;
+    const fromDocs = docsArea || tutorialsArea;
     docsArea = false;
+    tutorialsArea = false;
     // Back from the Documentation to where the person was: nothing to close or open.
     if (fromDocs && next === area) return;
     if (next === 'build' && app.open) await controller.closeModel();
@@ -286,30 +360,31 @@
 
   async function closeWorkspace() {
     docsArea = false;
+    tutorialsArea = false;
     await controller.closeWorkspace();
     area = 'model';
   }
 
-  /** A new tool library: empty, or a copy of a workspace or built-in one (ADR 0010). */
-  async function newTool(name: string, start: ToolStart) {
-    if (start.kind === 'empty') return controller.createToolLibrary(name);
+  /** A new Kit: empty, or a copy of a workspace or built-in one (ADR 0010). */
+  async function newKit(name: string, start: KitStart) {
+    if (start.kind === 'empty') return controller.createKit(name);
     if (start.kind === 'workspace')
-      return controller.copyToolLibrary(name, { slug: start.slug });
-    return controller.copyToolLibrary(name, { text: await start.tool.load() });
+      return controller.copyKit(name, { slug: start.slug });
+    return controller.copyKit(name, { text: await start.kit.load() });
   }
 
-  async function useBuiltIn(tool: BuiltInTool) {
-    await controller.addToolLibrary(await tool.load());
+  async function useBuiltIn(kit: BuiltInKit) {
+    await controller.addKit(await kit.load());
   }
 
-  const builtInKey = (tool: BuiltInTool) => `built-in:${tool.id}`;
+  const builtInKey = (kit: BuiltInKit) => `built-in:${kit.id}`;
 
   /** Model types of a workspace library, or of a built-in one that is not added yet. */
   async function modelTypesFor(key: string) {
-    const builtIn = BUILT_IN_TOOLS.find((t) => builtInKey(t) === key);
+    const builtIn = BUILT_IN_KITS.find((t) => builtInKey(t) === key);
     if (!builtIn) return controller.modelTypesOf(key);
-    const tool = JSON.parse(await builtIn.load()) as ToolLibrary;
-    return Object.values(tool.modelTypes).sort((a, b) =>
+    const kit = JSON.parse(await builtIn.load()) as Kit;
+    return Object.values(kit.modelTypes).sort((a, b) =>
       a.key.localeCompare(b.key),
     );
   }
@@ -317,13 +392,11 @@
   async function create(input: Parameters<typeof controller.createModel>[0]) {
     showNew = false;
     // A built-in library is added to the workspace first; the model then uses that copy.
-    const builtIn = BUILT_IN_TOOLS.find(
-      (t) => builtInKey(t) === input.toolSlug,
-    );
+    const builtIn = BUILT_IN_KITS.find((t) => builtInKey(t) === input.kitSlug);
     if (builtIn) {
-      const slug = await controller.addToolLibrary(await builtIn.load());
+      const slug = await controller.addKit(await builtIn.load());
       if (!slug) return;
-      input = { ...input, toolSlug: slug };
+      input = { ...input, kitSlug: slug };
     }
     await controller.createModel(input);
   }
@@ -333,7 +406,18 @@
 
 {#if app.phase === 'start'}
   <div class="row start-row">
-    <div class="start-scroll">
+    {#if tutorialsArea}
+      <div class="start-scroll">
+        <TutorialsPage
+          where={tourWhere}
+          onStart={startTour}
+          onGoTo={goToForTour}
+          onReadTopic={(id) => openDocs(id)}
+          onClose={() => (tutorialsArea = false)}
+        />
+      </div>
+    {/if}
+    <div class="start-scroll" hidden={tutorialsArea}>
       <StartPage
         {supported}
         remembered={remembered?.name ?? null}
@@ -346,6 +430,7 @@
         onCancelCreate={() => (pendingCreate = null)}
         helpOpen={docs.open}
         onHelp={toggleDocs}
+        onTutorials={showTutorials}
       />
     </div>
     {#if docs.open}
@@ -358,9 +443,11 @@
       workspaceName={app.workspaceName}
       {area}
       docsActive={docsArea}
+      tutorialsActive={tutorialsArea}
       helpOpen={docs.open}
       onMode={chooseArea}
       onDocs={() => showDocsArea(undefined)}
+      onTutorials={showTutorials}
       onHelp={toggleDocs}
       onGit={() => controller.openGitSettings(true)}
       onAssistant={() => (showAssistant = true)}
@@ -370,7 +457,11 @@
     <div class="row">
       <!-- The views fill this box (height: 100%); the home pages scroll inside it. -->
       <div class="content">
-        <div class="views" class:covered={docsArea} inert={docsArea}>
+        <div
+          class="views"
+          class:covered={docsArea || tutorialsArea}
+          inert={docsArea || tutorialsArea}
+        >
           {#if app.phase === 'build' && app.build}
             {#key app.build.slug}
               <BuildView
@@ -391,29 +482,29 @@
               />
             {/key}
           {:else if area === 'build'}
-            <ToolLibrariesPage
-              tools={app.tools}
-              trashedTools={app.trashedTools}
+            <KitsPage
+              kits={app.kits}
+              trashedKits={app.trashedKits}
               models={app.models}
               health={app.health}
               warnings={app.warnings}
               error={app.error}
               notes={app.notes}
-              builtIns={BUILT_IN_TOOLS}
-              onNewTool={newTool}
+              builtIns={BUILT_IN_KITS}
+              onNewKit={newKit}
               onUseBuiltIn={useBuiltIn}
-              onAddTool={(text) => controller.addToolLibrary(text)}
+              onAddKit={(text) => controller.addKit(text)}
               onGit={() => controller.openGitSettings(true)}
-              onEditTool={(slug) => controller.openBuild(slug)}
-              onExportTool={(slug) => controller.exportToolPackage(slug)}
-              onTrashTool={trashTool}
-              onRestoreTool={(slug) => controller.restoreTool(slug)}
+              onEditKit={(slug) => controller.openBuild(slug)}
+              onExportKit={(slug) => controller.exportKitPackage(slug)}
+              onTrashKit={trashKit}
+              onRestoreKit={(slug) => controller.restoreKit(slug)}
             />
           {:else}
             <ModelsPage
               models={app.models}
               trashed={app.trashed}
-              tools={app.tools}
+              kits={app.kits}
               health={app.health}
               warnings={app.warnings}
               error={app.error}
@@ -428,11 +519,11 @@
               search={async (query) =>
                 findAcrossModels(
                   (await controller.readAllModels()).map(
-                    ({ entry, model, tool }) => ({
+                    ({ entry, model, kit }) => ({
                       slug: entry.slug,
                       name: entry.name,
                       model,
-                      tool,
+                      kit,
                     }),
                   ),
                   query,
@@ -453,6 +544,16 @@
             <DocsPage request={docsRequest} />
           </div>
         {/if}
+        {#if tutorialsArea}
+          <div class="docs-area">
+            <TutorialsPage
+              where={tourWhere}
+              onStart={startTour}
+              onGoTo={goToForTour}
+              onReadTopic={(id) => showDocsArea(id)}
+            />
+          </div>
+        {/if}
       </div>
       {#if docs.open}
         <DocsPanel onClose={closeDocs} onOpenInDocs={openInDocs} />
@@ -460,18 +561,18 @@
     </div>
   </div>
 
-  {#if app.toolImport}
-    <ToolImportDialog
-      plan={app.toolImport}
-      onConfirm={() => controller.confirmToolImport()}
-      onCancel={() => controller.cancelToolImport()}
+  {#if app.kitImport}
+    <KitImportDialog
+      plan={app.kitImport}
+      onConfirm={() => controller.confirmKitImport()}
+      onCancel={() => controller.cancelKitImport()}
     />
   {/if}
   {#if showNew}
     <NewModelDialog
-      tools={app.tools}
-      builtIns={BUILT_IN_TOOLS.filter(
-        (b) => !app.tools.some((t) => t.id === b.id),
+      kits={app.kits}
+      builtIns={BUILT_IN_KITS.filter(
+        (b) => !app.kits.some((t) => t.id === b.id),
       ).map((b) => ({ key: builtInKey(b), name: b.name, version: b.version }))}
       loadModelTypes={modelTypesFor}
       {folders}
@@ -488,7 +589,7 @@
     testid="assistant-panel"
     onClose={() => (showAssistant = false)}
   >
-    <AssistantSettings service={assistant} tool={app.build?.store.state} />
+    <AssistantSettings service={assistant} kit={app.build?.store.state} />
     <div class="panel-actions">
       <button
         class="primary"
@@ -523,7 +624,7 @@
 
 {#if app.permissionAsk}
   <PermissionDialog
-    toolName={app.permissionAsk.toolName}
+    kitName={app.permissionAsk.kitName}
     wanted={app.permissionAsk.wanted}
     onAllow={() => controller.answerPermission(true)}
     onDeny={() => controller.answerPermission(false)}
@@ -552,6 +653,14 @@
   />
 {/if}
 
+{#if offerTour}
+  <TourOffer
+    onStart={() => answerOffer(true)}
+    onDismiss={() => answerOffer(false)}
+  />
+{/if}
+
+<TourLayer />
 <ConfirmDialog />
 <Toast />
 
@@ -576,6 +685,9 @@
     flex: 1;
     min-width: 0;
     overflow: auto;
+  }
+  .start-scroll[hidden] {
+    display: none;
   }
   .content {
     position: relative;

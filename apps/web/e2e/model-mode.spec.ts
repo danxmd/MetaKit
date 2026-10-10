@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { canvasPoint, model, newModel, prepare, toolJson } from './app';
+import { canvasPoint, model, newModel, prepare, kitJson } from './app';
 import { openMenu } from './menus';
 
 test.describe('start and explorer', () => {
@@ -38,7 +38,7 @@ test.describe('start and explorer', () => {
     await expect(page.getByTestId('no-models')).toBeVisible();
   });
 
-  test('offers the built-in tool libraries when the workspace has none of its own', async ({
+  test('offers the built-in Kits when the workspace has none of its own', async ({
     page,
   }) => {
     await page.addInitScript(() => {
@@ -57,12 +57,12 @@ test.describe('start and explorer', () => {
     await page.getByRole('button', { name: 'Create workspace' }).click();
     await page.getByTestId('new-model').click();
     await expect(
-      page.getByTestId('new-model-tool').locator('optgroup'),
+      page.getByTestId('new-model-kit').locator('optgroup'),
     ).toHaveAttribute('label', /Built-in/);
-    await expect(page.getByTestId('new-model-tool')).toContainText('ER lite');
+    await expect(page.getByTestId('new-model-kit')).toContainText('ER lite');
   });
 
-  test('adds a tool library from a file, refuses a broken one, and then makes a model', async ({
+  test('adds a Kit from a file, refuses a broken one, and then makes a model', async ({
     page,
   }) => {
     await page.addInitScript(() => {
@@ -79,28 +79,28 @@ test.describe('start and explorer', () => {
     await page.goto('/MetaKit/');
     await page.getByTestId('open-folder').click();
     await page.getByRole('button', { name: 'Create workspace' }).click();
-    // The models page points to Build, where the tool library is added.
+    // The models page points to Build, where the Kit is added.
     await expect(page.getByTestId('no-models')).toContainText(
-      'no tool library of its own yet',
+      'no Kit of its own yet',
     );
     await page.getByTestId('go-build').click();
-    await expect(page.getByTestId('no-tools')).toBeVisible();
+    await expect(page.getByTestId('no-kits')).toBeVisible();
 
-    await page.getByTestId('tool-file').setInputFiles({
+    await page.getByTestId('kit-file').setInputFiles({
       name: 'broken.json',
       mimeType: 'application/json',
       buffer: Buffer.from('{ "nope": true }'),
     });
     await expect(page.getByTestId('explorer-error')).toContainText(
-      'not a valid tool library',
+      'not a valid Kit',
     );
 
-    await page.getByTestId('tool-file').setInputFiles({
+    await page.getByTestId('kit-file').setInputFiles({
       name: 'tool.json',
       mimeType: 'application/json',
-      buffer: Buffer.from(toolJson),
+      buffer: Buffer.from(kitJson),
     });
-    await expect(page.getByTestId('no-tools')).toHaveCount(0);
+    await expect(page.getByTestId('no-kits')).toHaveCount(0);
     await page.getByTestId('mode-model').click();
     await page.getByTestId('new-model').click();
     await page.getByTestId('new-model-name').fill('From a file');
