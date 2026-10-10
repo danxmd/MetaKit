@@ -2,7 +2,7 @@
 id: context-menu
 title: Context menu
 category: model
-summary: Right-clicking the canvas opens a menu of the commands the tool library placed there; while placing or connecting, a right-click leaves that mode instead.
+summary: Right-clicking the canvas opens a menu of the commands the Kit placed there; while placing or connecting, a right-click leaves that mode instead.
 keywords: [context menu, right-click menu, canvas context menu, right click, canvas right-click menu]
 contexts: []
 order: 180
@@ -12,7 +12,7 @@ The right mouse button has three jobs on the canvas. Which one you get depends o
 
 ## What it is
 
-The *context menu* is a small list of commands that appears where you right-click. MetaKit has no built-in items in it. All items come from rules and scripts in the tool library (see [[behaviour-commands]]).
+The *context menu* is a small list of commands that appears where you right-click. MetaKit has no built-in items in it. All items come from rules and scripts in the Kit (see [[behaviour-commands]]).
 
 ## Where to find it
 
@@ -29,8 +29,8 @@ Right-click on the canvas.
 
 | What you do | What happens |
 | --- | --- |
-| Right-click with the **Select** tool and the tool has context commands | Opens the menu at the pointer. |
-| Right-click with the **Select** tool and the tool has no context commands | Nothing visible happens. The browser's own menu is also suppressed. |
+| Right-click with the **Select** tool and the Kit has context commands | Opens the menu at the pointer. |
+| Right-click with the **Select** tool and the Kit has no context commands | Nothing visible happens. The browser's own menu is also suppressed. |
 | Right-click while the place or connect tool is active | Leaves that tool and returns to **Select**. No menu opens. |
 | Right-click, hold and drag | Pans the canvas. See [[canvas-navigation]]. |
 | Click a menu item | Runs the command on the first selected object (or on none if nothing is selected). |
@@ -40,7 +40,7 @@ The items are sorted alphabetically by label. Every item works on the selection,
 
 ### Where the same commands may appear instead
 
-A command can be placed in the context menu, in the toolbar or in the **Commands** menu. That is decided by the person who built the tool. See [[menu-commands]].
+A command can be placed in the context menu, in the toolbar or in the **Commands** menu. That is decided by the person who built the Kit. See [[menu-commands]].
 
 ## Examples
 

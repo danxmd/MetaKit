@@ -69,7 +69,7 @@ Attributes work as in [[attributes]]. In **Constraints** the names `from` and `t
 
 ## Examples
 
-In the Agent pipeline tool:
+In the Agent pipeline Kit:
 
 - **Performs** goes from **Actor** to **Task** and has a choice attribute **Role** (Responsible, Reviewer, Consulted). Because Actor is abstract and Agent and Human extend it, both can perform a task.
 - **HandsOverTo** goes from **Task** or **Gate** to **Task** or **Gate**. Its attributes are **Condition** (Text) and **Handoff** (Automatic or Needs human).

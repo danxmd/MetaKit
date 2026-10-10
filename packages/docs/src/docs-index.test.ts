@@ -87,6 +87,7 @@ describe('organising', () => {
       'behaviour',
       'teamwork',
       'assistant',
+      'kits',
       'reference',
       'tutorials',
     ]);

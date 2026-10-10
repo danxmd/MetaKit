@@ -6,7 +6,7 @@ import {
   PANEL_CONTROLS,
   PART_TYPES,
 } from './shape-types';
-import type { ToolLibrary } from './types';
+import type { Kit } from './types';
 
 type Rec = Record<string, unknown>;
 
@@ -604,26 +604,26 @@ function keysOfItems(items: unknown[], out: string[]): void {
 }
 
 /** Checks references between the tables; run only when the structure is sound. */
-export function checkShapeReferences(c: Checker, tool: ToolLibrary): void {
-  const shapes = tool.shapes ?? {};
+export function checkShapeReferences(c: Checker, kit: Kit): void {
+  const shapes = kit.shapes ?? {};
   const known = (id: unknown) => typeof id === 'string' && id in shapes;
-  for (const cls of Object.values(tool.classes))
+  for (const cls of Object.values(kit.classes))
     if (cls.shape !== undefined && !known(cls.shape))
       c.add(
         `classes.${cls.id}.shape`,
-        `The shape ${cls.shape} does not exist in this tool library.`,
+        `The shape ${cls.shape} does not exist in this Kit.`,
       );
-  for (const rel of Object.values(tool.relations))
+  for (const rel of Object.values(kit.relations))
     if (rel.shape !== undefined && !known(rel.shape))
       c.add(
         `relations.${rel.id}.shape`,
-        `The shape ${rel.shape} does not exist in this tool library.`,
+        `The shape ${rel.shape} does not exist in this Kit.`,
       );
-  for (const mt of Object.values(tool.modelTypes)) {
+  for (const mt of Object.values(kit.modelTypes)) {
     if (mt.background !== undefined && !known(mt.background))
       c.add(
         `modelTypes.${mt.id}.background`,
-        `The shape ${mt.background} does not exist in this tool library.`,
+        `The shape ${mt.background} does not exist in this Kit.`,
       );
   }
   for (const shape of Object.values(shapes)) {
@@ -643,9 +643,9 @@ export function checkShapeReferences(c: Checker, tool: ToolLibrary): void {
     visit(shape.parts as never);
     for (const v of shape.variants ?? []) visit(v.parts as never);
   }
-  for (const [id, layout] of Object.entries(tool.panels ?? {})) {
-    const isClass = id in tool.classes;
-    const isRelation = id in tool.relations;
+  for (const [id, layout] of Object.entries(kit.panels ?? {})) {
+    const isClass = id in kit.classes;
+    const isRelation = id in kit.relations;
     if (!isClass && !isRelation) {
       c.add(
         `panels.${id}`,
@@ -657,8 +657,8 @@ export function checkShapeReferences(c: Checker, tool: ToolLibrary): void {
     try {
       attrs = (
         isClass
-          ? effectiveAttributes(tool, id as never)
-          : effectiveRelationAttributes(tool, id as never)
+          ? effectiveAttributes(kit, id as never)
+          : effectiveRelationAttributes(kit, id as never)
       ).map((a) => a.key);
     } catch {
       continue; // The inheritance problem is reported elsewhere.

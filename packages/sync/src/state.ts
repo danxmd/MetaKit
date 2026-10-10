@@ -1,7 +1,14 @@
 import type { Json } from '@metakit-app/core';
 import { compareStamps, parseTimestamp } from './clock';
 import { flatten, opKind, type StampedOp } from './ops';
-import { entityKey, entityOf, keyToPath, pathKey, type DocKind } from './path';
+import {
+  currentPath,
+  entityKey,
+  entityOf,
+  keyToPath,
+  pathKey,
+  type DocKind,
+} from './path';
 
 export interface Stamp {
   t: string;
@@ -105,6 +112,8 @@ export class SyncState {
 
   /** Applies one op; returns what changed, or null if the op did not win (or was already there). */
   apply(op: StampedOp): Touch | null {
+    const renamed = currentPath(this.kind, op.p);
+    if (renamed !== op.p) op = { ...op, p: renamed };
     if (op.t > this.maxT) this.maxT = op.t;
     const kind = opKind(op);
     const ref = entityOf(this.kind, op.p);

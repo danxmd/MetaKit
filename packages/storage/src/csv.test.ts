@@ -1,14 +1,9 @@
-import type {
-  AttributeDef,
-  ClassId,
-  Model,
-  ToolLibrary,
-} from '@metakit-app/core';
+import type { AttributeDef, ClassId, Model, Kit } from '@metakit-app/core';
 import {
   SAMPLE,
   clone,
   emptySampleModel,
-  sampleTool,
+  sampleKit,
 } from '@metakit-app/core/testing';
 import { describe, expect, it } from 'vitest';
 import { csvCell, exportCsv, exportCsvZip } from './csv';
@@ -41,8 +36,8 @@ const extra: AttributeDef[] = [
   { id: 'att_id', key: 'id', type: 'text' },
 ];
 
-function tool(): ToolLibrary {
-  const t = clone(sampleTool());
+function kit(): Kit {
+  const t = clone(sampleKit());
   t.classes[SAMPLE.task as ClassId]!.attributes.push(...extra);
   return t;
 }
@@ -122,7 +117,7 @@ describe('csvCell', () => {
 
 describe('exportCsv', () => {
   it('writes one file per class that has objects, and one per relation class', () => {
-    expect(Object.keys(exportCsv(tool(), model())).sort()).toEqual([
+    expect(Object.keys(exportCsv(kit(), model())).sort()).toEqual([
       'Lane.csv',
       'SequenceFlow.csv',
       'Task.csv',
@@ -130,7 +125,7 @@ describe('exportCsv', () => {
   });
 
   it('puts id, position, size and parent first, then the attributes in definition order, without formulas', () => {
-    const task = exportCsv(tool(), model())['Task.csv']!;
+    const task = exportCsv(kit(), model())['Task.csv']!;
     const header = task.split('\r\n')[0];
     expect(header).toBe(
       'id,x,y,w,h,parent_id,Name,Code,Priority,Effort,Done,Tags,Steps,Owner,attribute_id',
@@ -139,7 +134,7 @@ describe('exportCsv', () => {
   });
 
   it('writes values by type with RFC 4180 quoting', () => {
-    const task = exportCsv(tool(), model())['Task.csv']!;
+    const task = exportCsv(kit(), model())['Task.csv']!;
     const lines = task.split('\r\n');
     expect(lines).toHaveLength(4); // header, two rows, and the empty end
     expect(task.endsWith('\r\n')).toBe(true);
@@ -154,20 +149,20 @@ describe('exportCsv', () => {
   });
 
   it('writes connectors with their ends', () => {
-    expect(exportCsv(tool(), model())['SequenceFlow.csv']).toBe(
+    expect(exportCsv(kit(), model())['SequenceFlow.csv']).toBe(
       'id,from_id,to_id,Condition\r\ncn_1,el_a,el_b,yes\r\n',
     );
   });
 
   it('can start with a byte order mark for Excel', () => {
-    const files = exportCsv(tool(), model(), { bom: true });
+    const files = exportCsv(kit(), model(), { bom: true });
     for (const text of Object.values(files))
       expect(text.startsWith('﻿')).toBe(true);
-    expect(exportCsv(tool(), model())['Lane.csv']!.startsWith('﻿')).toBe(false);
+    expect(exportCsv(kit(), model())['Lane.csv']!.startsWith('﻿')).toBe(false);
   });
 
   it('gives a zip with the same files', () => {
-    const files = unzipFiles(exportCsvZip(tool(), model(), { bom: true }));
+    const files = unzipFiles(exportCsvZip(kit(), model(), { bom: true }));
     expect(Object.keys(files)).toEqual([
       'Lane.csv',
       'SequenceFlow.csv',
@@ -175,6 +170,6 @@ describe('exportCsv', () => {
     ]);
     expect(
       new TextDecoder('utf-8', { ignoreBOM: true }).decode(files['Lane.csv']!),
-    ).toBe(exportCsv(tool(), model(), { bom: true })['Lane.csv']);
+    ).toBe(exportCsv(kit(), model(), { bom: true })['Lane.csv']);
   });
 });

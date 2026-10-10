@@ -6,12 +6,12 @@ A modelling language for pipelines in which agents and humans perform tasks and 
 
 ## ADDED Requirements
 
-### Requirement: The tool library is valid
-The tool library SHALL load without problems and round trip through the Git layout.
+### Requirement: The Kit is valid
+The Kit SHALL load without problems and round trip through the Git layout.
 
 #### Scenario: Validate
-- **WHEN** the tool library is validated
-- **THEN** there are no issues, and converting to the Git layout and back gives an equal tool library
+- **WHEN** the Kit is validated
+- **THEN** there are no issues, and converting to the Git layout and back gives an equal Kit
 
 ### Requirement: Agents and humans look different
 Agents and humans SHALL have different shapes and colours, and an agent's autonomy SHALL show on its shape.

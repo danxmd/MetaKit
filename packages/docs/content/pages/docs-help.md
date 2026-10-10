@@ -33,7 +33,7 @@ The documentation is built into MetaKit. You can read it beside your work in the
 **Follow links**
 
 1. Links in a topic are underlined. Click one to move to that topic.
-2. Words that are the keyword of another topic are linked automatically the first time they appear in a text, for example "tool library" or "attribute panel". Clicking a linked keyword opens its topic.
+2. Words that are the keyword of another topic are linked automatically the first time they appear in a text, for example "Kit" or "attribute panel". Clicking a linked keyword opens its topic.
 3. Use **Back** and **Forward** in the side bar to move through the topics you have visited, like a browser.
 
 **Search**

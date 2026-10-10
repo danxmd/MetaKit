@@ -100,7 +100,7 @@ Several rules may listen to one before event. They run in the order they are sto
 - **No events for merged changes.** This is by design: it stops loops between people.
 - **Depth limit.** Rules that wake each other stop at 8 levels. The same rule never runs twice for the same object and event in one cascade.
 - **Before rules cannot write.** An action that tries to change the model in a before event is refused with: `this rule runs before the action, so it can only cancel or ask. Use an event that says "changed" to change things.`
-- **Model events and the tool library.** A model event reaches the rules of the tool library the model was made with. `model.creating` is announced on a temporary copy, so cancelling it stops the creation and shows the reason as the error.
+- **Model events and the Kit.** A model event reaches the rules of the Kit the model was made with. `model.creating` is announced on a temporary copy, so cancelling it stops the creation and shows the reason as the error.
 - **Rename vs change.** Changing the name fires both `attribute.changed` and `object.renamed`. Pick one to avoid doing the work twice.
 - **Selection events are frequent.** Keep selection rules light.
 
