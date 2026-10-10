@@ -55,7 +55,7 @@ Values without a colour are left out of the chain. You can read and change the f
 
 Give the stripe of a new Task shape a status colour. Select the stripe rectangle, press **Colour by attribute...** beside **Fill colour**, keep **Status** as the attribute and give colours to the rows in the order of the options: Planned, Ready, Running, Waiting for human, Done, Failed. Set **Anything else** to a neutral grey and press **Apply**. Change Running to a stronger blue and press **Apply** again: every running task changes at once.
 
-The shipped shape **Task (status stripe)** of the Agent pipeline tool colours its stripe with a hand-written nested `if(...)` formula. Because that is not the form the helper writes, the dialog does not recognise it. Use it only as a model to rebuild.
+The shipped shape **Task (status stripe)** of the Agent pipeline Kit colours its stripe with a hand-written nested `if(...)` formula. Because that is not the form the helper writes, the dialog does not recognise it. Use it only as a model to rebuild.
 
 To colour a text part: select it and use the button beside **Text colour**.
 

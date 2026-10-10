@@ -89,7 +89,7 @@ The default is **Automatic**. MetaKit chooses dark or light text depending on th
 
 ## Examples
 
-Ideas for rebuilding the classes of the Agent pipeline tool as simple looks:
+Ideas for rebuilding the classes of the Agent pipeline Kit as simple looks:
 
 - **Agent**: form **Person** with the icon **Robot**.
 - **Gate**: form **Hexagon**, title **Name of the object**, subtitle from the attribute `Decision`.
@@ -97,7 +97,7 @@ Ideas for rebuilding the classes of the Agent pipeline tool as simple looks:
 - **Stage**: form **Swimlane**, which is also what a class of the kind Swimlane starts with.
 - **Task**: form **Rounded box**, with the fill following `Status` ([[appearance-data-rules]]).
 
-The shipped Agent pipeline tool draws these with hand-drawn shapes. The simple look reaches the same result in a few clicks.
+The shipped Agent pipeline Kit draws these with hand-drawn shapes. The simple look reaches the same result in a few clicks.
 
 ## Good to know
 
@@ -107,7 +107,7 @@ The shipped Agent pipeline tool draws these with hand-drawn shapes. The simple l
 - The form decides the corner setting: the corner field is shown only for box-like forms.
 
 > **Tip**
-> Keep two or three fills in a whole tool library. Colour is most useful when it carries meaning ([[appearance-data-rules]]).
+> Keep two or three fills in a whole Kit. Colour is most useful when it carries meaning ([[appearance-data-rules]]).
 
 > **Note**
 > The gallery shows only forms. For anything it does not offer, such as a free polygon or an uploaded drawing, use the [[shape-editor]] and [[shape-svg-import]].

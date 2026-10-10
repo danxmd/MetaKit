@@ -5,13 +5,9 @@ import {
   type Model,
   type ModelStore,
 } from '@metakit-app/core';
-import {
-  SAMPLE,
-  emptySampleModel,
-  sampleTool,
-} from '@metakit-app/core/testing';
+import { SAMPLE, emptySampleModel, sampleKit } from '@metakit-app/core/testing';
 import { MemoryFolder, planted } from './memory-adapter';
-import { formatSnapshot, snapshotPath } from './files';
+import { formatSnapshot, SNAPSHOT_FORMAT, snapshotPath } from './files';
 import { loadDocument } from './scanner';
 import {
   SyncSession,
@@ -22,11 +18,11 @@ import {
 import { materialize, stateFromDocument } from './state';
 import { encode } from './adapter';
 
-const tool = sampleTool();
+const kit = sampleKit();
 const FOLDER = 'models/m1';
 
 const makeStore = (doc: Record<string, Json>): ModelStore =>
-  createModelStore(doc as unknown as Model, { tool });
+  createModelStore(doc as unknown as Model, { kit });
 
 /** A manual clock and timers, so that delays are exact. */
 function fakeTime() {
@@ -439,7 +435,7 @@ describe('SyncSession', () => {
 });
 
 describe('snapshot format', () => {
-  it('reads a phase 1 snapshot (a plain document) and writes the next one as format 2', async () => {
+  it('reads a phase 1 snapshot (a plain document) and writes the next one in the current format', async () => {
     const folder = new MemoryFolder();
     const time = fakeTime();
     const doc = emptySampleModel();
@@ -466,7 +462,7 @@ describe('snapshot format', () => {
     await session.snapshot();
     expect(
       JSON.parse(folder.text(snapshotPath(FOLDER, 'aaaa0001'))).formatVersion,
-    ).toBe(2);
+    ).toBe(SNAPSHOT_FORMAT);
   });
 
   it('writes one entity per line and ends with a newline', () => {

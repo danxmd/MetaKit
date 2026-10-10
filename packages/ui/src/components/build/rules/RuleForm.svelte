@@ -6,7 +6,7 @@
     EventName,
     RelationId,
     Rule,
-    ToolLibrary,
+    Kit,
   } from '@metakit-app/core';
   import {
     attributesFor,
@@ -22,12 +22,12 @@
   import ActionList from './ActionList.svelte';
 
   let {
-    tool,
+    kit,
     rule,
     run,
     behaviourTest,
   }: {
-    tool: ToolLibrary;
+    kit: Kit;
     rule: Rule;
     run: (command: never) => CommandResult;
     /** A dry run on the selected object; null when nothing is selected. */
@@ -37,7 +37,7 @@
   // The draft is the form's own: it is saved on every committed change, and kept when a change is
   // refused so that nothing the person typed is lost. The section remounts the form per rule.
   const model = new RuleEditorModel(
-    untrack(() => tool),
+    untrack(() => kit),
     untrack(() => rule),
   );
   let rev = $state(0);
@@ -52,12 +52,12 @@
   });
   const messages = $derived.by(() => {
     void rev;
-    model.setTool(tool);
+    model.setKit(kit);
     return model.messages();
   });
   const groups = eventGroups();
   const filters = $derived(filtersFor(draft.when.event));
-  const attributeKeys = $derived(attributesFor(tool, draft.when.class));
+  const attributeKeys = $derived(attributesFor(kit, draft.when.class));
   const ifProblem = $derived(
     formulaProblem(
       ifText.trim() !== '' && !ifText.trimStart().startsWith('=')
@@ -132,7 +132,7 @@
           data-testid="rule-class"
         >
           <option value="">Any class</option>
-          {#each classesFor(tool) as c (c.id)}<option value={c.id}
+          {#each classesFor(kit) as c (c.id)}<option value={c.id}
               >{c.key}</option
             >{/each}
         </select>
@@ -168,7 +168,7 @@
           data-testid="rule-relation"
         >
           <option value="">Any relation</option>
-          {#each relationsFor(tool) as r (r.id)}<option value={r.id}
+          {#each relationsFor(kit) as r (r.id)}<option value={r.id}
               >{r.key}</option
             >{/each}
         </select>
@@ -236,7 +236,7 @@
     <legend>Then</legend>
     <ActionList
       {model}
-      {tool}
+      {kit}
       actions={draft.then}
       classId={draft.when.class}
       {changed}

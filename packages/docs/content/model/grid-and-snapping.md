@@ -19,7 +19,7 @@ Two helpers work while you drag:
 
 ## Where to find it
 
-On the canvas. The grid is set in the tool library (Build mode, see [[tool-settings]]): its size, whether objects snap to it and whether it is drawn.
+On the canvas. The grid is set in the Kit (Build mode, see [[kit-settings]]): its size, whether objects snap to it and whether it is drawn.
 
 ## How to use it
 
@@ -31,7 +31,7 @@ On the canvas. The grid is set in the tool library (Build mode, see [[tool-setti
 
 | Thing | Effect |
 | --- | --- |
-| Grid size | The spacing of the grid, 10 by default. Set by the tool. |
+| Grid size | The spacing of the grid, 10 by default. Set by the Kit. |
 | Snap to grid | When on, positions are rounded to the grid when you move, resize, place, or bend a connection line. When off, only guides help. |
 | Show grid | Draws the grid on the canvas. |
 | Guide lines | Show which edge or centre was matched. They appear only during the drag. |
@@ -47,9 +47,9 @@ In the Code review pipeline, drag the task **Merge** so its top edge is near the
 ## Good to know
 
 - New objects placed from the [[palette]] also snap to the grid.
-- The grid is the same for everybody who uses the tool library.
+- The grid is the same for everybody who uses the Kit.
 - Snapping does not apply to objects that are not being dragged. Existing objects stay where they are.
 
 ## Related
 
-[[moving-resizing]], [[align-distribute]], [[placing-objects]], [[tool-settings]]
+[[moving-resizing]], [[align-distribute]], [[placing-objects]], [[kit-settings]]

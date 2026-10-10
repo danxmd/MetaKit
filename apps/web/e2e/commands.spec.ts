@@ -4,17 +4,17 @@ import { fileURLToPath } from 'node:url';
 import { newModel, prepare } from './app';
 import { loadHarness } from './bundle';
 
-/** The bpmn-lite tool with two command rules: a toolbar button and a context menu entry. */
-function commandTool(): string {
-  const tool = JSON.parse(
+/** The bpmn-lite Kit with two command rules: a toolbar button and a context menu entry. */
+function commandKit(): string {
+  const kit = JSON.parse(
     readFileSync(
       fileURLToPath(
-        new URL('../../../tools/bpmn-lite/tool.json', import.meta.url),
+        new URL('../../../kits/bpmn-lite/kit.json', import.meta.url),
       ),
       'utf8',
     ),
   ) as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any -- test-only edit of a JSON document
-  tool.rules = {
+  kit.rules = {
     rule_hello: {
       id: 'rule_hello',
       label: 'Say hello',
@@ -30,7 +30,7 @@ function commandTool(): string {
       command: { label: 'Say hi here', place: 'context' },
     },
   };
-  return JSON.stringify(tool);
+  return JSON.stringify(kit);
 }
 
 test('commands from rules appear in the toolbar and the context menu', async ({
@@ -41,7 +41,7 @@ test('commands from rules appear in the toolbar and the context menu', async ({
   await page.evaluate(
     (json) =>
       (window as unknown as { __seed(t: string): Promise<void> }).__seed(json),
-    commandTool(),
+    commandKit(),
   );
   await page.reload();
   await newModel(page, 'Commands');

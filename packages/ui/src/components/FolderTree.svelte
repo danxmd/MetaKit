@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { ModelEntry, ToolEntry } from '@metakit-app/storage';
+  import type { ModelEntry, KitEntry } from '@metakit-app/storage';
   import type { FolderNode } from '../shell/explorer';
   import { menuBehaviour } from '../shell/menu-action';
   import FolderTree from './FolderTree.svelte';
@@ -8,7 +8,7 @@
     node,
     depth = 0,
     folders,
-    tools = [],
+    kits = [],
     onOpen,
     onRename,
     onMove,
@@ -17,8 +17,8 @@
     node: FolderNode;
     depth?: number;
     folders: string[];
-    /** Used to show which tool library and version each model uses. */
-    tools?: ToolEntry[];
+    /** Used to show which Kit and version each model uses. */
+    kits?: KitEntry[];
     onOpen: (slug: string) => void;
     onRename: (slug: string, name: string) => void;
     onMove: (slug: string, folder: string) => void;
@@ -47,7 +47,7 @@
     else onMove(slug, text);
   }
 
-  const toolOf = (model: ModelEntry) => tools.find((t) => t.id === model.tool);
+  const kitOf = (model: ModelEntry) => kits.find((t) => t.id === model.kit);
 </script>
 
 <ul class="tree" class:top={depth === 0} role={depth === 0 ? 'tree' : 'group'}>
@@ -85,9 +85,9 @@
           >{model.name}</button
         >
         <span class="meta muted">
-          {#if toolOf(model)}{toolOf(model)!.name}
-            <span class="badge">{toolOf(model)!.version}</span>{:else}Tool
-            library not found{/if}
+          {#if kitOf(model)}{kitOf(model)!.name}
+            <span class="badge">{kitOf(model)!.version}</span>{:else}Kit not
+            found{/if}
         </span>
         <details
           class="menu more"
@@ -130,7 +130,7 @@
           node={folder}
           depth={depth + 1}
           {folders}
-          {tools}
+          {kits}
           {onOpen}
           {onRename}
           {onMove}

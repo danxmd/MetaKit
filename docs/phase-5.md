@@ -42,7 +42,7 @@ Done when: every event has a test, including cancellation and the no-refire rule
 
 Deliver:
 
-- Rules stored in the tool library as in the plan's JSON example: `when` (event, class, attribute), `if` (formula), `then` (actions).
+- Rules stored in the Kit as in the plan's JSON example: `when` (event, class, attribute), `if` (formula), `then` (actions).
 - Actions: set attribute, create object, create connector, delete, show message, ask the user (confirm or choose), cancel (on "before" events), open model, run command, run script (a stub until phase 7).
 - A form-based rule editor: When / If / Then with dropdowns and formula fields, enable/disable, test against the current selection.
 - Commands: register a rule as a command in a menu, the toolbar or the context menu; action attributes (buttons in the panel) run a command.

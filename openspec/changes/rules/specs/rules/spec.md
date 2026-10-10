@@ -2,7 +2,7 @@
 
 ## Purpose
 
-No-code rules in a tool library.
+No-code rules in a Kit.
 
 ## ADDED Requirements
 

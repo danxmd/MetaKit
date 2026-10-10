@@ -9,12 +9,12 @@ import {
   unzipFiles,
   Workspace,
 } from '@metakit-app/storage/node-entry';
-import type { ToolLibrary } from '@metakit-app/core';
+import type { Kit } from '@metakit-app/core';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { run } from './index';
 
-const toolsDir = fileURLToPath(new URL('../../../tools', import.meta.url));
-const bpmn = join(toolsDir, 'bpmn-lite');
+const kitsDir = fileURLToPath(new URL('../../../kits', import.meta.url));
+const bpmn = join(kitsDir, 'bpmn-lite');
 
 async function capture(args: string[]) {
   const out: string[] = [];
@@ -39,17 +39,17 @@ async function sourceWorkspace() {
   const ws = await Workspace.create(new NodeFsAdapter(root), {
     name: 'Source',
   });
-  const tool = migrate(
-    'tool-document',
-    JSON.parse(await readFile(join(bpmn, 'tool.json'), 'utf8')),
-  ).value as unknown as ToolLibrary;
-  const toolSlug = await ws.createTool(tool);
+  const kit = migrate(
+    'kit-document',
+    JSON.parse(await readFile(join(bpmn, 'kit.json'), 'utf8')),
+  ).value as unknown as Kit;
+  const kitSlug = await ws.createKit(kit);
   const model = importMkModel(
-    tool,
+    kit,
     await readFile(join(bpmn, 'order-process.mkmodel.json'), 'utf8'),
   );
   const modelSlug = await ws.createModel(model);
-  return { root, ws, tool, toolSlug, model, modelSlug };
+  return { root, ws, kit, kitSlug, model, modelSlug };
 }
 
 describe('bundles', () => {
@@ -116,16 +116,16 @@ describe('bundles', () => {
   });
 });
 
-describe('tool packages', () => {
-  it('exports from a workspace or from a tool file, and imports as a new tool', async () => {
-    const { root, toolSlug } = await sourceWorkspace();
-    const fromWorkspace = join(scratch, 'a.mktool');
-    const fromFile = join(scratch, 'b.mktool');
+describe('Kit packages', () => {
+  it('exports from a workspace or from a Kit file, and imports as a new Kit', async () => {
+    const { root, kitSlug } = await sourceWorkspace();
+    const fromWorkspace = join(scratch, 'a.mkkit');
+    const fromFile = join(scratch, 'b.mkkit');
     expect(
       (
         await capture([
-          'export-tool',
-          toolSlug,
+          'export-kit',
+          kitSlug,
           '--workspace',
           root,
           '--out',
@@ -133,43 +133,77 @@ describe('tool packages', () => {
         ])
       ).code,
     ).toBe(0);
-    expect((await capture(['export-tool', bpmn, '--out', fromFile])).code).toBe(
+    expect((await capture(['export-kit', bpmn, '--out', fromFile])).code).toBe(
       0,
     );
     expect(
       Object.keys(unzipFiles(new Uint8Array(await readFile(fromFile)))),
-    ).toEqual(expect.arrayContaining(['package.json', 'tool.json']));
+    ).toEqual(expect.arrayContaining(['package.json', 'kit.json']));
 
     const target = join(scratch, 'target');
     const added = await capture([
-      'import-tool',
+      'import-kit',
       fromWorkspace,
       '--workspace',
       target,
       '--create',
     ]);
     expect(added.code).toBe(0);
-    expect(added.out).toContain('will be added as a new tool library');
-    expect((await readdir(join(target, 'tools'))).length).toBe(1);
+    expect(added.out).toContain('will be added as a new Kit');
+    expect(added.out).toContain('Added the Kit as kits/');
+    expect((await readdir(join(target, 'kits'))).length).toBe(1);
   });
 
-  it('shows the plan and waits for --yes before updating a tool', async () => {
+  it('shows the plan and waits for --yes before updating a Kit', async () => {
     const { root } = await sourceWorkspace();
     const pkg = join(scratch, 'a.mktool');
-    await capture(['export-tool', bpmn, '--out', pkg]);
-    const result = await capture(['import-tool', pkg, '--workspace', root]);
+    await capture(['export-kit', bpmn, '--out', pkg]);
+    const result = await capture(['import-kit', pkg, '--workspace', root]);
     expect(result.code).toBe(1);
-    expect(result.out).toContain('Nothing in the library changes.');
+    expect(result.out).toContain('Nothing in the Kit changes.');
     expect(result.err).toContain('--yes');
     const confirmed = await capture([
-      'import-tool',
+      'import-kit',
       pkg,
       '--workspace',
       root,
       '--yes',
     ]);
     expect(confirmed.code).toBe(0);
-    expect(confirmed.out).toContain('Updated the tool library');
+    expect(confirmed.out).toContain('Updated the Kit');
+  });
+
+  it('keeps the names from before the Kit rename: export-tool, import-tool and --no-tool', async () => {
+    const { root } = await sourceWorkspace();
+    const pkg = join(scratch, 'old-name.mkkit');
+    expect((await capture(['export-tool', bpmn, '--out', pkg])).code).toBe(0);
+    const target = join(scratch, 'old-target');
+    const added = await capture([
+      'import-tool',
+      pkg,
+      '--workspace',
+      target,
+      '--create',
+    ]);
+    expect(added.code).toBe(0);
+    expect(added.out).toContain('Added the Kit as kits/');
+
+    for (const flags of [[], ['--no-kit'], ['--no-tool']]) {
+      const file = join(scratch, `bundle${flags.join('')}.mkbundle`);
+      const exported = await capture([
+        'export-bundle',
+        '--workspace',
+        root,
+        '--out',
+        file,
+        ...flags,
+      ]);
+      expect(exported.code).toBe(0);
+      const names = Object.keys(
+        unzipFiles(new Uint8Array(await readFile(file))),
+      );
+      expect(names.includes('kit/kit.json')).toBe(flags.length === 0);
+    }
   });
 });
 

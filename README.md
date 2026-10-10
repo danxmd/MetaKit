@@ -1,8 +1,8 @@
 # MetaKit
 
-MetaKit is a browser-only metamodelling and modelling tool. Method engineers build modelling tools in Build mode; modellers use them in Model mode. Tool libraries and models are plain JSON files in a shared folder (OneDrive, SharePoint, Google Drive, Dropbox) or, for tool libraries, in GitHub or GitLab.
+MetaKit is a browser-only metamodelling and modelling tool. Method engineers build Kits in Build mode; modellers use them in Model mode. Kits and models are plain JSON files in a shared folder (OneDrive, SharePoint, Google Drive, Dropbox) or, for Kits, in GitHub or GitLab.
 
-The project is in phase 7. Build mode lets method engineers make tool libraries without writing JSON: classes, relation classes, model types, shapes, panel layouts, rules and scripts, with a live preview. In Model mode you open a workspace folder, create a model from a tool library, place and connect objects and edit their attributes. Formulas give computed values, default values and constraints. Rules react to 24 events and add commands to the toolbar and menus. Scripts (TypeScript in a sandbox) can do more, and ask permission before using the network or files. You can export images (SVG, PNG, PDF), share models as files, bundles and CSV, move tool libraries between workspaces as packages, lay out a model automatically, list problems and search across models. Several people can work in one model at once: changes merge field by field, you see who else is there, and deleted models and tool libraries stay in a 30-day trash. A tool library can also live in a GitHub or GitLab repository (Git mode): commit and push, pull with a field-by-field merge, and follow tagged releases. An optional assistant, off by default and using your own API key, drafts rules, scripts, shapes and classes from a sentence. See `docs/phase-5.md` to `docs/phase-9.md` for what each phase added.
+The project is in phase 7. Build mode lets method engineers make Kits without writing JSON: classes, relation classes, model types, shapes, panel layouts, rules and scripts, with a live preview. In Model mode you open a workspace folder, create a model from a Kit, place and connect objects and edit their attributes. Formulas give computed values, default values and constraints. Rules react to 24 events and add commands to the toolbar and menus. Scripts (TypeScript in a sandbox) can do more, and ask permission before using the network or files. You can export images (SVG, PNG, PDF), share models as files, bundles and CSV, move Kits between workspaces as packages, lay out a model automatically, list problems and search across models. Several people can work in one model at once: changes merge field by field, you see who else is there, and deleted models and Kits stay in a 30-day trash. A Kit can also live in a GitHub or GitLab repository (Git mode): commit and push, pull with a field-by-field merge, and follow tagged releases. An optional assistant, off by default and using your own API key, drafts rules, scripts, shapes and classes from a sentence. See `docs/phase-5.md` to `docs/phase-9.md` for what each phase added.
 
 Local folders need Chrome or Edge on desktop. Other browsers load the app and show a message.
 
@@ -48,7 +48,7 @@ The first `pnpm test:e2e` needs Chromium: `pnpm --filter @metakit-app/web exec p
 
 1. Start MetaKit (`start.cmd`, `./start.sh` or `pnpm start`); it opens in your browser. Use Chrome or Edge.
 2. **Open workspace folder** and pick a folder. In a folder without `workspace.json` you can start a new workspace.
-3. **Add tool library** (once per workspace) and pick a tool library file, then **New model**: choose the tool library, a model type and a name.
+3. **Add** a Kit (once per workspace) from a file, then **New model**: choose the Kit, a model type and a name.
 4. Click an object in the palette and click the canvas, or drag it there. Choose a relation and drag from one object to another, or select an object and drag from its edge. Double-click an object to edit its text; the panel on the right edits every attribute. Ctrl+Z and Ctrl+Shift+Z undo and redo; Ctrl+F finds.
 
 Changes are saved to the workspace about half a second after each edit. Deleted models stay in the workspace and can be restored from "Deleted models".
@@ -58,15 +58,17 @@ Changes are saved to the workspace about half a second after each edit. Deleted 
 After `pnpm build`:
 
 ```sh
-node apps/cli/dist/bin.js validate tools/bpmn-lite            # a tool library
-node apps/cli/dist/bin.js validate tools/bpmn-lite/order-process.mkmodel.json --strict
+node apps/cli/dist/bin.js validate kits/bpmn-lite             # a Kit
+node apps/cli/dist/bin.js validate kits/bpmn-lite/order-process.mkmodel.json --strict
 node apps/cli/dist/bin.js validate my-workspace --json        # a whole workspace folder
 node apps/cli/dist/bin.js export my-workspace/models/order --format json --out order.mkmodel.json
+node apps/cli/dist/bin.js export-kit kits/bpmn-lite --out bpmn-lite.mkkit
+node apps/cli/dist/bin.js import-kit bpmn-lite.mkkit --workspace my-workspace
 ```
 
-`validate` exits with 1 on errors (or on warnings with `--strict`). Files are in the formats described in `openspec/specs/` once the phase-1 changes are archived, and the sample tools are in `tools/`.
+`--help` lists every command. `validate` exits with 1 on errors (or on warnings with `--strict`); with `--json`, each document in the report has the kind `workspace`, `kit` or `model` (releases before the Kit rename said `tool`). The names from before the rename, `export-tool`, `import-tool`, `--tool` and `--no-tool`, still work. Files are in the formats described in `openspec/specs/` once the phase-1 changes are archived, and the sample Kits are in `kits/`.
 
-Known limits in phase 1: when two instances have written snapshots of one tool library, the newest snapshot wins and a warning is shown (merging arrives in phase 3). Chromium on Linux needs a UTF-8 locale to store non-ASCII file names.
+Known limits in phase 1: when two instances have written snapshots of one Kit, the newest snapshot wins and a warning is shown (merging arrives in phase 3). Chromium on Linux needs a UTF-8 locale to store non-ASCII file names.
 
 ## Layout
 
@@ -75,7 +77,7 @@ apps/web        the static web app (Vite + Svelte 5)
 apps/cli        headless export and validation (Node.js)
 packages/       core, sync, storage, formula, shapes, canvas, behaviour, assistant, ui
 spikes/         phase-0 experiments (canvas, sync, behaviour, git); never imported by packages/ or apps/
-tools/          sample tool libraries used as test fixtures
+kits/           sample Kits used as test fixtures
 bench/          canvas and merge benchmarks
 docs/           plan, phase briefs, decisions
 openspec/       specs and change proposals

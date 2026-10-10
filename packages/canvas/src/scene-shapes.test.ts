@@ -4,7 +4,7 @@ import type {
   Model,
   NodeShape,
   RelationShape,
-  ToolLibrary,
+  Kit,
 } from '@metakit-app/core';
 import { Scene } from './scene';
 import { BPMN, bpmnStore } from './testing';
@@ -32,11 +32,11 @@ const shape = (fill: string): NodeShape => ({
   ],
 });
 
-function setup(custom?: (tool: ToolLibrary) => ToolLibrary) {
+function setup(custom?: (kit: Kit) => Kit) {
   const base = bpmnStore();
-  const tool = custom ? custom(base.tool) : base.tool;
+  const kit = custom ? custom(base.kit) : base.kit;
   const model = base.store.state as Model;
-  const scene = new Scene(model, tool);
+  const scene = new Scene(model, kit);
   scene.attach(base.store);
   const create = (name: string) =>
     (
@@ -50,17 +50,17 @@ function setup(custom?: (tool: ToolLibrary) => ToolLibrary) {
         attrs: { [BPMN.name]: name },
       }) as unknown as { value: ElementId }
     ).value;
-  return { ...base, tool, scene, create };
+  return { ...base, kit, scene, create };
 }
 
 const withShape =
   (fill: string) =>
-  (tool: ToolLibrary): ToolLibrary => ({
-    ...tool,
+  (kit: Kit): Kit => ({
+    ...kit,
     shapes: { shp_custom: shape(fill) },
     classes: {
-      ...tool.classes,
-      [BPMN.task]: { ...tool.classes[BPMN.task]!, shape: 'shp_custom' },
+      ...kit.classes,
+      [BPMN.task]: { ...kit.classes[BPMN.task]!, shape: 'shp_custom' },
     },
   });
 
@@ -101,8 +101,8 @@ describe('Scene with shapes', () => {
     expect(scene.cache.builds).toBe(builds + 1);
   });
 
-  it('redraws everything when the tool library is replaced', () => {
-    const { scene, tool, create } = setup(withShape('#ff0000'));
+  it('redraws everything when the Kit is replaced', () => {
+    const { scene, kit, create } = setup(withShape('#ff0000'));
     const id = create('Hot');
     const fill = () => {
       const op = scene.elements
@@ -111,16 +111,16 @@ describe('Scene with shapes', () => {
       return op?.op === 'ellipse' ? op.style.fill : null;
     };
     expect(fill()).toBe('#ff0000');
-    scene.setTool(withShape('#00ff00')(tool));
+    scene.setKit(withShape('#00ff00')(kit));
     expect(fill()).toBe('#00ff00');
   });
 
-  it('draws an element of a class the tool no longer has as a grey placeholder', () => {
-    const { scene, tool, create } = setup();
+  it('draws an element of a class the Kit no longer has as a grey placeholder', () => {
+    const { scene, kit, create } = setup();
     const id = create('Orphan');
-    const { [BPMN.task]: _gone, ...rest } = tool.classes;
+    const { [BPMN.task]: _gone, ...rest } = kit.classes;
     void _gone;
-    scene.setTool({ ...tool, classes: rest });
+    scene.setKit({ ...kit, classes: rest });
     const item = scene.elements.get(id)!;
     const rect = item.compiled.compiled.ops.find((o) => o.op === 'rect');
     expect(rect?.op === 'rect' && rect.style.fill).toBe('#e9ecef');
@@ -129,7 +129,7 @@ describe('Scene with shapes', () => {
   });
 
   it('gives each connector the look of its relation shape, compiled once when it has no formulas', () => {
-    const { scene, store, tool, create } = setup((t) => ({
+    const { scene, store, kit, create } = setup((t) => ({
       ...t,
       shapes: {
         shp_line: {
@@ -144,7 +144,7 @@ describe('Scene with shapes', () => {
         [BPMN.flow]: { ...t.relations[BPMN.flow]!, shape: 'shp_line' },
       },
     }));
-    void tool;
+    void kit;
     const a = create('A');
     const b = create('B');
     store.execute({ type: 'move', id: b, x: 300, y: 0 });

@@ -8,7 +8,7 @@ Phase 7 adds the third level of behaviour: TypeScript scripts for what formulas 
 
 Deliver, promoted from the spike through review:
 
-- QuickJS (quickjs-emscripten), loaded only when a tool has scripts.
+- QuickJS (quickjs-emscripten), loaded only when a Kit has scripts.
 - TypeScript compiled with sucrase on save.
 - Time limit (interrupt handler) and memory limit per run; a stuck script is stopped with a clear message.
 - Synchronous "before" handlers that can cancel an action.
@@ -28,7 +28,7 @@ Deliver the modules from the plan:
 - `commands`: register menu, toolbar and context-menu commands;
 - `on`: subscribe to the 24 events.
 
-Also: TypeScript declaration files generated from each tool's meta-model, so `task.attrs.Priority` autocompletes to its choice values.
+Also: TypeScript declaration files generated from each Kit's meta-model, so `task.attrs.Priority` autocompletes to its choice values.
 
 Done when: the plan's "Renumber tasks" script runs unchanged.
 
@@ -38,7 +38,7 @@ Deliver:
 
 - CodeMirror 6 editor with the TypeScript language service in a worker: autocomplete, errors, hover types.
 - A console showing script output and errors.
-- Permissions declared per tool (network access, files outside the workspace); the app asks once per tool in each browser and again when a tool asks for new permissions.
+- Permissions declared per Kit (network access, files outside the workspace); the app asks once per Kit in each browser and again when a Kit asks for new permissions.
 - Rule action "run script" and action attributes that run scripts.
 
 Done when: three behaviours from established modelling tools, chosen with Danial, are rebuilt as rules or scripts.
