@@ -83,14 +83,17 @@ Press **F1** at any time for help on the page you are on.
 
 ### Built-in Kits
 
-| Kit                               | What it is for                                                                                                    |
-| --------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| **Data and AI architecture**      | Sources, pipelines, stores, datasets, ML models, AI services and consumers, with lineage and personal-data checks |
-| **AI use-case portfolio**         | Use cases scored on value, feasibility, data readiness and risk, with a priority score and quadrants              |
-| **Data governance and ownership** | Domains, data products, owners and stewards, policies, classifications and quality rules                          |
-| **Agent pipeline**                | AI agents and people performing tasks, handing over work and approving results                                    |
-| **BPMN lite**                     | Business processes with tasks, events, gateways and lanes                                                         |
-| **ER lite**                       | Entities, attributes and relationships                                                                            |
+| Kit                                 | What it is for                                                                                                    |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| **Data and AI strategy**            | Vision, goals and objectives, value drivers, AI use cases and capabilities, a roadmap of initiatives and benefits |
+| **Data and AI maturity assessment** | Capabilities scored now and as a target, with the gap, a priority and the actions that close it                   |
+| **AI use-case portfolio**           | Use cases scored on value, feasibility, data readiness and risk, with a priority score and quadrants              |
+| **KPI and metric tree**             | Outcome KPIs explained by driver and operational metrics, with targets and an on-track colour                     |
+| **Data and AI architecture**        | Sources, pipelines, stores, datasets, ML models, AI services and consumers, with lineage and personal-data checks |
+| **Data governance and ownership**   | Domains, data products, owners and stewards, policies, classifications and quality rules                          |
+| **Agent pipeline**                  | AI agents and people performing tasks, handing over work and approving results                                    |
+| **BPMN lite**                       | Business processes with tasks, events, gateways and lanes                                                         |
+| **ER lite**                         | Entities, attributes and relationships                                                                            |
 
 ![The Kits page: the workspace's own Kits first, then the built-in Kits, which you can use as they are or copy and extend](docs/images/kits-page.png)
 

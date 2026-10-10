@@ -2,7 +2,7 @@
 
 Starts after the Kit rename's PR 3.
 
-- [ ] 1 Build script, parameterised built-in Kit test, domain field and search on the Kits page; Data and AI strategy, Data and AI maturity assessment, KPI and metric tree.
+- [x] 1 Build script, parameterised built-in Kit test, domain field and search on the Kits page; Data and AI strategy, Data and AI maturity assessment, KPI and metric tree.
 - [ ] 2 Data mesh and data products, Data modelling, Data pipelines and lineage, Data quality management.
 - [ ] 3 Master data management, Analytics and BI landscape, Privacy and records of processing, Cloud data migration.
 - [ ] 4 ML lifecycle (MLOps), Generative AI solution, AI risk and compliance.

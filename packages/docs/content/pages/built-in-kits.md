@@ -3,7 +3,7 @@ id: built-in-kits
 title: Built-in Kits
 category: pages
 summary: Kits that come with MetaKit, ready to use as they are or to copy and extend.
-keywords: [built-in, samples, starter kit, copy and extend, based on, read-only, use in this workspace]
+keywords: [built-in, samples, starter kit, copy and extend, based on, read-only, use in this workspace, search built-in kits, domain]
 contexts: []
 order: 35
 ---
@@ -17,14 +17,31 @@ A built-in Kit is part of MetaKit itself, not of your workspace folder. It is **
 - **use it as it is**: it is added to your workspace unchanged, with its own id and version; or
 - **copy and extend it**: you get a new Kit with a new name, version `1.0.0` and everything the original has, and its card says **Based on** the original.
 
+They are listed by domain, under one heading each:
+
+**Data and AI**
+
+| Built-in Kit | What it is for |
+| --- | --- |
+| **Data and AI strategy** | A vision, goals and objectives, value drivers, AI use cases and data and AI capabilities, with initiatives on a roadmap and the value of their benefits. See [[data-ai-strategy]]. |
+| **Data and AI maturity assessment** | Capabilities in dimensions such as governance, data quality and AI, scored now and as a target, with the gap, a priority and the actions that close it. See [[data-ai-maturity]]. |
+| **AI use-case portfolio** | AI use cases scored on value, feasibility, data readiness and risk, with a priority score, quadrants and a ranking. See [[ai-use-case-portfolio]]. |
+| **KPI and metric tree** | Outcome KPIs explained by driver and operational metrics, each with a target, a current value and a direction, coloured by whether it is on track. See [[kpi-metric-tree]]. |
+| **Data and AI architecture** | Data platforms: sources, pipelines, stores, datasets, ML models, AI services and consumers, with data lineage and personal-data checks. See [[data-ai-architecture]]. |
+| **Data governance and ownership** | Data ownership and governance: domains, data products, assets, owners and stewards, policies, classifications and quality rules. See [[data-governance]]. |
+| **Agent pipeline** | Pipelines in which AI agents and people perform tasks, hand over work and approve results. |
+
+**Business and strategy**
+
 | Built-in Kit | What it is for |
 | --- | --- |
 | **BPMN lite** | Business processes: tasks, events, gateways and lanes connected by sequence flows. |
+
+**Architecture**
+
+| Built-in Kit | What it is for |
+| --- | --- |
 | **ER lite** | Data models: entities, their attributes and the relationships between them. |
-| **Agent pipeline** | Pipelines in which AI agents and people perform tasks, hand over work and approve results. |
-| **Data and AI architecture** | Data platforms: sources, pipelines, stores, datasets, ML models, AI services and consumers, with data lineage and personal-data checks. See [[data-ai-architecture]]. |
-| **AI use-case portfolio** | AI use cases scored on value, feasibility, data readiness and risk, with a priority score, quadrants and a ranking. See [[ai-use-case-portfolio]]. |
-| **Data governance and ownership** | Data ownership and governance: domains, data products, assets, owners and stewards, policies, classifications and quality rules. See [[data-governance]]. |
 
 ## Where to find it
 
@@ -32,7 +49,15 @@ A built-in Kit is part of MetaKit itself, not of your workspace folder. It is **
 - The **Kit** list of the [[dialog-new-model|New model]] dialog, under **Built-in**.
 - **Start from** in the **New Kit** dialog.
 
+All three list them in the same order: by domain, as in the tables above.
+
 ## How to use it
+
+**Find a built-in Kit**
+
+1. On the Kits page, type a word into **Search the built-in Kits**, for example "lineage".
+2. Only the cards whose name or description holds every word you typed stay, under their domain headings. With no match the section says "No built-in Kit matches."
+3. Clear the box to see all of them again.
 
 **Model with a built-in Kit**
 
@@ -49,6 +74,8 @@ A built-in Kit is part of MetaKit itself, not of your workspace folder. It is **
 
 | Control | Where | What it does |
 | --- | --- | --- |
+| **Search the built-in Kits** | Above the cards | Keeps the cards whose name or description holds every word typed, in any case. |
+| Domain headings | Above each group | **Data and AI**, **Business and strategy**, **Delivery**, **Architecture** and **General**. A heading with no Kit, or none that matches the search, is left out. |
 | **Built-in · read-only** | Card | Says the Kit ships with MetaKit and cannot be edited there. |
 | **What is inside** | Card | Lists its classes and relation classes. |
 | **Use in this workspace** | Card | Adds it unchanged. Afterwards the card says **✓ In this workspace**. |
