@@ -2,66 +2,66 @@
   import type {
     HealthFinding,
     ModelEntry,
-    ToolEntry,
+    KitEntry,
   } from '@metakit-app/storage';
-  import type { ToolLibrary } from '@metakit-app/core';
-  import type { BuiltInTool, ToolStart } from '../build/built-in';
+  import type { Kit } from '@metakit-app/core';
+  import type { BuiltInKit, KitStart } from '../build/built-in';
   import { menuBehaviour } from '../shell/menu-action';
-  import NewToolDialog from './NewToolDialog.svelte';
+  import NewKitDialog from './NewKitDialog.svelte';
   import PageFrame from './PageFrame.svelte';
   import WorkspaceNotices from './WorkspaceNotices.svelte';
 
   let {
-    tools,
-    trashedTools,
+    kits,
+    trashedKits,
     builtIns,
     models,
     health,
     warnings,
     error,
     notes = [],
-    onNewTool,
-    onAddTool,
+    onNewKit,
+    onAddKit,
     onUseBuiltIn,
     onGit,
-    onEditTool,
-    onExportTool,
-    onTrashTool,
-    onRestoreTool,
+    onEditKit,
+    onExportKit,
+    onTrashKit,
+    onRestoreKit,
   }: {
-    tools: ToolEntry[];
-    trashedTools: ToolEntry[];
-    /** The tool libraries that ship with MetaKit (ADR 0010). */
-    builtIns: readonly BuiltInTool[];
-    /** Used to count the models that use each tool library. */
+    kits: KitEntry[];
+    trashedKits: KitEntry[];
+    /** The Kits that ship with MetaKit (ADR 0010). */
+    builtIns: readonly BuiltInKit[];
+    /** Used to count the models that use each Kit. */
     models: ModelEntry[];
     health: HealthFinding[];
     warnings: string[];
     error: string | null;
     notes?: string[];
-    /** Makes a tool library, empty or from a copy; resolves with its slug. */
-    onNewTool: (name: string, start: ToolStart) => Promise<string | undefined>;
-    /** Called with the text of a tool library file the person chose. */
-    onAddTool: (text: string) => void;
-    /** Adds a built-in tool library to the workspace unchanged. */
-    onUseBuiltIn: (tool: BuiltInTool) => void;
-    /** Opens the Git settings, where a tool library is brought in from a repository. */
+    /** Makes a Kit, empty or from a copy; resolves with its slug. */
+    onNewKit: (name: string, start: KitStart) => Promise<string | undefined>;
+    /** Called with the text of a Kit file the person chose. */
+    onAddKit: (text: string) => void;
+    /** Adds a built-in Kit to the workspace unchanged. */
+    onUseBuiltIn: (kit: BuiltInKit) => void;
+    /** Opens the Git settings, where a Kit is brought in from a repository. */
     onGit: () => void;
-    onEditTool: (slug: string) => void;
-    onExportTool: (slug: string) => void;
-    onTrashTool: (slug: string) => void;
-    onRestoreTool: (slug: string) => void;
+    onEditKit: (slug: string) => void;
+    onExportKit: (slug: string) => void;
+    onTrashKit: (slug: string) => void;
+    onRestoreKit: (slug: string) => void;
   } = $props();
 
   let fileInput: HTMLInputElement | undefined = $state();
-  /** The New tool library dialog, and what it starts with. */
-  let creating = $state<ToolStart | null>(null);
+  /** The New Kit dialog, and what it starts with. */
+  let creating = $state<KitStart | null>(null);
 
-  async function create(name: string, start: ToolStart) {
-    const slug = await onNewTool(name, start);
+  async function create(name: string, start: KitStart) {
+    const slug = await onNewKit(name, start);
     if (!slug) return false;
     creating = null;
-    onEditTool(slug);
+    onEditKit(slug);
     return true;
   }
 
@@ -69,21 +69,21 @@
     const input = event.currentTarget as HTMLInputElement;
     const file = input.files?.[0];
     input.value = '';
-    if (file) onAddTool(await file.text());
+    if (file) onAddKit(await file.text());
   }
 
-  const usedBy = (tool: ToolEntry) =>
-    models.filter((m) => m.tool === tool.id).length;
-  const inWorkspace = (b: BuiltInTool) => tools.find((t) => t.id === b.id);
-  const isBuiltIn = (t: ToolEntry) => builtIns.some((b) => b.id === t.id);
+  const usedBy = (kit: KitEntry) =>
+    models.filter((m) => m.kit === kit.id).length;
+  const inWorkspace = (b: BuiltInKit) => kits.find((t) => t.id === b.id);
+  const isBuiltIn = (t: KitEntry) => builtIns.some((b) => b.id === t.id);
 
   /** What is inside a built-in library, read when its "What is inside" opens. */
   let contents = $state<
     Record<string, { classes: string[]; relations: string[] }>
   >({});
-  async function readContents(b: BuiltInTool) {
+  async function readContents(b: BuiltInKit) {
     if (contents[b.id]) return;
-    const tool = JSON.parse(await b.load()) as ToolLibrary;
+    const kit = JSON.parse(await b.load()) as Kit;
     const label = (x: { key: string; labels?: Record<string, string> }) =>
       x.labels?.['en'] ?? x.key;
     const sorted = (xs: string[]) => xs.sort((a, c) => a.localeCompare(c));
@@ -91,11 +91,11 @@
       ...contents,
       [b.id]: {
         classes: sorted(
-          Object.values(tool.classes)
+          Object.values(kit.classes)
             .filter((c) => !c.abstract)
             .map(label),
         ),
-        relations: sorted(Object.values(tool.relations).map(label)),
+        relations: sorted(Object.values(kit.relations).map(label)),
       },
     };
   }
@@ -152,7 +152,7 @@
         same ones.
       </p>
     </div>
-    {#if tools.length === 0}
+    {#if kits.length === 0}
       <div class="card empty" data-testid="no-kits">
         <h3>No Kit in this workspace yet</h3>
         <p class="muted">
@@ -176,53 +176,53 @@
       </div>
     {:else}
       <ul class="grid">
-        {#each tools as tool (tool.slug)}
-          <li class="card tool" data-testid="kit-{tool.slug}">
+        {#each kits as kit (kit.slug)}
+          <li class="card kit" data-testid="kit-{kit.slug}">
             <div class="head">
-              <h3>{tool.name}</h3>
-              <span class="badge">Version {tool.version}</span>
+              <h3>{kit.name}</h3>
+              <span class="badge">Version {kit.version}</span>
             </div>
             <div class="facts">
-              {#if tool.basedOn}
-                <p class="muted" data-testid="based-on-{tool.slug}">
-                  Based on {tool.basedOn.name}
-                  {tool.basedOn.version}
+              {#if kit.basedOn}
+                <p class="muted" data-testid="based-on-{kit.slug}">
+                  Based on {kit.basedOn.name}
+                  {kit.basedOn.version}
                 </p>
-              {:else if isBuiltIn(tool)}
+              {:else if isBuiltIn(kit)}
                 <p class="muted">Added from the built-in set.</p>
               {/if}
               <p class="muted">
-                {#if usedBy(tool) === 0}No models use it yet.{:else}Used by {usedBy(
-                    tool,
-                  )} model{usedBy(tool) === 1 ? '' : 's'}.{/if}
+                {#if usedBy(kit) === 0}No models use it yet.{:else}Used by {usedBy(
+                    kit,
+                  )} model{usedBy(kit) === 1 ? '' : 's'}.{/if}
               </p>
             </div>
             <div class="foot">
               <button
                 class="primary"
-                onclick={() => onEditTool(tool.slug)}
-                aria-label="Edit {tool.name}"
-                data-testid="edit-kit-{tool.slug}">Edit</button
+                onclick={() => onEditKit(kit.slug)}
+                aria-label="Edit {kit.name}"
+                data-testid="edit-kit-{kit.slug}">Edit</button
               >
               <details class="menu more" use:menuBehaviour>
-                <summary aria-label="More actions for {tool.name}">…</summary>
+                <summary aria-label="More actions for {kit.name}">…</summary>
                 <div class="menu-list right">
                   <button
                     type="button"
                     onclick={() =>
-                      (creating = { kind: 'workspace', slug: tool.slug })}
-                    data-testid="copy-kit-{tool.slug}">Copy and extend…</button
+                      (creating = { kind: 'workspace', slug: kit.slug })}
+                    data-testid="copy-kit-{kit.slug}">Copy and extend…</button
                   >
                   <button
                     type="button"
-                    onclick={() => onExportTool(tool.slug)}
-                    data-testid="export-kit-{tool.slug}">Export package</button
+                    onclick={() => onExportKit(kit.slug)}
+                    data-testid="export-kit-{kit.slug}">Export package</button
                   >
                   <div class="menu-sep"></div>
                   <button
                     type="button"
-                    onclick={() => onTrashTool(tool.slug)}
-                    aria-label="Delete {tool.name}">Delete</button
+                    onclick={() => onTrashKit(kit.slug)}
+                    aria-label="Delete {kit.name}">Delete</button
                   >
                 </div>
               </details>
@@ -248,7 +248,7 @@
     <ul class="grid">
       {#each builtIns as b (b.id)}
         {@const added = inWorkspace(b)}
-        <li class="card tool built-in" data-testid="built-in-{b.id}">
+        <li class="card kit built-in" data-testid="built-in-{b.id}">
           <div class="head">
             <h3>{b.name}</h3>
             <span class="badge lock" title="Built-in Kits are read-only"
@@ -303,7 +303,7 @@
             {/if}
             <button
               class="ghost"
-              onclick={() => (creating = { kind: 'built-in', tool: b })}
+              onclick={() => (creating = { kind: 'built-in', kit: b })}
               data-testid="copy-built-in-{b.id}">Copy and extend…</button
             >
           </div>
@@ -312,16 +312,16 @@
     </ul>
   </section>
 
-  {#if trashedTools.length > 0}
+  {#if trashedKits.length > 0}
     <details class="trash" data-testid="trash-kits">
-      <summary>Deleted Kits ({trashedTools.length}), kept for 30 days</summary>
+      <summary>Deleted Kits ({trashedKits.length}), kept for 30 days</summary>
       <ul>
-        {#each trashedTools as tool (tool.slug)}
+        {#each trashedKits as kit (kit.slug)}
           <li>
-            <span>{tool.name}</span>
+            <span>{kit.name}</span>
             <button
-              onclick={() => onRestoreTool(tool.slug)}
-              aria-label="Restore {tool.name}">Restore</button
+              onclick={() => onRestoreKit(kit.slug)}
+              aria-label="Restore {kit.name}">Restore</button
             >
           </li>
         {/each}
@@ -331,8 +331,8 @@
 </PageFrame>
 
 {#if creating}
-  <NewToolDialog
-    {tools}
+  <NewKitDialog
+    {kits}
     {builtIns}
     initial={creating}
     onCreate={create}
@@ -380,17 +380,17 @@
     grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
     gap: var(--gap-4);
   }
-  .tool {
+  .kit {
     padding: var(--gap-4);
     display: grid;
     gap: var(--gap-3);
     align-content: space-between;
   }
-  .tool h3 {
+  .kit h3 {
     margin: 0;
     font-size: var(--text-m);
   }
-  .tool p {
+  .kit p {
     margin: 0;
   }
   .facts {

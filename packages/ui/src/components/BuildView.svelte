@@ -11,7 +11,7 @@
     type NodeShape,
     type ModelTypeId,
     type RelationId,
-    type ToolLibrary,
+    type Kit,
   } from '@metakit-app/core';
   import { uniqueKey } from '../build/attributes';
   import type { AppState, BuildPort } from '../shell/controller';
@@ -30,7 +30,7 @@
   import RulesSection from './build/rules/RulesSection.svelte';
   import SettingsEditor from './build/SettingsEditor.svelte';
   import ShapesSection from './build/ShapesSection.svelte';
-  import ToolPreview from './build/ToolPreview.svelte';
+  import KitPreview from './build/KitPreview.svelte';
   import PanelLayoutEditor from './PanelLayoutEditor.svelte';
   import ShapeEditor from './shape-editor/ShapeEditor.svelte';
   import { defaultLayout } from '../build/panel-layout-model';
@@ -130,12 +130,12 @@
   };
 
   const build = $derived(app.build!);
-  // Reading `revision` makes this run again after every change to the tool library.
-  const tool = $derived.by((): ToolLibrary => {
+  // Reading `revision` makes this run again after every change to the Kit.
+  const kit = $derived.by((): Kit => {
     void build.revision;
     return build.store.state;
   });
-  const language = $derived(tool.manifest.languages[0] ?? 'en');
+  const language = $derived(kit.manifest.languages[0] ?? 'en');
 
   let section = $state<Section>('classes');
   let selected = $state<Record<string, string | undefined>>({});
@@ -215,11 +215,11 @@
       key: x.key,
       text: x.labels[language] ?? x.key,
     });
-    if (section === 'classes') return Object.values(tool.classes).map(labelOf);
+    if (section === 'classes') return Object.values(kit.classes).map(labelOf);
     if (section === 'relations')
-      return Object.values(tool.relations).map(labelOf);
+      return Object.values(kit.relations).map(labelOf);
     if (section === 'modelTypes')
-      return Object.values(tool.modelTypes).map(labelOf);
+      return Object.values(kit.modelTypes).map(labelOf);
     return [];
   });
   const sortedItems = $derived(
@@ -232,10 +232,10 @@
       section === 'modelTypes',
   );
   const counts = $derived<Partial<Record<Section, number>>>({
-    classes: Object.keys(tool.classes).length,
-    relations: Object.keys(tool.relations).length,
-    modelTypes: Object.keys(tool.modelTypes).length,
-    shapes: Object.keys(tool.shapes).length,
+    classes: Object.keys(kit.classes).length,
+    relations: Object.keys(kit.relations).length,
+    modelTypes: Object.keys(kit.modelTypes).length,
+    shapes: Object.keys(kit.shapes).length,
   });
 
   function add() {
@@ -340,13 +340,13 @@
   }
 
   const usagesFor = (owner: KeyOwner) => (attributeId: string) =>
-    findKeyUsages(tool, { kind: 'attribute', owner, id: attributeId as never });
+    findKeyUsages(kit, { kind: 'attribute', owner, id: attributeId as never });
 
   function editPanel(classId: string) {
-    if (!tool.panels[classId]) {
+    if (!kit.panels[classId]) {
       const defs = classId.startsWith('rel_')
-        ? effectiveRelationAttributes(tool, classId as RelationId)
-        : effectiveAttributes(tool, classId as ClassId);
+        ? effectiveRelationAttributes(kit, classId as RelationId)
+        : effectiveAttributes(kit, classId as ClassId);
       const result = run({
         type: 'putPanel',
         layout: defaultLayout(classId as ClassId, defs),
@@ -361,7 +361,7 @@
    * once it is edited as a drawing, so that is confirmed first.
    */
   async function editShape(id: string) {
-    const shape = tool.shapes[id as keyof typeof tool.shapes];
+    const shape = kit.shapes[id as keyof typeof kit.shapes];
     if (!shape) return;
     if (
       shape.look &&
@@ -380,11 +380,11 @@
   }
 
   function rename(text: string) {
-    if (text.trim() === '' || text === tool.manifest.name) return;
+    if (text.trim() === '' || text === kit.manifest.name) return;
     run({ type: 'updateManifest', name: text.trim() } as never);
   }
   function setVersion(text: string) {
-    if (text === tool.manifest.version) return;
+    if (text === kit.manifest.version) return;
     if (!/^\d+\.\d+\.\d+([-+][0-9A-Za-z.-]+)?$/.test(text)) {
       message = 'A version looks like 1.0.0.';
       return;
@@ -413,14 +413,14 @@
     >
     <input
       class="name"
-      value={tool.manifest.name}
+      value={kit.manifest.name}
       onchange={(e) => rename(e.currentTarget.value)}
       aria-label="Kit name"
       data-testid="build-name"
     />
     <label class="version"
       >Version <input
-        value={tool.manifest.version}
+        value={kit.manifest.version}
         onchange={(e) => setVersion(e.currentTarget.value)}
         data-testid="build-version"
       /></label
@@ -651,11 +651,11 @@
       </section>
     {/if}
     <main>
-      {#if section === 'classes' && current && tool.classes[current as ClassId]}
+      {#if section === 'classes' && current && kit.classes[current as ClassId]}
         {#key current}
           <ClassEditor
             {assistant}
-            {tool}
+            {kit}
             id={current as ClassId}
             {run}
             onEditShape={editShape}
@@ -665,10 +665,10 @@
             usages={usagesFor({ kind: 'class', id: current as ClassId })}
           />
         {/key}
-      {:else if section === 'relations' && current && tool.relations[current as RelationId]}
+      {:else if section === 'relations' && current && kit.relations[current as RelationId]}
         {#key current}
           <RelationEditor
-            {tool}
+            {kit}
             id={current as RelationId}
             {run}
             onEditShape={editShape}
@@ -677,10 +677,10 @@
             usages={usagesFor({ kind: 'relation', id: current as RelationId })}
           />
         {/key}
-      {:else if section === 'modelTypes' && current && tool.modelTypes[current as ModelTypeId]}
+      {:else if section === 'modelTypes' && current && kit.modelTypes[current as ModelTypeId]}
         {#key current}
           <ModelTypeEditor
-            {tool}
+            {kit}
             id={current as ModelTypeId}
             {run}
             usages={usagesFor({
@@ -692,7 +692,7 @@
       {:else if section === 'shapes'}
         <ShapesSection
           {assistant}
-          {tool}
+          {kit}
           {run}
           onEditShape={editShape}
           onEditAppearance={(oid) =>
@@ -700,11 +700,11 @@
           open={openLine}
         />
       {:else if section === 'rules'}
-        <RulesSection {tool} {run} {assistant} />
+        <RulesSection {kit} {run} {assistant} />
       {:else if section === 'scripts'}
-        <ScriptsSection {tool} {run} {assistant} />
+        <ScriptsSection {kit} {run} {assistant} />
       {:else if section === 'settings'}
-        <SettingsEditor {tool} {run} />
+        <SettingsEditor {kit} {run} />
       {:else}
         <div class="empty-state" data-testid="build-empty">
           <h2>{EMPTY_TITLE[section]}</h2>
@@ -714,16 +714,16 @@
     </main>
     {#if showPreview}
       <aside class="dock" aria-label="Try it">
-        <ToolPreview {tool} onCollapse={() => (showPreview = false)} />
+        <KitPreview {kit} onCollapse={() => (showPreview = false)} />
       </aside>
     {/if}
   </div>
 
   {#if overlay?.kind === 'shape'}
     {@const id = overlay.id}
-    {@const shape = tool.shapes[id as keyof typeof tool.shapes]}
+    {@const shape = kit.shapes[id as keyof typeof kit.shapes]}
     {#if shape?.kind === 'node'}
-      {@const user = Object.values(tool.classes).find((c) => c.shape === id)}
+      {@const user = Object.values(kit.classes).find((c) => c.shape === id)}
       <div
         class="overlay"
         role="dialog"
@@ -733,9 +733,9 @@
         {#key id}
           <ShapeEditor
             shape={shape as NodeShape}
-            attributes={user ? effectiveAttributes(tool, user.id) : []}
+            attributes={user ? effectiveAttributes(kit, user.id) : []}
             className={user?.key ?? ''}
-            shapes={(sid) => tool.shapes[sid]}
+            shapes={(sid) => kit.shapes[sid]}
             onChange={(next) => run({ type: 'putShape', def: next } as never)}
             onClose={() => (overlay = null)}
           />
@@ -746,7 +746,7 @@
 
   {#if overlay?.kind === 'appearance'}
     {@const id = overlay.id}
-    {#if id.startsWith('rel_') && tool.relations[id as RelationId]}
+    {#if id.startsWith('rel_') && kit.relations[id as RelationId]}
       <div
         class="overlay"
         role="dialog"
@@ -755,14 +755,14 @@
       >
         {#key id}
           <RelationLookEditor
-            {tool}
+            {kit}
             relationId={id as RelationId}
             {run}
             onClose={() => (overlay = null)}
           />
         {/key}
       </div>
-    {:else if tool.classes[id as ClassId]}
+    {:else if kit.classes[id as ClassId]}
       <div
         class="overlay"
         role="dialog"
@@ -771,7 +771,7 @@
       >
         {#key id}
           <AppearanceEditor
-            {tool}
+            {kit}
             classId={id as ClassId}
             {run}
             onClose={() => (overlay = null)}
@@ -783,7 +783,7 @@
 
   {#if catalogOpen && CatalogDialog}
     <CatalogDialog
-      {tool}
+      {kit}
       onAdd={addFromCatalog}
       onClose={() => (catalogOpen = false)}
     />
@@ -791,7 +791,7 @@
 
   {#if overlay?.kind === 'panel'}
     {@const id = overlay.id}
-    {@const layout = tool.panels[id]}
+    {@const layout = kit.panels[id]}
     {#if layout}
       <div
         class="overlay"
@@ -802,8 +802,8 @@
         <PanelLayoutEditor
           {layout}
           attributes={id.startsWith('rel_')
-            ? effectiveRelationAttributes(tool, id as RelationId)
-            : effectiveAttributes(tool, id as ClassId)}
+            ? effectiveRelationAttributes(kit, id as RelationId)
+            : effectiveAttributes(kit, id as ClassId)}
           onChange={(next) => run({ type: 'putPanel', layout: next } as never)}
           onClose={() => (overlay = null)}
         />

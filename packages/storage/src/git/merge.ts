@@ -1,6 +1,7 @@
 import type { Json } from '@metakit-app/core';
 import { stringifyCanonical } from '../json';
-import { isLayoutPath, LAYOUT_PARTS, TOOL_FILE } from './layout';
+import { GIT_KIT_FILE } from '../names';
+import { isLayoutPath, LAYOUT_PARTS } from './layout';
 import type { GitChange, GitFile } from './remote';
 
 /**
@@ -128,7 +129,7 @@ function unitsOf(files: readonly GitFile[]): Unit[] {
       continue;
     }
     if (
-      file.path === TOOL_FILE ||
+      file.path === GIT_KIT_FILE ||
       !isObject(parsed) ||
       DIR_KEY[dir] === undefined
     ) {
@@ -347,7 +348,7 @@ function nameOf(unit: Unit | undefined): string {
   if (!unit) return 'file';
   const dir = unit.path.split('/')[0] ?? '';
   const part = LAYOUT_PARTS.find((p) => p.dir === dir);
-  if (unit.path === TOOL_FILE) return 'Kit settings';
+  if (unit.path === GIT_KIT_FILE) return 'Kit settings';
   if (!part || !isObject(unit.doc)) return `file ${unit.path}`;
   const d = unit.doc;
   const pick = (k: string) =>
@@ -538,7 +539,7 @@ const PART_WORDS: Record<string, string> = Object.fromEntries(
 
 function unitName(u: Unit): { part: string; name: string } {
   const dir = u.path.split('/')[0] ?? '';
-  if (u.path === TOOL_FILE) return { part: 'Kit settings', name: '' };
+  if (u.path === GIT_KIT_FILE) return { part: 'Kit settings', name: '' };
   if (dir === 'assets') return { part: 'asset', name: u.path.slice(7) };
   const part = PART_WORDS[dir];
   if (part === undefined || !isObject(u.doc))

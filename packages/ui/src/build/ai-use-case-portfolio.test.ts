@@ -3,13 +3,13 @@ import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
   ModelCalculator,
-  TOOL_FORMAT_VERSION,
+  KIT_FORMAT_VERSION,
   createEmptyModel,
   createModelStore,
   effectiveAttributes,
   formulaSource,
   validateModel,
-  validateToolLibrary,
+  validateKit,
   type ClassId,
   type ElementId,
   type Model,
@@ -17,7 +17,7 @@ import {
   type NodeShape,
   type RelationId,
   type RelationShape,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 import {
   exportMkModel,
@@ -40,18 +40,17 @@ import { createLanguageServer } from '../components/build/scripts/script-languag
 import { loadTestLibs } from '../components/build/scripts/test-libs';
 
 /**
- * The built-in "AI use-case portfolio" tool (openspec/changes/ai-data-catalog): use cases scored on
+ * The built-in "AI use-case portfolio" Kit (openspec/changes/ai-data-catalog): use cases scored on
  * value, feasibility, data readiness and risk, with a priority score, a quadrant and a ranking
  * command. The sample model is a customer operations portfolio; set WRITE_SAMPLE=1 to write it
- * again after the tool library changes.
+ * again after the Kit changes.
  */
 
 const here = (path: string) =>
   fileURLToPath(
-    new URL(`../../../../tools/ai-use-case-portfolio/${path}`, import.meta.url),
+    new URL(`../../../../kits/ai-use-case-portfolio/${path}`, import.meta.url),
   );
-const loadTool = () =>
-  JSON.parse(readFileSync(here('tool.json'), 'utf8')) as ToolLibrary;
+const loadKit = () => JSON.parse(readFileSync(here('kit.json'), 'utf8')) as Kit;
 const scriptSource = () =>
   readFileSync(here('rank-use-cases.script.ts'), 'utf8').replace(/\r\n/g, '\n');
 
@@ -65,10 +64,10 @@ const byKey = <T extends { key: string; id: string }>(
 };
 
 /** Builds models through commands, naming classes, relations and attributes by their keys. */
-function builder(tool: ToolLibrary, model: Model) {
-  const store = createModelStore(model, { tool });
+function builder(kit: Kit, model: Model) {
+  const store = createModelStore(model, { kit });
   const attrs = (cls: ClassId, values: Record<string, unknown>) => {
-    const defs = effectiveAttributes(tool, cls);
+    const defs = effectiveAttributes(kit, cls);
     return Object.fromEntries(
       Object.entries(values).map(([k, v]) => {
         const def = defs.find((d) => d.key === k);
@@ -83,7 +82,7 @@ function builder(tool: ToolLibrary, model: Model) {
     x: number,
     y: number,
   ): ElementId => {
-    const cls = byKey(tool.classes, key).id as ClassId;
+    const cls = byKey(kit.classes, key).id as ClassId;
     const r = store.execute({
       type: 'createElement',
       class: cls,
@@ -99,7 +98,7 @@ function builder(tool: ToolLibrary, model: Model) {
     to: ElementId,
     values: Record<string, unknown> = {},
   ) => {
-    const rel = byKey(tool.relations, key);
+    const rel = byKey(kit.relations, key);
     store.execute({
       type: 'createConnector',
       relation: rel.id as RelationId,
@@ -117,13 +116,13 @@ function builder(tool: ToolLibrary, model: Model) {
 }
 
 /** Eight use cases in all four quadrants, with what they serve, need and risk. */
-function customerOperations(tool: ToolLibrary): Model {
+function customerOperations(kit: Kit): Model {
   const model = createEmptyModel(
-    tool,
-    byKey(tool.modelTypes, 'Portfolio').id as never,
+    kit,
+    byKey(kit.modelTypes, 'Portfolio').id as never,
     { name: 'Customer operations AI portfolio' },
   );
-  const b = builder(tool, model);
+  const b = builder(kit, model);
   b.store.execute({
     type: 'setAttribute',
     target: 'model',
@@ -629,16 +628,16 @@ function customerOperations(tool: ToolLibrary): Model {
 
 const SAMPLE = 'customer-operations.mkmodel.json';
 
-describe('the tool library', () => {
+describe('the Kit', () => {
   it('is valid and in the current format', () => {
-    const tool = loadTool();
-    expect(tool.formatVersion).toBe(TOOL_FORMAT_VERSION);
-    expect(tool.manifest.id).toBe('tool_aiportfolio');
-    expect(validateToolLibrary(tool)).toEqual([]);
+    const kit = loadKit();
+    expect(kit.formatVersion).toBe(KIT_FORMAT_VERSION);
+    expect(kit.manifest.id).toBe('tool_aiportfolio');
+    expect(validateKit(kit)).toEqual([]);
   });
 
   it('has formulas that all parse', () => {
-    // The tool-level check does not read constraint formulas, so this walks every formula in the file.
+    // The Kit-level check does not read constraint formulas, so this walks every formula in the file.
     const bad: string[] = [];
     const FORMULA_KEYS = new Set(['formula', 'defaultFormula', 'if', 'when']);
     let seen = 0;
@@ -659,7 +658,7 @@ describe('the tool library', () => {
       else if (value && typeof value === 'object')
         for (const [k, v] of Object.entries(value)) walk(v, `${path}.${k}`, k);
     };
-    walk(loadTool(), 'tool');
+    walk(loadKit(), 'kit');
     expect(seen).toBeGreaterThan(20);
     expect(bad).toEqual([]);
   });
@@ -667,12 +666,12 @@ describe('the tool library', () => {
   it('draws every class and relation class with a simple look', () => {
     // The parts must be exactly what the look gives, or the simple look editor would show a
     // look that differs from the drawing.
-    const tool = loadTool();
+    const kit = loadKit();
     for (const owner of [
-      ...Object.values(tool.classes),
-      ...Object.values(tool.relations),
+      ...Object.values(kit.classes),
+      ...Object.values(kit.relations),
     ]) {
-      const shape = tool.shapes[owner.shape!]!;
+      const shape = kit.shapes[owner.shape!]!;
       expect(shape.look, owner.key).toBeDefined();
       const again =
         shape.kind === 'node'
@@ -686,24 +685,22 @@ describe('the tool library', () => {
     }
   });
 
-  it('has the script that the tool carries equal to its source file', () => {
-    expect(loadTool().scripts['scr_rank' as never]!.source).toBe(
-      scriptSource(),
-    );
+  it('has the script that the Kit carries equal to its source file', () => {
+    expect(loadKit().scripts['scr_rank' as never]!.source).toBe(scriptSource());
   });
 
   it('round trips through the Git layout without a change', () => {
-    const tool = loadTool();
-    const layout = toLayout(tool);
+    const kit = loadKit();
+    const layout = toLayout(kit);
     const back = fromLayout(layout);
     expect(back.issues).toEqual([]);
-    expect(back.tool).toEqual(tool);
+    expect(back.kit).toEqual(kit);
   });
 
-  it('has a script that type-checks against the declarations of the tool', () => {
-    const tool = loadTool();
+  it('has a script that type-checks against the declarations of the Kit', () => {
+    const kit = loadKit();
     const server = createLanguageServer(loadTestLibs());
-    server.setDeclarations(generateDeclarations(tool));
+    server.setDeclarations(generateDeclarations(kit));
     expect(server.diagnostics(scriptSource()).map((d) => d.message)).toEqual(
       [],
     );
@@ -713,23 +710,23 @@ describe('the tool library', () => {
 describe('scoring', () => {
   /** One use case with these values, and a calculator over it. */
   const score = (values: Record<string, unknown>) => {
-    const tool = loadTool();
+    const kit = loadKit();
     const b = builder(
-      tool,
-      createEmptyModel(tool, byKey(tool.modelTypes, 'Portfolio').id as never, {
+      kit,
+      createEmptyModel(kit, byKey(kit.modelTypes, 'Portfolio').id as never, {
         name: 'Scoring',
       }),
     );
     const id = b.put('UseCase', { Name: 'Test', ...values }, 0, 0);
     const model = b.store.state as Model;
-    const calc = new ModelCalculator(tool, () => model);
-    const fill = (tool.shapes['shp_usecase' as never] as NodeShape).parts[1]!
+    const calc = new ModelCalculator(kit, () => model);
+    const fill = (kit.shapes['shp_usecase' as never] as NodeShape).parts[1]!
       .fill as string;
     return {
       score: calc.get(id, 'PriorityScore'),
       quadrant: calc.get(id, 'Quadrant'),
       colour: calc.evaluate(id, formulaSource(fill)).value,
-      issues: validateModel(tool, model, calc).map((i) => i.message),
+      issues: validateModel(kit, model, calc).map((i) => i.message),
     };
   };
 
@@ -780,10 +777,10 @@ describe('scoring', () => {
   });
 
   it('gives risks a score and a rating, and KPIs whether they are on track', () => {
-    const tool = loadTool();
+    const kit = loadKit();
     const b = builder(
-      tool,
-      createEmptyModel(tool, byKey(tool.modelTypes, 'Portfolio').id as never, {
+      kit,
+      createEmptyModel(kit, byKey(kit.modelTypes, 'Portfolio').id as never, {
         name: 'Risks',
       }),
     );
@@ -802,7 +799,7 @@ describe('scoring', () => {
       200,
     );
     const model = b.store.state as Model;
-    const calc = new ModelCalculator(tool, () => model);
+    const calc = new ModelCalculator(kit, () => model);
     expect([calc.get(high, 'Score'), calc.get(high, 'Rating')]).toEqual([
       15,
       'High',
@@ -819,32 +816,29 @@ describe('scoring', () => {
 describe('the sample portfolio', () => {
   if (process.env['WRITE_SAMPLE'] === '1' || !existsSync(here(SAMPLE))) {
     it('writes the sample model', () => {
-      const tool = loadTool();
-      writeFileSync(
-        here(SAMPLE),
-        exportMkModel(tool, customerOperations(tool)),
-      );
+      const kit = loadKit();
+      writeFileSync(here(SAMPLE), exportMkModel(kit, customerOperations(kit)));
     });
   }
 
   it('has no problems at all when the formulas run', () => {
-    const tool = loadTool();
-    const model = importMkModel(tool, readFileSync(here(SAMPLE), 'utf8'));
-    const calculator = new ModelCalculator(tool, () => model);
-    const issues = validateModel(tool, model, calculator).map((i) => i.message);
+    const kit = loadKit();
+    const model = importMkModel(kit, readFileSync(here(SAMPLE), 'utf8'));
+    const calculator = new ModelCalculator(kit, () => model);
+    const issues = validateModel(kit, model, calculator).map((i) => i.message);
     expect(issues).toEqual([]);
   });
 
   it('matches the model built by the test, with use cases in all four quadrants', () => {
-    const tool = loadTool();
-    const stored = importMkModel(tool, readFileSync(here(SAMPLE), 'utf8'));
+    const kit = loadKit();
+    const stored = importMkModel(kit, readFileSync(here(SAMPLE), 'utf8'));
     expect(Object.keys(stored.elements)).toHaveLength(
-      Object.keys(customerOperations(tool).elements).length,
+      Object.keys(customerOperations(kit).elements).length,
     );
     expect(Object.keys(stored.connectors)).toHaveLength(
-      Object.keys(customerOperations(tool).connectors).length,
+      Object.keys(customerOperations(kit).connectors).length,
     );
-    const calc = new ModelCalculator(tool, () => stored);
+    const calc = new ModelCalculator(kit, () => stored);
     const useCases = Object.values(stored.elements).filter(
       (e) => e.class === 'cls_usecase',
     );
@@ -856,7 +850,7 @@ describe('the sample portfolio', () => {
 });
 
 interface Rig {
-  tool: ToolLibrary;
+  kit: Kit;
   store: ModelStore;
   behaviour: Behaviour;
   handle: ScriptsHandle;
@@ -870,28 +864,28 @@ afterEach(() => {
   }
 });
 async function start(): Promise<Rig> {
-  const tool = loadTool();
-  const model = importMkModel(tool, readFileSync(here(SAMPLE), 'utf8'));
-  const store = createModelStore(model, { tool });
+  const kit = loadKit();
+  const model = importMkModel(kit, readFileSync(here(SAMPLE), 'utf8'));
+  const store = createModelStore(model, { kit });
   const messages: { kind: string; text: string }[] = [];
   const behaviour = createBehaviour({
     store,
-    tool: () => tool,
+    kit: () => kit,
     host: silentHost({
       message: (kind, text) => messages.push({ kind, text }),
     }),
   });
-  attachRules(behaviour, { store, tool: () => tool });
+  attachRules(behaviour, { store, kit: () => kit });
   const handle = await attachScripts(behaviour, {
     store,
-    tool: () => tool,
+    kit: () => kit,
     permissions: {
       granted: () => ({ network: false, files: false }),
       request: () => Promise.resolve(true),
       forget: () => Promise.resolve(),
     },
   });
-  const rig = { tool, store, behaviour, handle, messages };
+  const rig = { kit, store, behaviour, handle, messages };
   rigs.push(rig);
   return rig;
 }

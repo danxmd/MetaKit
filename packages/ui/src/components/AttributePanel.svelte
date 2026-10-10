@@ -27,7 +27,7 @@
     heading: string;
     references: ReferenceServices;
     onEdit: (field: Field, value: Json) => void;
-    /** The tool's panel layout for the selection, rebuilt whenever a value changes; null shows the generated panel. */
+    /** The Kit's panel layout for the selection, rebuilt whenever a value changes; null shows the generated panel. */
     layoutPanel?: LayoutPanel | null;
     /** Stored values the class no longer defines; shown for a single selected object. */
     unknown?: UnknownAttribute[];

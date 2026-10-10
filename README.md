@@ -58,13 +58,13 @@ Changes are saved to the workspace about half a second after each edit. Deleted 
 After `pnpm build`:
 
 ```sh
-node apps/cli/dist/bin.js validate tools/bpmn-lite            # a Kit
-node apps/cli/dist/bin.js validate tools/bpmn-lite/order-process.mkmodel.json --strict
+node apps/cli/dist/bin.js validate kits/bpmn-lite             # a Kit
+node apps/cli/dist/bin.js validate kits/bpmn-lite/order-process.mkmodel.json --strict
 node apps/cli/dist/bin.js validate my-workspace --json        # a whole workspace folder
 node apps/cli/dist/bin.js export my-workspace/models/order --format json --out order.mkmodel.json
 ```
 
-`validate` exits with 1 on errors (or on warnings with `--strict`). Files are in the formats described in `openspec/specs/` once the phase-1 changes are archived, and the sample Kits are in `tools/`.
+`validate` exits with 1 on errors (or on warnings with `--strict`). Files are in the formats described in `openspec/specs/` once the phase-1 changes are archived, and the sample Kits are in `kits/`.
 
 Known limits in phase 1: when two instances have written snapshots of one Kit, the newest snapshot wins and a warning is shown (merging arrives in phase 3). Chromium on Linux needs a UTF-8 locale to store non-ASCII file names.
 
@@ -75,7 +75,7 @@ apps/web        the static web app (Vite + Svelte 5)
 apps/cli        headless export and validation (Node.js)
 packages/       core, sync, storage, formula, shapes, canvas, behaviour, assistant, ui
 spikes/         phase-0 experiments (canvas, sync, behaviour, git); never imported by packages/ or apps/
-tools/          sample Kits used as test fixtures
+kits/           sample Kits used as test fixtures
 bench/          canvas and merge benchmarks
 docs/           plan, phase briefs, decisions
 openspec/       specs and change proposals

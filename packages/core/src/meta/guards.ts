@@ -10,7 +10,7 @@ import {
   ATTRIBUTE_TYPES,
   CLASS_KINDS,
   type AttributeDef,
-  type ToolLibrary,
+  type Kit,
 } from './types';
 import {
   checkAttributeValue,
@@ -528,8 +528,8 @@ function nameOf(def: Rec, fallback: string): string {
 }
 
 /**
- * Checks a tool library and returns every problem found, each with the path of the offending
- * part and a message a tool builder can act on. An empty list means the library is sound.
+ * Checks a Kit and returns every problem found, each with the path of the offending
+ * part and a message a Kit builder can act on. An empty list means the library is sound.
  */
 /** Checks one attribute definition on its own, for editors that add or change attributes one at a time. */
 export function validateAttribute(
@@ -544,7 +544,7 @@ export function validateAttribute(
   }));
 }
 
-export function validateToolLibrary(value: unknown): Issue[] {
+export function validateKit(value: unknown): Issue[] {
   const c = new Checker();
   const root = c.object(
     value,
@@ -1224,8 +1224,8 @@ export function validateToolLibrary(value: unknown): Issue[] {
   checkRules(c, root.rules);
   checkScripts(c, root.scripts);
   if (c.issues.length === 0) {
-    checkShapeReferences(c, value as ToolLibrary);
-    checkRuleReferences(c, value as ToolLibrary);
+    checkShapeReferences(c, value as Kit);
+    checkRuleReferences(c, value as Kit);
   }
 
   return c.issues;
@@ -1248,10 +1248,10 @@ function recordOf(
   return value as Record<string, unknown>;
 }
 
-export function parseToolLibrary(value: unknown): ParseResult<ToolLibrary> {
-  const issues = validateToolLibrary(value);
+export function parseKit(value: unknown): ParseResult<Kit> {
+  const issues = validateKit(value);
   return issues.length === 0
-    ? { ok: true, value: value as ToolLibrary }
+    ? { ok: true, value: value as Kit }
     : { ok: false, issues };
 }
 

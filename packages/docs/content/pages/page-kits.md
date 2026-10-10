@@ -46,7 +46,7 @@ Choose **Build** in the [[top-bar]] when no Kit is open. **← Kits** in the [[p
 **Add a Kit from a file**
 
 1. Choose **Add**, then **From file…**.
-2. Pick a `tool.json` file, for example `tools/agent-pipeline/tool.json`.
+2. Pick a Kit file (`.json`), for example `kits/agent-pipeline/kit.json` from the MetaKit repository.
 3. The Kit appears as a card. There is no confirmation step for this route.
 
 **Add a Kit from Git**
@@ -107,7 +107,7 @@ The workspace has one card: **Agent pipeline**, **Version 1.0.0**, "Used by 2 mo
 
 ## Good to know
 
-- **File route versus package route.** A plain `tool.json` is added directly and only when the Kit is not yet in the workspace. A `.mktool` package is imported on the Models page and shows a review dialog first, which also lets you update an existing Kit.
+- **File route versus package route.** A plain Kit file (`.json`) is added directly and only when the Kit is not yet in the workspace. A `.mktool` package is imported on the Models page and shows a review dialog first, which also lets you update an existing Kit.
 - **Deleting a Kit does not delete its models.** They stay in the list but show **Kit not found** until you restore the Kit.
 - **Version badge.** It shows the version typed in the Build bar of that Kit.
 - Kits are shared through the workspace folder like models ([[sync-overview]]). Built-in Kits are part of MetaKit itself; only the ones you use or copy are written to the folder.

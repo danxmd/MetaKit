@@ -2,8 +2,8 @@ import {
   newId,
   type Script,
   type ScriptId,
-  type ToolLibrary,
-  type ToolPermissions,
+  type Kit,
+  type KitPermissions,
 } from '@metakit-app/core';
 import type {
   ConsoleLevel,
@@ -49,29 +49,29 @@ commands.register({
 const byName = (a: Script, b: Script) =>
   a.name.localeCompare(b.name) || (a.id < b.id ? -1 : 1);
 
-export function sortedScripts(tool: ToolLibrary): Script[] {
-  return Object.values(tool.scripts ?? {}).sort(byName);
+export function sortedScripts(kit: Kit): Script[] {
+  return Object.values(kit.scripts ?? {}).sort(byName);
 }
 
 /** A problem with a script name, in plain English, or null when it is fine. */
 export function nameProblem(
-  tool: ToolLibrary,
+  kit: Kit,
   name: string,
   ownId?: ScriptId,
 ): string | null {
   const trimmed = name.trim();
   if (trimmed === '') return 'A script needs a name.';
   if (trimmed.length > 80) return 'Keep the name under 80 characters.';
-  const clash = Object.values(tool.scripts ?? {}).find(
+  const clash = Object.values(kit.scripts ?? {}).find(
     (s) => s.id !== ownId && s.name.toLowerCase() === trimmed.toLowerCase(),
   );
   return clash ? `There is already a script called "${clash.name}".` : null;
 }
 
 /** A new script with a name that no other script has, and the starting text. */
-export function createScript(tool: ToolLibrary, base = 'New script'): Script {
+export function createScript(kit: Kit, base = 'New script'): Script {
   let name = base;
-  for (let n = 2; nameProblem(tool, name) !== null; n++) name = `${base} ${n}`;
+  for (let n = 2; nameProblem(kit, name) !== null; n++) name = `${base} ${n}`;
   return { id: newId('script'), name, source: NEW_SCRIPT_TEMPLATE };
 }
 
@@ -101,11 +101,11 @@ export const hasCommand = (source: string): boolean =>
   /\bcommands\s*\.\s*register\s*\(/.test(source);
 
 export function setPermission(
-  tool: ToolLibrary,
-  key: keyof ToolPermissions,
+  kit: Kit,
+  key: keyof KitPermissions,
   on: boolean,
 ) {
-  const next: ToolPermissions = { ...tool.manifest.permissions };
+  const next: KitPermissions = { ...kit.manifest.permissions };
   if (on) next[key] = true;
   else delete next[key];
   return { type: 'updateManifest', permissions: next } as const;

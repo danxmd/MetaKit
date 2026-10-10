@@ -2,8 +2,8 @@ import { expect, test, type Page } from '@playwright/test';
 import { prepare } from './app';
 import { loadHarness } from './bundle';
 
-/** A fresh workspace with one new tool library open in Build mode. */
-async function openNewTool(page: Page, name = 'UX tool') {
+/** A fresh workspace with one new Kit open in Build mode. */
+async function openNewKit(page: Page, name = 'UX Kit') {
   await prepare(page, { name: 'Anna', colour: '#e8590c', seed: false });
   await page.getByTestId('open-folder').click();
   await page.getByRole('button', { name: 'Create workspace' }).click();
@@ -16,7 +16,7 @@ async function openNewTool(page: Page, name = 'UX tool') {
 
 test.describe('Build view structure', () => {
   test('groups the sections under headings', async ({ page }) => {
-    await openNewTool(page);
+    await openNewKit(page);
     const nav = page.getByRole('navigation', { name: 'Kit sections' });
     const groups: [string, string[]][] = [
       ['Metamodel', ['classes', 'relations', 'modelTypes']],
@@ -39,7 +39,7 @@ test.describe('Build view structure', () => {
   test('adds a class from the labelled input at the top of the list', async ({
     page,
   }) => {
-    await openNewTool(page);
+    await openNewKit(page);
     // An empty list teaches what a class is.
     await expect(page.getByTestId('build-list-empty')).toContainText(
       'A class describes one kind of object',
@@ -60,7 +60,7 @@ test.describe('Build view structure', () => {
   });
 
   test('the preview docks on the right and collapses', async ({ page }) => {
-    await openNewTool(page);
+    await openNewKit(page);
     await expect(page.getByTestId('kit-preview')).toBeVisible();
     await page.getByTestId('preview-collapse').click();
     await expect(page.getByTestId('kit-preview')).toHaveCount(0);
@@ -70,7 +70,7 @@ test.describe('Build view structure', () => {
 
   test('follows the dark theme', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'light' });
-    await openNewTool(page);
+    await openNewKit(page);
     const surface = () =>
       page
         .getByRole('navigation', { name: 'Kit sections' })
@@ -98,7 +98,7 @@ test.describe('Build view structure', () => {
 });
 
 test.describe('Source control menu', () => {
-  test('shows only for a tool library linked to Git', async ({ page }) => {
+  test('shows only for a Kit linked to Git', async ({ page }) => {
     await prepare(page, { name: 'Anna', colour: '#e8590c', seed: false });
     await loadHarness(page, './git-harness.ts');
     await page.getByTestId('open-folder').click();

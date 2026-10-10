@@ -70,7 +70,7 @@ apps/
   web/             the static web app
   cli/             headless export and validation (Node.js)
 spikes/            phase-0 experiments; never imported by packages/ or apps/
-tools/             sample Kits used as test fixtures
+kits/              sample Kits used as test fixtures
 bench/             canvas and merge benchmarks
 ```
 

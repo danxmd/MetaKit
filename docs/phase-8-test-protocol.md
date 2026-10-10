@@ -10,7 +10,7 @@ Do the whole protocol once for GitHub and once for GitLab. Use throwaway reposit
 - A throwaway repository on each service, created with a README so it has a first commit:
   - GitHub: `your-name/metakit-git-test`, with a fine-grained personal access token limited to that repository, permission **Contents: read and write**.
   - GitLab: `your-name/metakit-git-test`, with a personal access token with scope `api` (or the OAuth sign-in once the application is registered).
-- A workspace folder with the sample Kit `bpmn-lite` (add it from `tools/bpmn-lite/tool.json` through Add on the Kits page).
+- A workspace folder with the sample Kit `bpmn-lite` (add it from `kits/bpmn-lite/kit.json` through Add on the Kits page).
 
 ## 1. Link and first push
 

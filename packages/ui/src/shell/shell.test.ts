@@ -5,7 +5,7 @@ import {
   createEmptyModel,
   createModelStore,
   type Model,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 import {
   MemoryAdapter,
@@ -21,11 +21,11 @@ const load = (name: string) =>
   JSON.parse(
     readFileSync(
       fileURLToPath(
-        new URL(`../../../../tools/${name}/tool.json`, import.meta.url),
+        new URL(`../../../../kits/${name}/kit.json`, import.meta.url),
       ),
       'utf8',
     ),
-  ) as ToolLibrary;
+  ) as Kit;
 const bpmn = load('bpmn-lite');
 const er = load('er-lite');
 const process = () => Object.values(bpmn.modelTypes)[0]!;
@@ -34,7 +34,7 @@ const entry = (name: string, folder?: string): ModelEntry => ({
   slug: name.toLowerCase(),
   id: `mdl_${name.toLowerCase().padEnd(10, '0')}`,
   name,
-  tool: 'tool_bpmnlite',
+  kit: 'tool_bpmnlite',
   modelType: 'mt_process',
   ...(folder === undefined ? {} : { folder }),
 });
@@ -119,7 +119,7 @@ describe('palette', () => {
 describe('find', () => {
   function model(): Model {
     const m = createEmptyModel(bpmn, process().id, { name: 'M' });
-    const store = createModelStore(m, { tool: bpmn });
+    const store = createModelStore(m, { kit: bpmn });
     const names: [string, string, string?][] = [
       ['Check order', 'cls_task', 'Verify the customer address'],
       ['Ship goods', 'cls_task', 'Use the red carrier'],
@@ -171,16 +171,16 @@ describe('find', () => {
   });
 });
 
-async function workspaceWithTool() {
+async function workspaceWithKit() {
   const adapter = new MemoryAdapter('aaaa0001');
   const ws = await Workspace.create(adapter, { name: 'Team' });
-  const toolSlug = await ws.createTool(bpmn);
-  return { adapter, ws, toolSlug };
+  const kitSlug = await ws.createKit(bpmn);
+  return { adapter, ws, kitSlug };
 }
 
 describe('AppController', () => {
-  it('opens a workspace and lists tools and models', async () => {
-    const { adapter, toolSlug } = await workspaceWithTool();
+  it('opens a workspace and lists Kits and models', async () => {
+    const { adapter, kitSlug } = await workspaceWithKit();
     const app = new AppController({
       flushMs: 5,
       presence: false,
@@ -192,7 +192,7 @@ describe('AppController', () => {
       phase: 'workspace',
       workspaceName: 'Team',
     });
-    expect(app.state.tools.map((t) => t.slug)).toEqual([toolSlug]);
+    expect(app.state.kits.map((t) => t.slug)).toEqual([kitSlug]);
     expect(app.state.models).toEqual([]);
   });
 
@@ -214,7 +214,7 @@ describe('AppController', () => {
   });
 
   it('creates a model, opens it, saves edits after the delay and on close', async () => {
-    const { adapter, toolSlug } = await workspaceWithTool();
+    const { adapter, kitSlug } = await workspaceWithKit();
     const app = new AppController({
       flushMs: 10,
       presence: false,
@@ -222,7 +222,7 @@ describe('AppController', () => {
     });
     await app.openWorkspace(adapter);
     const slug = await app.createModel({
-      toolSlug,
+      kitSlug,
       modelType: process().id,
       name: 'Order process',
       folder: ' Sales ',
@@ -234,7 +234,7 @@ describe('AppController', () => {
       folder: 'Sales',
     });
     const open = app.state.open!;
-    expect(open.tool.manifest.id).toBe(bpmn.manifest.id);
+    expect(open.kit.manifest.id).toBe(bpmn.manifest.id);
 
     open.store.execute({
       type: 'createElement',
@@ -264,7 +264,7 @@ describe('AppController', () => {
       Object.keys((await ws.loadModel(slug!)).document.elements),
     ).toHaveLength(2);
 
-    // Reopening gives the saved content and the same tool library.
+    // Reopening gives the saved content and the same Kit.
     await app.openModel(slug!);
     expect(
       Object.keys((app.state.open!.store.state as Model).elements),
@@ -272,7 +272,7 @@ describe('AppController', () => {
   });
 
   it('renames and moves the open model and models that are not open', async () => {
-    const { adapter, toolSlug } = await workspaceWithTool();
+    const { adapter, kitSlug } = await workspaceWithKit();
     const app = new AppController({
       flushMs: 5,
       presence: false,
@@ -280,13 +280,13 @@ describe('AppController', () => {
     });
     await app.openWorkspace(adapter);
     const a = (await app.createModel({
-      toolSlug,
+      kitSlug,
       modelType: process().id,
       name: 'A',
     }))!;
     await app.closeModel();
     const b = (await app.createModel({
-      toolSlug,
+      kitSlug,
       modelType: process().id,
       name: 'B',
     }))!;
@@ -312,7 +312,7 @@ describe('AppController', () => {
   });
 
   it('trashes and restores a model without deleting its files', async () => {
-    const { adapter, toolSlug } = await workspaceWithTool();
+    const { adapter, kitSlug } = await workspaceWithKit();
     const app = new AppController({
       flushMs: 5,
       presence: false,
@@ -320,7 +320,7 @@ describe('AppController', () => {
     });
     await app.openWorkspace(adapter);
     const slug = (await app.createModel({
-      toolSlug,
+      kitSlug,
       modelType: process().id,
       name: 'Gone',
     }))!;
@@ -335,7 +335,7 @@ describe('AppController', () => {
     expect(app.state.trashed).toEqual([]);
   });
 
-  it('reports a model whose tool library is missing', async () => {
+  it('reports a model whose Kit is missing', async () => {
     const adapter = new MemoryAdapter('aaaa0001');
     const ws = await Workspace.create(adapter, { name: 'X' });
     await ws.createModel(
@@ -349,14 +349,14 @@ describe('AppController', () => {
   });
 
   it('shows a failed save and keeps the model open', async () => {
-    const { adapter, toolSlug } = await workspaceWithTool();
+    const { adapter, kitSlug } = await workspaceWithKit();
     const app = new AppController({
       flushMs: 5,
       presence: false,
       health: false,
     });
     await app.openWorkspace(adapter);
-    await app.createModel({ toolSlug, modelType: process().id, name: 'M' });
+    await app.createModel({ kitSlug, modelType: process().id, name: 'M' });
     adapter.writeNew = () => Promise.reject(new Error('disk full'));
     app.state.open!.store.execute({
       type: 'createElement',
@@ -371,7 +371,7 @@ describe('AppController', () => {
   });
 
   it('notifies listeners and lets them stop listening', async () => {
-    const { adapter } = await workspaceWithTool();
+    const { adapter } = await workspaceWithKit();
     const app = new AppController({ presence: false, health: false });
     const seen: string[] = [];
     const stop = app.subscribe((s) => seen.push(s.phase));
@@ -385,7 +385,7 @@ describe('AppController', () => {
   });
 });
 
-describe('AppController.addToolLibrary', () => {
+describe('AppController.addKit', () => {
   async function opened() {
     const adapter = new MemoryAdapter('aaaa0001');
     await Workspace.create(adapter, { name: 'Team' });
@@ -394,26 +394,26 @@ describe('AppController.addToolLibrary', () => {
     return app;
   }
 
-  it('adds a valid tool library once and lists it', async () => {
+  it('adds a valid Kit once and lists it', async () => {
     const app = await opened();
-    const slug = await app.addToolLibrary(JSON.stringify(bpmn));
+    const slug = await app.addKit(JSON.stringify(bpmn));
     expect(slug).toBeDefined();
-    expect(app.state.tools.map((t) => t.name)).toEqual([bpmn.manifest.name]);
+    expect(app.state.kits.map((t) => t.name)).toEqual([bpmn.manifest.name]);
     expect(await app.modelTypesOf(slug!)).toHaveLength(1);
-    expect(await app.addToolLibrary(JSON.stringify(bpmn))).toBeUndefined();
+    expect(await app.addKit(JSON.stringify(bpmn))).toBeUndefined();
     expect(app.state.error).toMatch(/already in this workspace/);
-    expect(app.state.tools).toHaveLength(1);
+    expect(app.state.kits).toHaveLength(1);
   });
 
-  it('says what is wrong with a file that is not a tool library', async () => {
+  it('says what is wrong with a file that is not a Kit', async () => {
     const app = await opened();
-    expect(await app.addToolLibrary('not json')).toBeUndefined();
+    expect(await app.addKit('not json')).toBeUndefined();
     expect(app.state.error).toMatch(/not valid JSON/);
-    const broken = JSON.parse(JSON.stringify(bpmn)) as ToolLibrary;
+    const broken = JSON.parse(JSON.stringify(bpmn)) as Kit;
     broken.classes['cls_task']!.extends = 'cls_missing00';
-    expect(await app.addToolLibrary(JSON.stringify(broken))).toBeUndefined();
+    expect(await app.addKit(JSON.stringify(broken))).toBeUndefined();
     expect(app.state.error).toMatch(/not a valid Kit[\s\S]*cls_missing00/);
-    expect(app.state.tools).toEqual([]);
+    expect(app.state.kits).toEqual([]);
   });
 });
 
@@ -422,7 +422,7 @@ describe('working together', () => {
     const a = new MemoryAdapter('aaaa0001');
     const b = a.asInstance('bbbb0002');
     const ws = await Workspace.create(a, { name: 'Team' });
-    const toolSlug = await ws.createTool(bpmn);
+    const kitSlug = await ws.createKit(bpmn);
     const opts = (name: string) => ({
       flushMs: 5,
       health: false,
@@ -433,7 +433,7 @@ describe('working together', () => {
     await anna.openWorkspace(a);
     await ben.openWorkspace(b);
     const slug = (await anna.createModel({
-      toolSlug,
+      kitSlug,
       modelType: process().id,
       name: 'Shared',
     }))!;
@@ -531,18 +531,18 @@ describe('working together', () => {
     expect(ben.editorsOf('el_text_1')).toEqual([]);
   });
 
-  it('keeps deleted models and tool libraries for 30 days and offers to restore them', async () => {
+  it('keeps deleted models and Kits for 30 days and offers to restore them', async () => {
     const { anna, slug } = await two();
     await anna.closeModel();
     await anna.trashModel(slug);
     expect(anna.state.models).toEqual([]);
     expect(anna.state.trashed.map((m) => m.slug)).toEqual([slug]);
-    await anna.trashTool(anna.state.tools[0]!.slug);
-    expect(anna.state.tools).toEqual([]);
-    expect(anna.state.trashedTools).toHaveLength(1);
-    await anna.restoreTool(anna.state.trashedTools[0]!.slug);
+    await anna.trashKit(anna.state.kits[0]!.slug);
+    expect(anna.state.kits).toEqual([]);
+    expect(anna.state.trashedKits).toHaveLength(1);
+    await anna.restoreKit(anna.state.trashedKits[0]!.slug);
     await anna.restoreModel(slug);
-    expect(anna.state.tools).toHaveLength(1);
+    expect(anna.state.kits).toHaveLength(1);
     expect(anna.state.models).toHaveLength(1);
   });
 

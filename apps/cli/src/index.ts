@@ -5,9 +5,9 @@ import { exportCommand, validateCommand, type Io } from './commands';
 import {
   exportBundleCommand,
   exportCsvCommand,
-  exportToolCommand,
+  exportKitCommand,
   importBundleCommand,
-  importToolCommand,
+  importKitCommand,
 } from './exchange';
 import { CliError } from './load';
 
@@ -27,7 +27,7 @@ Commands:
   validate <path>            Check a workspace folder, a Kit (folder or file) or a model file.
       --strict               Treat warnings as failures.
       --json                 Print the result as JSON.
-      --tool <path>          The Kit for a model file (default: tool.json next to it).
+      --tool <path>          The Kit for a model file (default: kit.json or tool.json next to it).
   export <model>             Write a model as an editable model file.
       --format json          The only format so far.
       --out <file>           Write to a file instead of the standard output.
@@ -81,8 +81,8 @@ export async function run(args: string[], io: Io): Promise<number> {
       return await exportBundleCommand(parsed, io);
     if (command === 'import-bundle')
       return await importBundleCommand(parsed, io);
-    if (command === 'export-tool') return await exportToolCommand(parsed, io);
-    if (command === 'import-tool') return await importToolCommand(parsed, io);
+    if (command === 'export-tool') return await exportKitCommand(parsed, io);
+    if (command === 'import-tool') return await importKitCommand(parsed, io);
     if (command === 'export-csv') return await exportCsvCommand(parsed, io);
   } catch (error) {
     if (error instanceof UsageError) {

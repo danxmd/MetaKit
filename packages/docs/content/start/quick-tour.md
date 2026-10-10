@@ -8,7 +8,7 @@ contexts: []
 order: 80
 ---
 
-This tour takes about fifteen minutes. You open a folder, add the sample **Agent pipeline** Kit, draw a few objects and connect them. You need Chrome or Edge on a desktop ([[browser-support]]) and a copy of the sample file `tools/agent-pipeline/tool.json` from the MetaKit repository.
+This tour takes about fifteen minutes. You open a folder, add the sample **Agent pipeline** Kit, draw a few objects and connect them. You need Chrome or Edge on a desktop ([[browser-support]]) and a copy of the sample file `kits/agent-pipeline/kit.json` from the MetaKit repository.
 
 ## What it is
 
@@ -52,7 +52,7 @@ After step 8 your canvas holds an **Agent** and a **Task** joined by **Performs*
 
 - **Undo.** If you slip, press `Ctrl+Z` in the model ([[undo-redo]]).
 - **Delete and restore.** Deleting a model only hides it for 30 days ([[trash-and-restore]]).
-- **The sample is a file you copy.** MetaKit does not ship Kits inside the app. The Kits page names two samples in the repository, `tools/agent-pipeline/tool.json` and `tools/bpmn-lite/tool.json`.
+- **The sample is a file you copy.** MetaKit does not ship Kits inside the app. The Kits page names two samples in the repository, `kits/agent-pipeline/kit.json` and `kits/bpmn-lite/kit.json`.
 - **Next steps.** Make your own language: add a **New Kit** in Build. Work with others: see [[sync-overview]]. Ask the Help bar ([[docs-help]]) at any page.
 
 ## Related

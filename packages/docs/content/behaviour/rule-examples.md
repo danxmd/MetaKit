@@ -16,7 +16,7 @@ Each example gives the settings as you would fill them in the rule form (see [[r
 
 ## Where to find it
 
-The rules live in the Kit `tools/agent-pipeline/tool.json` and the file `tools/behaviour-examples/total-effort.rule.json` of the MetaKit repository. Add the Kit to a workspace with **Add > From file…** on the [[page-kits|Kits page]], then open it in Build mode and choose **Rules**.
+The rules live in the Kit `kits/agent-pipeline/kit.json` and the file `kits/behaviour-examples/total-effort.rule.json` of the MetaKit repository. Add the Kit to a workspace with **Add > From file…** on the [[page-kits|Kits page]], then open it in Build mode and choose **Rules**.
 
 ## How to use it
 

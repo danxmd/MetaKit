@@ -10,7 +10,7 @@ import {
   type ModelStore,
   type Script,
   type ScriptId,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 import type { CommandRegistry } from './commands';
 import type { BehaviourHost } from './host';
@@ -62,13 +62,13 @@ export interface ScriptEngineOptions {
   store: ModelStore;
   bus: EventBus;
   calculator: ModelCalculator;
-  /** The tool library as it is now; read again on every use. */
-  tool: () => ToolLibrary;
+  /** The Kit as it is now; read again on every use. */
+  kit: () => Kit;
   host: BehaviourHost;
   commands: CommandRegistry;
   files?: ScriptFiles;
   http?: ScriptHttp;
-  /** What this browser allowed for the tool (see `PermissionStore.granted`). */
+  /** What this browser allowed for the Kit (see `PermissionStore.granted`). */
   permissions?: PermissionGrant | (() => PermissionGrant);
   /** The ids of the selected objects, for `model.selection()`. */
   selection?: () => string[];
@@ -91,7 +91,7 @@ const MAX_RELOAD_ATTEMPTS = 5;
 const STEP: BatchCommand<ModelCommand> = { type: 'batch', commands: [] };
 
 /**
- * Runs the scripts of a tool library for one open model. All scripts of the tool share one sandbox
+ * Runs the scripts of a Kit for one open model. All scripts of the Kit share one sandbox
  * (one WebAssembly instance), loaded only when there is a script to run. Scripts listen on the
  * event bus, which only sees changes made here, and change the model through the command API, so
  * what an event handler does undoes together with the action that triggered it.
@@ -148,7 +148,7 @@ export class ScriptEngine {
   status(id: ScriptId): ScriptStatus {
     const known = this.statuses.get(id);
     if (known) return known;
-    return this.options.tool().scripts?.[id]?.enabled === false
+    return this.options.kit().scripts?.[id]?.enabled === false
       ? { state: 'disabled' }
       : { state: 'running' };
   }
@@ -168,7 +168,7 @@ export class ScriptEngine {
     line?: number,
   ): void {
     const script = scriptId
-      ? this.options.tool().scripts?.[scriptId]
+      ? this.options.kit().scripts?.[scriptId]
       : undefined;
     // A script cannot fill the console (or the page) with one enormous line.
     if (text.length > MAX_CONSOLE_CHARS)
@@ -195,7 +195,7 @@ export class ScriptEngine {
   ): void {
     this.addLine('error', message, scriptId, line);
     const name = scriptId
-      ? this.options.tool().scripts?.[scriptId]?.name
+      ? this.options.kit().scripts?.[scriptId]?.name
       : undefined;
     const text = name ? `${name}: ${message}` : message;
     const at = this.now();
@@ -218,7 +218,7 @@ export class ScriptEngine {
 
   private requirePermission(kind: 'files' | 'network'): void {
     const what = kind === 'files' ? 'use files' : 'contact web services';
-    const declared = this.options.tool().manifest.permissions?.[kind] === true;
+    const declared = this.options.kit().manifest.permissions?.[kind] === true;
     if (!declared)
       throw new Error(
         `This script tries to ${what}, but the Kit does not say it needs to. Add the "${kind}" permission to the Kit in Build mode.`,
@@ -270,8 +270,8 @@ export class ScriptEngine {
     for (let attempt = 0; attempt < MAX_RELOAD_ATTEMPTS; attempt++) {
       this.teardown();
       if (this.disposed || generation !== this.generation) return;
-      const tool = this.options.tool();
-      const scripts = Object.values(tool.scripts ?? {}).sort((a, b) =>
+      const kit = this.options.kit();
+      const scripts = Object.values(kit.scripts ?? {}).sort((a, b) =>
         a.name < b.name ? -1 : a.name > b.name ? 1 : a.id < b.id ? -1 : 1,
       );
       this.statuses.clear();
@@ -430,7 +430,7 @@ export class ScriptEngine {
     return {
       store: o.store,
       calculator: o.calculator,
-      tool: o.tool,
+      kit: o.kit,
       host: o.host,
       selection: o.selection ?? (() => []),
       files: o.files,
@@ -555,7 +555,7 @@ export class ScriptEngine {
   private faultOnLimit(error: unknown, scriptId: ScriptId): void {
     const e = this.explain(error, scriptId);
     if (e.fatal) {
-      const source = this.options.tool().scripts?.[scriptId]?.source;
+      const source = this.options.kit().scripts?.[scriptId]?.source;
       if (source !== undefined) this.faulted.set(scriptId, source);
       this.setStatus(scriptId, { state: 'stopped', error: e.message });
     }
@@ -563,15 +563,15 @@ export class ScriptEngine {
 
   /** Class and relation ids become the keys scripts know; the rest is as the bus gave it. */
   private payloadFor(payload: EventPayload): unknown {
-    const tool = this.options.tool();
+    const kit = this.options.kit();
     return {
       ...payload,
       ...(payload.class
-        ? { class: tool.classes[payload.class]?.key ?? payload.class }
+        ? { class: kit.classes[payload.class]?.key ?? payload.class }
         : {}),
       ...(payload.relation
         ? {
-            relation: tool.relations[payload.relation]?.key ?? payload.relation,
+            relation: kit.relations[payload.relation]?.key ?? payload.relation,
           }
         : {}),
     };
@@ -589,7 +589,7 @@ export class ScriptEngine {
     target: string | null = null,
   ): Promise<void> {
     await this.ready();
-    const script = this.options.tool().scripts?.[id as ScriptId];
+    const script = this.options.kit().scripts?.[id as ScriptId];
     if (!script) {
       this.reportError(`The script ${id} does not exist.`, undefined);
       return;

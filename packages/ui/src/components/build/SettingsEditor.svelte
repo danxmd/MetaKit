@@ -1,19 +1,17 @@
 <script lang="ts">
-  import type { ToolLibrary } from '@metakit-app/core';
+  import type { Kit } from '@metakit-app/core';
   import type { CommandResult } from '../../shell/controller';
   import Section from './Section.svelte';
 
-  let {
-    tool,
-    run,
-  }: { tool: ToolLibrary; run: (command: never) => CommandResult } = $props();
+  let { kit, run }: { kit: Kit; run: (command: never) => CommandResult } =
+    $props();
 
   let error = $state<string | null>(null);
   const exec = (command: Record<string, unknown>) => {
     const r = run(command as never);
     error = r.ok ? null : r.error;
   };
-  const grid = $derived(tool.settings.grid);
+  const grid = $derived(kit.settings.grid);
   let newLanguage = $state('');
   const LANGUAGE = /^[a-z]{2,3}(-[A-Za-z0-9]+)*$/;
   function addLanguage() {
@@ -22,24 +20,24 @@
       error = `"${code}" is not a language code such as en or de.`;
       return;
     }
-    if (tool.manifest.languages.includes(code)) {
+    if (kit.manifest.languages.includes(code)) {
       error = `${code} is already listed.`;
       return;
     }
     exec({
       type: 'updateManifest',
-      languages: [...tool.manifest.languages, code],
+      languages: [...kit.manifest.languages, code],
     });
     newLanguage = '';
   }
   function removeLanguage(code: string) {
-    if (tool.manifest.languages.length === 1) {
+    if (kit.manifest.languages.length === 1) {
       error = 'A Kit needs at least one language.';
       return;
     }
     exec({
       type: 'updateManifest',
-      languages: tool.manifest.languages.filter((l) => l !== code),
+      languages: kit.manifest.languages.filter((l) => l !== code),
     });
   }
 </script>
@@ -52,7 +50,7 @@
     help="Labels can be given in each language. The first one is used for options and previews."
   >
     <ul>
-      {#each tool.manifest.languages as code (code)}
+      {#each kit.manifest.languages as code (code)}
         <li>
           <span class="code">{code}</span>
           <button

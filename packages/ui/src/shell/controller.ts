@@ -1,22 +1,22 @@
 import {
   CommandError,
   createEmptyModel,
-  cloneToolLibrary,
-  createEmptyTool,
+  cloneKit,
+  createEmptyKit,
   createModelStore,
   formatIssues,
-  parseToolLibrary,
-  validateToolLibrary,
+  parseKit,
+  validateKit,
   type ElementId,
   type Issue,
   type Model,
   type ModelStore,
   type ModelTypeDef,
   type ModelTypeId,
-  type ToolCommandOrBatch,
-  type ToolLibrary,
-  type ToolStore,
-  type ToolPermissions,
+  type KitCommandOrBatch,
+  type Kit,
+  type KitStore,
+  type KitPermissions,
 } from '@metakit-app/core';
 import {
   GitHubRemote,
@@ -40,25 +40,25 @@ import {
   type PartChange,
   type PullMerged,
   type Resolutions,
-  applyToolUpdate,
-  createToolPermissionBacking,
+  applyKitUpdate,
+  createKitPermissionBacking,
   exportBundle,
   exportCsvZip,
   exportModelFile,
-  exportToolPackageFrom,
+  exportKitPackageFrom,
   importBundle,
   importModelFile,
   migrate,
   NewerFormatError,
   NotFoundError,
   Workspace,
-  prepareToolImport,
+  prepareKitImport,
   type HealthFinding,
   type ModelEntry,
-  type PreparedToolImport,
+  type PreparedKitImport,
   type StorageAdapter,
-  type ToolEntry,
-  type ToolUpdatePlan,
+  type KitEntry,
+  type KitUpdatePlan,
 } from '@metakit-app/storage';
 import {
   detectDivergence,
@@ -91,12 +91,12 @@ import type { UndoSource } from './feedback';
 
 export interface OpenModel {
   slug: string;
-  toolSlug: string;
-  /** The tool library as it is now: it follows edits made in Build mode by anyone in the folder. */
-  tool: ToolLibrary;
-  /** The tool library's own store and session, so that the model follows changes to its tool. */
-  toolStore: ToolStore;
-  toolSession: SyncSession;
+  kitSlug: string;
+  /** The Kit as it is now: it follows edits made in Build mode by anyone in the folder. */
+  kit: Kit;
+  /** The Kit's own store and session, so that the model follows changes to its Kit. */
+  kitStore: KitStore;
+  kitSession: SyncSession;
   store: ModelStore;
   /** Formulas, events, rules and scripts of this model (phase 5 and 7). */
   behaviour: Behaviour;
@@ -108,17 +108,17 @@ export interface OpenModel {
   documentIssues: number;
 }
 
-/** A tool library open in Build mode. */
-export interface OpenTool {
+/** A Kit open in Build mode. */
+export interface OpenKit {
   slug: string;
-  store: ToolStore;
+  store: KitStore;
   session: SyncSession;
   warnings: string[];
   /** Counts changes, so that views that read `store.state` know to read it again. */
   revision: number;
   canUndo: boolean;
   canRedo: boolean;
-  /** Problems the tool library has now, for example a class that extends itself. */
+  /** Problems the Kit has now, for example a class that extends itself. */
   issues: Issue[];
 }
 
@@ -135,9 +135,9 @@ export interface BehaviourMessage {
 
 export type SaveStatus = 'saved' | 'saving' | 'error';
 
-/** Git mode for the tool library open in Build mode (ADR 0007). */
+/** Git mode for the Kit open in Build mode (ADR 0007). */
 export interface GitState {
-  /** The repository the open tool library is linked to, or null. */
+  /** The repository the open Kit is linked to, or null. */
   link: GitLink | null;
   pending: PartChange[];
   busy: boolean;
@@ -166,16 +166,16 @@ export interface AppState {
   /** `start` before a workspace is open, `workspace` with the explorer, `model` with a model open. */
   phase: 'start' | 'workspace' | 'model' | 'build';
   workspaceName: string;
-  tools: ToolEntry[];
+  kits: KitEntry[];
   models: ModelEntry[];
   /** Deleted less than 30 days ago, so that they can be restored. */
   trashed: ModelEntry[];
-  trashedTools: ToolEntry[];
+  trashedKits: KitEntry[];
   open: OpenModel | null;
   /** Messages from rules and scripts of the open model. */
   messages: BehaviourMessage[];
-  /** The tool library being edited in Build mode. */
-  build: OpenTool | null;
+  /** The Kit being edited in Build mode. */
+  build: OpenKit | null;
   save: SaveStatus;
   /** What the open document knows about syncing: unwritten edits, the last change from someone else, errors. */
   sync: SyncStatus;
@@ -193,10 +193,10 @@ export interface AppState {
   warnings: string[];
   /** What the last import did, in plain English; cleared by the next import. */
   notes: string[];
-  /** A tool library file waiting for the user to confirm it (see `importToolPackage`). */
-  toolImport: ToolUpdatePlan | null;
-  /** A tool asking to use the network or files; answered with `answerPermission`. */
-  permissionAsk: { toolName: string; wanted: ToolPermissions } | null;
+  /** A Kit file waiting for the user to confirm it (see `importKitPackage`). */
+  kitImport: KitUpdatePlan | null;
+  /** A Kit asking to use the network or files; answered with `answerPermission`. */
+  permissionAsk: { kitName: string; wanted: KitPermissions } | null;
   git: GitState;
 }
 
@@ -248,10 +248,10 @@ export interface ControllerPort {
 
 /** What the Build mode view asks of the controller. */
 export interface BuildPort {
-  runBuild(command: ToolCommandOrBatch): CommandResult;
+  runBuild(command: KitCommandOrBatch): CommandResult;
   undoBuild(): boolean;
   redoBuild(): boolean;
-  /** Undo bound to the tool library open now, for an Undo offered after a step. */
+  /** Undo bound to the Kit open now, for an Undo offered after a step. */
   buildUndoSource(): UndoSource | null;
   closeBuild(): Promise<void>;
   gitRefreshPending(): void;
@@ -274,10 +274,10 @@ const NO_SYNC: SyncStatus = {
 const initial = (): AppState => ({
   phase: 'start',
   workspaceName: '',
-  tools: [],
+  kits: [],
   models: [],
   trashed: [],
-  trashedTools: [],
+  trashedKits: [],
   open: null,
   messages: [],
   build: null,
@@ -291,7 +291,7 @@ const initial = (): AppState => ({
   error: null,
   warnings: [],
   notes: [],
-  toolImport: null,
+  kitImport: null,
   permissionAsk: null,
   git: NO_GIT,
 });
@@ -303,7 +303,7 @@ const saveOf = (s: SyncStatus): SaveStatus =>
   s.error ? 'error' : s.pending > 0 ? 'saving' : 'saved';
 
 /**
- * What Model mode keeps between screens: the open workspace, its tool libraries and models, the
+ * What Model mode keeps between screens: the open workspace, its Kits and models, the
  * open model with its sync session, and who else is around. It has no UI code, so it is tested
  * without a browser.
  */
@@ -415,17 +415,17 @@ export class AppController {
     for (const l of this.listeners) l(this.current);
   }
 
-  /** Reads the lists of tool libraries and models again. */
+  /** Reads the lists of Kits and models again. */
   async refresh(): Promise<void> {
     const ws = this.need();
     await this.attempt(async () => {
-      const [allTools, allModels] = await Promise.all([
-        ws.listTools({ includeTrashed: true }),
+      const [allKits, allModels] = await Promise.all([
+        ws.listKits({ includeTrashed: true }),
         ws.listModels({ includeTrashed: true }),
       ]);
       this.set({
-        tools: allTools.filter((t) => !t.trashed),
-        trashedTools: allTools.filter((t) => t.trashed && !t.expired),
+        kits: allKits.filter((t) => !t.trashed),
+        trashedKits: allKits.filter((t) => t.trashed && !t.expired),
         models: allModels.filter((m) => !m.trashed),
         trashed: allModels.filter((m) => m.trashed && !m.expired),
         warnings: [
@@ -524,22 +524,22 @@ export class AppController {
 
   /** Creates an empty model of a model type, opens it, and returns its folder name. */
   async createModel(input: {
-    toolSlug: string;
+    kitSlug: string;
     modelType: ModelTypeId;
     name: string;
     folder?: string | null;
   }): Promise<string | undefined> {
     return this.attempt(async () => {
       const ws = this.need();
-      const { document: tool } = await ws.loadTool(input.toolSlug);
+      const { document: kit } = await ws.loadKit(input.kitSlug);
       const folder = normalizeFolder(input.folder);
-      const model = createEmptyModel(tool, input.modelType, {
+      const model = createEmptyModel(kit, input.modelType, {
         name: input.name,
         ...(folder ? { folder } : {}),
       });
-      // The model does not exist yet, so a rule of the tool hears it on a model held in memory.
-      const probe = createModelStore(model, { tool });
-      const temp = this.makeBehaviour(probe, () => tool);
+      // The model does not exist yet, so a rule of the Kit hears it on a model held in memory.
+      const probe = createModelStore(model, { kit });
+      const temp = this.makeBehaviour(probe, () => kit);
       const verdict = temp.bus.emit({
         event: 'model.creating',
         target: model.manifest.id,
@@ -562,15 +562,15 @@ export class AppController {
         await this.closeModel();
         await this.closeBuild();
         const header = await ws.loadModel(slug);
-        const toolSlug = await ws.findToolSlug(header.document.manifest.tool);
-        if (!toolSlug)
+        const kitSlug = await ws.findKitSlug(header.document.manifest.tool);
+        if (!kitSlug)
           throw new Error(
             `This model was made with a Kit that is not in this workspace (${header.document.manifest.tool}).`,
           );
-        const toolOpened = await ws.openTool(toolSlug, this.sessionOptions());
-        const tool = toolOpened.store.state;
+        const kitOpened = await ws.openKit(kitSlug, this.sessionOptions());
+        const kit = kitOpened.store.state;
         const opened = await ws
-          .openModel(slug, tool, {
+          .openModel(slug, kit, {
             ...(this.options.flushMs ? { flushMs: this.options.flushMs } : {}),
             ...(this.options.snapshotMs
               ? { snapshotMs: this.options.snapshotMs }
@@ -586,16 +586,16 @@ export class AppController {
               }),
           })
           .catch(async (error: unknown) => {
-            await toolOpened.session.close();
+            await kitOpened.session.close();
             throw error;
           });
-        const currentTool = () => this.current.open?.tool ?? tool;
+        const currentTool = () => this.current.open?.kit ?? kit;
         const behaviour = this.makeBehaviour(opened.store, currentTool);
         // Scripts run only in a model that is open, not in the probe made for `model.creating`.
         this.startScripts(behaviour, opened.store, currentTool);
         opened.session.start();
-        toolOpened.session.start();
-        toolOpened.store.subscribe(() => this.toolChanged());
+        kitOpened.session.start();
+        kitOpened.store.subscribe(() => this.kitChanged());
         this.set({
           phase: 'model',
           save: 'saved',
@@ -603,10 +603,10 @@ export class AppController {
           notices: [],
           open: {
             slug,
-            toolSlug,
-            tool,
-            toolStore: toolOpened.store,
-            toolSession: toolOpened.session,
+            kitSlug,
+            kit,
+            kitStore: kitOpened.store,
+            kitSession: kitOpened.session,
             store: opened.store,
             behaviour,
             session: opened.session,
@@ -639,21 +639,21 @@ export class AppController {
     };
   }
 
-  /** The open model's tool library changed (here or in another window): redraw with the new one. */
-  private toolChanged(): void {
+  /** The open model's Kit changed (here or in another window): redraw with the new one. */
+  private kitChanged(): void {
     const open = this.current.open;
     if (!open) return;
-    const tool = open.toolStore.state;
-    if (tool === open.tool) return;
-    // Commands on the model are checked against the new tool library from now on.
-    open.store.updateContext({ tool });
-    open.behaviour.setTool(tool);
+    const kit = open.kitStore.state;
+    if (kit === open.kit) return;
+    // Commands on the model are checked against the new Kit from now on.
+    open.store.updateContext({ kit });
+    open.behaviour.setKit(kit);
     this.rulesByBehaviour.get(open.behaviour)?.reload();
     void this.scriptsByBehaviour
       .get(open.behaviour)
-      ?.then((h) => h.setTool(tool))
+      ?.then((h) => h.setKit(kit))
       .catch((error) => this.pushMessage('error', message(error)));
-    this.set({ open: { ...open, tool } });
+    this.set({ open: { ...open, kit } });
   }
 
   private startedEmitted = false;
@@ -662,7 +662,7 @@ export class AppController {
   private permissionStore: Promise<PermissionStore> | null = null;
   private permissionAnswer: ((allowed: boolean) => void) | null = null;
 
-  /** The scripts of an open model; resolves once the tool's scripts are loaded. */
+  /** The scripts of an open model; resolves once the Kit's scripts are loaded. */
   scriptsOf(behaviour: Behaviour): Promise<ScriptsHandle> | undefined {
     return (
       this.scriptsByBehaviour.get(behaviour) ??
@@ -679,17 +679,17 @@ export class AppController {
 
   private permissions(): Promise<PermissionStore> {
     this.permissionStore ??= createPermissionStore(
-      // The storage package keeps ids as plain strings; they are tool ids when they come back.
-      createToolPermissionBacking() as unknown as Parameters<
+      // The storage package keeps ids as plain strings; they are Kit ids when they come back.
+      createKitPermissionBacking() as unknown as Parameters<
         typeof createPermissionStore
       >[0],
-      (toolId, wanted) =>
+      (kitId, wanted) =>
         new Promise<boolean>((resolve) => {
-          const tool = this.current.open?.tool;
+          const kit = this.current.open?.kit;
           this.permissionAnswer = resolve;
           this.set({
             permissionAsk: {
-              toolName: tool?.manifest.name ?? String(toolId),
+              kitName: kit?.manifest.name ?? String(kitId),
               wanted,
             },
           });
@@ -698,23 +698,23 @@ export class AppController {
     return this.permissionStore;
   }
 
-  /** Starts the scripts of a model; the engine itself loads only when the tool has a script. */
+  /** Starts the scripts of a model; the engine itself loads only when the Kit has a script. */
   private startScripts(
     behaviour: Behaviour,
     store: ModelStore,
-    tool: () => ToolLibrary,
+    kit: () => Kit,
   ): void {
     const handle = (async () => {
-      const wanted = tool().manifest.permissions;
+      const wanted = kit().manifest.permissions;
       const permissions =
         wanted && (wanted.network || wanted.files)
           ? await this.permissions()
           : undefined;
       if (permissions && wanted)
-        await permissions.request(tool().manifest.id, wanted);
+        await permissions.request(kit().manifest.id, wanted);
       return attachScripts(behaviour, {
         store,
-        tool,
+        kit,
         http: browserHttp(),
         selection: () => this.selected,
         ...(this.workspace
@@ -727,7 +727,7 @@ export class AppController {
     handle.catch((error) => this.pushMessage('error', message(error)));
     this.scriptsByBehaviour.set(behaviour, handle);
   }
-  /** Rule engines by behaviour: they need the store and the tool, which `Behaviour` does not hold. */
+  /** Rule engines by behaviour: they need the store and the Kit, which `Behaviour` does not hold. */
   private rulesByBehaviour = new WeakMap<Behaviour, RulesHandle>();
 
   private disposeBehaviour(behaviour: Behaviour) {
@@ -742,15 +742,15 @@ export class AppController {
   }
 
   /** Builds the formulas, events, rules and scripts of a model store; the hook for later phases. */
-  private makeBehaviour(store: ModelStore, tool: () => ToolLibrary): Behaviour {
+  private makeBehaviour(store: ModelStore, kit: () => Kit): Behaviour {
     const behaviour = createBehaviour({
       store,
-      tool,
+      kit,
       host: this.behaviourHost(() => this.current.open?.behaviour ?? behaviour),
     });
     this.rulesByBehaviour.set(
       behaviour,
-      attachRules(behaviour, { store, tool }),
+      attachRules(behaviour, { store, kit }),
     );
     return behaviour;
   }
@@ -834,7 +834,7 @@ export class AppController {
     const open = this.current.open;
     if (!open) return;
     const text = describeClash(
-      open.tool,
+      open.kit,
       open.store.state as Model,
       clash,
       this.nameOf(clash.by),
@@ -854,7 +854,7 @@ export class AppController {
     try {
       this.disposeBehaviour(open.behaviour);
       await open.session.close();
-      await open.toolSession.close();
+      await open.kitSession.close();
     } finally {
       this.set({
         open: null,
@@ -876,26 +876,26 @@ export class AppController {
   // Reading across models ---------------------------------------------------------------------
 
   /**
-   * Adds a tool library from the text of its file. The file is checked first and a library that
+   * Adds a Kit from the text of its file. The file is checked first and a library that
    * is already in the workspace is not added twice. Returns the folder name it was given.
    */
-  async addToolLibrary(text: string): Promise<string | undefined> {
+  async addKit(text: string): Promise<string | undefined> {
     return this.attempt(async () => {
       const ws = this.need();
-      const tool = this.parseToolText(text);
-      const existing = await ws.findToolSlug(tool.manifest.id);
+      const kit = this.parseKitText(text);
+      const existing = await ws.findKitSlug(kit.manifest.id);
       if (existing)
         throw new Error(
-          `The Kit "${tool.manifest.name}" is already in this workspace.`,
+          `The Kit "${kit.manifest.name}" is already in this workspace.`,
         );
-      const slug = await ws.createTool(tool);
+      const slug = await ws.createKit(kit);
       await this.refresh();
       return slug;
     });
   }
 
-  /** Reads the text of a tool library file, bringing an older format up to date. */
-  private parseToolText(text: string): ToolLibrary {
+  /** Reads the text of a Kit file, bringing an older format up to date. */
+  private parseKitText(text: string): Kit {
     let value: unknown;
     try {
       value = JSON.parse(text);
@@ -913,7 +913,7 @@ export class AppController {
           cause: error,
         });
     }
-    const parsed = parseToolLibrary(upgraded);
+    const parsed = parseKit(upgraded);
     if (!parsed.ok)
       throw new Error(
         `That file is not a valid Kit.\n${formatIssues(parsed.issues)}`,
@@ -921,24 +921,24 @@ export class AppController {
     return parsed.value;
   }
 
-  /** The model types of a tool library of this workspace, for the new-model dialog. */
-  async modelTypesOf(toolSlug: string): Promise<ModelTypeDef[]> {
-    const { document } = await this.need().loadTool(toolSlug);
+  /** The model types of a Kit of this workspace, for the new-model dialog. */
+  async modelTypesOf(kitSlug: string): Promise<ModelTypeDef[]> {
+    const { document } = await this.need().loadKit(kitSlug);
     return Object.values(document.modelTypes).sort((a, b) =>
       a.key.localeCompare(b.key),
     );
   }
 
   /**
-   * Every model of the workspace with its tool library, for the reference picker and find across
+   * Every model of the workspace with its Kit, for the reference picker and find across
    * models. The open model is read from its live store, so unsaved edits count.
    */
   async readAllModels(): Promise<
-    { entry: ModelEntry; model: Model; tool: ToolLibrary }[]
+    { entry: ModelEntry; model: Model; kit: Kit }[]
   > {
     const ws = this.need();
-    const tools = new Map<string, ToolLibrary>();
-    const result: { entry: ModelEntry; model: Model; tool: ToolLibrary }[] = [];
+    const kits = new Map<string, Kit>();
+    const result: { entry: ModelEntry; model: Model; kit: Kit }[] = [];
     for (const entry of this.current.models) {
       try {
         const open = this.current.open;
@@ -946,21 +946,21 @@ export class AppController {
           result.push({
             entry,
             model: open.store.state as Model,
-            tool: open.tool,
+            kit: open.kit,
           });
           continue;
         }
-        const toolSlug = await ws.findToolSlug(entry.tool);
-        if (!toolSlug) continue;
-        let tool = tools.get(toolSlug);
-        if (!tool) {
-          tool = (await ws.loadTool(toolSlug)).document;
-          tools.set(toolSlug, tool);
+        const kitSlug = await ws.findKitSlug(entry.kit);
+        if (!kitSlug) continue;
+        let kit = kits.get(kitSlug);
+        if (!kit) {
+          kit = (await ws.loadKit(kitSlug)).document;
+          kits.set(kitSlug, kit);
         }
         result.push({
           entry,
           model: (await ws.loadModel(entry.slug)).document,
-          tool,
+          kit,
         });
       } catch {
         // A model that cannot be read is left out of searches; opening it shows the reason.
@@ -971,7 +971,7 @@ export class AppController {
 
   // Files and packages --------------------------------------------------------------------------
 
-  private pendingTool: PreparedToolImport | null = null;
+  private pendingKit: PreparedKitImport | null = null;
 
   /** Downloads one model as a `.mkmodel.json` file. */
   exportModelFile(slug: string): Promise<void | undefined> {
@@ -981,12 +981,12 @@ export class AppController {
     });
   }
 
-  /** Downloads models, with their tool library, as one `.mkbundle` file. */
+  /** Downloads models, with their Kit, as one `.mkbundle` file. */
   exportBundle(slugs: string[]): Promise<void | undefined> {
     return this.attempt(async () => {
       const { fileName, bytes } = await exportBundle(this.need(), {
         models: slugs,
-        includeTool: true,
+        includeKit: true,
       });
       downloadFile(fileName, bytes);
     });
@@ -997,57 +997,57 @@ export class AppController {
     return this.attempt(async () => {
       const ws = this.need();
       const model = (await ws.loadModel(slug)).document;
-      const toolSlug = await ws.findToolSlug(model.manifest.tool);
-      if (!toolSlug) throw new Error('The Kit of this model is missing.');
-      const tool = (await ws.loadTool(toolSlug)).document;
+      const kitSlug = await ws.findKitSlug(model.manifest.tool);
+      if (!kitSlug) throw new Error('The Kit of this model is missing.');
+      const kit = (await ws.loadKit(kitSlug)).document;
       downloadFile(
         `${slug}.csv.zip`,
-        exportCsvZip(tool, model, { bom: true }),
+        exportCsvZip(kit, model, { bom: true }),
         'application/zip',
       );
     });
   }
 
-  exportToolPackage(toolSlug: string): Promise<void | undefined> {
+  exportKitPackage(kitSlug: string): Promise<void | undefined> {
     return this.attempt(async () => {
-      const { fileName, bytes } = await exportToolPackageFrom(
+      const { fileName, bytes } = await exportKitPackageFrom(
         this.need(),
-        toolSlug,
+        kitSlug,
       );
       downloadFile(fileName, bytes, 'application/zip');
     });
   }
 
-  /** Reads a `.mktool` file and asks for confirmation through `state.toolImport`. */
-  async importToolPackage(bytes: Uint8Array): Promise<void> {
-    this.pendingTool = await prepareToolImport(this.need(), bytes);
-    this.set({ toolImport: this.pendingTool.plan });
+  /** Reads a `.mktool` file and asks for confirmation through `state.kitImport`. */
+  async importKitPackage(bytes: Uint8Array): Promise<void> {
+    this.pendingKit = await prepareKitImport(this.need(), bytes);
+    this.set({ kitImport: this.pendingKit.plan });
   }
 
-  confirmToolImport(): Promise<void | undefined> {
+  confirmKitImport(): Promise<void | undefined> {
     return this.attempt(async () => {
-      const prepared = this.pendingTool;
+      const prepared = this.pendingKit;
       if (!prepared) return;
-      this.pendingTool = null;
-      const { slug, created } = await applyToolUpdate(this.need(), prepared);
+      this.pendingKit = null;
+      const { slug, created } = await applyKitUpdate(this.need(), prepared);
       this.set({
-        toolImport: null,
+        kitImport: null,
         notes: [
           `${created ? 'Added' : 'Updated'} the Kit "${prepared.incoming.manifest.name}".`,
         ],
       });
       await this.refresh();
-      // A tool library that is open in Build mode was rewritten under it.
+      // A Kit that is open in Build mode was rewritten under it.
       if (this.current.build?.slug === slug) await this.openBuild(slug);
     });
   }
 
-  cancelToolImport(): void {
-    this.pendingTool = null;
-    this.set({ toolImport: null });
+  cancelKitImport(): void {
+    this.pendingKit = null;
+    this.set({ kitImport: null });
   }
 
-  /** Imports the files the user chose or dropped: models, bundles and tool packages. */
+  /** Imports the files the user chose or dropped: models, bundles and Kit packages. */
   importFiles(files: File[]): Promise<void | undefined> {
     return this.attempt(async () => {
       const ws = this.need();
@@ -1059,7 +1059,7 @@ export class AppController {
       const results = await importFiles(ordered, {
         model: (text) => importModelFile(ws, text),
         bundle: (bytes) => importBundle(ws, bytes),
-        tool: (bytes) => this.importToolPackage(bytes),
+        kit: (bytes) => this.importKitPackage(bytes),
       });
       const notes: string[] = [];
       for (const r of results) {
@@ -1140,7 +1140,7 @@ export class AppController {
     this.setGit({ settings: open });
   }
 
-  /** Brings a tool library from a repository into the workspace and opens it in Build mode. */
+  /** Brings a Kit from a repository into the workspace and opens it in Build mode. */
   openFromGit(target: GitTarget): Promise<boolean | undefined> {
     return this.gitRun(async () => {
       const ws = this.need();
@@ -1155,19 +1155,19 @@ export class AppController {
         token,
       );
       const snapshot = await remote.read(target.branch);
-      const { tool, issues, assets } = fromLayout(snapshot.files);
-      if (!tool)
+      const { kit, issues, assets } = fromLayout(snapshot.files);
+      if (!kit)
         throw new Error(
           `This folder does not hold a Kit: ${issues.map((i) => i.message).join('; ') || 'tool.json is missing'}.`,
         );
-      const slug = await ws.createTool(tool);
+      const slug = await ws.createKit(kit);
       // Asset names get a hash in the workspace, so shapes that name them by their old file name show a gap until fixed.
       for (const asset of assets) {
         if (asset.encoding !== 'base64') continue;
         const bytes = Uint8Array.from(atob(asset.content), (c) =>
           c.charCodeAt(0),
         );
-        await ws.addToolAsset(slug, asset.path.replace(/^assets\//, ''), bytes);
+        await ws.addKitAsset(slug, asset.path.replace(/^assets\//, ''), bytes);
       }
       await this.links().put(
         linkFromSnapshot(
@@ -1188,7 +1188,7 @@ export class AppController {
     });
   }
 
-  /** Reads the link of the tool library that was just opened in Build mode. */
+  /** Reads the link of the Kit that was just opened in Build mode. */
   private async loadGitLink(slug: string): Promise<void> {
     // Without IndexedDB (tests in Node, a blocked profile) there are no links, and Git mode is off.
     const link = await this.links()
@@ -1242,7 +1242,7 @@ export class AppController {
       const done = await commitPending({
         remote,
         link,
-        tool: build.store.state,
+        kit: build.store.state,
         assets: this.repositoryAssets(link),
         message: commitMessage,
       });
@@ -1256,14 +1256,14 @@ export class AppController {
     });
   }
 
-  /** Applies a merged tool library to the open one as a single undo step. */
-  private async applyGitTool(
-    tool: PullMerged['tool'],
+  /** Applies a merged Kit to the open one as a single undo step. */
+  private async applyGitKit(
+    kit: PullMerged['kit'],
     link: GitLink,
   ): Promise<void> {
     const build = this.current.build;
     if (!build) return;
-    const batch = pullBatch(build.store.state, tool);
+    const batch = pullBatch(build.store.state, kit);
     if (batch) {
       const result = this.runBuild(batch);
       if (!result.ok) throw new Error(result.error);
@@ -1273,7 +1273,7 @@ export class AppController {
     this.gitRefreshPending();
   }
 
-  /** Pull: merges the branch into the tool library; clashes wait for `gitResolve`. */
+  /** Pull: merges the branch into the Kit; clashes wait for `gitResolve`. */
   gitPull(): Promise<void | undefined> {
     return this.gitRun(async () => {
       const { link } = this.current.git;
@@ -1284,7 +1284,7 @@ export class AppController {
       const outcome = await pull({
         remote,
         link,
-        tool: build.store.state,
+        kit: build.store.state,
         assets: this.repositoryAssets(link),
       });
       if (outcome.status === 'up-to-date') {
@@ -1295,7 +1295,7 @@ export class AppController {
         this.setGit({ conflicts: outcome });
         return;
       }
-      await this.applyGitTool(outcome.tool, outcome.link);
+      await this.applyGitKit(outcome.kit, outcome.link);
       this.setGit({ note: 'Pulled the changes from the repository.' });
     });
   }
@@ -1305,7 +1305,7 @@ export class AppController {
       const merged = this.current.git.conflicts;
       if (!merged) return;
       const done = finishPull(merged, choices);
-      await this.applyGitTool(done.tool, done.link);
+      await this.applyGitKit(done.kit, done.link);
       this.setGit({ note: 'Pulled the changes and kept your choices.' });
     });
   }
@@ -1326,7 +1326,7 @@ export class AppController {
     this.setGit({ releases: null });
   }
 
-  /** Switches the tool library to a tagged release; an ordinary edit that can be undone. */
+  /** Switches the Kit to a tagged release; an ordinary edit that can be undone. */
   gitUseRelease(tag: GitTag): Promise<void | undefined> {
     return this.gitRun(async () => {
       const { link } = this.current.git;
@@ -1334,7 +1334,7 @@ export class AppController {
       const opened = await openRelease(await this.remoteFor(link), tag.name);
       const build = this.current.build;
       if (!build) return;
-      const batch = pullBatch(build.store.state, opened.tool);
+      const batch = pullBatch(build.store.state, opened.kit);
       if (batch) {
         const result = this.runBuild(batch);
         if (!result.ok) throw new Error(result.error);
@@ -1401,32 +1401,29 @@ export class AppController {
     });
   }
 
-  trashTool(slug: string): Promise<void | undefined> {
+  trashKit(slug: string): Promise<void | undefined> {
     return this.attempt(async () => {
-      await this.need().trashTool(slug);
+      await this.need().trashKit(slug);
       await this.refresh();
     });
   }
 
-  restoreTool(slug: string): Promise<void | undefined> {
+  restoreKit(slug: string): Promise<void | undefined> {
     return this.attempt(async () => {
-      await this.need().restoreTool(slug);
+      await this.need().restoreKit(slug);
       await this.refresh();
     });
   }
 
   // Build mode --------------------------------------------------------------------------------
 
-  /** Makes an empty tool library in the workspace and returns its folder name. */
-  createToolLibrary(
-    name: string,
-    languages?: string[],
-  ): Promise<string | undefined> {
+  /** Makes an empty Kit in the workspace and returns its folder name. */
+  createKit(name: string, languages?: string[]): Promise<string | undefined> {
     return this.attempt(async () => {
       const trimmed = name.trim();
       if (trimmed === '') throw new Error('Give the Kit a name.');
-      const slug = await this.need().createTool(
-        createEmptyTool({ name: trimmed, ...(languages ? { languages } : {}) }),
+      const slug = await this.need().createKit(
+        createEmptyKit({ name: trimmed, ...(languages ? { languages } : {}) }),
       );
       await this.refresh();
       return slug;
@@ -1434,10 +1431,10 @@ export class AppController {
   }
 
   /**
-   * Makes a new tool library from a copy of a workspace library (`slug`) or of the text of a
+   * Makes a new Kit from a copy of a workspace library (`slug`) or of the text of a
    * built-in one (`text`), to extend it (ADR 0010). Returns its folder name; the original is not changed.
    */
-  copyToolLibrary(
+  copyKit(
     name: string,
     from: { slug: string } | { text: string },
   ): Promise<string | undefined> {
@@ -1447,22 +1444,22 @@ export class AppController {
       const ws = this.need();
       const source =
         'slug' in from
-          ? (await ws.loadTool(from.slug)).document
-          : this.parseToolText(from.text);
-      const slug = await ws.createTool(cloneToolLibrary(source, trimmed));
+          ? (await ws.loadKit(from.slug)).document
+          : this.parseKitText(from.text);
+      const slug = await ws.createKit(cloneKit(source, trimmed));
       await this.refresh();
       return slug;
     });
   }
 
-  /** Opens a tool library for editing; its changes are written as they are made. */
+  /** Opens a Kit for editing; its changes are written as they are made. */
   async openBuild(slug: string): Promise<boolean> {
     return (
       (await this.attempt(async () => {
         const ws = this.need();
         await this.closeModel();
         await this.closeBuild();
-        const opened = await ws.openTool(slug, {
+        const opened = await ws.openKit(slug, {
           ...this.sessionOptions(),
           onStatus: (sync) => this.set({ sync, save: saveOf(sync) }),
           onWarning: (w) =>
@@ -1502,7 +1499,7 @@ export class AppController {
         revision: build.revision + 1,
         canUndo: build.store.canUndo(),
         canRedo: build.store.canRedo(),
-        issues: validateToolLibrary(build.store.state),
+        issues: validateKit(build.store.state),
       },
     });
   }
@@ -1526,10 +1523,10 @@ export class AppController {
   }
 
   /**
-   * Runs a command on the tool library being edited. A refused command (a key that is taken, a
+   * Runs a command on the Kit being edited. A refused command (a key that is taken, a
    * class that is still in use) comes back as a message, and nothing has changed.
    */
-  runBuild(command: ToolCommandOrBatch): CommandResult {
+  runBuild(command: KitCommandOrBatch): CommandResult {
     const build = this.current.build;
     if (!build) return { ok: false, error: 'No Kit is open.' };
     try {
@@ -1568,7 +1565,7 @@ export class AppController {
     };
   }
 
-  /** Writes the open tool library's pending changes now. */
+  /** Writes the open Kit's pending changes now. */
   async flushBuild(): Promise<void> {
     await this.current.build?.session.flush();
   }

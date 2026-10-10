@@ -7,7 +7,7 @@ import {
   effectiveRelationAttributes,
   optionValue,
   type AttributeDef,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 import { FUNCTION_NAMES } from '@metakit-app/formula';
 import type { ChatMessage, CompletionRequest } from './provider';
@@ -40,14 +40,14 @@ function listed<T>(items: T[], line: (item: T) => string): string[] {
 }
 
 /**
- * A compact text of the meta-model: what a person would read to know what the tool can model.
- * It is built from the tool library only; no model is ever passed in (ADR 0008).
+ * A compact text of the meta-model: what a person would read to know what the Kit can model.
+ * It is built from the Kit only; no model is ever passed in (ADR 0008).
  */
-export function summariseTool(tool: ToolLibrary): string {
+export function summariseKit(kit: Kit): string {
   const out: string[] = [
-    `Kit: "${tool.manifest.name}". Languages: ${tool.manifest.languages.join(', ')}.`,
+    `Kit: "${kit.manifest.name}". Languages: ${kit.manifest.languages.join(', ')}.`,
   ];
-  const classes = Object.values(tool.classes).sort((a, b) =>
+  const classes = Object.values(kit.classes).sort((a, b) =>
     a.key.localeCompare(b.key),
   );
   out.push('', 'Classes (id, key, kind, attributes including inherited ones):');
@@ -56,26 +56,26 @@ export function summariseTool(tool: ToolLibrary): string {
     ...listed(classes, (c) => {
       let attrs: AttributeDef[];
       try {
-        attrs = effectiveAttributes(tool, c.id);
+        attrs = effectiveAttributes(kit, c.id);
       } catch {
         attrs = c.attributes;
       }
-      const parent = c.extends ? tool.classes[c.extends] : undefined;
+      const parent = c.extends ? kit.classes[c.extends] : undefined;
       return `- ${c.key} [${c.id}] ${c.kind}${c.abstract ? ', abstract' : ''}${parent ? `, extends ${parent.key}` : ''}: ${attrs.map(describeAttribute).join('; ') || 'no attributes'}`;
     }),
   );
 
-  const relations = Object.values(tool.relations).sort((a, b) =>
+  const relations = Object.values(kit.relations).sort((a, b) =>
     a.key.localeCompare(b.key),
   );
   out.push('', 'Relation classes (id, key, from, to, attributes):');
   if (relations.length === 0) out.push('- none yet');
-  const keyOf = (id: string) => tool.classes[id as never]?.key ?? id;
+  const keyOf = (id: string) => kit.classes[id as never]?.key ?? id;
   out.push(
     ...listed(relations, (r) => {
       let attrs: AttributeDef[];
       try {
-        attrs = effectiveRelationAttributes(tool, r.id);
+        attrs = effectiveRelationAttributes(kit, r.id);
       } catch {
         attrs = r.attributes;
       }
@@ -83,7 +83,7 @@ export function summariseTool(tool: ToolLibrary): string {
     }),
   );
 
-  const modelTypes = Object.values(tool.modelTypes);
+  const modelTypes = Object.values(kit.modelTypes);
   if (modelTypes.length > 0) {
     out.push('', 'Model types:');
     out.push(
@@ -94,7 +94,7 @@ export function summariseTool(tool: ToolLibrary): string {
     );
   }
 
-  const rules = Object.values(tool.rules ?? {});
+  const rules = Object.values(kit.rules ?? {});
   if (rules.length > 0) {
     out.push('', 'Existing rules:');
     out.push(
@@ -105,14 +105,14 @@ export function summariseTool(tool: ToolLibrary): string {
       ),
     );
   }
-  const shapes = Object.values(tool.shapes ?? {});
+  const shapes = Object.values(kit.shapes ?? {});
   if (shapes.length > 0) {
     out.push('', 'Existing shapes (id, kind, name):');
     out.push(
       ...listed(shapes, (s) => `- [${s.id}] ${s.kind} "${s.name ?? ''}"`),
     );
   }
-  const scripts = Object.values(tool.scripts ?? {});
+  const scripts = Object.values(kit.scripts ?? {});
   if (scripts.length > 0) {
     out.push('', 'Existing scripts:');
     out.push(...listed(scripts, (s) => `- "${s.name}"`));
@@ -262,20 +262,20 @@ You only know the Kit definition below. You never see anyone's models and you mu
 Use only class, relation class and attribute names that exist in the Kit definition, unless the description asks for new ones.`;
 
 export function systemPrompt(
-  tool: ToolLibrary,
+  kit: Kit,
   kind: DraftKind,
   language?: string,
 ): string {
   const lang =
-    language && tool.manifest.languages.includes(language)
+    language && kit.manifest.languages.includes(language)
       ? `Write labels and messages in the language "${language}".`
-      : `Write labels and messages in the language "${tool.manifest.languages[0] ?? 'en'}".`;
+      : `Write labels and messages in the language "${kit.manifest.languages[0] ?? 'en'}".`;
   const parts: string[] = [
     SYSTEM_BASE,
     lang,
     '',
     'KIT DEFINITION',
-    summariseTool(tool),
+    summariseKit(kit),
     '',
   ];
   switch (kind) {
@@ -316,7 +316,7 @@ export function systemPrompt(
         'The first line must be a comment "// Name: <short name of the script>". Register menu commands with commands.register and react to events with on(...).',
         'The declarations of the "metakit" module for this Kit:',
         '```ts',
-        generateDeclarations({ ...tool, scripts: {}, rules: {} }),
+        generateDeclarations({ ...kit, scripts: {}, rules: {} }),
         '```',
         'Example of the style wanted:',
         '```ts',
@@ -335,13 +335,13 @@ export function userPrompt(kind: DraftKind, sentence: string): string {
 }
 
 export function buildRequest(
-  tool: ToolLibrary,
+  kit: Kit,
   kind: DraftKind,
   sentence: string,
   language?: string,
 ): CompletionRequest {
   return {
-    system: systemPrompt(tool, kind, language),
+    system: systemPrompt(kit, kind, language),
     messages: [{ role: 'user', content: userPrompt(kind, sentence) }],
     maxTokens: kind === 'script' ? 6000 : 4096,
   };

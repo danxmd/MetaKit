@@ -1,7 +1,7 @@
 <script lang="ts">
   import { DocsLayer, pushDocsContext } from '../../docs/context';
   import { onMount } from 'svelte';
-  import type { ToolLibrary } from '@metakit-app/core';
+  import type { Kit } from '@metakit-app/core';
   import type { AssistantService } from '../../assistant/assistant-service';
 
   // Only the public members: the class has private fields, which makes two copies of it (one
@@ -16,11 +16,11 @@
 
   let {
     service,
-    tool,
+    kit,
   }: {
     service: AssistantServiceLike;
-    /** The open tool library, used for the sample; an example tool is used when none is open. */
-    tool?: ToolLibrary | undefined;
+    /** The open Kit, used for the sample; an example kit is used when none is open. */
+    kit?: Kit | undefined;
   } = $props();
 
   let tick = $state(0);
@@ -44,7 +44,7 @@
       model: service.settings.model,
     };
   });
-  const sample = $derived(sampleOutgoing(tool));
+  const sample = $derived(sampleOutgoing(kit));
 
   async function guard(
     what: 'test' | 'save' | null,

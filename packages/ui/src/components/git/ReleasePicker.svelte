@@ -17,7 +17,7 @@
     onCancel,
   }: {
     releases: GitTag[];
-    /** The tag the tool library follows now, if any. */
+    /** The tag the Kit follows now, if any. */
     current?: string | null;
     busy?: boolean;
     error?: string | null;

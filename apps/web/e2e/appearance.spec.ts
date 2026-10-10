@@ -1,8 +1,8 @@
 import { expect, test, type Page } from '@playwright/test';
 import { canvasPoint } from './app';
 
-/** A bare workspace and a new tool library in Build mode. */
-async function newTool(page: Page, name: string) {
+/** A bare workspace and a new Kit in Build mode. */
+async function newKit(page: Page, name: string) {
   const folder = `bare-${Math.random().toString(36).slice(2)}`;
   await page.addInitScript(
     ([wanted]) => {
@@ -82,7 +82,7 @@ const countColour = (page: Page, hex: string) =>
 test('a first-time builder makes the Task look without a formula or a layer', async ({
   page,
 }, info) => {
-  await newTool(page, 'Pipeline');
+  await newKit(page, 'Pipeline');
   await addItem(page, 'classes', 'Task');
   await addChoice(page, 'Status', ['Planned', 'Done', 'Failed']);
   await addChoice(page, 'Priority', ['Low', 'High']);
@@ -150,7 +150,7 @@ test('a first-time builder makes the Task look without a formula or a layer', as
   // The card shows the look; it was a simple look, never hand drawn.
   await expect(page.getByTestId('appearance-drawn')).toHaveCount(0);
 
-  // A model of this tool: a Task with Status Done draws green, and the mark follows Priority.
+  // A model of this Kit: a Task with Status Done draws green, and the mark follows Priority.
   await addItem(page, 'modelTypes', 'Pipeline map');
   await page.getByTestId('mt-class-Task').check();
   await page.getByTestId('build-back').click();
@@ -197,7 +197,7 @@ test('a first-time builder makes the Task look without a formula or a layer', as
 test('a relation gets a dashed line with a triangle end, and it can be undone', async ({
   page,
 }, info) => {
-  await newTool(page, 'Relations');
+  await newKit(page, 'Relations');
   await addItem(page, 'classes', 'Task');
   await addItem(page, 'relations', 'Performs');
   await page.getByTestId('relation-from-Task').check();
@@ -261,7 +261,7 @@ test('a relation gets a dashed line with a triangle end, and it can be undone', 
 test('a hand-drawn look can be replaced, and a simple look asks before it is edited as a drawing', async ({
   page,
 }) => {
-  await newTool(page, 'Drawn');
+  await newKit(page, 'Drawn');
   await addItem(page, 'classes', 'Task');
   // "New drawn shape" is an advanced choice under "More ways to set the look".
   await openMore(page);
@@ -317,7 +317,7 @@ test('a hand-drawn look can be replaced, and a simple look asks before it is edi
 });
 
 test('renaming an attribute keeps the look working', async ({ page }) => {
-  await newTool(page, 'Rename');
+  await newKit(page, 'Rename');
   await addItem(page, 'classes', 'Task');
   await addChoice(page, 'Status', ['Planned', 'Done']);
   await page.getByTestId('class-edit-appearance').click();
@@ -339,7 +339,7 @@ test('renaming an attribute keeps the look working', async ({ page }) => {
 });
 
 test('the editor can be used with the keyboard', async ({ page }) => {
-  await newTool(page, 'Keys');
+  await newKit(page, 'Keys');
   await addItem(page, 'classes', 'Task');
   await page.getByTestId('class-edit-appearance').click();
   await expect(page.getByTestId('appearance-editor')).toBeVisible();

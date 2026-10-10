@@ -1,13 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import type { ToolLibrary } from '@metakit-app/core';
+import type { Kit } from '@metakit-app/core';
 import { fromLayout, kebab, toLayout } from './layout';
-import { sampleTool, sampleWithBehaviour } from './sample-tools';
+import { sampleKit, sampleWithBehaviour } from './sample-kits';
 
 const read = (path: string): string =>
   readFileSync(
-    fileURLToPath(new URL(`../../../../tools/${path}`, import.meta.url)),
+    fileURLToPath(new URL(`../../../../kits/${path}`, import.meta.url)),
     'utf8',
   );
 
@@ -28,7 +28,7 @@ describe('toLayout', () => {
   });
 
   it('keeps ids inside the files and writes stable JSON', () => {
-    const file = toLayout(sampleTool('bpmn-lite')).find(
+    const file = toLayout(sampleKit('bpmn-lite')).find(
       (f) => f.path === 'classes/task.json',
     )!;
     expect(file.content.endsWith('\n')).toBe(true);
@@ -51,10 +51,10 @@ describe('toLayout', () => {
   });
 
   it('gives parts with the same file name their id as a suffix, whatever the order', () => {
-    const tool = sampleTool('er-lite');
-    const [a, b] = Object.values(tool.classes);
-    const twin = (first: typeof a, second: typeof b): ToolLibrary => ({
-      ...tool,
+    const kit = sampleKit('er-lite');
+    const [a, b] = Object.values(kit.classes);
+    const twin = (first: typeof a, second: typeof b): Kit => ({
+      ...kit,
       classes: {
         [first!.id]: { ...first!, key: 'Same_Name' },
         [second!.id]: { ...second!, key: 'SameName' },
@@ -76,7 +76,7 @@ describe('toLayout', () => {
   });
 
   it('carries assets as given, under assets/', () => {
-    const files = toLayout(sampleTool('er-lite'), [
+    const files = toLayout(sampleKit('er-lite'), [
       { path: 'icon.1234.png', content: 'AAEC', encoding: 'base64' },
     ]);
     expect(files.find((f) => f.path === 'assets/icon.1234.png')).toEqual({
@@ -88,46 +88,46 @@ describe('toLayout', () => {
 });
 
 describe('round trip', () => {
-  const cases: [string, () => ToolLibrary][] = [
-    ['bpmn-lite', () => sampleTool('bpmn-lite')],
-    ['er-lite', () => sampleTool('er-lite')],
+  const cases: [string, () => Kit][] = [
+    ['bpmn-lite', () => sampleKit('bpmn-lite')],
+    ['er-lite', () => sampleKit('er-lite')],
     ['bpmn-lite with the behaviour examples', sampleWithBehaviour],
   ];
   for (const [name, make] of cases) {
-    it(`gives an equal tool library and identical files for ${name}`, () => {
-      const tool = make();
+    it(`gives an equal Kit and identical files for ${name}`, () => {
+      const kit = make();
       const assets = [
         { path: 'a/b.png', content: 'AAEC', encoding: 'base64' as const },
       ];
-      const files = toLayout(tool, assets);
+      const files = toLayout(kit, assets);
       const back = fromLayout(files);
       expect(back.issues).toEqual([]);
-      expect(back.tool).toEqual(tool);
+      expect(back.kit).toEqual(kit);
       expect(back.assets).toEqual(assets);
-      expect(toLayout(back.tool!, back.assets)).toEqual(files);
+      expect(toLayout(back.kit!, back.assets)).toEqual(files);
     });
   }
 
   it('orders the parts by id, so the key order after sync is not a change', () => {
-    const tool = sampleTool('bpmn-lite');
-    const shuffled: ToolLibrary = {
-      ...tool,
-      classes: Object.fromEntries(Object.entries(tool.classes).reverse()),
+    const kit = sampleKit('bpmn-lite');
+    const shuffled: Kit = {
+      ...kit,
+      classes: Object.fromEntries(Object.entries(kit.classes).reverse()),
     };
-    expect(toLayout(shuffled)).toEqual(toLayout(tool));
-    const back = fromLayout(toLayout(tool)).tool!;
-    expect(Object.keys(back.classes)).toEqual(Object.keys(tool.classes).sort());
+    expect(toLayout(shuffled)).toEqual(toLayout(kit));
+    const back = fromLayout(toLayout(kit)).kit!;
+    expect(Object.keys(back.classes)).toEqual(Object.keys(kit.classes).sort());
   });
 });
 
 describe('small diffs', () => {
   it('changes one file when one attribute label changes', () => {
-    const tool = sampleTool('bpmn-lite');
-    const task = Object.values(tool.classes).find((c) => c.key === 'Task')!;
-    const edited: ToolLibrary = {
-      ...tool,
+    const kit = sampleKit('bpmn-lite');
+    const task = Object.values(kit.classes).find((c) => c.key === 'Task')!;
+    const edited: Kit = {
+      ...kit,
       classes: {
-        ...tool.classes,
+        ...kit.classes,
         [task.id]: {
           ...task,
           attributes: task.attributes.map((a, i) =>
@@ -136,7 +136,7 @@ describe('small diffs', () => {
         },
       },
     };
-    const before = new Map(toLayout(tool).map((f) => [f.path, f.content]));
+    const before = new Map(toLayout(kit).map((f) => [f.path, f.content]));
     const after = new Map(toLayout(edited).map((f) => [f.path, f.content]));
     expect([...after.keys()]).toEqual([...before.keys()]);
     const different = [...after]
@@ -146,16 +146,16 @@ describe('small diffs', () => {
   });
 
   it('adding a class changes the new file and tool.json only', () => {
-    const tool = sampleTool('er-lite');
-    const first = Object.values(tool.classes)[0]!;
-    const added: ToolLibrary = {
-      ...tool,
+    const kit = sampleKit('er-lite');
+    const first = Object.values(kit.classes)[0]!;
+    const added: Kit = {
+      ...kit,
       classes: {
-        ...tool.classes,
+        ...kit.classes,
         cls_new: { ...first, id: 'cls_new', key: 'Fresh', attributes: [] },
       },
     };
-    const before = new Map(toLayout(tool).map((f) => [f.path, f.content]));
+    const before = new Map(toLayout(kit).map((f) => [f.path, f.content]));
     const different = toLayout(added)
       .filter((f) => before.get(f.path) !== f.content)
       .map((f) => f.path);
@@ -165,8 +165,8 @@ describe('small diffs', () => {
 
 describe('hand edits', () => {
   it('reports a damaged class file with its path and still loads the rest', () => {
-    const tool = sampleTool('er-lite');
-    const files = toLayout(tool).map((f) =>
+    const kit = sampleKit('er-lite');
+    const files = toLayout(kit).map((f) =>
       f.path === 'classes/entity.json'
         ? { ...f, content: '{ "id": "cls_entity", ' }
         : f,
@@ -178,16 +178,16 @@ describe('hand edits', () => {
           i.path === 'classes/entity.json' && /not valid JSON/.test(i.message),
       ),
     ).toBe(true);
-    expect(back.tool).not.toBeNull();
-    expect(back.tool!.classes['cls_entity' as never]).toBeUndefined();
-    expect(Object.keys(back.tool!.classes)).toHaveLength(
-      Object.keys(tool.classes).length - 1,
+    expect(back.kit).not.toBeNull();
+    expect(back.kit!.classes['cls_entity' as never]).toBeUndefined();
+    expect(Object.keys(back.kit!.classes)).toHaveLength(
+      Object.keys(kit.classes).length - 1,
     );
   });
 
   it('reports a file that does not match its schema and names the file', () => {
-    const tool = sampleTool('er-lite');
-    const files = toLayout(tool).map((f) =>
+    const kit = sampleKit('er-lite');
+    const files = toLayout(kit).map((f) =>
       f.path === 'classes/attribute.json'
         ? {
             ...f,
@@ -202,7 +202,7 @@ describe('hand edits', () => {
   });
 
   it('reports a file without an id', () => {
-    const files = toLayout(sampleTool('er-lite')).map((f) =>
+    const files = toLayout(sampleKit('er-lite')).map((f) =>
       f.path === 'classes/entity.json' ? { ...f, content: '{}\n' } : f,
     );
     const back = fromLayout(files);
@@ -219,19 +219,19 @@ describe('hand edits', () => {
     expect(
       back.issues.some((i) => i.path === 'scripts/check-gateways.json'),
     ).toBe(true);
-    expect(back.tool!.scripts['scr_gateway_check']?.source).toBe('');
+    expect(back.kit!.scripts['scr_gateway_check']?.source).toBe('');
   });
 
   it('cannot load without tool.json and says so', () => {
     const back = fromLayout(
-      toLayout(sampleTool('er-lite')).filter((f) => f.path !== 'tool.json'),
+      toLayout(sampleKit('er-lite')).filter((f) => f.path !== 'tool.json'),
     );
-    expect(back.tool).toBeNull();
+    expect(back.kit).toBeNull();
     expect(back.issues[0]?.path).toBe('tool.json');
   });
 
   it('refuses a newer format and ignores files outside the layout', () => {
-    const files = toLayout(sampleTool('er-lite')).map((f) =>
+    const files = toLayout(sampleKit('er-lite')).map((f) =>
       f.path === 'tool.json'
         ? {
             ...f,
@@ -243,10 +243,10 @@ describe('hand edits', () => {
         : f,
     );
     const back = fromLayout([...files, { path: 'README.md', content: '# hi' }]);
-    expect(back.tool).toBeNull();
+    expect(back.kit).toBeNull();
     expect(back.issues[0]?.message).toMatch(/newer version/);
     const ok = fromLayout([
-      ...toLayout(sampleTool('er-lite')),
+      ...toLayout(sampleKit('er-lite')),
       { path: 'README.md', content: '# hi' },
     ]);
     expect(ok.issues).toEqual([]);

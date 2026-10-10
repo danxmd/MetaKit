@@ -5,7 +5,7 @@ import {
   type ModelTypeId,
   type RandomSource,
 } from '../ids';
-import type { AttributeDef, ToolLibrary } from '../meta/types';
+import type { AttributeDef, Kit } from '../meta/types';
 import { MODEL_FORMAT_VERSION, type Model } from './types';
 
 function defaultsOf(
@@ -20,14 +20,14 @@ function defaultsOf(
 
 /**
  * An empty model of a model type, with the default values of the model type's own attributes. The
- * model remembers the tool library and its version so that later releases can tell what made it.
+ * model remembers the Kit and its version so that later releases can tell what made it.
  */
 export function createEmptyModel(
-  tool: ToolLibrary,
+  kit: Kit,
   modelType: ModelTypeId,
   options: { name: string; folder?: string; random?: RandomSource },
 ): Model {
-  const type = tool.modelTypes[modelType];
+  const type = kit.modelTypes[modelType];
   if (!type) throw new Error(`The Kit has no model type ${modelType}.`);
   const name = options.name.trim();
   if (name === '') throw new Error('The model needs a name.');
@@ -36,8 +36,8 @@ export function createEmptyModel(
     manifest: {
       id: newId('model', options.random),
       name,
-      tool: tool.manifest.id,
-      toolVersion: tool.manifest.version,
+      tool: kit.manifest.id,
+      toolVersion: kit.manifest.version,
       modelType,
       ...(options.folder ? { folder: options.folder } : {}),
     },

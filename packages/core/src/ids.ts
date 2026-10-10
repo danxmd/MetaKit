@@ -16,7 +16,7 @@ export const ID_PREFIXES = {
 
 export type IdKind = keyof typeof ID_PREFIXES;
 
-export type ToolId = `tool_${string}`;
+export type KitId = `tool_${string}`;
 export type ClassId = `cls_${string}`;
 export type RelationId = `rel_${string}`;
 export type AttributeId = `att_${string}`;

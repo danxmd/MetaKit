@@ -1,8 +1,8 @@
 import { expect, test, type Page } from '@playwright/test';
 import { prepare } from './app';
 
-/** A fresh workspace with one new tool library open in Build mode. */
-async function openNewTool(page: Page, name = 'Catalog tool') {
+/** A fresh workspace with one new Kit open in Build mode. */
+async function openNewKit(page: Page, name = 'Catalog Kit') {
   await prepare(page, { name: 'Anna', colour: '#e8590c', seed: false });
   await page.getByTestId('open-folder').click();
   await page.getByRole('button', { name: 'Create workspace' }).click();
@@ -17,7 +17,7 @@ test.describe('Class catalog', () => {
   test('adds classes from two tabs with their relation classes, and one undo removes them', async ({
     page,
   }) => {
-    await openNewTool(page);
+    await openNewKit(page);
     // Only the Classes section offers the catalog.
     await page.getByTestId('build-tab-relations').click();
     await expect(page.getByTestId('catalog-open')).toHaveCount(0);
@@ -84,7 +84,7 @@ test.describe('Class catalog', () => {
   test('searches across topics and marks classes that are already there', async ({
     page,
   }) => {
-    await openNewTool(page);
+    await openNewKit(page);
     await page.getByTestId('build-new-name').fill('Dataset');
     await page.getByTestId('build-add').click();
     await expect(page.getByTestId('build-item-Dataset')).toBeVisible();

@@ -5,8 +5,8 @@ import { newModel, prepare } from './app';
 const panel = (page: Page) => page.getByTestId('docs-panel');
 const context = (page: Page) => expect(panel(page));
 
-/** A fresh workspace with one new tool library open in Build mode. */
-async function openNewTool(page: Page, name = 'Docs tool') {
+/** A fresh workspace with one new Kit open in Build mode. */
+async function openNewKit(page: Page, name = 'Docs Kit') {
   await prepare(page, { name: 'Anna', colour: '#e8590c', seed: false });
   await page.getByTestId('open-folder').click();
   await page.getByRole('button', { name: 'Create workspace' }).click();
@@ -134,7 +134,7 @@ test.describe('Help side bar', () => {
   test('follows the page: Build sections, editors and dialogs report their own context', async ({
     page,
   }) => {
-    await openNewTool(page);
+    await openNewKit(page);
     await page.keyboard.press('F1');
     await context(page).toHaveAttribute('data-context', 'build.classes');
     for (const [tab, ctx] of [
@@ -246,7 +246,7 @@ test.describe('Documentation area', () => {
     await expect(page.getByTestId('docs-group-start')).toContainText(
       'Getting started',
     );
-    // The tutorials of the built-in data and AI tools are written, so the placeholder card is gone.
+    // The tutorials of the built-in data and AI Kits are written, so the placeholder card is gone.
     await expect(page.getByTestId('docs-group-tutorials')).toContainText('4');
     await expect(page.getByTestId('docs-tutorials-empty')).toHaveCount(0);
     await expect(

@@ -1,14 +1,14 @@
 <script lang="ts">
   import { DocsLayer, pushDocsContext } from '../docs/context';
   import { onMount } from 'svelte';
-  import type { ToolUpdatePlan } from '@metakit-app/storage';
+  import type { KitUpdatePlan } from '@metakit-app/storage';
 
   let {
     plan,
     onConfirm,
     onCancel,
   }: {
-    plan: ToolUpdatePlan;
+    plan: KitUpdatePlan;
     onConfirm: () => void;
     onCancel: () => void;
   } = $props();
@@ -38,7 +38,7 @@
   data-testid="kit-import-dialog"
 >
   <div class="body">
-    <h2 id="kit-import-title">{title}: {plan.tool.name}</h2>
+    <h2 id="kit-import-title">{title}: {plan.kit.name}</h2>
     <p class="version" data-testid="kit-import-version">{versionText}</p>
 
     {#if plan.isNew}

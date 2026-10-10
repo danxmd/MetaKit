@@ -12,7 +12,7 @@ Goal: collect the ways your team could use AI, score each one, and see at a glan
 
 ## What it is
 
-The **AI use-case portfolio** Kit ships in the repository folder `tools/ai-use-case-portfolio/`. It has these classes:
+The **AI use-case portfolio** Kit ships in the repository folder `kits/ai-use-case-portfolio/`. It has these classes:
 
 | Class | What it is |
 | --- | --- |

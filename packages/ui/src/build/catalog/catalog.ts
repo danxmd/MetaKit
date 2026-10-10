@@ -7,8 +7,8 @@ import {
   type Labels,
   type RelationDef,
   type RelationId,
-  type ToolCommand,
-  type ToolLibrary,
+  type KitCommand,
+  type Kit,
 } from '@metakit-app/core';
 import { nodeShapeFromLook, relationShapeFromLook } from '@metakit-app/shapes';
 import { shapeNameFor } from '../appearance-model';
@@ -32,17 +32,17 @@ export {
 } from './entries';
 
 /**
- * Turns picks from the class catalog into tool commands (openspec/changes/ai-data-catalog). Pure
+ * Turns picks from the class catalog into Kit commands (openspec/changes/ai-data-catalog). Pure
  * and DOM-free: the dialog runs the batch through the command API, so adding is one undo step.
  */
 
 export interface CatalogAddResult {
-  batch: BatchCommand<ToolCommand>;
+  batch: BatchCommand<KitCommand>;
   added: {
     classes: { id: ClassId; key: string }[];
     relations: { id: RelationId; key: string }[];
   };
-  /** Picked keys the tool library already has; they are left as they are. */
+  /** Picked keys the Kit already has; they are left as they are. */
   skipped: string[];
 }
 
@@ -63,9 +63,9 @@ export function relationsOfClass(key: string): CatalogRelation[] {
   );
 }
 
-/** Catalog text goes under English, or under the first language when the tool has no English. */
-function languageOf(tool: ToolLibrary): string {
-  const languages = tool.manifest.languages;
+/** Catalog text goes under English, or under the first language when the Kit has no English. */
+function languageOf(kit: Kit): string {
+  const languages = kit.manifest.languages;
   return languages.includes('en') ? 'en' : (languages[0] ?? 'en');
 }
 
@@ -77,10 +77,8 @@ function attributeDef(a: CatalogAttribute, language: string): AttributeDef {
   return def;
 }
 
-function classKeys(tool: ToolLibrary): Map<string, ClassId> {
-  return new Map(
-    Object.values(tool.classes).map((c) => [c.key, c.id] as const),
-  );
+function classKeys(kit: Kit): Map<string, ClassId> {
+  return new Map(Object.values(kit.classes).map((c) => [c.key, c.id] as const));
 }
 
 /** A relation class whose two ends allow any class, such as Depends on. */
@@ -96,22 +94,22 @@ export const GENERIC_RELATIONS: readonly CatalogRelation[] =
 
 /**
  * Which catalog relation classes come with these picks. An end is met when one of its classes is
- * picked or already in the tool library by key; an end that allows any class is always met. A
+ * picked or already in the Kit by key; an end that allows any class is always met. A
  * relation class needs both ends met, a picked class on one of its named ends (so Owns comes with
- * Person, not with every class), and a key the tool library does not have yet. Generic relation
+ * Person, not with every class), and a key the Kit does not have yet. Generic relation
  * classes come only when they are listed in `generic`.
  */
 export function catalogRelationsFor(
   picks: readonly string[],
-  tool: ToolLibrary,
+  kit: Kit,
   generic: readonly string[] = [],
 ): CatalogRelation[] {
-  const present = classKeys(tool);
+  const present = classKeys(kit);
   const picked = new Set(
     picks.filter((k) => classByKey.has(k) && !present.has(k)),
   );
   if (picked.size === 0) return [];
-  const taken = new Set(Object.values(tool.relations).map((r) => r.key));
+  const taken = new Set(Object.values(kit.relations).map((r) => r.key));
   const available = (k: string) => picked.has(k) || present.has(k);
   const met = (end: string[]) => end.length === 0 || end.some(available);
   const touches = (end: string[]) => end.some((k) => picked.has(k));
@@ -125,13 +123,13 @@ export function catalogRelationsFor(
 }
 
 export function catalogCommands(
-  tool: ToolLibrary,
+  kit: Kit,
   picks: readonly string[],
   options: { withRelations: boolean; generic?: readonly string[] },
 ): CatalogAddResult {
-  const language = languageOf(tool);
-  const ids = classKeys(tool);
-  const commands: ToolCommand[] = [];
+  const language = languageOf(kit);
+  const ids = classKeys(kit);
+  const commands: KitCommand[] = [];
   const added: CatalogAddResult['added'] = { classes: [], relations: [] };
   const skipped: string[] = [];
   const seen = new Set<string>();
@@ -170,7 +168,7 @@ export function catalogCommands(
     const newKeys = added.classes.map((c) => c.key);
     const after = new Map(ids);
     for (const c of added.classes) after.set(c.key, c.id);
-    // The tool library format needs at least one class at each end, so an end that allows any
+    // The Kit format needs at least one class at each end, so an end that allows any
     // class lists every class there is once the picks are in.
     const every = [...after.values()];
     const resolve = (end: string[]): ClassId[] =>
@@ -180,7 +178,7 @@ export function catalogCommands(
             const id = after.get(k);
             return id ? [id] : [];
           });
-    const wanted = catalogRelationsFor(newKeys, tool, generic).filter(
+    const wanted = catalogRelationsFor(newKeys, kit, generic).filter(
       (r) => options.withRelations || isGeneric(r),
     );
     for (const r of wanted) {

@@ -50,7 +50,7 @@ The topics are grouped in categories. The same groups appear in the **Documentat
 
 ## Examples
 
-Throughout the documentation one sample Kit appears again and again: **Agent pipeline** (the folder `tools/agent-pipeline` in the MetaKit repository). It describes work done by AI agents and humans. Its classes are **Agent**, **Human**, **Task**, **Artifact**, **Gate** and **Stage**, and its relation classes include **Performs** (an agent performs a task) and **Produces** (a task produces an artifact). Its sample model `code-review.mkmodel.json` shows a small review pipeline.
+Throughout the documentation one sample Kit appears again and again: **Agent pipeline** (the folder `kits/agent-pipeline` in the MetaKit repository). It describes work done by AI agents and humans. Its classes are **Agent**, **Human**, **Task**, **Artifact**, **Gate** and **Stage**, and its relation classes include **Performs** (an agent performs a task) and **Produces** (a task produces an artifact). Its sample model `code-review.mkmodel.json` shows a small review pipeline.
 
 ## Good to know
 

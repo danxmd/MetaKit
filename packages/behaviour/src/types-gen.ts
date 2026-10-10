@@ -6,7 +6,7 @@ import {
   isA,
   optionValue,
   type AttributeDef,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 
 const EVENT_LIST = EVENT_NAMES.map((e) => `    | ${JSON.stringify(e)}`).join(
@@ -94,35 +94,33 @@ const sorted = <T extends { key: string }>(items: T[]): T[] =>
   [...items].sort((a, b) => (a.key < b.key ? -1 : 1));
 
 /**
- * The TypeScript declaration of the `metakit` module for one tool library: its class, relation
+ * The TypeScript declaration of the `metakit` module for one Kit: its class, relation
  * class and attribute names, the type of every attribute value (so that `task.attrs.Priority` is
  * `"Low" | "Medium" | "High" | null`), and the 24 events with the payload and filter each takes.
  * The editor's language service reads it; nothing here runs in a script.
  */
-export function generateDeclarations(tool: ToolLibrary): string {
-  const classes = sorted(Object.values(tool.classes));
-  const relations = sorted(Object.values(tool.relations));
-  const modelTypes = sorted(Object.values(tool.modelTypes));
+export function generateDeclarations(kit: Kit): string {
+  const classes = sorted(Object.values(kit.classes));
+  const relations = sorted(Object.values(kit.relations));
+  const modelTypes = sorted(Object.values(kit.modelTypes));
 
   const classAttrs: string[] = [];
   const family: string[] = [];
   for (const cls of classes) {
     let defs: AttributeDef[] = [];
     try {
-      defs = effectiveAttributes(tool, cls.id);
+      defs = effectiveAttributes(kit, cls.id);
     } catch {
       // A broken class chain still gets a name, with no attributes.
     }
     classAttrs.push(`  ${str(cls.key)}: {\n${members(defs)}\n  };`);
-    const kin = classes
-      .filter((c) => isA(tool, c.id, cls.id))
-      .map((c) => c.key);
+    const kin = classes.filter((c) => isA(kit, c.id, cls.id)).map((c) => c.key);
     family.push(`  ${str(cls.key)}: ${union(kin)};`);
   }
   const relationAttrs = relations.map((r) => {
     let defs: AttributeDef[] = [];
     try {
-      defs = effectiveRelationAttributes(tool, r.id);
+      defs = effectiveRelationAttributes(kit, r.id);
     } catch {
       // As above.
     }
@@ -140,7 +138,7 @@ export function generateDeclarations(tool: ToolLibrary): string {
   ].sort();
 
   return `declare module "metakit" {
-  /** Every class of the Kit "${tool.manifest.name.replace(/\*\//g, '')}". */
+  /** Every class of the Kit "${kit.manifest.name.replace(/\*\//g, '')}". */
   export type ClassName = ${union(classes.map((c) => c.key))};
   /** The classes you can create objects of. */
   export type ConcreteClassName = ${union(classes.filter((c) => !c.abstract).map((c) => c.key))};

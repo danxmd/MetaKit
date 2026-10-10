@@ -43,7 +43,7 @@ A model is stored in your [[concepts-workspace|workspace folder]] as a document 
 
 ## Examples
 
-`code-review.mkmodel.json` in `tools/agent-pipeline` is a model called "Code review pipeline", of the type **Pipeline**. It has **Stage** containers such as Plan and Build. Inside them sit people and agents, for example the **Human** Priya (tech lead) and the **Agent** Planner. **Performs** connectors link them to **Tasks**, and **Produces** connectors link Tasks to **Artifacts**.
+`code-review.mkmodel.json` in `kits/agent-pipeline` is a model called "Code review pipeline", of the type **Pipeline**. It has **Stage** containers such as Plan and Build. Inside them sit people and agents, for example the **Human** Priya (tech lead) and the **Agent** Planner. **Performs** connectors link them to **Tasks**, and **Produces** connectors link Tasks to **Artifacts**.
 
 ## Good to know
 

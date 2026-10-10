@@ -1,10 +1,10 @@
-import type { ToolLibrary } from '../meta/types';
+import type { Kit } from '../meta/types';
 import { MODEL_FORMAT_VERSION, type Model } from '../model/types';
-import { TOOL_FORMAT_VERSION } from '../meta/types';
+import { KIT_FORMAT_VERSION } from '../meta/types';
 
 /** Readable fixed ids, so tests can name things. Real libraries use random ids. */
 export const SAMPLE = {
-  tool: 'tool_sample',
+  kit: 'tool_sample',
   flowNode: 'cls_flownode',
   task: 'cls_task',
   gateway: 'cls_gateway',
@@ -24,12 +24,12 @@ export const SAMPLE = {
   attCode: 'att_code',
 } as const;
 
-/** A small BPMN-like tool library covering inheritance, an abstract class, a relation and cardinalities. */
-export function sampleTool(): ToolLibrary {
+/** A small BPMN-like Kit covering inheritance, an abstract class, a relation and cardinalities. */
+export function sampleKit(): Kit {
   return {
-    formatVersion: TOOL_FORMAT_VERSION,
+    formatVersion: KIT_FORMAT_VERSION,
     manifest: {
-      id: SAMPLE.tool,
+      id: SAMPLE.kit,
       name: 'Sample',
       version: '1.0.0',
       languages: ['en', 'de'],
@@ -190,7 +190,7 @@ export function sampleTool(): ToolLibrary {
     panels: {},
     rules: {},
     scripts: {},
-  } as unknown as ToolLibrary;
+  } as unknown as Kit;
 }
 
 export function emptySampleModel(): Model {
@@ -199,7 +199,7 @@ export function emptySampleModel(): Model {
     manifest: {
       id: 'mdl_sample',
       name: 'Order process',
-      tool: SAMPLE.tool,
+      tool: SAMPLE.kit,
       toolVersion: '1.0.0',
       modelType: SAMPLE.process,
     },
@@ -214,10 +214,10 @@ export function clone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
 }
 
-/** The sample tool, an empty model of it and the ids the tests need, for packages that test behaviour. */
+/** The sample Kit, an empty model of it and the ids the tests need, for packages that test behaviour. */
 export function SAMPLE_FOR_TESTS() {
   return {
-    tool: sampleTool(),
+    kit: sampleKit(),
     model: emptySampleModel(),
     ids: {
       task: SAMPLE.task,

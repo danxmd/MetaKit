@@ -12,7 +12,7 @@ order: 370
 
 ## What it is
 
-**Data governance and ownership** is a Kit that comes with MetaKit, in the repository folder `tools/data-governance/`. It describes who is responsible for which data, which rules apply to it and how good it is.
+**Data governance and ownership** is a Kit that comes with MetaKit, in the repository folder `kits/data-governance/`. It describes who is responsible for which data, which rules apply to it and how good it is.
 
 | Class | What it stands for |
 | --- | --- |
@@ -29,7 +29,7 @@ The relation classes are **Owns**, **Stewards** and **Custodian of** (the three 
 
 ## Where to find it
 
-The Kit is built in ([[built-in-kits]]): its card is in the **Built-in Kits** section of the Kits page. The sample model "Sales and finance domains" is `tools/data-governance/sales-finance.mkmodel.json`.
+The Kit is built in ([[built-in-kits]]): its card is in the **Built-in Kits** section of the Kits page. The sample model "Sales and finance domains" is `kits/data-governance/sales-finance.mkmodel.json`.
 
 ## How to use it
 

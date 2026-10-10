@@ -10,7 +10,7 @@ import {
   type Model,
   type ModelTypeId,
   type RelationId,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 import { paintConnectors, paintOps, type LabelTheme } from './paint';
 import { Scene } from './scene';
@@ -46,13 +46,13 @@ function defaultValues(
  * A throwaway model holding one object of the class (with its default values), or two tiny
  * objects joined by one connector of the relation class. It exists only to be compiled and drawn.
  */
-function previewModel(tool: ToolLibrary, target: PreviewTarget): Model {
+function previewModel(kit: Kit, target: PreviewTarget): Model {
   const manifest = {
     id: 'mdl_preview',
     name: 'Preview',
-    tool: tool.manifest.id,
-    toolVersion: tool.manifest.version,
-    modelType: Object.keys(tool.modelTypes)[0] as ModelTypeId,
+    tool: kit.manifest.id,
+    toolVersion: kit.manifest.version,
+    modelType: Object.keys(kit.modelTypes)[0] as ModelTypeId,
   } as Model['manifest'];
   const model: Model = {
     formatVersion: 1,
@@ -62,7 +62,7 @@ function previewModel(tool: ToolLibrary, target: PreviewTarget): Model {
     connectors: {},
   };
   if ('class' in target) {
-    const cls = tool.classes[target.class];
+    const cls = kit.classes[target.class];
     const size =
       cls?.kind === 'node'
         ? DEFAULT_ELEMENT_SIZE
@@ -75,7 +75,7 @@ function previewModel(tool: ToolLibrary, target: PreviewTarget): Model {
       y: 0,
       w: size.w,
       h: size.h,
-      attrs: defaultValues(effectiveAttributes(tool, target.class)),
+      attrs: defaultValues(effectiveAttributes(kit, target.class)),
       pos: 'a',
     };
     return model;
@@ -102,7 +102,7 @@ function previewModel(tool: ToolLibrary, target: PreviewTarget): Model {
     from: a,
     to: b,
     bends: [],
-    attrs: defaultValues(effectiveRelationAttributes(tool, target.relation)),
+    attrs: defaultValues(effectiveRelationAttributes(kit, target.relation)),
     pos: 'a',
   };
   return model;
@@ -114,7 +114,7 @@ function previewModel(tool: ToolLibrary, target: PreviewTarget): Model {
  */
 export function drawPreview(
   canvas: HTMLCanvasElement,
-  tool: ToolLibrary,
+  kit: Kit,
   target: PreviewTarget,
   options: PreviewOptions,
 ): void {
@@ -131,9 +131,9 @@ export function drawPreview(
 
   let scene: Scene;
   try {
-    scene = new Scene(previewModel(tool, target), tool);
+    scene = new Scene(previewModel(kit, target), kit);
   } catch {
-    // A tool library that does not compile has nothing to show yet; the card still has the text.
+    // A Kit that does not compile has nothing to show yet; the card still has the text.
     return;
   }
   const pad = options.padding ?? 3;

@@ -7,26 +7,26 @@ import {
   type ElementId,
   type Model,
   type ReferenceAttribute,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 import { ReferenceIndex, referenceValue } from './references';
 
-const tool = JSON.parse(
+const kit = JSON.parse(
   readFileSync(
     fileURLToPath(
-      new URL('../../../../tools/bpmn-lite/tool.json', import.meta.url),
+      new URL('../../../../kits/bpmn-lite/kit.json', import.meta.url),
     ),
     'utf8',
   ),
-) as ToolLibrary;
-const type = Object.values(tool.modelTypes)[0]!;
+) as Kit;
+const type = Object.values(kit.modelTypes)[0]!;
 
 function modelWith(
   name: string,
   tasks: string[],
 ): { model: Model; ids: ElementId[] } {
-  const store = createModelStore(createEmptyModel(tool, type.id, { name }), {
-    tool,
+  const store = createModelStore(createEmptyModel(kit, type.id, { name }), {
+    kit,
   });
   const ids = tasks.map(
     (t, i) =>
@@ -43,7 +43,7 @@ function modelWith(
   return { model: store.state as Model, ids };
 }
 
-const owner = tool.classes['cls_task']!.attributes.find(
+const owner = kit.classes['cls_task']!.attributes.find(
   (a) => a.key === 'Owner',
 ) as ReferenceAttribute;
 
@@ -56,11 +56,11 @@ describe('ReferenceIndex', () => {
         slug: `m${i}`,
         id: model.manifest.id,
         name: model.manifest.name,
-        tool: model.manifest.tool,
+        kit: model.manifest.tool,
         modelType: model.manifest.modelType,
       },
       model,
-      tool,
+      kit,
     })),
   );
 

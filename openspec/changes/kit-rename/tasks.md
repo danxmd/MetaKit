@@ -11,9 +11,9 @@ Starts after PRs #17 and #18 are merged.
 
 ## 2. PR 2: code names (`feat/kit-rename-code`)
 
-- [ ] 2.1 Rename types, functions, components and files across packages and apps.
-- [ ] 2.2 `tools/` → `kits/`, `tool.json` → `kit.json` in the repository (with `git mv`); fixtures and imports.
-- [ ] 2.3 Stored strings collected in `packages/storage/src/names.ts`; no stored name changes yet.
+- [x] 2.1 Rename types, functions, components and files across packages and apps.
+- [x] 2.2 `tools/` → `kits/`, `tool.json` → `kit.json` in the repository (with `git mv`); fixtures and imports.
+- [x] 2.3 Stored strings collected in `packages/storage/src/names.ts`; no stored name changes yet.
 
 ## 3. PR 3: stored files and migrations (`feat/kit-rename-files`)
 

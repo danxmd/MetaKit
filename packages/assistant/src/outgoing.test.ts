@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { SAMPLE, emptySampleModel } from '@metakit-app/core/testing';
 import type { Model } from '@metakit-app/core';
 import { draft } from './draft';
-import { MARKER, RULE_REPLY, SCRIPT_REPLY, planTool } from './fixtures';
+import { MARKER, RULE_REPLY, SCRIPT_REPLY, planKit } from './fixtures';
 import { assertNoModelContent, describeOutgoing } from './outgoing';
 import { DRAFT_KINDS } from './prompts';
 import { scriptedProvider } from './testing';
@@ -28,29 +28,29 @@ describe('what is sent', () => {
   it('never contains model content (marker test)', async () => {
     const model = modelWithMarker();
     expect(JSON.stringify(model)).toContain(MARKER);
-    const tool = planTool();
+    const kit = planKit();
     const provider = scriptedProvider([
       RULE_REPLY,
       SCRIPT_REPLY,
       '{ not json',
       '{ still not json',
     ]);
-    await draft({ provider, key: 'fake', tool, kind: 'rule', sentence: 'x' });
-    await draft({ provider, key: 'fake', tool, kind: 'script', sentence: 'y' });
+    await draft({ provider, key: 'fake', kit, kind: 'rule', sentence: 'x' });
+    await draft({ provider, key: 'fake', kit, kind: 'script', sentence: 'y' });
     // A draft that fails twice sends a retry too, with the errors appended.
-    await draft({ provider, key: 'fake', tool, kind: 'shape', sentence: 'z' });
+    await draft({ provider, key: 'fake', kit, kind: 'shape', sentence: 'z' });
     expect(provider.requests.length).toBeGreaterThanOrEqual(4);
     for (const request of provider.requests)
       expect(JSON.stringify(request)).not.toContain(MARKER);
     for (const kind of DRAFT_KINDS)
-      expect(describeOutgoing(tool, kind, 'a sentence').text).not.toContain(
+      expect(describeOutgoing(kit, kind, 'a sentence').text).not.toContain(
         MARKER,
       );
   });
 
-  it('holds the tool definition and the sentence', () => {
+  it('holds the Kit definition and the sentence', () => {
     const preview = describeOutgoing(
-      planTool(),
+      planKit(),
       'rule',
       'high-priority tasks need an owner',
     );
@@ -62,30 +62,30 @@ describe('what is sent', () => {
   });
 
   it('is stopped by the guard when a model id or model file gets in', () => {
-    const tool = planTool();
-    const ok = describeOutgoing(tool, 'class', 'a class').request;
-    expect(() => assertNoModelContent(ok, tool)).not.toThrow();
+    const kit = planKit();
+    const ok = describeOutgoing(kit, 'class', 'a class').request;
+    expect(() => assertNoModelContent(ok, kit)).not.toThrow();
     const withId = {
       ...ok,
       messages: [{ role: 'user', content: 'see el_abcdefghjk' }],
     };
-    expect(() => assertNoModelContent(withId, tool)).toThrow(/model object/);
+    expect(() => assertNoModelContent(withId, kit)).toThrow(/model object/);
     const withFile = {
       ...ok,
       messages: [
         { role: 'user', content: '{"elements": {}, "connectors": {}}' },
       ],
     };
-    expect(() => assertNoModelContent(withFile, tool)).toThrow(/model file/);
+    expect(() => assertNoModelContent(withFile, kit)).toThrow(/model file/);
     const foreignId = {
       ...ok,
       messages: [{ role: 'user', content: 'use cls_abcdefghjk' }],
     };
-    expect(() => assertNoModelContent(foreignId, tool)).toThrow(
+    expect(() => assertNoModelContent(foreignId, kit)).toThrow(
       /not in the Kit/,
     );
     expect(() =>
-      assertNoModelContent({ ...ok, model: modelWithMarker() }, tool),
+      assertNoModelContent({ ...ok, model: modelWithMarker() }, kit),
     ).toThrow(/unexpected field/);
   });
 
@@ -95,7 +95,7 @@ describe('what is sent', () => {
       draft({
         provider,
         key: 'fake',
-        tool: planTool(),
+        kit: planKit(),
         kind: 'rule',
         sentence: 'rename el_abcdefghjk',
       }),

@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import {
   createModelStore,
-  validateToolLibrary,
+  validateKit,
   type ElementId,
   type Json,
   type Model,
   type Rule,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
-import { clone, SAMPLE, sampleTool } from '@metakit-app/core/testing';
+import { clone, SAMPLE, sampleKit } from '@metakit-app/core/testing';
 import { emptySampleModel } from '@metakit-app/core/testing';
 import {
   attachRules,
@@ -18,10 +18,10 @@ import {
   type BehaviourHost,
 } from './index';
 
-/** The sample tool with the attributes the plan's rule needs. */
-export function toolWithOwner(): ToolLibrary {
-  const tool = clone(sampleTool());
-  tool.classes[SAMPLE.task]!.attributes.push(
+/** The sample Kit with the attributes the plan's rule needs. */
+export function kitWithOwner(): Kit {
+  const kit = clone(sampleKit());
+  kit.classes[SAMPLE.task]!.attributes.push(
     { id: 'att_status', key: 'Status', type: 'text' },
     { id: 'att_owner', key: 'Owner', type: 'text' },
     {
@@ -31,7 +31,7 @@ export function toolWithOwner(): ToolLibrary {
       run: { kind: 'rule', ref: 'rule_cmd' },
     },
   );
-  return tool;
+  return kit;
 }
 
 const planRule = (): Rule => ({
@@ -54,7 +54,7 @@ const planRule = (): Rule => ({
 });
 
 interface Setup {
-  tool: ToolLibrary;
+  kit: Kit;
   store: ReturnType<typeof createModelStore>;
   messages: string[];
   engine: ReturnType<typeof attachRules>['engine'];
@@ -66,18 +66,18 @@ interface Setup {
 }
 
 function setup(rules: Rule[], host: Partial<BehaviourHost> = {}): Setup {
-  const tool = toolWithOwner();
-  for (const r of rules) tool.rules[r.id] = r;
-  const store = createModelStore(emptySampleModel(), { tool });
+  const kit = kitWithOwner();
+  for (const r of rules) kit.rules[r.id] = r;
+  const store = createModelStore(emptySampleModel(), { kit });
   const messages: string[] = [];
   const h = silentHost({
     message: (kind, text) => void messages.push(`${kind}: ${text}`),
     ...host,
   });
-  const b = createBehaviour({ store, tool: () => tool, host: h });
-  const attached = attachRules(b, { store, tool: () => tool });
+  const b = createBehaviour({ store, kit: () => kit, host: h });
+  const attached = attachRules(b, { store, kit: () => kit });
   return {
-    tool,
+    kit,
     store,
     messages,
     engine: attached.engine,
@@ -108,9 +108,9 @@ const set = (s: Setup, id: string, attr: string, value: Json) =>
   });
 
 describe('the plan rule', () => {
-  it('is a valid rule of the tool library', () => {
+  it('is a valid rule of the Kit', () => {
     const s = setup([planRule()]);
-    expect(validateToolLibrary(s.tool)).toEqual([]);
+    expect(validateKit(s.kit)).toEqual([]);
   });
 
   it('sets the status and warns when a task gets High priority without an owner', () => {
@@ -170,7 +170,7 @@ describe('disabled and reloaded rules', () => {
     const id = s.task();
     set(s, id, SAMPLE.attPriority, 'High');
     expect(s.get(id, 'att_status')).toBeUndefined();
-    s.tool.rules[rule.id] = { ...rule, enabled: true };
+    s.kit.rules[rule.id] = { ...rule, enabled: true };
     s.attached.reload();
     const other = s.task();
     set(s, other, SAMPLE.attPriority, 'High');
@@ -519,10 +519,10 @@ describe('commands and buttons', () => {
   it('leaves disabled command rules out and drops them on reload', () => {
     const s = setup([cmd(false)]);
     expect(s.b.commands.list()).toEqual([]);
-    s.tool.rules['rule_cmd'] = cmd(true);
+    s.kit.rules['rule_cmd'] = cmd(true);
     s.attached.reload();
     expect(s.b.commands.list()).toHaveLength(1);
-    delete s.tool.rules['rule_cmd'];
+    delete s.kit.rules['rule_cmd'];
     s.attached.reload();
     expect(s.b.commands.list()).toEqual([]);
   });
@@ -530,7 +530,7 @@ describe('commands and buttons', () => {
   it('runs the rule an action attribute points to', () => {
     const s = setup([cmd()]);
     const id = s.task();
-    const def = s.tool.classes[SAMPLE.task]!.attributes.find(
+    const def = s.kit.classes[SAMPLE.task]!.attributes.find(
       (a) => a.key === 'Go',
     ) as never;
     runActionAttribute(s.b, s.engine, def, id);

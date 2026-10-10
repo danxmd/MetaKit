@@ -2,7 +2,7 @@
   import type {
     HealthFinding,
     ModelEntry,
-    ToolEntry,
+    KitEntry,
   } from '@metakit-app/storage';
   import { buildExplorerTree, folderPaths } from '../shell/explorer';
   import type { FindAllHit } from '../shell/find-all';
@@ -15,7 +15,7 @@
   let {
     models,
     trashed,
-    tools,
+    kits,
     health,
     warnings,
     error,
@@ -36,13 +36,13 @@
   }: {
     models: ModelEntry[];
     trashed: ModelEntry[];
-    tools: ToolEntry[];
+    kits: KitEntry[];
     health: HealthFinding[];
     warnings: string[];
     error: string | null;
     notes?: string[];
     onNew: () => void;
-    /** Switches to Build mode, where tool libraries are made and added. */
+    /** Switches to Build mode, where Kits are made and added. */
     onGoBuild: () => void;
     onOpen: (slug: string) => void;
     onRename: (slug: string, name: string) => void;
@@ -84,7 +84,7 @@
 
   {#if models.length === 0}
     <section class="card empty" data-testid="no-models">
-      {#if tools.length === 0}
+      {#if kits.length === 0}
         <h2>No models yet</h2>
         <p class="muted">
           A model is made with a Kit, which says which kinds of objects and
@@ -115,7 +115,7 @@
     <FolderTree
       node={tree}
       {folders}
-      {tools}
+      {kits}
       {onOpen}
       {onRename}
       {onMove}

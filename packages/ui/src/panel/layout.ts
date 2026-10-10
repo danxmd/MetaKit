@@ -14,7 +14,7 @@ import {
   type PanelControl,
   type PanelItem,
   type PanelLayout,
-  type ToolLibrary,
+  type Kit,
   type ValidationIssue,
 } from '@metakit-app/core';
 import { run, truthy, type Value } from '@metakit-app/formula';
@@ -279,7 +279,7 @@ export function buildLayoutPanel(
  * a mix of elements and connectors, objects of different classes, or a class without a layout.
  */
 export function buildLayoutPanelFor(
-  tool: ToolLibrary,
+  kit: Kit,
   model: Model,
   targets: readonly PanelTarget[],
   issues: readonly ValidationIssue[],
@@ -304,13 +304,13 @@ export function buildLayoutPanelFor(
     );
   if (classes.size !== 1) return null;
   const classId = [...classes][0]!;
-  const layout = tool.panels?.[classId];
+  const layout = kit.panels?.[classId];
   if (!layout) return null;
   try {
     defs =
       first.id in model.elements
-        ? effectiveAttributes(tool, classId as never)
-        : effectiveRelationAttributes(tool, classId as never);
+        ? effectiveAttributes(kit, classId as never)
+        : effectiveRelationAttributes(kit, classId as never);
   } catch {
     return null;
   }

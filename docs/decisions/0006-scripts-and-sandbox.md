@@ -29,4 +29,4 @@ Phase 7 adds the third level of behaviour: TypeScript scripts that run in QuickJ
 - The language worker is large (the compiler and the ES2022 library declarations, about 3.9 MB, 1.0 MB compressed). It downloads only when someone opens a script editor.
 - The QuickJS WebAssembly file (about 236 KB compressed) and the compiler for scripts (about 46 KB compressed) download when a Kit with scripts is first opened.
 - `store.working` and `store.transact` are also what the rule engine needs to read its own writes inside a step.
-- The three example behaviours chosen with Danial (`docs/phase-7-behaviour-candidates.md`) are scripts and rules under `tools/behaviour-examples/`.
+- The three example behaviours chosen with Danial (`docs/phase-7-behaviour-candidates.md`) are scripts and rules under `kits/behaviour-examples/`.

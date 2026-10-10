@@ -8,7 +8,7 @@ import {
   type ElementData,
   type ElementId,
   type Model,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 import { CanvasView, Editor, Scene } from '@metakit-app/canvas';
 
@@ -73,7 +73,7 @@ function idPart(n: number): string {
 }
 
 /** The same layout as the phase-0 spike: 100 columns, near-neighbour connectors, seeded. */
-function generate(tool: ToolLibrary, nodes: number, connectors: number): Model {
+function generate(kit: Kit, nodes: number, connectors: number): Model {
   const rand = mulberry32(1);
   const columns = 100;
   const rows = Math.ceil(nodes / columns);
@@ -128,9 +128,9 @@ function generate(tool: ToolLibrary, nodes: number, connectors: number): Model {
     manifest: {
       id: 'mdl_bench000001',
       name: 'Benchmark',
-      tool: tool.manifest.id,
-      toolVersion: tool.manifest.version,
-      modelType: Object.values(tool.modelTypes)[0]!.id,
+      tool: kit.manifest.id,
+      toolVersion: kit.manifest.version,
+      modelType: Object.values(kit.modelTypes)[0]!.id,
     },
     attrs: {},
     elements,
@@ -154,20 +154,20 @@ const pointer = (type: string, x: number, y: number, button = 0) =>
 
 const WARMUP_FRAMES = 10;
 
-async function run(toolJson: string, frames: number): Promise<Report> {
-  const tool = JSON.parse(toolJson) as ToolLibrary;
+async function run(kitJson: string, frames: number): Promise<Report> {
+  const kit = JSON.parse(kitJson) as Kit;
   const host = document.createElement('div');
   host.style.cssText =
     'position:fixed;left:0;top:0;width:100vw;height:100vh;background:#fff;';
   document.body.append(host);
 
   const opened = performance.now();
-  const model = generate(tool, 5000, 7000);
-  const store = createModelStore(model, { tool });
-  const scene = new Scene(store.state as Model, tool);
+  const model = generate(kit, 5000, 7000);
+  const store = createModelStore(model, { kit });
+  const scene = new Scene(store.state as Model, kit);
   scene.attach(store);
-  const view = new CanvasView(host, scene, { grid: tool.settings.grid });
-  const editor = new Editor({ store, tool, view });
+  const view = new CanvasView(host, scene, { grid: kit.settings.grid });
+  const editor = new Editor({ store, kit, view });
   view.fit();
   view.paint();
   await nextFrame();

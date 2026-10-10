@@ -1,10 +1,10 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import {
-    createEmptyTool,
-    createToolStore,
+    createEmptyKit,
+    createKitStore,
     type ClassId,
-    type ToolLibrary,
+    type Kit,
   } from '@metakit-app/core';
   import { DocsLayer, pushDocsContext } from '../../docs/context';
   import { ATTRIBUTE_TYPE_LABELS } from '../../build/attributes';
@@ -24,11 +24,11 @@
   import ShapePreview from '../ShapePreview.svelte';
 
   let {
-    tool,
+    kit,
     onAdd,
     onClose,
   }: {
-    tool: ToolLibrary;
+    kit: Kit;
     /** Runs the batch; true when it was applied. */
     onAdd: (result: CatalogAddResult, message: string) => boolean;
     onClose: () => void;
@@ -38,9 +38,9 @@
   onMount(() => dialog?.showModal());
   $effect(() => pushDocsContext('build.catalog', DocsLayer.dialog));
 
-  // Thumbnails draw the catalog classes from a throwaway tool library that holds all of them.
+  // Thumbnails draw the catalog classes from a throwaway Kit that holds all of them.
   const preview = (() => {
-    const store = createToolStore(createEmptyTool({ name: 'Catalog' }));
+    const store = createKitStore(createEmptyKit({ name: 'Catalog' }));
     const result = catalogCommands(
       store.state,
       CATALOG_CLASSES.map((c) => c.key),
@@ -48,7 +48,7 @@
     );
     store.execute(result.batch);
     return {
-      tool: store.state,
+      kit: store.state,
       ids: new Map(result.added.classes.map((c) => [c.key, c.id])),
     };
   })();
@@ -64,7 +64,7 @@
   let error = $state<string | null>(null);
 
   const present = $derived(
-    new Set(Object.values(tool.classes).map((c) => c.key)),
+    new Set(Object.values(kit.classes).map((c) => c.key)),
   );
   const topicLabel = (id: CatalogTopicId) =>
     CATALOG_TOPICS.find((t) => t.id === id)?.label ?? id;
@@ -82,12 +82,12 @@
     );
   });
   const relations = $derived(
-    catalogRelationsFor(picks, tool, generic).filter(
+    catalogRelationsFor(picks, kit, generic).filter(
       (r) => withRelations || generic.includes(r.key),
     ),
   );
   const taken = $derived(
-    new Set(Object.values(tool.relations).map((r) => r.key)),
+    new Set(Object.values(kit.relations).map((r) => r.key)),
   );
   const detail = $derived(catalogClass(focused));
 
@@ -119,7 +119,7 @@
   }
 
   function add() {
-    const result = catalogCommands(tool, picks, { withRelations, generic });
+    const result = catalogCommands(kit, picks, { withRelations, generic });
     if (result.batch.commands.length === 0) {
       error = `Nothing to add. ${catalogResultText(result)}`;
       return;
@@ -216,7 +216,7 @@
           />
           <span class="thumb">
             <ShapePreview
-              tool={preview.tool}
+              kit={preview.kit}
               target={{ class: previewId(entry.key) }}
               width={40}
               height={28}
@@ -247,7 +247,7 @@
       {#if detail}
         <div class="big">
           <ShapePreview
-            tool={preview.tool}
+            kit={preview.kit}
             target={{ class: previewId(detail.key) }}
             width={180}
             height={100}

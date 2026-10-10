@@ -1,7 +1,7 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
-/** A bare workspace and a new tool library in Build mode. */
-async function newTool(page: Page, name: string) {
+/** A bare workspace and a new Kit in Build mode. */
+async function newKit(page: Page, name: string) {
   const folder = `bare-${Math.random().toString(36).slice(2)}`;
   await page.addInitScript(
     ([wanted]) => {
@@ -60,7 +60,7 @@ const pixel = (canvas: Locator, x: number, y: number) =>
 test('the task shape of the plan can be built with editor actions only', async ({
   page,
 }) => {
-  await newTool(page, 'Shapes');
+  await newKit(page, 'Shapes');
   await addClass(page, 'Task');
   await addAttribute(page, 'text', 'Name');
   await addAttribute(page, 'choice', 'Priority');

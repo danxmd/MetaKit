@@ -2,7 +2,7 @@
 
 Phase 7 is done when three behaviours from established modelling tools are rebuilt as rules or scripts. The plan says to choose them with Danial, so these are proposals. Each one is already built as an example and tested, so choosing means keeping it, or swapping it for another one from the list at the end.
 
-The examples live in `tools/behaviour-examples/`. They are add-ons for the sample Kits in `tools/`, not Kits of their own: a test (`packages/ui/src/build/behaviour-examples.test.ts`) adds each one to its Kit, loads the sample model and runs it. Every script is also type-checked against the declarations generated from its Kit.
+The examples live in `kits/behaviour-examples/`. They are add-ons for the sample Kits in `kits/`, not Kits of their own: a test (`packages/ui/src/build/behaviour-examples.test.ts`) adds each one to its Kit, loads the sample model and runs it. Every script is also type-checked against the declarations generated from its Kit.
 
 | #   | Behaviour                                    | Kit       | Where tools have it                                                                                  | Built as                                                      | Files                                              |
 | --- | -------------------------------------------- | --------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | -------------------------------------------------- |

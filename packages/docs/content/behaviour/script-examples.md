@@ -21,7 +21,7 @@ Four scripts ship with the sample Kits in the repository folder `tools/`. They a
 
 ## Where to find it
 
-The files are in `tools/behaviour-examples/` and `tools/agent-pipeline/` of the MetaKit repository. The Agent pipeline script is already part of that Kit. The others are added to BPMN lite and ER lite by the repository's tests. To use one, add a script in Build mode and paste the code. See [[scripts]].
+The files are in `kits/behaviour-examples/` and `kits/agent-pipeline/` of the MetaKit repository. The Agent pipeline script is already part of that Kit. The others are added to BPMN lite and ER lite by the repository's tests. To use one, add a script in Build mode and paste the code. See [[scripts]].
 
 ## How to use it
 

@@ -1,9 +1,9 @@
 import { describeOutgoing } from '@metakit-app/assistant';
 import {
-  createEmptyTool,
+  createEmptyKit,
   newId,
   type ClassDef,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 
 /** The short statement the settings page shows next to the sample. */
@@ -16,9 +16,9 @@ export const KEY_STATEMENT =
 export const COST_NOTE =
   'Each draft is one request, or two when the first draft needs a correction. The service bills them to your own account. The sample below shows how much text one request holds.';
 
-/** A small tool for the sample: shows what a request looks like without any real tool. */
-export function sampleToolForNotice(): ToolLibrary {
-  const tool = createEmptyTool({ name: 'Example Kit' });
+/** A small Kit for the sample: shows what a request looks like without any real Kit. */
+export function sampleKitForNotice(): Kit {
+  const kit = createEmptyKit({ name: 'Example Kit' });
   const id = newId('class');
   const task: ClassDef = {
     id,
@@ -36,14 +36,12 @@ export function sampleToolForNotice(): ToolLibrary {
       { id: newId('attribute'), key: 'Owner', type: 'text' },
     ],
   };
-  tool.classes[id] = task;
-  return tool;
+  kit.classes[id] = task;
+  return kit;
 }
 
-/** The exact text that a request for a rule would send for the given tool. */
-export function sampleOutgoing(
-  tool: ToolLibrary = sampleToolForNotice(),
-): string {
-  return describeOutgoing(tool, 'rule', 'High-priority tasks need an owner')
+/** The exact text that a request for a rule would send for the given Kit. */
+export function sampleOutgoing(kit: Kit = sampleKitForNotice()): string {
+  return describeOutgoing(kit, 'rule', 'High-priority tasks need an owner')
     .text;
 }

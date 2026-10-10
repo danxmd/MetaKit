@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { createToolStore } from '@metakit-app/core';
-import { sampleTool } from '@metakit-app/core/testing';
+import { createKitStore } from '@metakit-app/core';
+import { sampleKit } from '@metakit-app/core/testing';
 import type { ConsoleLine } from '@metakit-app/behaviour';
 import {
   consoleRows,
@@ -19,7 +19,7 @@ import {
 } from './scripts-model';
 
 function store() {
-  return createToolStore(sampleTool());
+  return createKitStore(sampleKit());
 }
 
 describe('the list of scripts', () => {
@@ -41,7 +41,7 @@ describe('the list of scripts', () => {
     expect(first.source).toContain('commands.register');
   });
 
-  it('renames, switches on and off, edits and deletes through tool commands, each undoable', () => {
+  it('renames, switches on and off, edits and deletes through Kit commands, each undoable', () => {
     const s = store();
     const script = createScript(s.state);
     s.execute(putScript(script));
@@ -78,7 +78,7 @@ describe('the list of scripts', () => {
     expect(hasCommand('commands.register({ id: "x" })')).toBe(true);
     expect(hasCommand('commands . register (')).toBe(true);
     expect(hasCommand('on("object.created", () => {})')).toBe(false);
-    expect(hasCommand(createScript(sampleTool()).source)).toBe(true);
+    expect(hasCommand(createScript(sampleKit()).source)).toBe(true);
   });
 });
 

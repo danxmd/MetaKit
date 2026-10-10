@@ -1,17 +1,17 @@
 <script lang="ts">
   import { DocsLayer, pushDocsContext } from '../../../docs/context';
   import { describePermissions } from '@metakit-app/behaviour';
-  import type { ToolPermissions } from '@metakit-app/core';
+  import type { KitPermissions } from '@metakit-app/core';
 
   let {
-    toolName,
+    kitName,
     wanted,
     onAllow,
     onDeny,
   }: {
-    toolName: string;
-    /** What the tool wants; the dialog lists it in plain English. */
-    wanted: ToolPermissions;
+    kitName: string;
+    /** What the kit wants; the dialog lists it in plain English. */
+    wanted: KitPermissions;
     onAllow: () => void;
     onDeny: () => void;
   } = $props();
@@ -34,7 +34,7 @@
   aria-labelledby="permission-title"
   data-testid="permission-dialog"
 >
-  <h2 id="permission-title">"{toolName}" asks for more</h2>
+  <h2 id="permission-title">"{kitName}" asks for more</h2>
   <p class="hint">
     The scripts of this Kit can always change the models you open with it and
     show dialogs. It also wants to:

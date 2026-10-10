@@ -12,12 +12,11 @@
     type Model,
     type ModelStore,
     type ModelTypeId,
-    type ToolLibrary,
+    type Kit,
   } from '@metakit-app/core';
   import { labelOf, paletteFor } from '../../shell/palette';
 
-  let { tool, onCollapse }: { tool: ToolLibrary; onCollapse?: () => void } =
-    $props();
+  let { kit, onCollapse }: { kit: Kit; onCollapse?: () => void } = $props();
 
   let host: HTMLDivElement;
   let store: ModelStore | null = null;
@@ -29,14 +28,12 @@
   let note = $state('');
 
   const modelTypes = $derived(
-    Object.values(tool.modelTypes).sort((a, b) => a.key.localeCompare(b.key)),
+    Object.values(kit.modelTypes).sort((a, b) => a.key.localeCompare(b.key)),
   );
   const modelType = $derived(
     modelTypes.find((m) => m.id === chosen) ?? modelTypes[0],
   );
-  const palette = $derived(
-    modelType ? paletteFor(tool, modelType, null) : null,
-  );
+  const palette = $derived(modelType ? paletteFor(kit, modelType, null) : null);
 
   function teardown() {
     editor?.destroy();
@@ -44,7 +41,7 @@
     editor = view = scene = store = null;
   }
 
-  /** Builds the preview again with the current tool library, keeping what was drawn. */
+  /** Builds the preview again with the current Kit, keeping what was drawn. */
   function mount(previous: Model | null) {
     teardown();
     if (!modelType || !host) return;
@@ -54,19 +51,19 @@
             ...previous,
             manifest: {
               ...previous.manifest,
-              toolVersion: tool.manifest.version,
+              toolVersion: kit.manifest.version,
             },
           }
-        : createEmptyModel(tool, modelType.id as ModelTypeId, {
+        : createEmptyModel(kit, modelType.id as ModelTypeId, {
             name: 'Preview',
           });
-    store = createModelStore(model, { tool });
-    scene = new Scene(model, tool);
+    store = createModelStore(model, { kit });
+    scene = new Scene(model, kit);
     scene.attach(store);
-    view = new CanvasView(host, scene, { grid: tool.settings.grid });
+    view = new CanvasView(host, scene, { grid: kit.settings.grid });
     editor = new Editor({
       store,
-      tool,
+      kit,
       view,
       allowedRelations: () => palette?.relationIds ?? new Set(),
       host: {
@@ -85,9 +82,9 @@
   });
   onDestroy(teardown);
 
-  // Every change to the tool library redraws the preview at once: this is the hot reload.
+  // Every change to the Kit redraws the preview at once: this is the hot reload.
   $effect(() => {
-    void tool;
+    void kit;
     void modelType?.id;
     if (!mounted) return;
     untrack(() => mount((store?.state as Model | undefined) ?? null));

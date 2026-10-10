@@ -1,4 +1,4 @@
-// Test helpers; not exported from the package. They read the hand-written sample tools in tools/.
+// Test helpers; not exported from the package. They read the hand-written sample Kits in kits/.
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import {
@@ -6,23 +6,23 @@ import {
   MODEL_FORMAT_VERSION,
   type Model,
   type ModelStore,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 
-export function loadTool(name: 'bpmn-lite' | 'er-lite'): ToolLibrary {
-  const url = new URL(`../../../tools/${name}/tool.json`, import.meta.url);
-  return JSON.parse(readFileSync(fileURLToPath(url), 'utf8')) as ToolLibrary;
+export function loadKit(name: 'bpmn-lite' | 'er-lite'): Kit {
+  const url = new URL(`../../../kits/${name}/kit.json`, import.meta.url);
+  return JSON.parse(readFileSync(fileURLToPath(url), 'utf8')) as Kit;
 }
 
-export function emptyModel(tool: ToolLibrary): Model {
-  const modelType = Object.values(tool.modelTypes)[0]!;
+export function emptyModel(kit: Kit): Model {
+  const modelType = Object.values(kit.modelTypes)[0]!;
   return {
     formatVersion: MODEL_FORMAT_VERSION,
     manifest: {
       id: 'mdl_testmodel1',
       name: 'Test',
-      tool: tool.manifest.id,
-      toolVersion: tool.manifest.version,
+      tool: kit.manifest.id,
+      toolVersion: kit.manifest.version,
       modelType: modelType.id,
     },
     attrs: {},
@@ -31,9 +31,9 @@ export function emptyModel(tool: ToolLibrary): Model {
   };
 }
 
-export function bpmnStore(): { tool: ToolLibrary; store: ModelStore } {
-  const tool = loadTool('bpmn-lite');
-  return { tool, store: createModelStore(emptyModel(tool), { tool }) };
+export function bpmnStore(): { kit: Kit; store: ModelStore } {
+  const kit = loadKit('bpmn-lite');
+  return { kit, store: createModelStore(emptyModel(kit), { kit }) };
 }
 
 export const BPMN = {

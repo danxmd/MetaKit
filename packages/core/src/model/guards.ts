@@ -28,7 +28,7 @@ type Rec = Record<string, unknown>;
 
 /**
  * Checks the shape of a model document: types, ids and position keys. Whether elements may
- * connect, or whether a class exists in the tool, is a question for validation, not for this.
+ * connect, or whether a class exists in the Kit, is a question for validation, not for this.
  */
 export function validateModelDocument(value: unknown): Issue[] {
   const c = new Checker();

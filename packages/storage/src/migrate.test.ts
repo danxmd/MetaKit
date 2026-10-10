@@ -136,7 +136,7 @@ describe('snapshot format 2', () => {
   });
 });
 
-describe('tool library formats 2, 3 and 4', () => {
+describe('Kit formats 2, 3 and 4', () => {
   it('adds empty shapes, panels and rules to a version 1 library and keeps the rest', () => {
     const v1 = {
       formatVersion: 1,

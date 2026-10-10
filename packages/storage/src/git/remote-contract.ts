@@ -11,7 +11,7 @@ export interface RemoteFixture {
   commitCount?: () => number;
 }
 
-/** The files the fixture must hold at the head of its default branch, inside the tool folder. */
+/** The files the fixture must hold at the head of its default branch, inside the Kit folder. */
 export const CONTRACT_SEED: readonly GitFile[] = [
   { path: 'tool.json', content: '{"format":4}\n' },
   { path: 'classes/task.json', content: '{"key":"Task"}\n' },

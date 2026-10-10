@@ -1,15 +1,15 @@
-import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { getVersion, run } from './index';
 
-const toolsDir = fileURLToPath(new URL('../../../tools', import.meta.url));
-const bpmn = join(toolsDir, 'bpmn-lite');
-const erLite = join(toolsDir, 'er-lite');
-const portfolio = join(toolsDir, 'ai-use-case-portfolio');
-const dataGovernance = join(toolsDir, 'data-governance');
+const kitsDir = fileURLToPath(new URL('../../../kits', import.meta.url));
+const bpmn = join(kitsDir, 'bpmn-lite');
+const erLite = join(kitsDir, 'er-lite');
+const portfolio = join(kitsDir, 'ai-use-case-portfolio');
+const dataGovernance = join(kitsDir, 'data-governance');
 
 async function capture(args: string[]) {
   const out: string[] = [];
@@ -58,7 +58,7 @@ describe('basics', () => {
 });
 
 describe('validate', () => {
-  it('accepts the sample tool libraries', async () => {
+  it('accepts the sample Kits', async () => {
     for (const dir of [bpmn, erLite, portfolio]) {
       const result = await capture(['validate', dir]);
       expect(result.code).toBe(0);
@@ -66,11 +66,11 @@ describe('validate', () => {
     }
   });
 
-  it('accepts the Data and AI architecture tool and finds the one warning its sample shows on purpose', async () => {
-    const dir = join(toolsDir, 'data-ai-architecture');
-    const tool = await capture(['validate', dir]);
-    expect(tool.code).toBe(0);
-    expect(tool.out).toContain('0 errors, 0 warnings');
+  it('accepts the Data and AI architecture Kit and finds the one warning its sample shows on purpose', async () => {
+    const dir = join(kitsDir, 'data-ai-architecture');
+    const kit = await capture(['validate', dir]);
+    expect(kit.code).toBe(0);
+    expect(kit.out).toContain('0 errors, 0 warnings');
     const sample = await capture([
       'validate',
       join(dir, 'customer-360.mkmodel.json'),
@@ -81,9 +81,9 @@ describe('validate', () => {
   });
 
   it('accepts the data governance sample and shows the two gaps it is built to have', async () => {
-    const tool = await capture(['validate', dataGovernance]);
-    expect(tool.code).toBe(0);
-    expect(tool.out).toContain('0 errors, 0 warnings');
+    const kit = await capture(['validate', dataGovernance]);
+    expect(kit.code).toBe(0);
+    expect(kit.out).toContain('0 errors, 0 warnings');
     const result = await capture([
       'validate',
       join(dataGovernance, 'sales-finance.mkmodel.json'),
@@ -94,7 +94,7 @@ describe('validate', () => {
     expect(result.out).toContain('needs a policy ("Governed by")');
   });
 
-  it('finds the tool next to a model file and shows no warnings for the samples', async () => {
+  it('finds the Kit next to a model file and shows no warnings for the samples', async () => {
     const result = await capture([
       'validate',
       join(bpmn, 'order-process.mkmodel.json'),
@@ -103,17 +103,35 @@ describe('validate', () => {
     expect(result.out).toContain('0 errors, 0 warnings');
   });
 
-  it('names the file and the path of a broken tool library', async () => {
+  it('names the file and the path of a broken Kit', async () => {
     const dir = join(scratch, 'broken');
     await cp(bpmn, dir, { recursive: true });
-    const file = join(dir, 'tool.json');
-    const tool = JSON.parse(await readFile(file, 'utf8'));
-    tool.classes[Object.keys(tool.classes)[0]!].extends = 'cls_missing00';
-    await writeFile(file, JSON.stringify(tool, null, 2) + '\n');
+    const file = join(dir, 'kit.json');
+    const kit = JSON.parse(await readFile(file, 'utf8'));
+    kit.classes[Object.keys(kit.classes)[0]!].extends = 'cls_missing00';
+    await writeFile(file, JSON.stringify(kit, null, 2) + '\n');
     const result = await capture(['validate', dir]);
     expect(result.code).toBe(1);
-    expect(result.out).toContain('tool.json');
+    expect(result.out).toContain('kit.json');
     expect(result.out).toContain('cls_missing00');
+  });
+
+  it('still reads a Kit folder, and the Kit of a model, under the older name tool.json', async () => {
+    const dir = join(scratch, 'older');
+    await mkdir(dir, { recursive: true });
+    await cp(join(bpmn, 'kit.json'), join(dir, 'tool.json'));
+    await cp(
+      join(bpmn, 'order-process.mkmodel.json'),
+      join(dir, 'order-process.mkmodel.json'),
+    );
+    const folder = await capture(['validate', dir]);
+    expect(folder.code).toBe(0);
+    expect(folder.out).toContain('tool.json');
+    const model = await capture([
+      'validate',
+      join(dir, 'order-process.mkmodel.json'),
+    ]);
+    expect(model.code).toBe(0);
   });
 
   it('exits 0 on warnings, and 1 with --strict', async () => {
@@ -127,13 +145,13 @@ describe('validate', () => {
     expect(start).toBeDefined();
     doc.elements.push({ ...start, id: 'start2', y: 400, parent: undefined });
     await writeFile(model, JSON.stringify(doc, null, 2) + '\n');
-    const tool = ['--tool', join(bpmn, 'tool.json')];
+    const kit = ['--tool', join(bpmn, 'kit.json')];
 
-    const lenient = await capture(['validate', model, ...tool]);
+    const lenient = await capture(['validate', model, ...kit]);
     expect(lenient.code).toBe(0);
     expect(lenient.out).toContain('count-above-max');
 
-    const strict = await capture(['validate', model, ...tool, '--strict']);
+    const strict = await capture(['validate', model, ...kit, '--strict']);
     expect(strict.code).toBe(1);
   });
 

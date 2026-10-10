@@ -33,7 +33,7 @@ async function addItem(page: Page, tab: string, name: string) {
 }
 
 test.describe('Build mode', () => {
-  test('builds a small ER tool without writing JSON, then models with it', async ({
+  test('builds a small ER Kit without writing JSON, then models with it', async ({
     page,
   }) => {
     await bareWorkspace(page);
@@ -67,10 +67,10 @@ test.describe('Build mode', () => {
     await page.getByTestId('mt-relation-Relationship').check();
     await expect(page.getByTestId('build-issues')).toHaveCount(0);
 
-    // The preview shows the tool at once.
+    // The preview shows the Kit at once.
     await expect(page.getByTestId('preview-place-Entity')).toBeVisible();
 
-    // Back to the explorer, then a model made with the new tool.
+    // Back to the explorer, then a model made with the new Kit.
     await page.getByTestId('build-back').click();
     await page.getByTestId('mode-model').click();
     await page.getByTestId('new-model').click();

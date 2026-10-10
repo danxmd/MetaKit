@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { SAMPLE, emptySampleModel, sampleTool } from '../testing/sample-tool';
+import { SAMPLE, emptySampleModel, sampleKit } from '../testing/sample-kit';
 import { CommandError } from '../store/tx';
 import { createModelStore, type ModelStore } from './commands';
 import { inDrawingOrder, type Model } from './types';
 import type { ElementId } from '../ids';
 
-const tool = sampleTool();
-const fresh = (): ModelStore => createModelStore(emptySampleModel(), { tool });
+const kit = sampleKit();
+const fresh = (): ModelStore => createModelStore(emptySampleModel(), { kit });
 const created = (
   store: ModelStore,
   cmd: Parameters<ModelStore['execute']>[0],
@@ -138,7 +138,7 @@ describe('create element', () => {
     ]);
   });
 
-  it('checks structure only when no tool is given', () => {
+  it('checks structure only when no Kit is given', () => {
     const store = createModelStore(emptySampleModel());
     const id = created(store, {
       type: 'createElement',
@@ -674,8 +674,8 @@ describe('reorder', () => {
     const base = fresh();
     const a = task(base);
     const snapshot = base.state;
-    const one = createModelStore(snapshot, { tool });
-    const two = createModelStore(snapshot, { tool });
+    const one = createModelStore(snapshot, { kit });
+    const two = createModelStore(snapshot, { kit });
     const x = created(one, {
       type: 'createElement',
       class: SAMPLE.task,
@@ -695,7 +695,7 @@ describe('reorder', () => {
 });
 
 describe('manifest', () => {
-  it('renames, sets the folder and the tool version', () => {
+  it('renames, sets the folder and the Kit version', () => {
     const store = fresh();
     store.execute({
       type: 'updateManifest',

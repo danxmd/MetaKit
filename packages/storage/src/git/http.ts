@@ -136,7 +136,7 @@ export interface GitRemoteOptions {
   host?: string;
   /** `owner/name` on GitHub, the full project path on GitLab. */
   repo: string;
-  /** Where the tool library lives inside the repository; '' for the root. */
+  /** Where the Kit lives inside the repository; '' for the root. */
   folder: string;
   /** Held in memory by the remote and sent in the Authorization header only. */
   token: string;

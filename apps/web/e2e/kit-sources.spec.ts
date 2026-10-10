@@ -8,7 +8,7 @@ async function emptyWorkspace(page: Page) {
   await expect(page.getByTestId('models-page')).toBeVisible();
 }
 
-test.describe('Built-in and workspace tool libraries', () => {
+test.describe('Built-in and workspace Kits', () => {
   test('the page shows the two sections apart, and a built-in one can be used as it is', async ({
     page,
   }) => {
@@ -69,7 +69,7 @@ test.describe('Built-in and workspace tool libraries', () => {
     await expect(page.getByTestId('build-item-Agent')).toBeVisible();
     await page.getByTestId('build-back').click();
 
-    const ours = page.getByTestId('workspace-kits').locator('li.tool', {
+    const ours = page.getByTestId('workspace-kits').locator('li.kit', {
       hasText: 'Our agents',
     });
     await expect(ours).toContainText('Based on Agent pipeline 1.0.0');
@@ -90,7 +90,7 @@ test.describe('Built-in and workspace tool libraries', () => {
     await expect(
       page
         .getByTestId('workspace-kits')
-        .locator('li.tool', { hasText: 'team B' }),
+        .locator('li.kit', { hasText: 'team B' }),
     ).toContainText('Based on Our agents 1.0.0');
   });
 

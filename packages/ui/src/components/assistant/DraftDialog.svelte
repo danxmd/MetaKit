@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import type { DraftKind } from '@metakit-app/assistant';
-  import type { ToolCommand, ToolLibrary } from '@metakit-app/core';
+  import type { KitCommand, Kit } from '@metakit-app/core';
   import type { AssistantPort } from '../../assistant/assistant-service';
   import {
     DraftDialogModel,
@@ -11,24 +11,24 @@
 
   let {
     kind,
-    tool,
+    kit,
     assistant,
     onAccept,
     onClose,
     language,
   }: {
     kind: DraftKind;
-    tool: ToolLibrary;
+    kit: Kit;
     assistant: AssistantPort;
     /** Called with the commands that apply the draft; running them is one undo step. */
-    onAccept: (commands: ToolCommand[]) => void;
+    onAccept: (commands: KitCommand[]) => void;
     onClose: () => void;
     language?: string | undefined;
   } = $props();
 
   // The dialog drafts one kind of part for as long as it is open.
   // svelte-ignore state_referenced_locally
-  const model = new DraftDialogModel(kind, tool, assistant, language);
+  const model = new DraftDialogModel(kind, kit, assistant, language);
   let sentence = $state('');
   let view = $state(model.view);
   let dialog: HTMLDialogElement | undefined = $state();
@@ -38,7 +38,7 @@
     return model.subscribe(() => (view = model.view));
   });
 
-  $effect(() => model.setTool(tool));
+  $effect(() => model.setKit(kit));
 
   function start(event: Event) {
     event.preventDefault();
@@ -47,7 +47,7 @@
   }
 
   function accept() {
-    const commands = model.accept(tool);
+    const commands = model.accept(kit);
     if (!commands) return;
     onAccept(commands);
     dialog?.close();

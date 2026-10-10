@@ -4,21 +4,17 @@ import {
   type ElementId,
   type Model,
 } from '@metakit-app/core';
-import {
-  SAMPLE,
-  emptySampleModel,
-  sampleTool,
-} from '@metakit-app/core/testing';
+import { SAMPLE, emptySampleModel, sampleKit } from '@metakit-app/core/testing';
 import { findAcrossModels, groupHits, type FindAllEntry } from './find-all';
 
-const tool = sampleTool();
+const kit = sampleKit();
 
 function entry(
   slug: string,
   names: string[],
   priority = 'Medium',
 ): FindAllEntry {
-  const store = createModelStore(emptySampleModel(), { tool });
+  const store = createModelStore(emptySampleModel(), { kit });
   const commands = names.map((name, i) => ({
     type: 'createElement' as const,
     class: SAMPLE.task,
@@ -28,7 +24,7 @@ function entry(
   }));
   const r = store.execute({ type: 'batch', commands });
   if (!r.ok) throw new Error(r.reason);
-  return { slug, name: `Model ${slug}`, model: store.state as Model, tool };
+  return { slug, name: `Model ${slug}`, model: store.state as Model, kit };
 }
 
 describe('findAcrossModels', () => {
@@ -61,7 +57,7 @@ describe('findAcrossModels', () => {
   });
 
   it('matches class names and attribute keys', () => {
-    const cls = tool.classes[SAMPLE.task]!.labels.en ?? 'Task';
+    const cls = kit.classes[SAMPLE.task]!.labels.en ?? 'Task';
     const byClass = findAcrossModels(entries, cls.toLowerCase());
     expect(byClass.length).toBeGreaterThan(0);
     expect(

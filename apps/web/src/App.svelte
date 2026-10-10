@@ -15,7 +15,7 @@
     ReferenceIndex,
     type ReferenceServices,
   } from '@metakit-app/ui';
-  import type { ElementId, ToolLibrary } from '@metakit-app/core';
+  import type { ElementId, Kit } from '@metakit-app/core';
   import BuildView from '@metakit-app/ui/components/BuildView.svelte';
   import AssistantSettings from '@metakit-app/ui/components/assistant/AssistantSettings.svelte';
   import {
@@ -30,8 +30,8 @@
   import ConfirmDialog from '@metakit-app/ui/components/ConfirmDialog.svelte';
   import Toast from '@metakit-app/ui/components/Toast.svelte';
   import ModelsPage from '@metakit-app/ui/components/ModelsPage.svelte';
-  import ToolImportDialog from '@metakit-app/ui/components/ToolImportDialog.svelte';
-  import ToolLibrariesPage from '@metakit-app/ui/components/ToolLibrariesPage.svelte';
+  import KitImportDialog from '@metakit-app/ui/components/KitImportDialog.svelte';
+  import KitsPage from '@metakit-app/ui/components/KitsPage.svelte';
   import TopBar from '@metakit-app/ui/components/TopBar.svelte';
   import ModelView from '@metakit-app/ui/components/ModelView.svelte';
   import NewModelDialog from '@metakit-app/ui/components/NewModelDialog.svelte';
@@ -39,11 +39,11 @@
   import ProfileDialog from '@metakit-app/ui/components/ProfileDialog.svelte';
   import StartPage from '@metakit-app/ui/components/StartPage.svelte';
   import {
-    BUILT_IN_TOOLS,
+    BUILT_IN_KITS,
     findAcrossModels,
     folderPaths,
-    type BuiltInTool,
-    type ToolStart,
+    type BuiltInKit,
+    type KitStart,
   } from '@metakit-app/ui';
   import { toasts } from '@metakit-app/ui/feedback';
   import { PROFILE_COLOURS, type Profile } from '@metakit-app/storage';
@@ -193,7 +193,7 @@
 
   let docs = $state<PanelState>(docsOpen.get());
   // The Documentation area is a third place next to Model and Build. Whatever is open there (a
-  // model, a tool library) stays mounted underneath, so coming back finds it unchanged.
+  // model, a Kit) stays mounted underneath, so coming back finds it unchanged.
   let docsArea = $state(false);
   let docsVisited = $state(false);
   let docsRequest = $state<{ topic: string | null } | null>(null);
@@ -244,15 +244,15 @@
     }
   }
 
-  // Which area the workspace shows. An open model or tool library decides it; with none open the
-  // person's last choice stays, so that "back" from a tool library lands on the tool libraries.
+  // Which area the workspace shows. An open model or Kit decides it; with none open the
+  // person's last choice stays, so that "back" from a Kit lands on the Kits.
   let area = $state<'model' | 'build'>('model');
   $effect(() => {
     if (app.phase === 'model') area = 'model';
     else if (app.phase === 'build') area = 'build';
   });
 
-  // Deleted models and tool libraries go to the trash, so they are removed at once and the toast
+  // Deleted models and Kits go to the trash, so they are removed at once and the toast
   // offers Undo, which restores them (ui-coherence).
   async function trashModel(slug: string) {
     const name = app.models.find((m) => m.slug === slug)?.name ?? slug;
@@ -263,12 +263,12 @@
       });
   }
 
-  async function trashTool(slug: string) {
-    const name = app.tools.find((t) => t.slug === slug)?.name ?? slug;
-    await controller.trashTool(slug);
-    if (app.trashedTools.some((t) => t.slug === slug))
+  async function trashKit(slug: string) {
+    const name = app.kits.find((t) => t.slug === slug)?.name ?? slug;
+    await controller.trashKit(slug);
+    if (app.trashedKits.some((t) => t.slug === slug))
       toasts.show(`Deleted Kit ${name}`, {
-        undo: () => void controller.restoreTool(slug),
+        undo: () => void controller.restoreKit(slug),
       });
   }
 
@@ -290,26 +290,26 @@
     area = 'model';
   }
 
-  /** A new tool library: empty, or a copy of a workspace or built-in one (ADR 0010). */
-  async function newTool(name: string, start: ToolStart) {
-    if (start.kind === 'empty') return controller.createToolLibrary(name);
+  /** A new Kit: empty, or a copy of a workspace or built-in one (ADR 0010). */
+  async function newKit(name: string, start: KitStart) {
+    if (start.kind === 'empty') return controller.createKit(name);
     if (start.kind === 'workspace')
-      return controller.copyToolLibrary(name, { slug: start.slug });
-    return controller.copyToolLibrary(name, { text: await start.tool.load() });
+      return controller.copyKit(name, { slug: start.slug });
+    return controller.copyKit(name, { text: await start.kit.load() });
   }
 
-  async function useBuiltIn(tool: BuiltInTool) {
-    await controller.addToolLibrary(await tool.load());
+  async function useBuiltIn(kit: BuiltInKit) {
+    await controller.addKit(await kit.load());
   }
 
-  const builtInKey = (tool: BuiltInTool) => `built-in:${tool.id}`;
+  const builtInKey = (kit: BuiltInKit) => `built-in:${kit.id}`;
 
   /** Model types of a workspace library, or of a built-in one that is not added yet. */
   async function modelTypesFor(key: string) {
-    const builtIn = BUILT_IN_TOOLS.find((t) => builtInKey(t) === key);
+    const builtIn = BUILT_IN_KITS.find((t) => builtInKey(t) === key);
     if (!builtIn) return controller.modelTypesOf(key);
-    const tool = JSON.parse(await builtIn.load()) as ToolLibrary;
-    return Object.values(tool.modelTypes).sort((a, b) =>
+    const kit = JSON.parse(await builtIn.load()) as Kit;
+    return Object.values(kit.modelTypes).sort((a, b) =>
       a.key.localeCompare(b.key),
     );
   }
@@ -317,13 +317,11 @@
   async function create(input: Parameters<typeof controller.createModel>[0]) {
     showNew = false;
     // A built-in library is added to the workspace first; the model then uses that copy.
-    const builtIn = BUILT_IN_TOOLS.find(
-      (t) => builtInKey(t) === input.toolSlug,
-    );
+    const builtIn = BUILT_IN_KITS.find((t) => builtInKey(t) === input.kitSlug);
     if (builtIn) {
-      const slug = await controller.addToolLibrary(await builtIn.load());
+      const slug = await controller.addKit(await builtIn.load());
       if (!slug) return;
-      input = { ...input, toolSlug: slug };
+      input = { ...input, kitSlug: slug };
     }
     await controller.createModel(input);
   }
@@ -391,29 +389,29 @@
               />
             {/key}
           {:else if area === 'build'}
-            <ToolLibrariesPage
-              tools={app.tools}
-              trashedTools={app.trashedTools}
+            <KitsPage
+              kits={app.kits}
+              trashedKits={app.trashedKits}
               models={app.models}
               health={app.health}
               warnings={app.warnings}
               error={app.error}
               notes={app.notes}
-              builtIns={BUILT_IN_TOOLS}
-              onNewTool={newTool}
+              builtIns={BUILT_IN_KITS}
+              onNewKit={newKit}
               onUseBuiltIn={useBuiltIn}
-              onAddTool={(text) => controller.addToolLibrary(text)}
+              onAddKit={(text) => controller.addKit(text)}
               onGit={() => controller.openGitSettings(true)}
-              onEditTool={(slug) => controller.openBuild(slug)}
-              onExportTool={(slug) => controller.exportToolPackage(slug)}
-              onTrashTool={trashTool}
-              onRestoreTool={(slug) => controller.restoreTool(slug)}
+              onEditKit={(slug) => controller.openBuild(slug)}
+              onExportKit={(slug) => controller.exportKitPackage(slug)}
+              onTrashKit={trashKit}
+              onRestoreKit={(slug) => controller.restoreKit(slug)}
             />
           {:else}
             <ModelsPage
               models={app.models}
               trashed={app.trashed}
-              tools={app.tools}
+              kits={app.kits}
               health={app.health}
               warnings={app.warnings}
               error={app.error}
@@ -428,11 +426,11 @@
               search={async (query) =>
                 findAcrossModels(
                   (await controller.readAllModels()).map(
-                    ({ entry, model, tool }) => ({
+                    ({ entry, model, kit }) => ({
                       slug: entry.slug,
                       name: entry.name,
                       model,
-                      tool,
+                      kit,
                     }),
                   ),
                   query,
@@ -460,18 +458,18 @@
     </div>
   </div>
 
-  {#if app.toolImport}
-    <ToolImportDialog
-      plan={app.toolImport}
-      onConfirm={() => controller.confirmToolImport()}
-      onCancel={() => controller.cancelToolImport()}
+  {#if app.kitImport}
+    <KitImportDialog
+      plan={app.kitImport}
+      onConfirm={() => controller.confirmKitImport()}
+      onCancel={() => controller.cancelKitImport()}
     />
   {/if}
   {#if showNew}
     <NewModelDialog
-      tools={app.tools}
-      builtIns={BUILT_IN_TOOLS.filter(
-        (b) => !app.tools.some((t) => t.id === b.id),
+      kits={app.kits}
+      builtIns={BUILT_IN_KITS.filter(
+        (b) => !app.kits.some((t) => t.id === b.id),
       ).map((b) => ({ key: builtInKey(b), name: b.name, version: b.version }))}
       loadModelTypes={modelTypesFor}
       {folders}
@@ -488,7 +486,7 @@
     testid="assistant-panel"
     onClose={() => (showAssistant = false)}
   >
-    <AssistantSettings service={assistant} tool={app.build?.store.state} />
+    <AssistantSettings service={assistant} kit={app.build?.store.state} />
     <div class="panel-actions">
       <button
         class="primary"
@@ -523,7 +521,7 @@
 
 {#if app.permissionAsk}
   <PermissionDialog
-    toolName={app.permissionAsk.toolName}
+    kitName={app.permissionAsk.kitName}
     wanted={app.permissionAsk.wanted}
     onAllow={() => controller.answerPermission(true)}
     onDeny={() => controller.answerPermission(false)}

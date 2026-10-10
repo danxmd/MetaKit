@@ -1,8 +1,8 @@
-# tools
+# kits
 
-Hand-written tool libraries used as fixtures for tests and CI. Each folder holds:
+Hand-written Kits used as fixtures for tests and CI. Each folder holds:
 
-- `tool.json`: the tool library (format 6: shapes, simple looks, panel layouts, rules and scripts; every shape of the three data and AI tools is a simple look), in the same form the app keeps in its snapshots;
+- `kit.json`: the Kit (format 6: shapes, simple looks, panel layouts, rules and scripts; every shape of the three data and AI Kits is a simple look), in the same form the app keeps in its snapshots;
 - `*.mkmodel.json`: a sample model in the editable format.
 
 | Folder                  | Classes                                                                                                                                                                                                                                        | Sample model                       |
@@ -14,9 +14,9 @@ Hand-written tool libraries used as fixtures for tests and CI. Each folder holds
 | `ai-use-case-portfolio` | Use case, Objective, KPI, Stakeholder, Data asset, AI technique, Risk; relation classes Contributes to, Measured by, Sponsors, Needs data, Uses technique, Has risk                                                                            | `customer-operations.mkmodel.json` |
 | `data-governance`       | Data domain, Data product, Data asset, Person, Glossary term, Policy, Classification, Quality rule; relation classes Owns, Stewards, Custodian of, Governed by, Classified as, Defines, Checks, Consumes, Contains; command "Check governance" | `sales-finance.mkmodel.json`       |
 
-Check them with `metakit validate tools/bpmn-lite` (see `apps/cli`).
+Check them with `metakit validate kits/bpmn-lite` (see `apps/cli`).
 
-`behaviour-examples/` holds the three behaviours rebuilt from established modelling tools in phase 7 (see `docs/phase-7-behaviour-candidates.md`): scripts and a rule that are added to `bpmn-lite` and `er-lite`. They are not tool libraries of their own; `packages/ui/src/build/behaviour-examples.test.ts` adds each one to its tool and runs it.
+`behaviour-examples/` holds the three behaviours rebuilt from established modelling tools in phase 7 (see `docs/phase-7-behaviour-candidates.md`): scripts and a rule that are added to `bpmn-lite` and `er-lite`. They are not Kits of their own; `packages/ui/src/build/behaviour-examples.test.ts` adds each one to its Kit and runs it.
 
 | File                                         | For         | What it does                                                |
 | -------------------------------------------- | ----------- | ----------------------------------------------------------- |

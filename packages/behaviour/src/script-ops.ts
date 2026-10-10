@@ -24,7 +24,7 @@ import {
   type RelationDef,
   type RelationId,
   type TableAttribute,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 import type { BehaviourHost, FormSpec, ProgressHandle } from './host';
 import {
@@ -39,12 +39,12 @@ import {
 export interface OpsContext {
   store: ModelStore;
   calculator: ModelCalculator;
-  tool(): ToolLibrary;
+  kit(): Kit;
   host: BehaviourHost;
   selection(): string[];
   files: ScriptFiles | undefined;
   http: ScriptHttp | undefined;
-  /** Throws a plain-English error unless the tool declares the permission and this browser allowed it. */
+  /** Throws a plain-English error unless the Kit declares the permission and this browser allowed it. */
   require(kind: 'files' | 'network'): void;
   log(
     level: 'log' | 'info' | 'warn' | 'error',
@@ -84,10 +84,10 @@ function json(value: unknown): Json {
 
 // -- looking things up ----------------------------------------------------------------------
 
-function classOf(tool: ToolLibrary, key: unknown): ClassDef {
-  const found = typeof key === 'string' ? findClassByKey(tool, key) : undefined;
+function classOf(kit: Kit, key: unknown): ClassDef {
+  const found = typeof key === 'string' ? findClassByKey(kit, key) : undefined;
   if (found) return found;
-  const names = Object.values(tool.classes)
+  const names = Object.values(kit.classes)
     .filter((c) => !c.abstract)
     .map((c) => c.key);
   return fail(
@@ -95,11 +95,11 @@ function classOf(tool: ToolLibrary, key: unknown): ClassDef {
   );
 }
 
-function relationOf(tool: ToolLibrary, key: unknown): RelationDef {
+function relationOf(kit: Kit, key: unknown): RelationDef {
   const found =
-    typeof key === 'string' ? findRelationByKey(tool, key) : undefined;
+    typeof key === 'string' ? findRelationByKey(kit, key) : undefined;
   if (found) return found;
-  const names = Object.values(tool.relations).map((r) => r.key);
+  const names = Object.values(kit.relations).map((r) => r.key);
   return fail(
     `This Kit has no relation class "${String(key)}".${names.length ? ` Relation classes: ${names.join(', ')}.` : ''}`,
   );
@@ -112,16 +112,16 @@ type Subject =
 
 function subjectOf(c: OpsContext, id: unknown): Subject {
   if (id === 'model') return { kind: 'model' };
-  const tool = c.tool();
+  const kit = c.kit();
   const m = model(c);
   const el = m.elements[id as ElementId];
   if (el) {
-    const def = tool.classes[el.class];
+    const def = kit.classes[el.class];
     if (def) return { kind: 'element', id: el.id, class: def };
   }
   const cn = m.connectors[id as ConnectorId];
   if (cn) {
-    const def = tool.relations[cn.relation];
+    const def = kit.relations[cn.relation];
     if (def) return { kind: 'connector', id: cn.id, relation: def };
   }
   return fail(
@@ -130,14 +130,14 @@ function subjectOf(c: OpsContext, id: unknown): Subject {
 }
 
 function definitions(c: OpsContext, s: Subject): AttributeDef[] {
-  const tool = c.tool();
+  const kit = c.kit();
   switch (s.kind) {
     case 'element':
-      return effectiveAttributes(tool, s.class.id);
+      return effectiveAttributes(kit, s.class.id);
     case 'connector':
-      return effectiveRelationAttributes(tool, s.relation.id);
+      return effectiveRelationAttributes(kit, s.relation.id);
     case 'model':
-      return tool.modelTypes[model(c).manifest.modelType]?.attributes ?? [];
+      return kit.modelTypes[model(c).manifest.modelType]?.attributes ?? [];
   }
 }
 
@@ -213,16 +213,16 @@ function rowsIn(def: TableAttribute, value: Json): Json {
  */
 const calculators = new WeakMap<
   Model,
-  { tool: ToolLibrary; calculator: ModelCalculator }
+  { kit: Kit; calculator: ModelCalculator }
 >();
 
 function calculatorFor(c: OpsContext): ModelCalculator {
   const state = model(c);
-  const tool = c.tool();
+  const kit = c.kit();
   const known = calculators.get(state);
-  if (known && known.tool === tool) return known.calculator;
-  const calculator = new ModelCalculator(tool, () => state);
-  calculators.set(state, { tool, calculator });
+  if (known && known.kit === kit) return known.calculator;
+  const calculator = new ModelCalculator(kit, () => state);
+  calculators.set(state, { kit, calculator });
   return calculator;
 }
 
@@ -277,8 +277,8 @@ function run(
   return result.value;
 }
 
-function classKey(tool: ToolLibrary, id: ClassId): string {
-  return tool.classes[id]?.key ?? id;
+function classKey(kit: Kit, id: ClassId): string {
+  return kit.classes[id]?.key ?? id;
 }
 
 function create(
@@ -286,8 +286,8 @@ function create(
   clsKey: unknown,
   spec: Record<string, unknown>,
 ): string {
-  const tool = c.tool();
-  const cls = classOf(tool, clsKey);
+  const kit = c.kit();
+  const cls = classOf(kit, clsKey);
   if (cls.abstract)
     return fail(
       `The class "${cls.key}" is abstract; create one of its subclasses.`,
@@ -365,40 +365,40 @@ function attributeOut(def: AttributeDef): Json {
   return out;
 }
 
-function classOut(tool: ToolLibrary, def: ClassDef): Json {
+function classOut(kit: Kit, def: ClassDef): Json {
   return {
     key: def.key,
     kind: def.kind,
     labels: def.labels,
-    extends: def.extends ? classKey(tool, def.extends) : null,
+    extends: def.extends ? classKey(kit, def.extends) : null,
     abstract: def.abstract === true,
-    attributes: effectiveAttributes(tool, def.id).map(attributeOut),
+    attributes: effectiveAttributes(kit, def.id).map(attributeOut),
   };
 }
 
-function relationOut(tool: ToolLibrary, def: RelationDef): Json {
+function relationOut(kit: Kit, def: RelationDef): Json {
   return {
     key: def.key,
     labels: def.labels,
-    extends: def.extends ? (tool.relations[def.extends]?.key ?? null) : null,
+    extends: def.extends ? (kit.relations[def.extends]?.key ?? null) : null,
     abstract: def.abstract === true,
-    from: def.from.map((id) => classKey(tool, id)),
-    to: def.to.map((id) => classKey(tool, id)),
-    attributes: effectiveRelationAttributes(tool, def.id).map(attributeOut),
+    from: def.from.map((id) => classKey(kit, id)),
+    to: def.to.map((id) => classKey(kit, id)),
+    attributes: effectiveRelationAttributes(kit, def.id).map(attributeOut),
   };
 }
 
-function modelTypeOut(tool: ToolLibrary, def: ModelTypeDef): Json {
+function modelTypeOut(kit: Kit, def: ModelTypeDef): Json {
   return {
     key: def.key,
     labels: def.labels,
-    classes: def.classes.map((id) => classKey(tool, id)),
-    relations: def.relations.map((id) => tool.relations[id]?.key ?? id),
+    classes: def.classes.map((id) => classKey(kit, id)),
+    relations: def.relations.map((id) => kit.relations[id]?.key ?? id),
     views: def.views.map((v) => ({
       key: v.key,
       labels: v.labels,
-      classes: v.classes.map((id) => classKey(tool, id)),
-      relations: v.relations.map((id) => tool.relations[id]?.key ?? id),
+      classes: v.classes.map((id) => classKey(kit, id)),
+      relations: v.relations.map((id) => kit.relations[id]?.key ?? id),
     })),
     attributes: def.attributes.map(attributeOut),
   };
@@ -472,7 +472,7 @@ export function createOps(c: OpsContext): (op: string, args: Args) => unknown {
   let nextProgress = 1;
 
   return (op, a) => {
-    const tool = c.tool();
+    const kit = c.kit();
     switch (op) {
       // --- console and bookkeeping
       case 'console': {
@@ -497,8 +497,8 @@ export function createOps(c: OpsContext): (op: string, args: Args) => unknown {
         const out: Record<string, string> = {};
         for (const [k, v] of Object.entries(filter)) {
           if (v === undefined || v === null) continue;
-          if (k === 'class') out.class = classOf(tool, v).id;
-          else if (k === 'relation') out.relation = relationOf(tool, v).id;
+          if (k === 'class') out.class = classOf(kit, v).id;
+          else if (k === 'relation') out.relation = relationOf(kit, v).id;
           else if (k === 'attribute') out.attribute = text(v, 'The attribute');
           else
             return fail(
@@ -537,18 +537,16 @@ export function createOps(c: OpsContext): (op: string, args: Args) => unknown {
           (a[0] in model(c).elements || a[0] in model(c).connectors)
         );
       case 'm.objects': {
-        const cls = a[0] === null ? null : classOf(tool, a[0]);
+        const cls = a[0] === null ? null : classOf(kit, a[0]);
         const list = inDrawingOrder(model(c).elements).filter(
-          (e) => cls === null || isA(tool, e.class, cls.id),
+          (e) => cls === null || isA(kit, e.class, cls.id),
         );
         return list.map((e) => e.id);
       }
       case 'm.connectors': {
-        const rel = a[0] === null ? null : relationOf(tool, a[0]);
+        const rel = a[0] === null ? null : relationOf(kit, a[0]);
         return inDrawingOrder(model(c).connectors)
-          .filter(
-            (cn) => rel === null || relationIsA(tool, cn.relation, rel.id),
-          )
+          .filter((cn) => rel === null || relationIsA(kit, cn.relation, rel.id))
           .map((cn) => cn.id);
       }
       case 'm.selection':
@@ -584,10 +582,10 @@ export function createOps(c: OpsContext): (op: string, args: Args) => unknown {
       }
       case 'el.linked': {
         const s = subjectOf(c, a[0]);
-        const rel = a[2] === null ? null : relationOf(tool, a[2]);
+        const rel = a[2] === null ? null : relationOf(kit, a[2]);
         const out: string[] = [];
         for (const cn of inDrawingOrder(model(c).connectors)) {
-          if (rel && !relationIsA(tool, cn.relation, rel.id)) continue;
+          if (rel && !relationIsA(kit, cn.relation, rel.id)) continue;
           if (a[1] === 'in' && s.kind === 'element' && cn.to === s.id)
             out.push(cn.from);
           if (a[1] === 'out' && s.kind === 'element' && cn.from === s.id)
@@ -597,13 +595,13 @@ export function createOps(c: OpsContext): (op: string, args: Args) => unknown {
       }
       case 'el.connectors': {
         const s = subjectOf(c, a[0]);
-        const rel = a[1] === null ? null : relationOf(tool, a[1]);
+        const rel = a[1] === null ? null : relationOf(kit, a[1]);
         return inDrawingOrder(model(c).connectors)
           .filter(
             (cn) =>
               s.kind === 'element' &&
               (cn.from === s.id || cn.to === s.id) &&
-              (!rel || relationIsA(tool, cn.relation, rel.id)),
+              (!rel || relationIsA(kit, cn.relation, rel.id)),
           )
           .map((cn) => cn.id);
       }
@@ -641,7 +639,7 @@ export function createOps(c: OpsContext): (op: string, args: Args) => unknown {
       case 'm.create':
         return create(c, a[0], (a[1] ?? {}) as Record<string, unknown>);
       case 'm.connect': {
-        const rel = relationOf(tool, a[0]);
+        const rel = relationOf(kit, a[0]);
         const from = subjectOf(c, a[1]);
         const to = subjectOf(c, a[2]);
         if (from.kind !== 'element' || to.kind !== 'element')
@@ -670,39 +668,39 @@ export function createOps(c: OpsContext): (op: string, args: Args) => unknown {
         return null;
       }
 
-      // --- the tool
+      // --- the Kit
       case 't.info':
-        return { name: tool.manifest.name, version: tool.manifest.version };
+        return { name: kit.manifest.name, version: kit.manifest.version };
       case 't.classes':
-        return Object.values(tool.classes)
+        return Object.values(kit.classes)
           .sort((x, y) => (x.key < y.key ? -1 : 1))
-          .map((d) => classOut(tool, d));
+          .map((d) => classOut(kit, d));
       case 't.class':
-        return classOut(tool, classOf(tool, a[0]));
+        return classOut(kit, classOf(kit, a[0]));
       case 't.relations':
-        return Object.values(tool.relations)
+        return Object.values(kit.relations)
           .sort((x, y) => (x.key < y.key ? -1 : 1))
-          .map((d) => relationOut(tool, d));
+          .map((d) => relationOut(kit, d));
       case 't.relation':
-        return relationOut(tool, relationOf(tool, a[0]));
+        return relationOut(kit, relationOf(kit, a[0]));
       case 't.modelTypes':
-        return Object.values(tool.modelTypes).map((d) => modelTypeOut(tool, d));
+        return Object.values(kit.modelTypes).map((d) => modelTypeOut(kit, d));
       case 't.modelType': {
-        const found = findModelTypeByKey(tool, text(a[0], 'The model type'));
+        const found = findModelTypeByKey(kit, text(a[0], 'The model type'));
         return found
-          ? modelTypeOut(tool, found)
+          ? modelTypeOut(kit, found)
           : fail(`This Kit has no model type "${String(a[0])}".`);
       }
       case 't.attribute': {
         const owner = text(a[0], 'The class');
         const key = text(a[1], 'The attribute');
-        const cls = findClassByKey(tool, owner);
-        const rel = cls ? undefined : findRelationByKey(tool, owner);
-        const mt = cls || rel ? undefined : findModelTypeByKey(tool, owner);
+        const cls = findClassByKey(kit, owner);
+        const rel = cls ? undefined : findRelationByKey(kit, owner);
+        const mt = cls || rel ? undefined : findModelTypeByKey(kit, owner);
         const defs = cls
-          ? effectiveAttributes(tool, cls.id)
+          ? effectiveAttributes(kit, cls.id)
           : rel
-            ? effectiveRelationAttributes(tool, rel.id)
+            ? effectiveRelationAttributes(kit, rel.id)
             : (mt?.attributes ??
               fail(
                 `This Kit has no class, relation class or model type "${owner}".`,

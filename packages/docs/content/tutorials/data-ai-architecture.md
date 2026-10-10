@@ -12,7 +12,7 @@ In this tutorial you draw how data moves from a source system to the people and 
 
 ## What it is
 
-**Data and AI architecture** is a Kit that comes with MetaKit, in the repository folder `tools/data-ai-architecture`. Its model type **Architecture** has these classes:
+**Data and AI architecture** is a Kit that comes with MetaKit, in the repository folder `kits/data-ai-architecture`. Its model type **Architecture** has these classes:
 
 | Class | What it stands for | Look |
 | --- | --- | --- |

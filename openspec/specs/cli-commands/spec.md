@@ -9,7 +9,7 @@ Describes the headless commands that check Kits, models and workspaces and expor
 `metakit validate <path>` SHALL check a workspace folder, a Kit file or folder, or a model file, print every problem with its location, severity and message, and exit with code 1 when any error is found.
 
 #### Scenario: Valid sample Kits
-- **WHEN** the command runs on `tools/bpmn-lite` and `tools/er-lite`
+- **WHEN** the command runs on `kits/bpmn-lite` and `kits/er-lite`
 - **THEN** it reports no errors and exits with code 0
 
 #### Scenario: Broken Kit

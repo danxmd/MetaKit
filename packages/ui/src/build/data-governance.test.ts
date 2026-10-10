@@ -3,12 +3,12 @@ import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
   ModelCalculator,
-  TOOL_FORMAT_VERSION,
+  KIT_FORMAT_VERSION,
   createEmptyModel,
   createModelStore,
   effectiveAttributes,
   validateModel,
-  validateToolLibrary,
+  validateKit,
   type ClassId,
   type ElementId,
   type Model,
@@ -16,7 +16,7 @@ import {
   type NodeShape,
   type RelationId,
   type RelationShape,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 import {
   exportMkModel,
@@ -43,19 +43,18 @@ import { createLanguageServer } from '../components/build/scripts/script-languag
 import { loadTestLibs } from '../components/build/scripts/test-libs';
 
 /**
- * The "Data governance and ownership" tool (openspec/changes/ai-data-catalog): domains, data
+ * The "Data governance and ownership" Kit (openspec/changes/ai-data-catalog): domains, data
  * products, data assets, people in their roles, glossary terms, policies, classifications and
  * quality rules. The sample model is "Sales and finance domains"; set WRITE_SAMPLE=1 to write it
- * again after the tool library changes.
+ * again after the Kit changes.
  */
 
 const here = (path: string) =>
   fileURLToPath(
-    new URL(`../../../../tools/data-governance/${path}`, import.meta.url),
+    new URL(`../../../../kits/data-governance/${path}`, import.meta.url),
   );
-const loadTool = () =>
-  JSON.parse(readFileSync(here('tool.json'), 'utf8')) as ToolLibrary;
-/** The script as the tool carries it; a Windows checkout may have CRLF line ends. */
+const loadKit = () => JSON.parse(readFileSync(here('kit.json'), 'utf8')) as Kit;
+/** The script as the Kit carries it; a Windows checkout may have CRLF line ends. */
 const scriptFile = () =>
   readFileSync(here('check-governance.script.ts'), 'utf8').replace(
     /\r\n/g,
@@ -72,8 +71,8 @@ const byKey = <T extends { key: string; id: string }>(
 };
 
 /** Builds models through commands, naming classes, relations and attributes by their keys. */
-function builder(tool: ToolLibrary, model: Model) {
-  const store = createModelStore(model, { tool });
+function builder(kit: Kit, model: Model) {
+  const store = createModelStore(model, { kit });
   const put = (
     key: string,
     values: Record<string, unknown>,
@@ -82,8 +81,8 @@ function builder(tool: ToolLibrary, model: Model) {
     parent?: ElementId,
     size?: { w: number; h: number },
   ): ElementId => {
-    const cls = byKey(tool.classes, key).id as ClassId;
-    const defs = effectiveAttributes(tool, cls);
+    const cls = byKey(kit.classes, key).id as ClassId;
+    const defs = effectiveAttributes(kit, cls);
     const attrs = Object.fromEntries(
       Object.entries(values).map(([k, v]) => {
         const def = defs.find((d) => d.key === k);
@@ -108,7 +107,7 @@ function builder(tool: ToolLibrary, model: Model) {
     to: ElementId,
     values: Record<string, unknown> = {},
   ) => {
-    const rel = byKey(tool.relations, key);
+    const rel = byKey(kit.relations, key);
     store.execute({
       type: 'createConnector',
       relation: rel.id as RelationId,
@@ -130,13 +129,13 @@ function builder(tool: ToolLibrary, model: Model) {
  * and "Payroll file" is restricted without a policy, so the checks have something to report; the
  * quality rule "Dashboard matches ledger" fails and the term "Fiscal period" defines nothing.
  */
-function salesAndFinance(tool: ToolLibrary): Model {
+function salesAndFinance(kit: Kit): Model {
   const model = createEmptyModel(
-    tool,
-    byKey(tool.modelTypes, 'Governance').id as never,
+    kit,
+    byKey(kit.modelTypes, 'Governance').id as never,
     { name: 'Sales and finance domains' },
   );
-  const b = builder(tool, model);
+  const b = builder(kit, model);
   const { put, link } = b;
   b.store.execute({
     type: 'setAttribute',
@@ -512,15 +511,15 @@ function salesAndFinance(tool: ToolLibrary): Model {
 }
 
 const SAMPLE = 'sales-finance.mkmodel.json';
-const loadSample = (tool: ToolLibrary) =>
-  importMkModel(tool, readFileSync(here(SAMPLE), 'utf8'));
+const loadSample = (kit: Kit) =>
+  importMkModel(kit, readFileSync(here(SAMPLE), 'utf8'));
 
-describe('the tool library', () => {
+describe('the Kit', () => {
   it('is valid and in the current format', () => {
-    const tool = loadTool();
-    expect(validateToolLibrary(tool)).toEqual([]);
-    expect(tool.formatVersion).toBe(TOOL_FORMAT_VERSION);
-    expect(tool.manifest).toMatchObject({
+    const kit = loadKit();
+    expect(validateKit(kit)).toEqual([]);
+    expect(kit.formatVersion).toBe(KIT_FORMAT_VERSION);
+    expect(kit.manifest).toMatchObject({
       id: 'tool_datagov',
       version: '1.0.0',
       languages: ['en'],
@@ -528,7 +527,7 @@ describe('the tool library', () => {
   });
 
   it('has formulas that all parse', () => {
-    // The tool-level check does not read constraint formulas, so this walks every formula in the file.
+    // The Kit-level check does not read constraint formulas, so this walks every formula in the file.
     const bad: string[] = [];
     const FORMULA_KEYS = new Set(['formula', 'defaultFormula', 'if', 'when']);
     const walk = (value: unknown, path: string, key = ''): void => {
@@ -547,13 +546,13 @@ describe('the tool library', () => {
       else if (value && typeof value === 'object')
         for (const [k, v] of Object.entries(value)) walk(v, `${path}.${k}`, k);
     };
-    walk(loadTool(), 'tool');
+    walk(loadKit(), 'kit');
     expect(bad).toEqual([]);
   });
 
   it('draws every shape from a simple look, so the simple look editor can edit it', () => {
-    const tool = loadTool();
-    for (const shape of Object.values(tool.shapes)) {
+    const kit = loadKit();
+    for (const shape of Object.values(kit.shapes)) {
       expect(shape.look, shape.id).toBeDefined();
       const again =
         shape.kind === 'node'
@@ -566,21 +565,21 @@ describe('the tool library', () => {
       expect(again).toEqual(shape);
     }
     for (const owner of [
-      ...Object.values(tool.classes),
-      ...Object.values(tool.relations),
+      ...Object.values(kit.classes),
+      ...Object.values(kit.relations),
     ])
-      expect(tool.shapes[owner.shape!], owner.key).toBeDefined();
+      expect(kit.shapes[owner.shape!], owner.key).toBeDefined();
   });
 
   it('has a panel for every class', () => {
-    const tool = loadTool();
-    for (const cls of Object.values(tool.classes))
-      expect(tool.panels[cls.id]?.class, cls.key).toBe(cls.id);
+    const kit = loadKit();
+    for (const cls of Object.values(kit.classes))
+      expect(kit.panels[cls.id]?.class, cls.key).toBe(cls.id);
   });
 
   it('asks for exactly one owner of every data product', () => {
-    const tool = loadTool();
-    expect(byKey(tool.modelTypes, 'Governance').cardinalities).toEqual([
+    const kit = loadKit();
+    expect(byKey(kit.modelTypes, 'Governance').cardinalities).toEqual([
       {
         kind: 'degree',
         class: 'cls_product',
@@ -592,36 +591,31 @@ describe('the tool library', () => {
     ]);
   });
 
-  it('has the script that the tool carries equal to its source file', () => {
-    const tool = loadTool();
-    expect(tool.scripts['scr_checkgov' as never]!.source).toBe(scriptFile());
+  it('has the script that the Kit carries equal to its source file', () => {
+    const kit = loadKit();
+    expect(kit.scripts['scr_checkgov' as never]!.source).toBe(scriptFile());
   });
 
   it('round trips through the Git layout without a change', () => {
-    const tool = loadTool();
-    const layout = toLayout(tool);
+    const kit = loadKit();
+    const layout = toLayout(kit);
     const back = fromLayout(layout);
     expect(back.issues).toEqual([]);
-    expect(back.tool).toEqual(tool);
-    expect(toLayout(back.tool!)).toEqual(layout);
+    expect(back.kit).toEqual(kit);
+    expect(toLayout(back.kit!)).toEqual(layout);
   });
 
-  it('has a script that type-checks against the declarations of the tool', () => {
-    const tool = loadTool();
+  it('has a script that type-checks against the declarations of the Kit', () => {
+    const kit = loadKit();
     const server = createLanguageServer(loadTestLibs());
-    server.setDeclarations(generateDeclarations(tool));
+    server.setDeclarations(generateDeclarations(kit));
     expect(server.diagnostics(scriptFile()).map((d) => d.message)).toEqual([]);
   });
 });
 
 /** The value of a formula attribute of the object with this Name. */
-function computed(
-  tool: ToolLibrary,
-  model: Model,
-  name: string,
-  key: string,
-): unknown {
-  const calc = new ModelCalculator(tool, () => model);
+function computed(kit: Kit, model: Model, name: string, key: string): unknown {
+  const calc = new ModelCalculator(kit, () => model);
   const el = Object.values(model.elements).find((e) =>
     Object.values(e.attrs).includes(name as never),
   );
@@ -632,15 +626,15 @@ function computed(
 describe('the sample "Sales and finance domains"', () => {
   if (process.env['WRITE_SAMPLE'] === '1' || !existsSync(here(SAMPLE))) {
     it('writes the sample model', () => {
-      const tool = loadTool();
-      writeFileSync(here(SAMPLE), exportMkModel(tool, salesAndFinance(tool)));
+      const kit = loadKit();
+      writeFileSync(here(SAMPLE), exportMkModel(kit, salesAndFinance(kit)));
     });
   }
 
   it('matches the model built by the test', () => {
-    const tool = loadTool();
-    const stored = loadSample(tool);
-    const built = salesAndFinance(tool);
+    const kit = loadKit();
+    const stored = loadSample(kit);
+    const built = salesAndFinance(kit);
     expect(Object.keys(stored.elements)).toHaveLength(
       Object.keys(built.elements).length,
     );
@@ -649,11 +643,11 @@ describe('the sample "Sales and finance domains"', () => {
     );
     const count = (m: Model, key: string) =>
       Object.values(m.elements).filter(
-        (e) => e.class === byKey(tool.classes, key).id,
+        (e) => e.class === byKey(kit.classes, key).id,
       ).length;
     expect(
       Object.fromEntries(
-        Object.values(tool.classes).map((c) => [c.key, count(stored, c.key)]),
+        Object.values(kit.classes).map((c) => [c.key, count(stored, c.key)]),
       ),
     ).toEqual({
       DataDomain: 2,
@@ -668,10 +662,10 @@ describe('the sample "Sales and finance domains"', () => {
   });
 
   it('reports exactly the missing owner and the unprotected restricted asset', () => {
-    const tool = loadTool();
-    const model = loadSample(tool);
-    const calculator = new ModelCalculator(tool, () => model);
-    const issues = validateModel(tool, model, calculator).map((i) => ({
+    const kit = loadKit();
+    const model = loadSample(kit);
+    const calculator = new ModelCalculator(kit, () => model);
+    const issues = validateModel(kit, model, calculator).map((i) => ({
       severity: i.severity,
       code: i.code,
       message: i.message,
@@ -693,33 +687,33 @@ describe('the sample "Sales and finance domains"', () => {
   });
 
   it('computes the quality scores and outcomes', () => {
-    const tool = loadTool();
-    const model = loadSample(tool);
-    const score = (name: string) => computed(tool, model, name, 'QualityScore');
+    const kit = loadKit();
+    const model = loadSample(kit);
+    const score = (name: string) => computed(kit, model, name, 'QualityScore');
     expect(score('Customer table')).toBe(100);
     expect(score('Orders table')).toBe(100);
     expect(score('General ledger')).toBe(50);
     expect(score('Revenue dashboard')).toBe(0);
     expect(score('Payroll file')).toBeNull();
-    expect(computed(tool, model, 'Dashboard matches ledger', 'Passing')).toBe(
+    expect(computed(kit, model, 'Dashboard matches ledger', 'Passing')).toBe(
       false,
     );
-    expect(computed(tool, model, 'Dashboard matches ledger', 'Outcome')).toBe(
+    expect(computed(kit, model, 'Dashboard matches ledger', 'Outcome')).toBe(
       'Failing',
     );
-    expect(computed(tool, model, 'Customer email filled', 'Outcome')).toBe(
+    expect(computed(kit, model, 'Customer email filled', 'Outcome')).toBe(
       'Passing',
     );
-    expect(computed(tool, model, 'Customer 360', 'OwnerName')).toBe(
+    expect(computed(kit, model, 'Customer 360', 'OwnerName')).toBe(
       'Amira Haddad',
     );
-    expect(computed(tool, model, 'Grace Okafor', 'Responsibilities')).toBe(4);
+    expect(computed(kit, model, 'Grace Okafor', 'Responsibilities')).toBe(4);
   });
 
   it('warns when a second owner is added and when a quality rule checks nothing', () => {
-    const tool = loadTool();
-    const model = loadSample(tool);
-    const store = createModelStore(model, { tool });
+    const kit = loadKit();
+    const model = loadSample(kit);
+    const store = createModelStore(model, { kit });
     const idOf = (name: string) =>
       Object.values(model.elements).find((e) =>
         Object.values(e.attrs).includes(name as never),
@@ -739,9 +733,9 @@ describe('the sample "Sales and finance domains"', () => {
     } as never);
     const now = store.state as Model;
     const messages = validateModel(
-      tool,
+      kit,
       now,
-      new ModelCalculator(tool, () => now),
+      new ModelCalculator(kit, () => now),
     ).map((i) => i.message);
     expect(messages).toContain(
       'Data product "Customer 360" has 2 Owns entering it, but at most 1 is allowed.',
@@ -754,13 +748,13 @@ describe('the sample "Sales and finance domains"', () => {
 
 describe('the looks', () => {
   it('draw every object of the sample without a problem, with the failing badge where it belongs', () => {
-    const tool = loadTool();
-    const model = loadSample(tool);
-    const calc = new ModelCalculator(tool, () => model);
+    const kit = loadKit();
+    const model = loadSample(kit);
+    const calc = new ModelCalculator(kit, () => model);
     const texts: Record<string, string[]> = {};
     for (const el of Object.values(model.elements)) {
-      const cls = tool.classes[el.class]!;
-      const shape = tool.shapes[cls.shape!] as NodeShape;
+      const cls = kit.classes[el.class]!;
+      const shape = kit.shapes[cls.shape!] as NodeShape;
       const out = compileNode(shape, {
         w: el.w ?? shape.size.width,
         h: el.h ?? shape.size.height,
@@ -778,7 +772,7 @@ describe('the looks', () => {
 });
 
 interface Rig {
-  tool: ToolLibrary;
+  kit: Kit;
   store: ModelStore;
   behaviour: Behaviour;
   handle: ScriptsHandle;
@@ -792,27 +786,27 @@ afterEach(() => {
   }
 });
 async function start(): Promise<Rig> {
-  const tool = loadTool();
-  const store = createModelStore(loadSample(tool), { tool });
+  const kit = loadKit();
+  const store = createModelStore(loadSample(kit), { kit });
   const messages: { kind: string; text: string }[] = [];
   const behaviour = createBehaviour({
     store,
-    tool: () => tool,
+    kit: () => kit,
     host: silentHost({
       message: (kind, text) => messages.push({ kind, text }),
     }),
   });
-  attachRules(behaviour, { store, tool: () => tool });
+  attachRules(behaviour, { store, kit: () => kit });
   const handle = await attachScripts(behaviour, {
     store,
-    tool: () => tool,
+    kit: () => kit,
     permissions: {
       granted: () => ({ network: false, files: false }),
       request: () => Promise.resolve(true),
       forget: () => Promise.resolve(),
     },
   });
-  const rig = { tool, store, behaviour, handle, messages };
+  const rig = { kit, store, behaviour, handle, messages };
   rigs.push(rig);
   return rig;
 }

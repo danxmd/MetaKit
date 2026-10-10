@@ -16,7 +16,7 @@ A dialog whose title is **Add Kit: Name** when the Kit is new to the workspace, 
 
 ## Where to find it
 
-It opens after you choose a `.mktool` file with **Import / Export**, then **Import file(s)…** on the [[page-models|Models page]] ([[import-export]]). It does not open for the simpler **Add > From file…** route of the [[page-kits|Kits page]], which adds a plain `tool.json` directly.
+It opens after you choose a `.mktool` file with **Import / Export**, then **Import file(s)…** on the [[page-models|Models page]] ([[import-export]]). It does not open for the simpler **Add > From file…** route of the [[page-kits|Kits page]], which adds a plain Kit file (`.json`) directly.
 
 ## How to use it
 
