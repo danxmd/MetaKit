@@ -56,7 +56,7 @@ describe('ReferenceIndex', () => {
         slug: `m${i}`,
         id: model.manifest.id,
         name: model.manifest.name,
-        kit: model.manifest.tool,
+        kit: model.manifest.kit,
         modelType: model.manifest.modelType,
       },
       model,

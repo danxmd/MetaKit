@@ -19,8 +19,8 @@ export interface ModelManifest {
   id: ModelId;
   name: string;
   /** The Kit this model was made with, and the version it was last saved with. */
-  tool: KitId;
-  toolVersion: string;
+  kit: KitId;
+  kitVersion: string;
   modelType: ModelTypeId;
   /** Explorer folder, a path such as "Sales/2026". It is a field, not a directory. */
   folder?: string;
@@ -60,8 +60,8 @@ export interface Model {
   connectors: Record<ConnectorId, ConnectorData>;
 }
 
-/** The format version this release writes for models. */
-export const MODEL_FORMAT_VERSION = 1;
+/** The format version this release writes for models (2: the manifest says `kit` and `kitVersion`, ADR 0011). */
+export const MODEL_FORMAT_VERSION = 2;
 
 export const DEFAULT_ELEMENT_SIZE = { w: 120, h: 60 } as const;
 

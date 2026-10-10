@@ -233,12 +233,12 @@ export function validateModel(
     kit.modelTypes[model.manifest.modelType];
 
   // --- the model itself ---
-  if (model.manifest.tool !== kit.manifest.id) {
+  if (model.manifest.kit !== kit.manifest.id) {
     out.push({
       id: 'model',
       severity: 'warning',
-      code: 'tool-mismatch',
-      message: `This model was made with the Kit ${model.manifest.tool}, but it is being checked against ${kit.manifest.id}.`,
+      code: 'kit-mismatch',
+      message: `This model was made with the Kit ${model.manifest.kit}, but it is being checked against ${kit.manifest.id}.`,
     });
   }
   if (!modelType) {

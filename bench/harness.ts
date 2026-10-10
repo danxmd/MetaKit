@@ -128,8 +128,8 @@ function generate(kit: Kit, nodes: number, connectors: number): Model {
     manifest: {
       id: 'mdl_bench000001',
       name: 'Benchmark',
-      tool: kit.manifest.id,
-      toolVersion: kit.manifest.version,
+      kit: kit.manifest.id,
+      kitVersion: kit.manifest.version,
       modelType: Object.values(kit.modelTypes)[0]!.id,
     },
     attrs: {},

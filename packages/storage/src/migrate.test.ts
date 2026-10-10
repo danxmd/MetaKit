@@ -91,13 +91,13 @@ describe('migration', () => {
       [],
       'x',
     ]) {
-      expect(() => migrate('tool', bad)).toThrow(FormatError);
+      expect(() => migrate('kit', bad)).toThrow(FormatError);
     }
   });
 
   it('refuses when there is no step to take', () => {
-    expect(() => migrate('tool', { formatVersion: 0 })).toThrow(
-      /no way to bring a tool file from format 0 up to 1/,
+    expect(() => migrate('kit', { formatVersion: 0 })).toThrow(
+      /no way to bring a Kit file from format 0 up to 2/,
     );
   });
 
@@ -107,7 +107,7 @@ describe('migration', () => {
   });
 });
 
-describe('snapshot format 2', () => {
+describe('snapshot formats 2 and 3', () => {
   it('turns a format 1 snapshot (a plain document) into registers without losing anything', async () => {
     const { parseSnapshot, materialize } = await import('@metakit-app/sync');
     const document = {
@@ -125,8 +125,8 @@ describe('snapshot format 2', () => {
       savedAt: '2026-10-07T09:00:00.000Z',
     };
     const migrated = migrate('snapshot', v1);
-    expect(migrated).toMatchObject({ from: 1, to: 2 });
-    expect(migrated.value['formatVersion']).toBe(2);
+    expect(migrated).toMatchObject({ from: 1, to: 3 });
+    expect(migrated.value['formatVersion']).toBe(3);
     const parsed = parseSnapshot(
       `${JSON.stringify(migrated.value)}\n`,
       'model',
@@ -136,7 +136,7 @@ describe('snapshot format 2', () => {
   });
 });
 
-describe('Kit formats 2, 3 and 4', () => {
+describe('Kit document formats 2 to 7', () => {
   it('adds empty shapes, panels and rules to a version 1 library and keeps the rest', () => {
     const v1 = {
       formatVersion: 1,
@@ -151,11 +151,11 @@ describe('Kit formats 2, 3 and 4', () => {
       relations: {},
       modelTypes: {},
     };
-    const { value, from, to } = migrate('tool-document', v1);
-    expect([from, to]).toEqual([1, 6]);
+    const { value, from, to } = migrate('kit-document', v1);
+    expect([from, to]).toEqual([1, 7]);
     expect(value).toEqual({
       ...v1,
-      formatVersion: 6,
+      formatVersion: 7,
       shapes: {},
       panels: {},
       rules: {},
@@ -169,11 +169,11 @@ describe('Kit formats 2, 3 and 4', () => {
       shapes: { shp_a: { id: 'shp_a' } },
       panels: {},
     };
-    const { value, from, to } = migrate('tool-document', v2);
-    expect([from, to]).toEqual([2, 6]);
+    const { value, from, to } = migrate('kit-document', v2);
+    expect([from, to]).toEqual([2, 7]);
     expect(value).toEqual({
       ...v2,
-      formatVersion: 6,
+      formatVersion: 7,
       rules: {},
       scripts: {},
     });
@@ -186,9 +186,9 @@ describe('Kit formats 2, 3 and 4', () => {
       panels: {},
       rules: { rule_a: { id: 'rule_a' } },
     };
-    const { value, from, to } = migrate('tool-document', v3);
-    expect([from, to]).toEqual([3, 6]);
-    expect(value).toEqual({ ...v3, formatVersion: 6, scripts: {} });
+    const { value, from, to } = migrate('kit-document', v3);
+    expect([from, to]).toEqual([3, 7]);
+    expect(value).toEqual({ ...v3, formatVersion: 7, scripts: {} });
   });
 
   it('only raises the version of a version 4 library (format 5 adds the optional look)', () => {
@@ -198,9 +198,9 @@ describe('Kit formats 2, 3 and 4', () => {
       rules: {},
       scripts: { scr_a: { id: 'scr_a', name: 'A', source: '' } },
     };
-    const { value, from, to } = migrate('tool-document', v4);
-    expect([from, to]).toEqual([4, 6]);
-    expect(value).toEqual({ ...v4, formatVersion: 6 });
+    const { value, from, to } = migrate('kit-document', v4);
+    expect([from, to]).toEqual([4, 7]);
+    expect(value).toEqual({ ...v4, formatVersion: 7 });
   });
 
   it('only raises the version of a version 5 library (format 6 adds the optional basedOn)', () => {
@@ -216,12 +216,12 @@ describe('Kit formats 2, 3 and 4', () => {
       rules: {},
       scripts: {},
     };
-    const { value, from, to } = migrate('tool-document', v5);
-    expect([from, to]).toEqual([5, 6]);
-    expect(value).toEqual({ ...v5, formatVersion: 6 });
+    const { value, from, to } = migrate('kit-document', v5);
+    expect([from, to]).toEqual([5, 7]);
+    expect(value).toEqual({ ...v5, formatVersion: 7 });
   });
 
-  it('leaves a version 6 library alone, and refuses one from a newer release', () => {
+  it('only raises the version of a version 6 library (format 7 allows kit_ ids) and keeps its tool_ ids', () => {
     const v6 = {
       formatVersion: 6,
       manifest: {
@@ -234,8 +234,18 @@ describe('Kit formats 2, 3 and 4', () => {
       rules: {},
       scripts: {},
     };
-    expect(migrate('tool-document', v6).value).toEqual(v6);
-    expect(() => migrate('tool-document', { formatVersion: 7 })).toThrow(
+    const { value, from, to } = migrate('kit-document', v6);
+    expect([from, to]).toEqual([6, 7]);
+    expect(value).toEqual({ ...v6, formatVersion: 7 });
+  });
+
+  it('leaves a version 7 library alone, and refuses one from a newer release', () => {
+    const v7 = {
+      formatVersion: 7,
+      manifest: { id: 'kit_b', name: 'B', version: '1.0.0', languages: ['en'] },
+    };
+    expect(migrate('kit-document', v7).value).toBe(v7);
+    expect(() => migrate('kit-document', { formatVersion: 8 })).toThrow(
       /newer version/,
     );
   });

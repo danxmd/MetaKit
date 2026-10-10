@@ -819,14 +819,14 @@
       "y": 570
     }
   ],
-  "formatVersion": 1,
+  "formatVersion": 2,
   "id": "mdl_0c7jer9sef",
   "kind": "mkmodel",
-  "modelType": "Governance",
-  "name": "Sales and finance domains",
-  "tool": {
+  "kit": {
     "id": "tool_datagov",
     "name": "Data governance and ownership",
     "version": "1.0.0"
-  }
+  },
+  "modelType": "Governance",
+  "name": "Sales and finance domains"
 }

@@ -1,5 +1,5 @@
 {
-  "formatVersion": 6,
+  "formatVersion": 7,
   "manifest": {
     "id": "tool_agentpipeline",
     "name": "Agent pipeline",

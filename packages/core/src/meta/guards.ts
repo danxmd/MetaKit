@@ -175,7 +175,7 @@ export class Checker {
 
 function kindPrefix(kind: IdKind): string {
   return {
-    tool: 'tool',
+    kit: 'kit',
     class: 'cls',
     relation: 'rel',
     attribute: 'att',
@@ -585,12 +585,12 @@ export function validateKit(value: unknown): Issue[] {
         'The Kit this one is based on',
       );
       if (origin) {
-        c.id('tool', origin.id, 'manifest.basedOn.id', 'Its id');
+        c.id('kit', origin.id, 'manifest.basedOn.id', 'Its id');
         c.string(origin.name, 'manifest.basedOn.name', 'Its name');
         c.string(origin.version, 'manifest.basedOn.version', 'Its version');
       }
     }
-    c.id('tool', manifest.id, 'manifest.id', 'The Kit id');
+    c.id('kit', manifest.id, 'manifest.id', 'The Kit id');
     c.string(manifest.name, 'manifest.name', 'The Kit name');
     if (
       c.string(manifest.version, 'manifest.version', 'The version') !== null &&

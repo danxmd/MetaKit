@@ -17,7 +17,7 @@ export const NO_PERMISSIONS: PermissionGrant = Object.freeze({
  * Stored in IndexedDB of the browser profile, never in the workspace folder (rule 9).
  */
 export interface PermissionRecord {
-  toolId: KitId;
+  kitId: KitId;
   granted: PermissionGrant;
   asked: PermissionGrant;
   /** When the person last decided, as an ISO date and time. */
@@ -84,7 +84,7 @@ export async function createPermissionStore(
   now: () => Date = () => new Date(),
 ): Promise<PermissionStore> {
   const records = new Map<string, PermissionRecord>();
-  for (const r of await backing.load()) records.set(r.toolId, r);
+  for (const r of await backing.load()) records.set(r.kitId, r);
   // Two requests for one Kit at once must show one dialog.
   const asking = new Map<string, Promise<boolean>>();
 
@@ -115,7 +115,7 @@ export async function createPermissionStore(
       const decision = (async () => {
         const yes = await ask(kitId, wanted, fresh);
         const next: PermissionRecord = {
-          toolId: kitId,
+          kitId,
           granted: {
             network:
               (record?.granted.network ?? false) || (yes && wanted.network),
@@ -150,12 +150,12 @@ export async function createPermissionStore(
 export function memoryPermissionBacking(
   initial: PermissionRecord[] = [],
 ): PermissionBacking & { records: Map<string, PermissionRecord> } {
-  const records = new Map(initial.map((r) => [r.toolId as string, r]));
+  const records = new Map(initial.map((r) => [r.kitId as string, r]));
   return {
     records,
     load: () => Promise.resolve([...records.values()]),
     save: (r) => {
-      records.set(r.toolId, r);
+      records.set(r.kitId, r);
       return Promise.resolve();
     },
     remove: (id) => {

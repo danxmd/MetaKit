@@ -3,7 +3,7 @@ id: git-layout
 title: Repository layout of a Kit
 category: teamwork
 summary: How a Kit is split into one file per part inside a Git repository, with file names and the messages for broken files.
-keywords: [repository layout, one file per part, layout files, assets folder, tool.json in git, part files]
+keywords: [repository layout, one file per part, layout files, assets folder, kit.json in git, tool.json in git, part files]
 contexts: []
 order: 195
 ---
@@ -14,10 +14,10 @@ In your workspace a Kit is one document. In a Git repository it is spread over m
 
 Why many files? Git merges by file. Two people who edit different classes then touch different files, and their work never clashes. MetaKit goes further and merges inside a file field by field (see [[git-pull-conflicts]]).
 
-The layout is a second form of the same Kit format. Reading it back gives the same Kit. The format version is stored in `tool.json`, and migrations apply on read (see [[format-versions]]).
+The layout is a second form of the same Kit format. Reading it back gives the same Kit. The format version is stored in `kit.json`, and migrations apply on read (see [[format-versions]]).
 
 ```text
-tool.json
+kit.json
 classes/task.json
 classes/gateway.json
 relations/sequence-flow.json
@@ -48,7 +48,7 @@ In the repository folder you chose in **Folder in the repository** (see [[git-mo
 
 | Path | Holds |
 | --- | --- |
-| `tool.json` | `formatVersion`, `manifest` (id, name, version, languages, permissions), `settings` (grid, layers, numbering) and `parts`, the sorted list of part ids in each folder. |
+| `kit.json` | `formatVersion`, `manifest` (id, name, version, languages, permissions), `settings` (grid, layers, numbering) and `parts`, the sorted list of part ids in each folder. |
 | `classes/<name>.json` | One class with its attributes and constraints. |
 | `relations/<name>.json` | One relation class. |
 | `model-types/<name>.json` | One model type. |
@@ -59,6 +59,10 @@ In the repository folder you chose in **Folder in the repository** (see [[git-mo
 | `assets/<name>` | Images and other assets. Binary files are carried as base64 by the service adapters. |
 
 Files are written with sorted keys, two-space indent and a final new line, so that diffs stay small.
+
+### Repositories from before the Kit rename
+
+Releases before the Kit rename called the head file `tool.json`. MetaKit still opens and pulls such a repository: when there is no `kit.json`, it reads `tool.json`. Your next commit writes `kit.json` and removes `tool.json` in the same commit; the commit dialog shows it as **Kit settings changed (renamed from tool.json)**. A pull that brings in a change someone made to `tool.json` with an older release is merged into `kit.json` as usual. If a repository has both files, `kit.json` is the one read, and the next commit removes `tool.json`.
 
 ### File names
 
@@ -78,12 +82,12 @@ When MetaKit reads a repository it reports each file it cannot use, with the pat
 | --- | --- |
 | `This file is not valid JSON: ...` | The file has a syntax error. |
 | `This file must hold an object.` | The JSON is a list or a plain value. |
-| `This file needs a "manifest" and "settings".` | `tool.json` is incomplete. |
+| `This file needs a "manifest" and "settings".` | `kit.json` (or `tool.json`) is incomplete. |
 | `This class needs an "id" starting with cls_.` | The id is missing or wrong. |
 | `The .ts file with the source of this script is missing.` | Only the `.json` of a script is there. |
 | `The id cls_x is already used by classes/task.json, so this file was left out.` | Two files claim the same part. |
 
-If `tool.json` is missing or unusable, opening fails with `This folder does not hold a Kit: ...`.
+If `kit.json` (and `tool.json`) is missing or unusable, opening fails with `This folder does not hold a Kit: ...`.
 
 ## Examples
 
@@ -101,7 +105,7 @@ A small class file:
 }
 ```
 
-The `parts` list of `tool.json`:
+The `parts` list of `kit.json`:
 
 ```json
 { "parts": { "classes": ["cls_x7k2m9p4qa"], "rules": [], "scripts": [] } }

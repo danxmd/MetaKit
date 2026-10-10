@@ -35,6 +35,7 @@ If a task seems to require breaking a rule, stop and ask. Record agreed changes 
 - The assistant (ADR 0008, `packages/assistant`) is off by default, uses the person's own key from IndexedDB, sends the Kit definition only, and loads `@anthropic-ai/sdk` lazily. Drafts are validated, then accepted as one undoable batch of Kit commands.
 - Documentation (`packages/docs`, OpenSpec `in-app-documentation`): topics are Markdown files in `packages/docs/content/<category>/<id>.md`, shown in the Help side bar (F1, opens at the current page's topic) and the Docs area. Pages report their context through `setDocsContext`; every context in `contexts.ts` needs a topic and `pnpm test` fails on broken `[[links]]`. **When you change a page, a menu or a function, update its topic in the same change.** Tutorials go in `content/tutorials/`.
 - Build mode edits the Kit through Kit commands (`putClass`, `putAttribute`, `renameKey`, ...); the editors never write state directly.
+- Kit rename in files (ADR 0011): new Kits go to `kits/<slug>/kit.json` with `kit_` ids; Kits in `tools/<slug>/tool.json` are read and edited in place, never moved. Readers accept the old names (`tool_` ids, `kind: "tool"`, `manifest/tool` registers, `.mktool`, Git `tool.json`, `toolSlug`, `toolPermissions`); writers use only the new ones. Stored names live in `packages/storage/src/names.ts`; files of older formats are kept in `packages/storage/fixtures/before-kit-rename/`, and e2e tests seed them with `prepare(page, { layout: 'before-kit-rename' })`.
 
 ## Performance budget
 
@@ -105,7 +106,7 @@ Keep this section current whenever scripts change.
 ## Conventions
 
 - ESM only. Named exports in packages; no default exports.
-- Stable random IDs with a kind prefix (`tool_`, `cls_`, `rel_`, `att_`, `mt_`, `mdl_`, `vw_`, `shp_`, `el_`, `cn_`). Keys are the human names used in formulas and scripts.
+- Stable random IDs with a kind prefix (`kit_`, `cls_`, `rel_`, `att_`, `mt_`, `mdl_`, `vw_`, `shp_`, `el_`, `cn_`). Keys are the human names used in formulas and scripts. Kit ids made before the Kit rename start with `tool_` and stay valid.
 - Stored JSON: 2-space indent, stable key order, trailing newline, so diffs stay small.
 - Unit tests sit next to the code as `*.test.ts`. End-to-end tests live in `apps/web/e2e/`.
 - No `any` without a comment explaining why.

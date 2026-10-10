@@ -160,7 +160,7 @@ describe('export', () => {
     });
     expect(file.connectors![1]!.attributes).toEqual({ Condition: 'approved' });
     expect(file.attributes).toEqual({ Title: 'Orders' });
-    expect(file.tool).toEqual({
+    expect(file.kit).toEqual({
       id: 'tool_sample',
       name: 'Sample',
       version: '1.0.0',
@@ -381,8 +381,8 @@ describe('hand-written files', () => {
     expect(model.attrs).toEqual({ [SAMPLE.attTitle]: 'By hand' });
     expect(model.manifest).toMatchObject({
       name: 'Hand made',
-      tool: SAMPLE.kit,
-      toolVersion: '1.0.0',
+      kit: SAMPLE.kit,
+      kitVersion: '1.0.0',
       modelType: SAMPLE.process,
     });
     expect(model.manifest.id).toMatch(/^mdl_/);
@@ -498,8 +498,11 @@ describe('problems are reported with their place', () => {
   });
 
   it('refuses a file for another Kit', () => {
-    const file = { ...base(), tool: { id: 'tool_other' } };
-    expect(issues(file)[0]).toMatchObject({ path: 'tool.id' });
+    const file = { ...base(), formatVersion: 2, kit: { id: 'kit_other' } };
+    expect(issues(file)[0]).toMatchObject({ path: 'kit.id' });
+    // A format 1 file named its Kit `tool`; it is read as `kit`.
+    const older = { ...base(), formatVersion: 1, tool: { id: 'tool_other' } };
+    expect(issues(older)[0]).toMatchObject({ path: 'kit.id' });
   });
 
   it('refuses a container loop, a bad container and bad bend points', () => {

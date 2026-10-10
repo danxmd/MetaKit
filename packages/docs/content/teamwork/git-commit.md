@@ -16,7 +16,7 @@ When you edit a Git Kit in Build mode, nothing is sent until you commit. MetaKit
 
 A commit is made in one go. All changed files are sent as one commit on the branch of your link. If the branch moved on since you last pulled, the commit is refused and nothing changes. This protects other people's work.
 
-Only the files of the layout are compared: `tool.json`, the folders of the parts and `assets/`. A `README.md` or other files in the repository are never touched. See [[git-layout]].
+Only the files of the layout are compared: `kit.json`, the folders of the parts and `assets/`. In a repository from before the Kit rename, the first commit also renames `tool.json` to `kit.json`. A `README.md` or other files in the repository are never touched. See [[git-layout]].
 
 ## Where to find it
 

@@ -1,5 +1,5 @@
 {
-  "formatVersion": 6,
+  "formatVersion": 7,
   "manifest": {
     "id": "tool_datagov",
     "name": "Data governance and ownership",

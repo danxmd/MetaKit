@@ -23,7 +23,7 @@ const withScripts = (scripts: unknown, manifest: object = {}): Kit => {
 
 describe('scripts in the Kit', () => {
   it('are in format 4 and later, and a library with scripts and permissions is valid', () => {
-    expect(KIT_FORMAT_VERSION).toBe(6);
+    expect(KIT_FORMAT_VERSION).toBe(7);
     const kit = withScripts(
       { [SCRIPT.id]: SCRIPT },
       { permissions: { network: true, files: false } },

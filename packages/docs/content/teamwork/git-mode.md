@@ -17,7 +17,7 @@ A Git Kit is a normal Kit in your workspace plus a **link** to a repository. The
 How it works:
 
 - **No server.** MetaKit talks to the GitHub or GitLab web interface (REST) straight from your browser. Nothing runs in between.
-- **One file per part.** The repository holds `tool.json` plus one file per class, relation class, model type, shape, panel layout, rule and script. This keeps changes by different people in different files. See [[git-layout]].
+- **One file per part.** The repository holds `kit.json` plus one file per class, relation class, model type, shape, panel layout, rule and script. This keeps changes by different people in different files. See [[git-layout]].
 - **Commit and push in one step.** **Commit and push** sends all changed parts as one commit. See [[git-commit]].
 - **Pull merges.** **Pull** merges the branch into your Kit field by field. Only a field that both sides changed asks you. See [[git-pull-conflicts]].
 - **Versions are tags.** **Releases** lists tags of the repository and switches the Kit to one. See [[git-releases]].
@@ -103,7 +103,8 @@ Notes under the bar: `Committed 3 files.`, `Already up to date.`, `Pulled the ch
 
 - **Errors in plain words.** `The token was refused. It may be wrong, expired or revoked.`; `The token cannot read this repository.`; `The token cannot write to this repository.`; `The repository was not found or the token cannot see it.`; `GitHub is limiting requests. Wait a minute and try again.`; `Could not reach GitHub. Check the address and your connection; the service may also refuse requests from a browser.` See [[troubleshooting]].
 - **Repository limits.** GitHub lists a repository in one answer; `The repository is too large for GitHub to list in one answer. Use a smaller repository for the Kit.` Use a repository just for Kits.
-- **Wrong folder.** `This folder does not hold a Kit: tool.json is missing.` Check the folder.
+- **Wrong folder.** `This folder does not hold a Kit: kit.json is missing.` Check the folder.
+- **Older repository.** A repository written before the Kit rename has `tool.json`. It opens as usual, and your next commit renames it to `kit.json` (see [[git-layout]]).
 - **Assets.** Images in `assets/` come with the Kit. Build mode does not edit them in Git mode.
 - **Opening twice.** MetaKit does not check whether the repository is already in your workspace. Open it once.
 - **GitLab sign-in.** The code for signing in to GitLab (OAuth) exists, but the app does not show it yet. Use a personal access token.

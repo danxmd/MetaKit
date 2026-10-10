@@ -1,8 +1,8 @@
 {
-  "formatVersion": 1,
+  "formatVersion": 2,
   "kind": "mkmodel",
   "name": "Order process",
-  "tool": { "id": "tool_bpmnlite", "version": "1.0.0" },
+  "kit": { "id": "tool_bpmnlite", "version": "1.0.0" },
   "modelType": "Process",
   "folder": "Samples",
   "attributes": {

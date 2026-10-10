@@ -1,8 +1,9 @@
 import type { Json } from '@metakit-app/core';
 import { isTimestamp } from './clock';
 import { NewerFormatError, SyncFormatError } from './errors';
+import { compareStamps } from './clock';
 import { checkOp, flatten, type Op, type StampedOp } from './ops';
-import type { DocKind } from './path';
+import { currentPath, docKindOf, pathKey, type DocKind } from './path';
 import {
   stateFromDocument,
   SyncState,
@@ -11,7 +12,8 @@ import {
 } from './state';
 
 export const CHANGE_FORMAT = 1;
-export const SNAPSHOT_FORMAT = 2;
+/** 2: registers (ADR 0002); 3: a Kit is `kind: "kit"`, and model registers have their new names (ADR 0011). */
+export const SNAPSHOT_FORMAT = 3;
 
 export const stateFolder = (folder: string) => `${folder}/_state`;
 export const instanceFolder = (folder: string, instance: string) =>
@@ -48,8 +50,15 @@ export interface ParsedChangeFile {
   ops: StampedOp[];
 }
 
-/** Parses a change file written by `by`. A file without a final newline is not complete yet. */
-export function parseChangeFile(text: string, by: string): ParsedChangeFile {
+/**
+ * Parses a change file written by `by`. A file without a final newline is not complete yet. With
+ * `kind`, paths that earlier releases wrote under another name get their new name.
+ */
+export function parseChangeFile(
+  text: string,
+  by: string,
+  kind?: DocKind,
+): ParsedChangeFile {
   if (!text.endsWith('\n'))
     throw new SyncFormatError(
       'The change file is not complete (no final newline).',
@@ -89,7 +98,8 @@ export function parseChangeFile(text: string, by: string): ParsedChangeFile {
       throw new SyncFormatError(
         `Line ${i + 1} of the change file: ${checked}.`,
       );
-    ops.push({ ...checked, by });
+    const p = kind ? currentPath(kind, checked.p) : checked.p;
+    ops.push({ ...checked, p, by });
   }
   return { header: { format: h.format, by, seen: h.seen ?? {} }, ops };
 }
@@ -198,8 +208,8 @@ export function snapshotV1ToState(file: Record<string, unknown>): {
   instance: string;
   savedAt: string;
 } {
-  const kind = file['kind'];
-  if (kind !== 'tool' && kind !== 'model')
+  const kind = docKindOf(file['kind']);
+  if (kind === null)
     throw new SyncFormatError(
       'The snapshot does not say whether it holds a Kit or a model.',
     );
@@ -261,11 +271,12 @@ export function parseSnapshotHeader(
     throw new NewerFormatError(
       `The snapshot is in format ${header.formatVersion}, newer than this version understands (${SNAPSHOT_FORMAT}).`,
     );
-  if (expectedKind && header.kind !== expectedKind)
+  const kind = docKindOf(header.kind);
+  if (expectedKind && kind !== expectedKind)
     throw new SyncFormatError(
       `The snapshot holds a ${String(header.kind)}, not a ${expectedKind}.`,
     );
-  return header;
+  return kind === null ? header : { ...header, kind };
 }
 
 export function parseSnapshot(
@@ -289,13 +300,19 @@ export function parseSnapshot(
     throw new NewerFormatError(
       `The snapshot is in format ${version}, newer than this version understands (${SNAPSHOT_FORMAT}).`,
     );
-  if (expectedKind && file['kind'] !== expectedKind)
+  const kind = docKindOf(file['kind']);
+  if (expectedKind && kind !== expectedKind)
     throw new SyncFormatError(
       `The snapshot holds a ${String(file['kind'])}, not a ${expectedKind}.`,
     );
   if (version === 1) return { ...snapshotV1ToState(file), from: 1 };
-  if (version !== SNAPSHOT_FORMAT)
+  // Format 2 differs from 3 only in names: `tool` for a Kit, and old model register paths.
+  if (version !== 2 && version !== SNAPSHOT_FORMAT)
     throw new SyncFormatError(`Unknown snapshot format ${version}.`);
+  if (kind === null)
+    throw new SyncFormatError(
+      'The snapshot does not say whether it holds a Kit or a model.',
+    );
 
   const f = file as unknown as SnapshotFile;
   const stamps = f.stamps.map(([t, i]) => {
@@ -319,8 +336,22 @@ export function parseSnapshot(
     return { t: s.t, by: s.by, p, v: c.length === 1 ? undefined : c[1] };
   };
   const plain = new Map<string, Register>();
-  for (const [k, c] of Object.entries(f.plain))
-    plain.set(k, register(keyPath(k), c));
+  let renamed = false;
+  for (const [k, c] of Object.entries(f.plain)) {
+    const path = keyPath(k);
+    const current = currentPath(kind, path);
+    const r = register(current, c);
+    if (current === path) {
+      const there = plain.get(k);
+      if (!there || compareStamps(r, there) > 0) plain.set(k, r);
+      continue;
+    }
+    // An old name: it joins the register of the new name, and the later write wins.
+    renamed = true;
+    const key = pathKey(current);
+    const there = plain.get(key);
+    if (!there || compareStamps(r, there) > 0) plain.set(key, r);
+  }
   const entities = new Map<string, Entity>();
   for (const [ek, e] of Object.entries(f.entities)) {
     const slash = ek.indexOf('/');
@@ -337,12 +368,14 @@ export function parseSnapshot(
       if (s && s.t > maxT) maxT = s.t;
     entities.set(ek, entity);
   }
-  const state = SyncState.adopt(f.kind, {
+  const state = SyncState.adopt(kind, {
     entities,
     plain,
     hash: f.hash,
     maxT,
   });
+  // The stored hash was taken over the old names.
+  if (renamed) state.rehash();
   return {
     state,
     seen: f.seen ?? {},
@@ -360,7 +393,8 @@ export { flatten };
 
 /**
  * Migration of the `snapshot` file kind from format 1 (a plain document) to format 2 (registers),
- * as JSON text for the storage layer's migration registry.
+ * as JSON text for the storage layer's migration registry. The result already has the names of
+ * the current format.
  */
 export function snapshotV1ToV2(
   file: Record<string, unknown>,
@@ -368,5 +402,22 @@ export function snapshotV1ToV2(
   const { state, instance, savedAt } = snapshotV1ToState(file);
   return JSON.parse(
     formatSnapshot(state, { instance, savedAt, seen: {} }),
+  ) as Record<string, unknown>;
+}
+
+/**
+ * Migration of the `snapshot` file kind from format 2 to format 3: a Kit says `kind: "kit"` instead
+ * of `"tool"`, and the model registers `manifest/tool` and `manifest/toolVersion` are
+ * `manifest/kit` and `manifest/kitVersion` (ADR 0011).
+ */
+export function snapshotV2ToV3(
+  file: Record<string, unknown>,
+): Record<string, unknown> {
+  const { state, instance, savedAt, seen } = parseSnapshot(
+    `${JSON.stringify(file)}
+`,
+  );
+  return JSON.parse(
+    formatSnapshot(state, { instance, savedAt, seen }),
   ) as Record<string, unknown>;
 }

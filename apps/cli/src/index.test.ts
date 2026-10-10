@@ -173,6 +173,31 @@ describe('validate', () => {
     expect([0, 1]).toContain(result.code);
     expect(result.out + result.err).not.toBe('');
   });
+
+  it('validates a workspace from before the Kit rename, with Kits in tools/ and kits/', async () => {
+    const ws = join(scratch, 'old');
+    await cp(
+      fileURLToPath(
+        new URL(
+          '../../../packages/storage/fixtures/before-kit-rename/workspace',
+          import.meta.url,
+        ),
+      ),
+      ws,
+      { recursive: true },
+    );
+    const pkg = join(scratch, 'er.mkkit');
+    expect((await capture(['export-tool', erLite, '--out', pkg])).code).toBe(0);
+    expect((await capture(['import-tool', pkg, '--workspace', ws])).code).toBe(
+      0,
+    );
+    const result = await capture(['validate', ws]);
+    expect(result.err).toBe('');
+    expect(result.code).toBe(0);
+    expect(result.out).toContain('tools/bpmn-lite');
+    expect(result.out).toContain('kits/er-lite');
+    expect(result.out).toContain('models/order-process-old1');
+  });
 });
 
 describe('export', () => {

@@ -48,8 +48,8 @@ function newModel(kit: Kit): Model {
     manifest: {
       id: 'mdl_harness001',
       name: 'Harness',
-      tool: kit.manifest.id,
-      toolVersion: kit.manifest.version,
+      kit: kit.manifest.id,
+      kitVersion: kit.manifest.version,
       modelType: modelType.id,
     },
     attrs: {},

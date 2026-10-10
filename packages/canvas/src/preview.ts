@@ -2,6 +2,7 @@ import {
   DEFAULT_ELEMENT_SIZE,
   effectiveAttributes,
   effectiveRelationAttributes,
+  MODEL_FORMAT_VERSION,
   type AttributeDef,
   type ClassId,
   type ConnectorId,
@@ -50,12 +51,12 @@ function previewModel(kit: Kit, target: PreviewTarget): Model {
   const manifest = {
     id: 'mdl_preview',
     name: 'Preview',
-    tool: kit.manifest.id,
-    toolVersion: kit.manifest.version,
+    kit: kit.manifest.id,
+    kitVersion: kit.manifest.version,
     modelType: Object.keys(kit.modelTypes)[0] as ModelTypeId,
   } as Model['manifest'];
   const model: Model = {
-    formatVersion: 1,
+    formatVersion: MODEL_FORMAT_VERSION,
     manifest,
     attrs: {},
     elements: {},

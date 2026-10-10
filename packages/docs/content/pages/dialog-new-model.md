@@ -40,7 +40,7 @@ A modal dialog titled **New model** with the line "A model is made with a Kit." 
 
 **Messages in the dialog**
 
-- "This workspace has no Kit yet. Add one in Build mode, or copy a Kit folder into `tools/`." Shown only when there is no Kit at all, not even a built-in one. No fields are shown. Close the dialog and see [[page-kits]].
+- "This workspace has no Kit yet. Add one in Build mode, or copy a Kit folder into `kits/`." Shown only when there is no Kit at all, not even a built-in one. No fields are shown. Close the dialog and see [[page-kits]].
 - A red message with the reason if the model types of the chosen Kit cannot be read, for example because the Kit file is damaged ([[kit-validation]]).
 
 ## Examples

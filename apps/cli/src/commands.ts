@@ -10,7 +10,6 @@ import {
 import {
   exportMkModel,
   importMkModel,
-  KIT_FOLDER,
   MkModelError,
   NodeFsAdapter,
   Workspace,
@@ -82,12 +81,11 @@ async function validateWorkspace(root: string): Promise<DocumentReport[]> {
     { path: 'workspace.json', kind: 'workspace', issues: [] },
   ];
   const kits = new Map<string, Kit>();
-  for (const entry of await ws.adapter.list(KIT_FOLDER)) {
-    if (entry.kind !== 'directory') continue;
-    const path = `${KIT_FOLDER}/${entry.name}`;
+  // Kits made before the Kit rename are in tools/, newer ones in kits/.
+  for (const { slug, folder: path } of await ws.listKitFolders()) {
     const issues: ReportIssue[] = [];
     try {
-      const loaded = await ws.loadKit(entry.name);
+      const loaded = await ws.loadKit(slug);
       kits.set(loaded.document.manifest.id, loaded.document);
       issues.push(
         ...loaded.issues.map((i): ReportIssue => ({
@@ -132,12 +130,12 @@ async function validateWorkspace(root: string): Promise<DocumentReport[]> {
           message: w,
         })),
       );
-      const kit = kits.get(loaded.document.manifest.tool);
+      const kit = kits.get(loaded.document.manifest.kit);
       if (!kit)
         issues.push({
           severity: 'error',
-          location: 'manifest.tool',
-          message: `The Kit ${loaded.document.manifest.tool} is not in this workspace, so the model cannot be checked.`,
+          location: 'manifest.kit',
+          message: `The Kit ${loaded.document.manifest.kit} is not in this workspace, so the model cannot be checked.`,
         });
       else if (loaded.issues.length === 0)
         issues.push(...modelIssues(kit, loaded.document));

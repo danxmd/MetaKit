@@ -1,4 +1,5 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect, type Page } from '@playwright/test';
 import { loadHarness } from './bundle';
@@ -21,6 +22,30 @@ export type Model = {
   >;
 };
 
+/**
+ * A workspace written by a release before the Kit rename (ADR 0011): the Kit in
+ * `tools/bpmn-lite/tool.json` and a model whose manifest says `tool`. Path to text.
+ */
+export function workspaceBeforeKitRename(): Record<string, string> {
+  const root = fileURLToPath(
+    new URL(
+      '../../../packages/storage/fixtures/before-kit-rename/workspace/',
+      import.meta.url,
+    ),
+  );
+  const out: Record<string, string> = {};
+  const walk = (dir: string, prefix: string) => {
+    for (const name of readdirSync(dir)) {
+      const full = join(dir, name);
+      const rel = prefix ? `${prefix}/${name}` : name;
+      if (statSync(full).isDirectory()) walk(full, rel);
+      else out[rel] = readFileSync(full, 'utf8');
+    }
+  };
+  walk(root, '');
+  return out;
+}
+
 export interface PrepareOptions {
   /** The folder of the browser's private file system to use; a second window passes the first one's. */
   folder?: string;
@@ -28,6 +53,8 @@ export interface PrepareOptions {
   seed?: boolean;
   name?: string;
   colour?: string;
+  /** The layout of the seeded workspace: this release's (`kits/`), or one from before the Kit rename. */
+  layout?: 'current' | 'before-kit-rename';
 }
 
 export async function prepare(page: Page, options: PrepareOptions = {}) {
@@ -57,11 +84,24 @@ export async function prepare(page: Page, options: PrepareOptions = {}) {
     return folder;
   }
   await loadHarness(page, './seed-harness.ts');
-  await page.evaluate(
-    (json) =>
-      (window as unknown as { __seed(t: string): Promise<void> }).__seed(json),
-    kitJson,
-  );
+  if (options.layout === 'before-kit-rename')
+    await page.evaluate(
+      (files) =>
+        (
+          window as unknown as {
+            __seedFiles(f: Record<string, string>): Promise<void>;
+          }
+        ).__seedFiles(files),
+      workspaceBeforeKitRename(),
+    );
+  else
+    await page.evaluate(
+      (json) =>
+        (window as unknown as { __seed(t: string): Promise<void> }).__seed(
+          json,
+        ),
+      kitJson,
+    );
   await page.reload();
   return folder;
 }

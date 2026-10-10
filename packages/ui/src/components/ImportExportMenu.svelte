@@ -40,7 +40,7 @@
       type="button"
       onclick={() => input?.click()}
       data-testid="import-files"
-      title="Open a .mkmodel.json, .mkbundle or .mktool file"
+      title="Open a .mkmodel.json, .mkbundle or .mkkit file"
       >Import file(s)…</button
     >
     <div class="menu-sep"></div>

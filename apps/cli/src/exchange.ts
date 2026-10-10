@@ -10,7 +10,6 @@ import {
   exportKitPackageFrom,
   importBundle,
   importMkModel,
-  KIT_FOLDER,
   NodeFsAdapter,
   prepareKitImport,
   Workspace,
@@ -125,7 +124,9 @@ export async function importKitCommand(
 ): Promise<number> {
   checkFlags(args, ['workspace', 'create', 'yes']);
   if (args.positionals.length !== 1)
-    throw new UsageError('import-tool needs exactly one .mktool file.');
+    throw new UsageError(
+      'import-tool needs exactly one .mkkit (or older .mktool) file.',
+    );
   const ws = await openWorkspace(
     need(args, 'workspace', 'import-tool'),
     hasFlag(args, 'create'),
@@ -142,10 +143,9 @@ export async function importKitCommand(
     return 1;
   }
   const { slug, created } = await applyKitUpdate(ws, prepared);
+  const folder = await ws.kitFolder(slug);
   io.out(
-    created
-      ? `Added the Kit as ${KIT_FOLDER}/${slug}.`
-      : `Updated the Kit ${KIT_FOLDER}/${slug}.`,
+    created ? `Added the Kit as ${folder}.` : `Updated the Kit ${folder}.`,
   );
   return 0;
 }
@@ -167,10 +167,10 @@ export async function exportCsvCommand(
   if (workspace) {
     const ws = await openWorkspace(workspace, false);
     model = (await ws.loadModel(subject)).document;
-    const slug = await ws.findKitSlug(model.manifest.tool);
+    const slug = await ws.findKitSlug(model.manifest.kit);
     if (!slug)
       throw new CliError(
-        `The Kit ${model.manifest.tool} of this model is not in the workspace.`,
+        `The Kit ${model.manifest.kit} of this model is not in the workspace.`,
       );
     kit = (await ws.loadKit(slug)).document;
   } else {

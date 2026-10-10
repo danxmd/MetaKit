@@ -31,7 +31,7 @@ import {
 } from '@metakit-app/core';
 import { FormatError } from './errors';
 import { stringifyCanonical } from './json';
-import { migrate } from './migrate';
+import { CURRENT_FORMAT, migrate } from './migrate';
 import { MODEL_KIT_FIELD } from './names';
 import type { Workspace } from './workspace';
 import { slugify } from './slugify';
@@ -72,14 +72,15 @@ interface MkConnector {
 
 /**
  * The model as a person writes and reads it: classes, relation classes and attributes by their
- * keys, elements in drawing order (bottom first). Everything else is as in the model.
+ * keys, elements in drawing order (bottom first). Everything else is as in the model. Format 1,
+ * from releases before the Kit rename, called `kit` `tool`; it is read as this.
  */
 export interface MkModelFile {
   formatVersion: number;
   kind: 'mkmodel';
   id?: string;
   name: string;
-  tool?: { id?: string; name?: string; version?: string };
+  kit?: { id?: string; name?: string; version?: string };
   modelType: string;
   folder?: string;
   attributes?: Record<string, Json>;
@@ -112,7 +113,7 @@ function defsOf(read: () => AttributeDef[]): AttributeDef[] {
 
 export function toMkModel(kit: Kit, model: Model): MkModelFile {
   const modelType = kit.modelTypes[model.manifest.modelType];
-  const known = kit.manifest.id === model.manifest.tool;
+  const known = kit.manifest.id === model.manifest.kit;
   const elements = inDrawingOrder(model.elements).map((e): MkElement => {
     const cls = kit.classes[e.class];
     const defs = cls ? defsOf(() => effectiveAttributes(kit, e.class)) : [];
@@ -145,14 +146,14 @@ export function toMkModel(kit: Kit, model: Model): MkModelFile {
   });
   const modelAttributes = keyed(modelType?.attributes ?? [], model.attrs);
   return {
-    formatVersion: MODEL_FORMAT_VERSION,
+    formatVersion: CURRENT_FORMAT.mkmodel,
     kind: 'mkmodel',
     id: model.manifest.id,
     name: model.manifest.name,
-    tool: {
-      id: model.manifest.tool,
+    kit: {
+      id: model.manifest.kit,
       ...(known ? { name: kit.manifest.name } : {}),
-      version: model.manifest.toolVersion,
+      version: model.manifest.kitVersion,
     },
     modelType: modelType?.key ?? model.manifest.modelType,
     ...(model.manifest.folder === undefined
@@ -239,10 +240,10 @@ export function importMkModel(
     add('kind', 'This is not a model file (kind must be "mkmodel").');
   if (typeof file.name !== 'string' || file.name.trim() === '')
     add('name', 'The model needs a name.');
-  if (file.tool?.id !== undefined && file.tool.id !== kit.manifest.id) {
+  if (file.kit?.id !== undefined && file.kit.id !== kit.manifest.id) {
     add(
       `${MODEL_KIT_FIELD}.id`,
-      `The file was written for the Kit ${file.tool.id}, but it is being read with ${kit.manifest.id} ("${kit.manifest.name}").`,
+      `The file was written for the Kit ${file.kit.id}, but it is being read with ${kit.manifest.id} ("${kit.manifest.name}").`,
     );
   }
 
@@ -526,8 +527,8 @@ export function importMkModel(
     manifest: {
       id: modelId,
       name: file.name,
-      tool: kit.manifest.id,
-      toolVersion: file.tool?.version ?? kit.manifest.version,
+      kit: kit.manifest.id,
+      kitVersion: file.kit?.version ?? kit.manifest.version,
       modelType: modelTypeId!,
       ...(file.folder === undefined ? {} : { folder: file.folder }),
     },
@@ -594,7 +595,7 @@ export function countUnknownAttributes(kit: Kit, model: Model): number {
 /** The report for a model read with `kit` from a file that said `fileKit`. */
 export function describeMkModelImport(
   kit: Kit,
-  fileKit: MkModelFile['tool'],
+  fileKit: MkModelFile['kit'],
   model: Model,
   idChanged: boolean,
 ): MkModelImportReport {
@@ -677,7 +678,7 @@ export async function importModelFile(
   const file = value as unknown as MkModelFile;
   let kitSlug = options.kitSlug ?? null;
   if (kitSlug === null) {
-    const wanted = file.tool?.id;
+    const wanted = file.kit?.id;
     if (typeof wanted !== 'string')
       throw new FormatError(
         'The model file does not say which Kit it was made with, so choose one.',
@@ -685,7 +686,7 @@ export async function importModelFile(
     kitSlug = await workspace.findKitSlug(wanted as KitId);
     if (kitSlug === null)
       throw new FormatError(
-        `The model file was made with the Kit ${file.tool?.name ? `"${file.tool.name}" ` : ''}(${wanted}), which is not in this workspace. Import the Kit package or the bundle first.`,
+        `The model file was made with the Kit ${file.kit?.name ? `"${file.kit.name}" ` : ''}(${wanted}), which is not in this workspace. Import the Kit package or the bundle first.`,
       );
   }
   const kit = (await workspace.loadKit(kitSlug)).document;
@@ -713,6 +714,6 @@ export async function importModelFile(
   return {
     slug,
     model,
-    report: describeMkModelImport(kit, file.tool, model, idChanged),
+    report: describeMkModelImport(kit, file.kit, model, idChanged),
   };
 }

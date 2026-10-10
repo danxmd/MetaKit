@@ -8,13 +8,15 @@ describe('importKindOf', () => {
   it('tells the formats apart by the end of the name, ignoring case', () => {
     expect(importKindOf('order.mkmodel.json')).toBe('model');
     expect(importKindOf('Case.MKBUNDLE')).toBe('bundle');
+    expect(importKindOf('bpmn-1.0.0.mkkit')).toBe('kit');
+    // A Kit package from a release before the Kit rename.
     expect(importKindOf('bpmn-1.0.0.mktool')).toBe('kit');
     expect(importKindOf('notes.json')).toBeNull();
     expect(importKindOf('mkbundle')).toBeNull();
   });
 
   it('lists the extensions for the file chooser', () => {
-    expect(IMPORT_ACCEPT).toBe('.mkmodel.json,.mkbundle,.mktool');
+    expect(IMPORT_ACCEPT).toBe('.mkmodel.json,.mkbundle,.mkkit,.mktool');
   });
 });
 

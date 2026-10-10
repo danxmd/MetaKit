@@ -127,10 +127,10 @@ describe('the layout', () => {
     });
     expect(kitSlug).toBe('sample');
     expect(adapter.paths()).toEqual([
+      'kits/sample/_state/aaaa0001/snapshot.json',
+      'kits/sample/kit.json',
       'models/order-to-cash-9xk2/_state/aaaa0001/snapshot.json',
       'models/order-to-cash-9xk2/model.json',
-      'tools/sample/_state/aaaa0001/snapshot.json',
-      'tools/sample/tool.json',
       'workspace.json',
     ]);
     expect(modelSlug).toBe('order-to-cash-9xk2');
@@ -139,12 +139,19 @@ describe('the layout', () => {
     );
     expect(identity).toEqual({
       created: '2026-10-07T09:00:00.000Z',
-      formatVersion: 1,
+      formatVersion: 2,
       id: 'mdl_sample',
       kind: 'model',
       modelType: SAMPLE.process,
       name: 'Order process',
-      tool: SAMPLE.kit,
+      kit: SAMPLE.kit,
+    });
+    expect(JSON.parse(await text(adapter, 'kits/sample/kit.json'))).toEqual({
+      created: '2026-10-07T09:00:00.000Z',
+      formatVersion: 2,
+      id: SAMPLE.kit,
+      kind: 'kit',
+      name: 'Sample',
     });
   });
 
@@ -208,13 +215,13 @@ describe('saving and reading back', () => {
     expect(await text(adapter, path)).toBe(first);
   });
 
-  it('writes the first snapshot in format 2, one entity per line, ending with a newline', async () => {
+  it('writes the first snapshot in format 3, one entity per line, ending with a newline', async () => {
     const { adapter, ws } = await fresh();
     await ws.createModel(aModel(), { slug: 'm' });
     const raw = await text(adapter, 'models/m/_state/aaaa0001/snapshot.json');
     expect(raw.endsWith('}\n')).toBe(true);
     const parsed = JSON.parse(raw);
-    expect(parsed.formatVersion).toBe(2);
+    expect(parsed.formatVersion).toBe(3);
     expect(parsed.kind).toBe('model');
     expect(
       raw.split('\n').filter((l) => l.startsWith('    "elements/el_')),
@@ -395,7 +402,7 @@ describe('assets', () => {
     expect(first).toMatch(/^gear-icon\.[0-9a-f]{8}\.svg$/);
     expect(again).toBe(first);
     expect(adapter.paths().filter((p) => p.includes('/assets/'))).toEqual([
-      `tools/sample/assets/${first}`,
+      `kits/sample/assets/${first}`,
     ]);
     expect(await ws.readKitAsset(slug, first)).toEqual(bytes);
   });
@@ -444,7 +451,7 @@ describe('the editable model file through the workspace', () => {
     const { ws } = await fresh();
     await ws.createKit(kit);
     const other = clone(aModel());
-    (other.manifest as { tool: string }).tool = 'tool_elsewhere';
+    (other.manifest as { kit: string }).kit = 'tool_elsewhere';
     const slug = await ws.createModel(other, { slug: 'x' });
     await expect(ws.exportModel(slug)).rejects.toThrow(
       /tool_elsewhere.*is not in this workspace/,

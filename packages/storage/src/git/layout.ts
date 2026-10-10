@@ -7,15 +7,18 @@ import {
 import { FormatError, NewerFormatError } from '../errors';
 import { stringifyCanonical } from '../json';
 import { migrate } from '../migrate';
-import { GIT_KIT_FILE } from '../names';
+import { GIT_KIT_FILE, OLDER_GIT_KIT_FILE } from '../names';
 import type { GitFile } from './remote';
 
 /**
- * The one-file-per-part form of a Kit (ADR 0007): `tool.json` for the manifest, the
+ * The one-file-per-part form of a Kit (ADR 0007): `kit.json` for the manifest, the
  * settings and the order of the parts, then one file for each class, relation class, model type,
  * shape, panel layout, rule and script. Scripts are a `.ts` file with the source and a small
  * `.json` file with the rest. Ids stay inside the files, so renaming a file never changes what a
  * part is, and two people editing different parts never touch the same file.
+ *
+ * Repositories written before the Kit rename have `tool.json` instead of `kit.json` (ADR 0011).
+ * It is read when there is no `kit.json`, and the next commit replaces it with `kit.json`.
  */
 
 /** The parts that have a folder, with the table of the Kit, the id prefix and the plain name. */
@@ -44,17 +47,32 @@ export type PartTable = (typeof LAYOUT_PARTS)[number]['table'];
 
 export const ASSET_DIR = 'assets';
 
+/** Whether a path is the head file of a layout: `kit.json`, or `tool.json` of an older repository. */
+export function isKitFile(path: string): boolean {
+  return path === GIT_KIT_FILE || path === OLDER_GIT_KIT_FILE;
+}
+
+/** The head file of a layout: `kit.json`, or else the `tool.json` of an older repository. */
+export function kitFileOf<T extends { path: string }>(
+  files: readonly T[],
+): T | undefined {
+  return (
+    files.find((f) => f.path === GIT_KIT_FILE) ??
+    files.find((f) => f.path === OLDER_GIT_KIT_FILE)
+  );
+}
+
 /** Whether a repository path belongs to the layout; README files and the like are left alone. */
 export function isLayoutPath(path: string): boolean {
   return (
-    path === GIT_KIT_FILE ||
+    isKitFile(path) ||
     LAYOUT_PARTS.some((p) => path.startsWith(`${p.dir}/`)) ||
     path.startsWith(`${ASSET_DIR}/`)
   );
 }
 
 export interface LayoutResult {
-  /** Null when `tool.json` is missing or unusable; the issues say why. */
+  /** Null when `kit.json` (or `tool.json`) is missing or unusable; the issues say why. */
   kit: Kit | null;
   issues: Issue[];
   /** Files under `assets/`, with the path relative to that folder. */
@@ -213,7 +231,7 @@ export function fromLayout(files: readonly GitFile[]): LayoutResult {
     if (f.path.startsWith(`${ASSET_DIR}/`))
       assets.push({ ...f, path: f.path.slice(ASSET_DIR.length + 1) });
 
-  const head = byPath.get(GIT_KIT_FILE);
+  const head = kitFileOf(files);
   if (!head) {
     issues.push({
       path: GIT_KIT_FILE,
@@ -222,18 +240,19 @@ export function fromLayout(files: readonly GitFile[]): LayoutResult {
     });
     return { kit: null, issues, assets };
   }
+  const headPath = head.path;
   const top = parse(head);
   if (!isObject(top)) {
     if (top !== undefined)
       issues.push({
-        path: GIT_KIT_FILE,
+        path: headPath,
         message: 'This file must hold an object.',
       });
     return { kit: null, issues, assets };
   }
   if (!isObject(top.manifest) || !isObject(top.settings)) {
     issues.push({
-      path: GIT_KIT_FILE,
+      path: headPath,
       message: 'This file needs a "manifest" and "settings".',
     });
     return { kit: null, issues, assets };
@@ -331,7 +350,7 @@ export function fromLayout(files: readonly GitFile[]): LayoutResult {
 
   let value: Record<string, unknown>;
   try {
-    value = migrate('tool-document', {
+    value = migrate('kit-document', {
       formatVersion: top.formatVersion,
       manifest: top.manifest,
       settings: top.settings,
@@ -339,7 +358,7 @@ export function fromLayout(files: readonly GitFile[]): LayoutResult {
     }).value;
   } catch (error) {
     if (error instanceof FormatError || error instanceof NewerFormatError) {
-      issues.push({ path: GIT_KIT_FILE, message: error.message });
+      issues.push({ path: headPath, message: error.message });
       return { kit: null, issues, assets };
     }
     throw error;
@@ -351,7 +370,7 @@ export function fromLayout(files: readonly GitFile[]): LayoutResult {
     const m = placed.exec(issue.path);
     const where = m ? owner.get(`${m[1]}.${m[2]}`) : undefined;
     issues.push({
-      path: where ?? GIT_KIT_FILE,
+      path: where ?? headPath,
       message: where
         ? `${issue.path}: ${issue.message}`
         : `${issue.path || '(top level)'}: ${issue.message}`,

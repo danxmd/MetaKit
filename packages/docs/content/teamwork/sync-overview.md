@@ -22,8 +22,8 @@ Three rules make it safe.
 
 ```text
 workspace.json
-tools/<kit-folder>/
-  tool.json
+kits/<kit-folder>/
+  kit.json
   assets/
   _state/<instanceId>/
     000001.jsonl      change files

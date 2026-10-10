@@ -270,8 +270,8 @@ export interface Kit {
   scripts: Record<ScriptId, Script>;
 }
 
-/** The format version this release writes for Kits (2: shapes and panels, ADR 0004; 3: rules, constraints and default formulas, ADR 0005; 4: scripts and permissions, ADR 0006; 5: simple looks of shapes, ADR 0009; 6: `manifest.basedOn` for copies, ADR 0010). */
-export const KIT_FORMAT_VERSION = 6;
+/** The format version this release writes for Kits (2: shapes and panels, ADR 0004; 3: rules, constraints and default formulas, ADR 0005; 4: scripts and permissions, ADR 0006; 5: simple looks of shapes, ADR 0009; 6: `manifest.basedOn` for copies, ADR 0010; 7: `kit_` ids, ADR 0011). */
+export const KIT_FORMAT_VERSION = 7;
 
 export function optionValue(option: ChoiceOption): string {
   return typeof option === 'string' ? option : option.value;

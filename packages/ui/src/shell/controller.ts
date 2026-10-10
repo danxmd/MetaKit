@@ -562,10 +562,10 @@ export class AppController {
         await this.closeModel();
         await this.closeBuild();
         const header = await ws.loadModel(slug);
-        const kitSlug = await ws.findKitSlug(header.document.manifest.tool);
+        const kitSlug = await ws.findKitSlug(header.document.manifest.kit);
         if (!kitSlug)
           throw new Error(
-            `This model was made with a Kit that is not in this workspace (${header.document.manifest.tool}).`,
+            `This model was made with a Kit that is not in this workspace (${header.document.manifest.kit}).`,
           );
         const kitOpened = await ws.openKit(kitSlug, this.sessionOptions());
         const kit = kitOpened.store.state;
@@ -905,7 +905,7 @@ export class AppController {
     let upgraded: unknown = value;
     try {
       // A file from an earlier release is brought up to the current format in memory.
-      upgraded = migrate('tool-document', value).value;
+      upgraded = migrate('kit-document', value).value;
     } catch (error) {
       // A file from a newer release is refused; anything else is reported by the checks below.
       if (error instanceof NewerFormatError)
@@ -997,7 +997,7 @@ export class AppController {
     return this.attempt(async () => {
       const ws = this.need();
       const model = (await ws.loadModel(slug)).document;
-      const kitSlug = await ws.findKitSlug(model.manifest.tool);
+      const kitSlug = await ws.findKitSlug(model.manifest.kit);
       if (!kitSlug) throw new Error('The Kit of this model is missing.');
       const kit = (await ws.loadKit(kitSlug)).document;
       downloadFile(
@@ -1018,7 +1018,7 @@ export class AppController {
     });
   }
 
-  /** Reads a `.mktool` file and asks for confirmation through `state.kitImport`. */
+  /** Reads a `.mkkit` (or `.mktool`) file and asks for confirmation through `state.kitImport`. */
   async importKitPackage(bytes: Uint8Array): Promise<void> {
     this.pendingKit = await prepareKitImport(this.need(), bytes);
     this.set({ kitImport: this.pendingKit.plan });
@@ -1158,7 +1158,7 @@ export class AppController {
       const { kit, issues, assets } = fromLayout(snapshot.files);
       if (!kit)
         throw new Error(
-          `This folder does not hold a Kit: ${issues.map((i) => i.message).join('; ') || 'tool.json is missing'}.`,
+          `This folder does not hold a Kit: ${issues.map((i) => i.message).join('; ') || 'kit.json is missing'}.`,
         );
       const slug = await ws.createKit(kit);
       // Asset names get a hash in the workspace, so shapes that name them by their old file name show a gap until fixed.
@@ -1172,7 +1172,7 @@ export class AppController {
       await this.links().put(
         linkFromSnapshot(
           {
-            toolSlug: slug,
+            kitSlug: slug,
             service: target.service,
             host: target.host,
             repo: target.repo,

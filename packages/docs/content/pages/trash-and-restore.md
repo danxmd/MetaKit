@@ -62,7 +62,7 @@ Ben deletes the model "Old pipeline" by mistake. He opens **Deleted (1), kept fo
 
 ## Good to know
 
-- **No permanent delete in the app.** To remove the files for good, delete the model's folder in `models/` or the Kit's folder in `tools/` with your file manager while MetaKit is closed. Do not do this in a shared folder without agreeing it with your team.
+- **No permanent delete in the app.** To remove the files for good, delete the model's folder in `models/` or the Kit's folder in `kits/` (or `tools/` for an older Kit) with your file manager while MetaKit is closed. Do not do this in a shared folder without agreeing it with your team.
 - **Disk space.** Deleted items still take space until you remove their folders yourself.
 - **Two people, two markers.** If one person deletes and another restores at nearly the same time, the later marker wins.
 - **Clock.** The 30 days are counted from the time stored in the marker, so a very wrong computer clock can shorten or lengthen the period.

@@ -44,17 +44,18 @@ describe('bundles', () => {
     const files = unzipFiles(bytes);
     expect(Object.keys(files)).toEqual([
       'bundle.json',
+      'kit/kit.json',
       'models/order-process.mkmodel.json',
       'models/second-process.mkmodel.json',
-      'tool/tool.json',
     ]);
     const manifest = JSON.parse(new TextDecoder().decode(files['bundle.json']));
     expect(manifest).toMatchObject({
-      formatVersion: 1,
+      formatVersion: 2,
       kind: 'mkbundle',
       name: 'Case study',
       created: '2026-10-07T09:00:00.000Z',
-      tool: { id: kit.manifest.id, version: kit.manifest.version },
+      kit: { id: kit.manifest.id, version: kit.manifest.version },
+      includesKit: true,
       models: [
         { name: 'Order process', folder: 'Samples' },
         { name: 'Second process', folder: 'Samples/More' },
@@ -158,7 +159,7 @@ describe('bundles', () => {
       models: [a],
       includeKit: false,
     });
-    expect(Object.keys(unzipFiles(bytes))).not.toContain('tool/tool.json');
+    expect(Object.keys(unzipFiles(bytes))).not.toContain('kit/kit.json');
     const target = await newWorkspace('Target', 'bbbb0002');
     await expect(importBundle(target, bytes)).rejects.toThrow(
       /does not include its Kit/,

@@ -16,7 +16,7 @@ export const SAMPLE_MODELS = [
 
 export function sampleKitFromDisk(dir: string): Kit {
   const raw = JSON.parse(readFileSync(`${kitsDir}${dir}/kit.json`, 'utf8'));
-  return migrate('tool-document', raw).value as unknown as Kit;
+  return migrate('kit-document', raw).value as unknown as Kit;
 }
 
 export function sampleModelText(dir: string, file: string): string {

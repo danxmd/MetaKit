@@ -17,14 +17,14 @@ Starts after PRs #17 and #18 are merged.
 
 ## 3. PR 3: stored files and migrations (`feat/kit-rename-files`)
 
-- [ ] 3.1 `kit_` id prefix, accepting `tool_`; ADR 0011.
-- [ ] 3.2 Workspace: `kits/` and `kit.json` for new Kits; read `tools/`; identity v2; model identity v2.
-- [ ] 3.3 Sync: `kind: "kit"`, snapshot format 3, presence, register path aliases for the model manifest.
-- [ ] 3.4 Model document format 2 (`kit`, `kitVersion`) with migration.
-- [ ] 3.5 `.mkkit` package, bundle format 2, `.mkmodel` format 2; importers read the old forms.
-- [ ] 3.6 Git: `kit.json`, reading `tool.json`, rename on commit.
-- [ ] 3.7 IndexedDB: `kitSlug`, `kitPermissions`, converted once.
-- [ ] 3.8 Migration fixtures, mixed-format sync test, e2e for an old workspace and an old Git repository.
+- [x] 3.1 `kit_` id prefix, accepting `tool_`; ADR 0011.
+- [x] 3.2 Workspace: `kits/` and `kit.json` for new Kits; read `tools/`; identity v2; model identity v2.
+- [x] 3.3 Sync: `kind: "kit"`, snapshot format 3, presence, register path aliases for the model manifest.
+- [x] 3.4 Model document format 2 (`kit`, `kitVersion`) with migration.
+- [x] 3.5 `.mkkit` package, bundle format 2, `.mkmodel` format 2; importers read the old forms.
+- [x] 3.6 Git: `kit.json`, reading `tool.json`, rename on commit.
+- [x] 3.7 IndexedDB: `kitSlug`, `kitPermissions`, converted once.
+- [x] 3.8 Migration fixtures, mixed-format sync test, e2e for an old workspace and an old Git repository.
 
 ## 4. PR 4: script API and CLI (`feat/kit-rename-api`)
 

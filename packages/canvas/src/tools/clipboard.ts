@@ -44,7 +44,8 @@ export interface ClipboardConnector {
 export interface ClipboardData {
   kind: typeof CLIPBOARD_KIND;
   formatVersion: 1;
-  tool: KitId;
+  /** The Kit the items come from; clipboard data of releases before the Kit rename says `tool`. */
+  kit: KitId;
   elements: ClipboardElement[];
   connectors: ClipboardConnector[];
 }
@@ -98,7 +99,7 @@ export function copySelection(
   return {
     kind: CLIPBOARD_KIND,
     formatVersion: 1,
-    tool: kit.manifest.id,
+    kit: kit.manifest.id,
     elements,
     connectors,
   };
@@ -127,7 +128,8 @@ export function serializeClipboard(data: ClipboardData): string {
 /** Parses clipboard text; anything that is not MetaKit clipboard data gives null. */
 export function parseClipboard(text: string): ClipboardData | null {
   try {
-    const value = JSON.parse(text) as Partial<ClipboardData> | null;
+    const value = JSON.parse(text) as
+      (Partial<ClipboardData> & { tool?: KitId }) | null;
     if (
       !value ||
       value.kind !== CLIPBOARD_KIND ||
@@ -136,7 +138,12 @@ export function parseClipboard(text: string): ClipboardData | null {
       !Array.isArray(value.connectors)
     )
       return null;
-    return value as ClipboardData;
+    const { tool, ...rest } = value;
+    return (
+      rest.kit === undefined && tool !== undefined
+        ? { ...rest, kit: tool }
+        : rest
+    ) as ClipboardData;
   } catch {
     return null;
   }
@@ -165,7 +172,7 @@ export function planPaste(
   const commands: ModelCommand[] = [];
   const newIds = new Map<ElementId, ElementId>();
   const skipped = { elements: 0, connectors: 0 };
-  const sameKit = data.tool === kit.manifest.id;
+  const sameKit = data.kit === kit.manifest.id;
 
   for (const e of data.elements) {
     const cls =

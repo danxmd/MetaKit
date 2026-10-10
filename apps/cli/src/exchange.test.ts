@@ -40,7 +40,7 @@ async function sourceWorkspace() {
     name: 'Source',
   });
   const kit = migrate(
-    'tool-document',
+    'kit-document',
     JSON.parse(await readFile(join(bpmn, 'kit.json'), 'utf8')),
   ).value as unknown as Kit;
   const kitSlug = await ws.createKit(kit);
@@ -119,8 +119,8 @@ describe('bundles', () => {
 describe('Kit packages', () => {
   it('exports from a workspace or from a Kit file, and imports as a new Kit', async () => {
     const { root, kitSlug } = await sourceWorkspace();
-    const fromWorkspace = join(scratch, 'a.mktool');
-    const fromFile = join(scratch, 'b.mktool');
+    const fromWorkspace = join(scratch, 'a.mkkit');
+    const fromFile = join(scratch, 'b.mkkit');
     expect(
       (
         await capture([
@@ -138,7 +138,7 @@ describe('Kit packages', () => {
     );
     expect(
       Object.keys(unzipFiles(new Uint8Array(await readFile(fromFile)))),
-    ).toEqual(expect.arrayContaining(['package.json', 'tool.json']));
+    ).toEqual(expect.arrayContaining(['package.json', 'kit.json']));
 
     const target = join(scratch, 'target');
     const added = await capture([
@@ -150,7 +150,8 @@ describe('Kit packages', () => {
     ]);
     expect(added.code).toBe(0);
     expect(added.out).toContain('will be added as a new Kit');
-    expect((await readdir(join(target, 'tools'))).length).toBe(1);
+    expect(added.out).toContain('Added the Kit as kits/');
+    expect((await readdir(join(target, 'kits'))).length).toBe(1);
   });
 
   it('shows the plan and waits for --yes before updating a Kit', async () => {

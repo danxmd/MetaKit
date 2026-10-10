@@ -54,7 +54,7 @@ Because the link still points to your branch, the count on **Commit and push** n
 
 | Message | Cause |
 | --- | --- |
-| `The Kit at "v9" cannot be read: ...` | The tagged commit has a broken or missing `tool.json` or part file. |
+| `The Kit at "v9" cannot be read: ...` | The tagged commit has a broken or missing `kit.json` (`tool.json` in older tags) or part file. |
 | `This Kit is not linked to a repository.` | The Kit has no link, so there is nothing to ask. |
 | `The token cannot read this repository.` and others | See [[git-tokens]]. |
 

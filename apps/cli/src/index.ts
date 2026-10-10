@@ -41,10 +41,10 @@ Commands:
   import-bundle <file>       Add the models (and the Kit, when new) of a .mkbundle to a workspace.
       --workspace <folder>   The workspace to add to.
       --create               Make the folder a workspace first when it is not one yet.
-  export-tool <tool>         Write a Kit as a .mktool package.
+  export-tool <tool>         Write a Kit as a .mkkit package.
       --workspace <folder>   Treat <tool> as the folder name of a Kit in this workspace (otherwise a path).
       --out <file>           The package to write.
-  import-tool <file>         Add or update a Kit from a .mktool package; shows what changes first.
+  import-tool <file>         Add or update a Kit from a .mkkit (or .mktool) package; shows what changes first.
       --workspace <folder>   The workspace to add to.
       --yes                  Apply an update to a Kit that is already there.
       --create               Make the folder a workspace first when it is not one yet.

@@ -1,6 +1,6 @@
 import { decode, encode, type SyncAdapter } from './adapter';
 import { NewerFormatError, SyncFormatError } from './errors';
-import type { DocKind } from './path';
+import { docKindOf, type DocKind } from './path';
 import type { Timers } from './session';
 
 export const PRESENCE_FORMAT = 1;
@@ -69,12 +69,20 @@ export function parsePresence(text: string): PresenceFile {
     name: p.name,
     colour: typeof p.colour === 'string' ? p.colour : '#868e96',
     at: p.at,
-    document: p.document ?? null,
+    document: presenceDocument(p.document),
     selection: Array.isArray(p.selection) ? p.selection.map(String) : [],
     editing: typeof p.editing === 'string' ? p.editing : null,
     hash: typeof p.hash === 'string' ? p.hash : '',
     seen: p.seen ?? {},
   };
+}
+
+/** The open document, with a Kit called `kit` even when an earlier release wrote `tool` (ADR 0011). */
+function presenceDocument(value: unknown): PresenceDocument | null {
+  const d = value as Partial<PresenceDocument> | null | undefined;
+  if (!d || typeof d !== 'object' || typeof d.slug !== 'string') return null;
+  const kind = docKindOf(d.kind);
+  return kind === null ? null : { kind, slug: d.slug };
 }
 
 /** A presence file counts for 30 seconds after it was written. */

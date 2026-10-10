@@ -551,10 +551,10 @@ describe('stale definitions', () => {
     const model = clone(goodProcess().state) as ReturnType<
       typeof emptySampleModel
     >;
-    model.manifest.tool = 'tool_other' as never;
+    model.manifest.kit = 'tool_other' as never;
     expect(validateModel(kit, model)[0]).toMatchObject({
       id: 'model',
-      code: 'tool-mismatch',
+      code: 'kit-mismatch',
     });
   });
 
