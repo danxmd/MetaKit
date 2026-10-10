@@ -55,6 +55,8 @@ export interface PrepareOptions {
   colour?: string;
   /** The layout of the seeded workspace: this release's (`kits/`), or one from before the Kit rename. */
   layout?: 'current' | 'before-kit-rename';
+  /** The Kit to seed, as JSON text; BPMN lite when left out. */
+  kit?: string;
 }
 
 export async function prepare(page: Page, options: PrepareOptions = {}) {
@@ -100,7 +102,7 @@ export async function prepare(page: Page, options: PrepareOptions = {}) {
         (window as unknown as { __seed(t: string): Promise<void> }).__seed(
           json,
         ),
-      kitJson,
+      options.kit ?? kitJson,
     );
   await page.reload();
   return folder;

@@ -106,6 +106,7 @@
         type="button"
         class="primary"
         data-testid="appearance-done"
+        data-tour="appearance-done"
         onclick={onClose}>Done</button
       >
     </header>
@@ -124,7 +125,7 @@
       </p>{/if}
 
     <div class="grid">
-      <aside class="left">
+      <aside class="left" data-tour="appearance-form">
         <BaseGallery
           {look}
           {attributes}
@@ -133,12 +134,16 @@
         />
       </aside>
 
-      <main class="centre">
+      <main class="centre" data-tour="appearance-preview">
         <LookPreview {look} {attributes} className={cls.key} />
       </main>
 
       <aside class="right">
-        <section class="group" aria-labelledby="g-colours">
+        <section
+          class="group"
+          aria-labelledby="g-colours"
+          data-tour="appearance-colours"
+        >
           <h3 id="g-colours">Colours and border</h3>
           <div class="field">
             <span class="name">Fill</span>
@@ -255,7 +260,11 @@
           <TextControls {look} {attributes} onChange={change} />
         </section>
 
-        <section class="group" aria-labelledby="g-data">
+        <section
+          class="group"
+          aria-labelledby="g-data"
+          data-tour="appearance-data"
+        >
           <h3 id="g-data">Changes with data</h3>
           <p class="muted lead">
             Let a colour or a mark follow the value of an attribute. The tiles

@@ -99,7 +99,7 @@
     />
   </label>
 
-  <fieldset>
+  <fieldset data-tour="rule-when">
     <legend>When</legend>
     <label>
       Event
@@ -110,6 +110,7 @@
           changed();
         }}
         data-testid="rule-event"
+        data-tour="rule-command"
       >
         {#each groups as g (g.label)}
           <optgroup label={g.label}>
@@ -210,7 +211,7 @@
     {/if}
   </fieldset>
 
-  <fieldset>
+  <fieldset data-tour="rule-if">
     <legend>If</legend>
     <label>
       Condition (leave empty to always run)
@@ -232,7 +233,7 @@
       </p>{/if}
   </fieldset>
 
-  <fieldset>
+  <fieldset data-tour="rule-then">
     <legend>Then</legend>
     <ActionList
       {model}

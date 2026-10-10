@@ -56,6 +56,9 @@ A guided tour teaches one page in a minute or two. It highlights one button or a
 | **Models page** | [[page-models]] | **New model**, **Import / Export**, search across models, the list and its folders, the **…** menu of a model, deleted models, and the Model and Build switch. |
 | **Modelling a model** | An open model ([[page-model-view]]) | The palette, connecting, the canvas, the attribute panel, the menus, **Check** and Problems, find, undo and redo, the save status, the people in the model and **← Models**. Needs an open model. |
 | **Kits page** | [[page-kits]] | Your Kits, **Add** from a file or Git, **New Kit**, **Edit**, the built-in Kits, **Use in this workspace** and **Copy and extend…**. |
+| **Building a Kit** | An open Kit ([[page-build-view]]) | The sections, **Classes**, adding a class, **Add from catalog…**, the class list, the class editor and its attributes, **Try it**, undo and redo, **Source control** (only for a Kit kept in Git) and **← Kits**. Needs an open Kit. |
+| **Appearance** | An open Kit | A class's appearance, **Edit appearance**, the form, the preview, colours, colour by attribute, badges, **Done**, and **More ways to set the look** for the drawing editor ([[appearance-editor]]). Needs an open Kit. |
+| **Rules and scripts** | An open Kit | **Rules** with When, If and Then, commands, **Add rule**, then **Scripts**: the list, the script editor and the permissions ([[rules]], [[scripts]]). Needs an open Kit. |
 | **Help and settings** | Any workspace page | **Help** (`F1`), **Docs**, **Tutorials** and the **Settings** menu: appearance, your name and colour, Git and the assistant. |
 
 ## Examples
@@ -68,6 +71,8 @@ Lena opens MetaKit for the first time. After she types her name, the card offers
 - **Help still works.** Press `F1` during a tour to open the Help side bar at the topic of the page ([[docs-help]]).
 - **Arrow keys** move between steps while the pop-up has the focus. Elsewhere, for example on the canvas, they keep their usual meaning.
 - When the tour ends, the keyboard focus goes back to where it was.
+- **Some steps open what comes next.** On a step such as **Classes**, **Edit appearance** or **Done**, **Next** presses that button for you, so the following steps find what it opens. It never adds, changes or deletes anything in your Kit or model.
+- **A Build tour starts on the plain Build view.** An editor that was left open, such as the appearance editor, closes when the tour starts, so it does not cover the sections.
 - **Menus open by themselves.** When a step points at an item inside a menu, such as **Git settings…** in **Settings**, the tour opens the menu and closes it again when you move on.
 - **Steps that depend on the page.** Some steps are left out when their control is not there, for example the deleted models when nothing was deleted. The step count then jumps over them.
 

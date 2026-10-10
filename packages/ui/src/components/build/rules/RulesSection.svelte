@@ -88,6 +88,7 @@
             onclick={() => (selected = selected === r.id ? null : r.id)}
             aria-expanded={selected === r.id}
             data-testid="rule-row-{r.id}"
+            data-tour="rules-row"
           >
             <strong>{r.label}</strong>
             <span class="muted">{eventLabel(r.when.event)}</span>
@@ -103,7 +104,7 @@
       </li>
     {/each}
   </ul>
-  <div class="add">
+  <div class="add" data-tour="rules-add">
     <button type="button" class="primary" onclick={add} data-testid="rule-add"
       >Add rule</button
     >

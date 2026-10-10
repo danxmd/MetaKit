@@ -100,7 +100,7 @@
       onChange({ ...look, title: { ...look.title, colour } })}
   />
 
-  <div class="mark" data-testid="rule-badge">
+  <div class="mark" data-testid="rule-badge" data-tour="appearance-badge">
     <label class="check">
       <input
         type="checkbox"

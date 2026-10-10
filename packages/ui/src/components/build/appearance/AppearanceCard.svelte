@@ -102,7 +102,11 @@
   }
 </script>
 
-<div class="card-appearance" data-testid="appearance-card">
+<div
+  class="card-appearance"
+  data-testid="appearance-card"
+  data-tour={isClass ? 'build-appearance' : undefined}
+>
   <div class="thumb" aria-hidden="true">
     {#if thumb}
       <canvas
@@ -183,6 +187,7 @@
           class="primary"
           onclick={() => onEditAppearance(owner.id)}
           data-testid="{isClass ? 'class' : 'relation'}-edit-appearance"
+          data-tour={isClass ? 'build-edit-appearance' : undefined}
           >Edit appearance</button
         >
       </div>
@@ -192,7 +197,9 @@
 </div>
 {#if children}
   <details class="more" data-testid="appearance-more">
-    <summary>More ways to set the look</summary>
+    <summary data-tour={isClass ? 'build-more-looks' : undefined}
+      >More ways to set the look</summary
+    >
     <div class="more-body">{@render children()}</div>
   </details>
 {/if}

@@ -16,6 +16,7 @@
   import { uniqueKey } from '../build/attributes';
   import type { AppState, BuildPort } from '../shell/controller';
   import { menuBehaviour } from '../shell/menu-action';
+  import { tours, type TourRun } from '../tours/tour-state';
   import Icon from './Icon.svelte';
   import { confirmAction } from '../shell/feedback';
   import { provideBuildUndo, useBuildUndo } from '../build/undo-context';
@@ -152,6 +153,22 @@
     | { kind: 'appearance'; id: string }
     | null
   >(null);
+  // A Build tour starts on the plain Build view: an editor left open would cover what it shows.
+  let lastRun: TourRun | null = null;
+  $effect(() =>
+    tours.subscribe(({ run }) => {
+      const started =
+        run !== null &&
+        run !== lastRun &&
+        run.index === 0 &&
+        run.direction === 1;
+      if (started && run.tour.page === 'build') {
+        overlay = null;
+        catalogOpen = false;
+      }
+      lastRun = run;
+    }),
+  );
   // A line shape whose form the Shapes list opens first (a relation class asked to edit it).
   let openLine = $state<string | null>(null);
   // What Help shows: an open editor wins over the section behind it.
@@ -408,8 +425,12 @@
 
 <div class="build" data-testid="build-view">
   <header class="bar">
-    <button type="button" class="ghost" onclick={back} data-testid="build-back"
-      >← Kits</button
+    <button
+      type="button"
+      class="ghost"
+      onclick={back}
+      data-testid="build-back"
+      data-tour="build-back">← Kits</button
     >
     <input
       class="name"
@@ -434,7 +455,8 @@
       onclick={() => controller.undoBuild()}
       title="Undo"
       aria-label="Undo"
-      data-testid="build-undo"><Icon name="undo" /></button
+      data-testid="build-undo"
+      data-tour="build-undo"><Icon name="undo" /></button
     >
     <button
       type="button"
@@ -447,7 +469,9 @@
     >
     {#if git.link}
       <details class="menu" use:menuBehaviour data-testid="git-menu">
-        <summary data-testid="git-menu-summary">Source control</summary>
+        <summary data-testid="git-menu-summary" data-tour="build-git"
+          >Source control</summary
+        >
         <div class="menu-list right">
           <div class="menu-heading">Linked repository</div>
           <div class="repo">
@@ -494,7 +518,8 @@
       type="button"
       aria-pressed={showPreview}
       onclick={() => (showPreview = !showPreview)}
-      data-testid="build-preview-toggle">Try it</button
+      data-testid="build-preview-toggle"
+      data-tour="build-try">Try it</button
     >
   </header>
   {#if git.note}<p class="notice success" data-testid="git-note">
@@ -563,7 +588,7 @@
   {/if}
 
   <div class="body">
-    <nav aria-label="Kit sections">
+    <nav aria-label="Kit sections" data-tour="build-sections">
       {#each GROUPS as group (group.id)}
         <div class="group" role="group" aria-labelledby="grp-{group.id}">
           <h3 id="grp-{group.id}" class="group-title">{group.title}</h3>
@@ -577,6 +602,7 @@
                 class:on={section === id}
                 onclick={() => (section = id)}
                 data-testid="build-tab-{id}"
+                data-tour="build-tab-{id}"
                 ><span>{LABELS[id]}</span>
                 {#if counts[id] !== undefined}<span class="count"
                     >{counts[id]}</span
@@ -591,6 +617,7 @@
       <section class="items" aria-label={LABELS[section]}>
         <form
           class="new"
+          data-tour="build-new"
           onsubmit={(e) => {
             e.preventDefault();
             add();
@@ -614,7 +641,8 @@
             type="button"
             class="catalog-open"
             onclick={openCatalog}
-            data-testid="catalog-open">Add from catalog…</button
+            data-testid="catalog-open"
+            data-tour="build-catalog">Add from catalog…</button
           >
         {/if}
         {#if sortedItems.length === 0}
@@ -623,7 +651,7 @@
           </p>
         {:else}
           <ul class="list">
-            {#each sortedItems as item (item.id)}
+            {#each sortedItems as item, i (item.id)}
               <li class:on={current === item.id}>
                 <button
                   type="button"
@@ -632,6 +660,9 @@
                   onclick={() =>
                     (selected = { ...selected, [section]: item.id })}
                   data-testid="build-item-{item.key}"
+                  data-tour={(current ? current === item.id : i === 0)
+                    ? 'build-item'
+                    : undefined}
                   >{item.key}<small
                     >{item.text !== item.key ? item.text : ''}</small
                   ></button
@@ -650,7 +681,7 @@
         {/if}
       </section>
     {/if}
-    <main>
+    <main data-tour="build-editor">
       {#if section === 'classes' && current && kit.classes[current as ClassId]}
         {#key current}
           <ClassEditor

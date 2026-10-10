@@ -34,11 +34,53 @@
     return false;
   }
 
+  /** The control of the current step, once found. */
+  let control: HTMLElement | null = null;
+
+  const isOn = (el: HTMLElement) =>
+    ['aria-expanded', 'aria-selected', 'aria-pressed'].some(
+      (name) => el.getAttribute(name) === 'true',
+    ) ||
+    (el.hasAttribute('aria-current') &&
+      el.getAttribute('aria-current') !== 'false');
+
+  /** Next: a step that opens something presses its control first, unless it is already open. */
+  function advance() {
+    if (step?.pressOnNext && control?.isConnected && !isOn(control))
+      control.click();
+    tours.next();
+  }
+
   const shown = (el: HTMLElement) =>
     el.isConnected &&
     el.getClientRects().length > 0 &&
     !inClosedMenu(el) &&
     (el.checkVisibility?.() ?? true);
+
+  /**
+   * Not hidden under something else, such as an editor that covers the page: some point of the
+   * control is the top-most thing there (the tour's own layer does not count).
+   */
+  function uncovered(el: HTMLElement): boolean {
+    const r = el.getBoundingClientRect();
+    for (const [fx, fy] of [
+      [0.5, 0.5],
+      [0.2, 0.2],
+      [0.8, 0.2],
+      [0.2, 0.8],
+      [0.8, 0.8],
+    ] as const) {
+      const x = r.left + r.width * fx;
+      const y = r.top + r.height * fy;
+      if (x < 0 || y < 0 || x >= window.innerWidth || y >= window.innerHeight)
+        continue;
+      const hit = document
+        .elementsFromPoint(x, y)
+        .find((e) => !e.closest('[data-tour-layer]'));
+      if (hit && (el.contains(hit) || hit.contains(el))) return true;
+    }
+    return false;
+  }
 
   function sameBox(a: Box | null, b: Box | null) {
     return (
@@ -81,7 +123,7 @@
 
     function look() {
       if (skipped) return;
-      if (el && shown(el)) {
+      if (el && shown(el) && uncovered(el)) {
         // Menus opening or lists changing move the control without resizing it.
         measure();
         return;
@@ -90,13 +132,20 @@
         // The control went away (a menu closed, a list changed): give it the same time again.
         observer.unobserve(el);
         el = null;
+        control = null;
         started = performance.now();
       }
-      const found = document.querySelector<HTMLElement>(selector);
-      if (found && !shown(found)) reveal(found);
-      if (found && shown(found)) {
+      // The first one that is shown; otherwise the first one, after opening the menus around it.
+      const all = [...document.querySelectorAll<HTMLElement>(selector)];
+      let found = all.find(shown);
+      if (!found && all[0]) {
+        reveal(all[0]);
+        if (shown(all[0])) found = all[0];
+      }
+      if (found) found.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      if (found && uncovered(found)) {
         el = found;
-        found.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        control = found;
         observer.observe(found);
         measure();
         status = 'found';
@@ -139,6 +188,7 @@
       observer.disconnect();
       window.removeEventListener('scroll', onScroll, true);
       for (const menu of opened) if (menu.isConnected) menu.open = false;
+      control = null;
     };
   });
 
@@ -186,7 +236,7 @@
         (event.key === 'Enter' && !onButton)
       ) {
         event.preventDefault();
-        tours.next();
+        advance();
       } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
         event.preventDefault();
         tours.back();
@@ -230,6 +280,7 @@
 {#if run && step}
   <div
     class="tour-layer"
+    data-tour-layer
     data-testid="tour-layer"
     data-tour-id={run.tour.id}
     data-tour-step={run.index}
@@ -301,7 +352,7 @@
         <button
           type="button"
           class="primary"
-          onclick={() => tours.next()}
+          onclick={advance}
           data-testid="tour-next">{last ? 'Finish' : 'Next'}</button
         >
       </div>

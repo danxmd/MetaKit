@@ -1,25 +1,57 @@
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { expect, test, type Page } from '@playwright/test';
 import { newModel, prepare } from './app';
 
+/** A Kit with simple looks, rules and a script. */
+const portfolioKit = readFileSync(
+  fileURLToPath(
+    new URL('../../../kits/ai-use-case-portfolio/kit.json', import.meta.url),
+  ),
+  'utf8',
+);
+
 /**
  * Walks the running tour to its end. Every step must find its control (the layer says so on
- * `data-tour-missing`), and a pop-up beside a small control must not cover it.
+ * `data-tour-missing`), and a pop-up beside a small control must not cover it. Only the steps
+ * named in `skipped` may be passed over, because their control is not on this page.
  */
-async function walkTour(page: Page, id: string) {
+async function walkTour(page: Page, id: string, skipped: string[] = []) {
   const layer = page.getByTestId('tour-layer');
   await expect(layer).toHaveAttribute('data-tour-id', id);
   const count = page.getByTestId('tour-count');
-  await expect(count).toHaveText(/^1 of \d+$/);
+  await expect(count).toHaveText(/^\d+ of \d+$/);
   const total = Number((await count.textContent())!.split(' of ')[1]);
   const viewport = page.viewportSize()!;
-  for (let i = 0; i < total; i++) {
-    await expect(count).toHaveText(`${i + 1} of ${total}`);
+  const visited: string[] = [];
+  let previous = 0;
+  for (;;) {
+    // The next step that found its control, or the end of the tour.
+    await expect(async () => {
+      if ((await layer.count()) === 0) return;
+      const at = Number((await count.textContent())!.split(' of ')[0]);
+      expect(at, `"${id}" moved on from step ${previous}`).toBeGreaterThan(
+        previous,
+      );
+      const anchor = await layer.getAttribute('data-tour-anchor');
+      expect(
+        await layer.getAttribute('data-tour-missing'),
+        `step ${at} of "${id}" finds [data-tour="${anchor}"]`,
+      ).toBe('false');
+    }).toPass({ timeout: 6000 });
+    if ((await layer.count()) === 0) break;
+    const at = Number((await count.textContent())!.split(' of ')[0]);
     const anchor = (await layer.getAttribute('data-tour-anchor'))!;
-    await expect(
-      layer,
-      `step ${i + 1} of "${id}" finds [data-tour="${anchor}"]`,
-    ).toHaveAttribute('data-tour-missing', 'false');
-    const located = page.locator(`[data-tour="${anchor}"]`).first();
+    expect(
+      skipped,
+      `step ${at} of "${id}" was expected to be skipped`,
+    ).not.toContain(anchor);
+    visited.push(anchor);
+    previous = at;
+    const located = page
+      .locator(`[data-tour="${anchor}"]`)
+      .filter({ visible: true })
+      .first();
     // Painted, not only laid out: Chrome lays out the inside of a closed menu.
     expect(
       await located.evaluate((el) => el.checkVisibility()),
@@ -35,16 +67,14 @@ async function walkTour(page: Page, id: string) {
         control.x < popup.x + popup.width &&
         popup.y < control.y + control.height &&
         control.y < popup.y + popup.height;
-      expect(overlap, `the pop-up of step ${i + 1} covers ${anchor}`).toBe(
-        false,
-      );
+      expect(overlap, `the pop-up of step ${at} covers ${anchor}`).toBe(false);
     }
     await expect(page.getByTestId('tour-next')).toHaveText(
-      i === total - 1 ? 'Finish' : 'Next',
+      at === total ? 'Finish' : 'Next',
     );
     await page.getByTestId('tour-next').click();
   }
-  await expect(layer).toHaveCount(0);
+  expect(visited.length + skipped.length, `the steps of "${id}"`).toBe(total);
 }
 
 /** Opens the Tutorials page and starts a tour from its card. */
@@ -279,6 +309,63 @@ test.describe('Page tours', () => {
       'open',
       '',
     );
+  });
+});
+
+test.describe('Build tours', () => {
+  /** Opens the workspace's only Kit in Build. */
+  async function openKit(page: Page, kit?: string) {
+    await prepare(page, { kit });
+    await page.getByTestId('open-folder').click();
+    await page.getByTestId('mode-build').click();
+    await page.locator('[data-testid^="edit-kit-"]').first().click();
+    await expect(page.getByTestId('build-view')).toBeVisible();
+  }
+
+  test('Building a Kit: needs an open Kit, then walks the Build view from any section', async ({
+    page,
+  }) => {
+    await prepare(page);
+    await page.getByTestId('open-folder').click();
+    await page.getByTestId('open-tutorials').click();
+    await expect(page.getByTestId('tour-needs-building-kit')).toHaveText(
+      'Open a Kit in Build first.',
+    );
+    await page.getByTestId('tour-goto-building-kit').click();
+    await expect(page.getByTestId('kits-page')).toBeVisible();
+    await page.locator('[data-testid^="edit-kit-"]').first().click();
+    await expect(page.getByTestId('build-view')).toBeVisible();
+
+    // Started from another section, Next on the Classes tab opens the classes.
+    await page.getByTestId('build-tab-shapes').click();
+    await startTour(page, 'building-kit');
+    // Only a Kit linked to Git has Source control.
+    await walkTour(page, 'building-kit', ['build-git']);
+    await expect(page.getByTestId('class-editor')).toBeVisible();
+  });
+
+  test('Appearance: opens the appearance editor of a class and closes it again', async ({
+    page,
+  }) => {
+    await openKit(page, portfolioKit);
+    await startTour(page, 'appearance');
+    await walkTour(page, 'appearance');
+    await expect(page.getByTestId('appearance-overlay')).toHaveCount(0);
+    await expect(page.getByTestId('class-editor')).toBeVisible();
+  });
+
+  test('Rules and scripts: walks a rule and the scripts of a Kit', async ({
+    page,
+  }) => {
+    await openKit(page, portfolioKit);
+    // An editor left open would cover the sections; starting a Build tour closes it.
+    await page.getByTestId('build-item-AITechnique').click();
+    await page.getByTestId('class-edit-appearance').click();
+    await expect(page.getByTestId('appearance-overlay')).toBeVisible();
+    await startTour(page, 'rules-scripts');
+    await expect(page.getByTestId('appearance-overlay')).toHaveCount(0);
+    await walkTour(page, 'rules-scripts');
+    await expect(page.getByTestId('scripts-section')).toBeVisible();
   });
 });
 

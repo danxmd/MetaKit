@@ -140,7 +140,7 @@
   </p>
 
   <div class="layout">
-    <ul class="list" aria-label="Scripts">
+    <ul class="list" aria-label="Scripts" data-tour="scripts-list">
       {#each scripts as s (s.id)}
         {@const note = api ? statusNote(api.status(s.id)) : null}
         <li class:current={selected?.id === s.id}>
@@ -220,7 +220,7 @@
       </li>
     </ul>
 
-    <div class="work">
+    <div class="work" data-tour="scripts-editor">
       {#if selected}
         <div class="bar">
           <strong>{selected.name}</strong>
@@ -251,7 +251,7 @@
     </div>
   </div>
 
-  <fieldset>
+  <fieldset data-tour="scripts-permissions">
     <legend>What the scripts of this Kit may do</legend>
     <p class="muted">
       Scripts can always change models and show dialogs. Say here what else they

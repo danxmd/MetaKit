@@ -20,6 +20,11 @@ export interface Step {
   placement?: Placement;
   /** Skipped when the control is not on the page, instead of saying it is missing. */
   optional?: boolean;
+  /**
+   * Next presses the control before moving on, so the following steps find what it opens (a
+   * section, an editor). Never used for a control that changes the Kit or the model.
+   */
+  pressOnNext?: boolean;
 }
 
 export interface Tour {
@@ -261,6 +266,259 @@ export const TOURS: readonly Tour[] = [
         title: 'Copy and extend',
         text: 'Makes your own Kit based on this one. You can then change it in Build.',
         placement: 'right',
+      },
+    ],
+  },
+  {
+    id: 'building-kit',
+    title: 'Building a Kit',
+    summary:
+      'The sections of a Kit, adding classes yourself or from the catalog, the class editor and its attributes, Try it, undo and source control.',
+    page: 'build',
+    needs: 'kit',
+    steps: [
+      {
+        anchor: 'build-sections',
+        title: 'Sections',
+        text: 'A Kit is made of classes, relation classes and model types, their appearance, their behaviour and its settings. Pick a part here.',
+        placement: 'right',
+      },
+      {
+        anchor: 'build-tab-classes',
+        title: 'Classes',
+        text: 'A class is one kind of object, such as Task. Next opens this section.',
+        placement: 'right',
+        pressOnNext: true,
+      },
+      {
+        anchor: 'build-new',
+        title: 'Add a class',
+        text: 'Type a name and choose Add. The new class opens in the editor.',
+        placement: 'right',
+      },
+      {
+        anchor: 'build-catalog',
+        title: 'Add from catalog',
+        text: 'Pick ready-made classes such as Dataset or Risk, with their attributes and looks.',
+        placement: 'right',
+      },
+      {
+        anchor: 'build-item',
+        title: 'A class of this Kit',
+        text: 'Choose a class to edit it; the ✕ next to it deletes it. Next opens this one.',
+        placement: 'right',
+        optional: true,
+        pressOnNext: true,
+      },
+      {
+        anchor: 'build-editor',
+        title: 'Class editor',
+        text: 'The name, label, kind and help text of the class, then its appearance and constraints. Every change is saved at once.',
+        placement: 'left',
+      },
+      {
+        anchor: 'build-attributes',
+        title: 'Attributes',
+        text: 'The fields a modeller fills in for each object, such as Owner or Status. Add one at the end of the list.',
+        placement: 'left',
+        optional: true,
+      },
+      {
+        anchor: 'build-try',
+        title: 'Try it',
+        text: 'Opens a small throw-away model beside the editor. You can place and connect objects of the Kit as you build it.',
+        placement: 'bottom',
+      },
+      {
+        anchor: 'build-undo',
+        title: 'Undo and redo',
+        text: 'Every change to the Kit can be taken back. Undo and Redo work here as in a model.',
+        placement: 'bottom',
+      },
+      {
+        anchor: 'build-git',
+        title: 'Source control',
+        text: 'For a Kit kept in GitHub or GitLab: commit and push, pull, and pick a release.',
+        placement: 'bottom',
+        optional: true,
+      },
+      {
+        anchor: 'build-back',
+        title: 'Back to Kits',
+        text: 'Returns to the Kits page. The Kit is already saved.',
+        placement: 'bottom',
+      },
+    ],
+  },
+  {
+    id: 'appearance',
+    title: 'Appearance',
+    summary:
+      'How a class looks: the base form, colours, colour by attribute, badges, and the drawing editor for anything else.',
+    page: 'build',
+    needs: 'kit',
+    steps: [
+      {
+        anchor: 'build-tab-classes',
+        title: 'Classes',
+        text: 'A look belongs to a class. Next opens the Classes section.',
+        placement: 'right',
+        pressOnNext: true,
+      },
+      {
+        anchor: 'build-item',
+        title: 'Pick a class',
+        text: 'Choose the class whose look you want to change. Next picks this one.',
+        placement: 'right',
+        optional: true,
+        pressOnNext: true,
+      },
+      {
+        anchor: 'build-appearance',
+        title: 'Appearance of a class',
+        text: 'This shows how objects of the selected class look on the canvas. A form, colours and text are enough, no drawing needed.',
+        placement: 'bottom',
+      },
+      {
+        anchor: 'build-edit-appearance',
+        title: 'Edit appearance',
+        text: 'Opens the appearance editor. Next opens it for you.',
+        placement: 'bottom',
+        optional: true,
+        pressOnNext: true,
+      },
+      {
+        anchor: 'appearance-form',
+        title: 'Base form',
+        text: 'Choose the basic form, such as a box, a rounded box, a circle or a diamond.',
+        placement: 'right',
+        optional: true,
+      },
+      {
+        anchor: 'appearance-preview',
+        title: 'Preview',
+        text: 'Shows the look as it will be drawn. When a colour follows data, a tile shows each value.',
+        placement: 'right',
+        optional: true,
+      },
+      {
+        anchor: 'appearance-colours',
+        title: 'Colours',
+        text: 'Set the fill, the border and the text colour, and the width and style of the border.',
+        placement: 'left',
+        optional: true,
+      },
+      {
+        anchor: 'appearance-data',
+        title: 'Colour by attribute',
+        text: 'Let a colour follow the value of an attribute, for example red when Status is Late.',
+        placement: 'left',
+        optional: true,
+      },
+      {
+        anchor: 'appearance-badge',
+        title: 'Badges',
+        text: 'Show a small mark on the shape when an attribute has a given value.',
+        placement: 'left',
+        optional: true,
+      },
+      {
+        anchor: 'appearance-done',
+        title: 'Done',
+        text: 'Closes the editor; every change is already in the Kit. Next closes it for you.',
+        placement: 'bottom',
+        optional: true,
+        pressOnNext: true,
+      },
+      {
+        anchor: 'build-more-looks',
+        title: 'The drawing editor',
+        text: 'For a look no form can give, open More ways to set the look. New drawn shape opens the advanced drawing editor.',
+        placement: 'top',
+      },
+    ],
+  },
+  {
+    id: 'rules-scripts',
+    title: 'Rules and scripts',
+    summary:
+      'Rules with When, If and Then, commands people can run, and scripts with the permissions they need.',
+    page: 'build',
+    needs: 'kit',
+    steps: [
+      {
+        anchor: 'build-tab-rules',
+        title: 'Rules',
+        text: 'A rule reacts when something happens in a model. Next opens the Rules section.',
+        placement: 'right',
+        pressOnNext: true,
+      },
+      {
+        anchor: 'rules-row',
+        title: 'A rule',
+        text: 'Each row is one rule, and its switch turns it on or off. Next opens the first rule.',
+        placement: 'bottom',
+        optional: true,
+        pressOnNext: true,
+      },
+      {
+        anchor: 'rule-when',
+        title: 'When',
+        text: 'The event the rule waits for, such as an object being created or an attribute changing.',
+        placement: 'left',
+        optional: true,
+      },
+      {
+        anchor: 'rule-command',
+        title: 'Commands',
+        text: 'Choose "A person runs it" as the event to make a command. It then appears in the Commands menu, on the toolbar or in the right-click menu.',
+        placement: 'left',
+        optional: true,
+      },
+      {
+        anchor: 'rule-if',
+        title: 'If',
+        text: 'A condition written as a formula. The rule acts only when it is true, or always when it is empty.',
+        placement: 'left',
+        optional: true,
+      },
+      {
+        anchor: 'rule-then',
+        title: 'Then',
+        text: 'The actions the rule takes, such as setting a value or showing a message.',
+        placement: 'left',
+        optional: true,
+      },
+      {
+        anchor: 'rules-add',
+        title: 'Add rule',
+        text: 'Makes a new rule. Once the assistant is set up, it can draft one for you.',
+        placement: 'top',
+      },
+      {
+        anchor: 'build-tab-scripts',
+        title: 'Scripts',
+        text: 'Scripts are TypeScript for what formulas and rules cannot do. Next opens the Scripts section.',
+        placement: 'right',
+        pressOnNext: true,
+      },
+      {
+        anchor: 'scripts-list',
+        title: 'Your scripts',
+        text: 'Each script can be switched off, renamed or deleted. Add a script makes a new one.',
+        placement: 'right',
+      },
+      {
+        anchor: 'scripts-editor',
+        title: 'Script editor',
+        text: 'Write the script here; the editor completes names and marks mistakes. The console below shows what scripts print.',
+        placement: 'left',
+      },
+      {
+        anchor: 'scripts-permissions',
+        title: 'Permissions',
+        text: 'Say whether the scripts may use the internet or files. Each person is asked once, in their own browser.',
+        placement: 'top',
       },
     ],
   },

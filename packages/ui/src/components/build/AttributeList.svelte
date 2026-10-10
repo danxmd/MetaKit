@@ -72,7 +72,11 @@
   }
 </script>
 
-<section class="attributes card" data-testid="attributes">
+<section
+  class="attributes card"
+  data-testid="attributes"
+  data-tour="build-attributes"
+>
   <h3>Attributes</h3>
   <p class="muted help">
     Attributes hold the values of an object. Open one to change its type,
