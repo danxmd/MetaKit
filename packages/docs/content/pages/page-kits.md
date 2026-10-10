@@ -107,6 +107,7 @@ The workspace has one card: **Agent pipeline**, **Version 1.0.0**, "Used by 2 mo
 
 ## Good to know
 
+- **Footer.** At the bottom of the page are a link to the source code on GitHub and **Buy me a coffee**, where you can support MetaKit's development. Both open in a new tab; MetaKit stays free either way.
 - **File route versus package route.** A plain Kit file (`.json`) is added directly and only when the Kit is not yet in the workspace. A `.mktool` package is imported on the Models page and shows a review dialog first, which also lets you update an existing Kit.
 - **Deleting a Kit does not delete its models.** They stay in the list but show **Kit not found** until you restore the Kit.
 - **Version badge.** It shows the version typed in the Build bar of that Kit.

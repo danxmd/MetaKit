@@ -76,6 +76,7 @@ Anna opens MetaKit for the first time, picks `C:\Work\Pipelines` (empty), types 
 
 ## Good to know
 
+- **Footer.** At the bottom of the page are a link to the source code on GitHub and **Buy me a coffee**, where you can support MetaKit's development. Both open in a new tab; MetaKit stays free either way.
 - **MetaKit never deletes or changes your other files.** A workspace is added next to them.
 - **The remembered folder is kept in this browser only** (IndexedDB), not in the folder. On another computer you choose it again.
 - **Closing the workspace** does not delete anything; it only returns to this page.

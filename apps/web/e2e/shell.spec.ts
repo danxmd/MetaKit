@@ -107,6 +107,34 @@ test.describe('the app shell', () => {
     expect(await surface()).toBe(light);
   });
 
+  test('the start page links to the source and to Buy me a coffee', async ({
+    page,
+  }) => {
+    await prepare(page, { seed: false });
+    await expect(page.getByTestId('start-page')).toBeVisible();
+    const coffee = page.getByTestId('buy-me-a-coffee');
+    await expect(coffee).toBeVisible();
+    await expect(coffee).toHaveAttribute(
+      'href',
+      'https://buymeacoffee.com/danial.amlashi',
+    );
+    await expect(coffee).toHaveAttribute('target', '_blank');
+    await expect(page.getByTestId('support-footer')).toContainText(
+      'Source on GitHub',
+    );
+  });
+
+  test('the models and Kits pages show the same footer', async ({ page }) => {
+    await emptyWorkspace(page);
+    await expect(
+      page.getByTestId('models-page').getByTestId('buy-me-a-coffee'),
+    ).toBeVisible();
+    await page.getByTestId('mode-build').click();
+    await expect(
+      page.getByTestId('kits-page').getByTestId('buy-me-a-coffee'),
+    ).toBeVisible();
+  });
+
   test('empty states say what to do next', async ({ page }) => {
     await emptyWorkspace(page);
     await expect(page.getByTestId('models-page')).toBeVisible();

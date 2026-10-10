@@ -70,6 +70,7 @@ In the Agent pipeline workspace the page shows a folder **Reviews** with the mod
 
 ## Good to know
 
+- **Footer.** At the bottom of the page are a link to the source code on GitHub and **Buy me a coffee**, where you can support MetaKit's development. Both open in a new tab; MetaKit stays free either way.
 - The list is read when the workspace opens and again after each action of yours (create, rename, move, delete, restore, import). It does not watch the folder. If someone else adds a model and their sync program has delivered the files, close and reopen the workspace to see it.
 - Opening a model closes any open Kit. See [[performance-limits]] for the model sizes MetaKit is built for.
 - Models you rename keep their folder on disk; only the name stored in the file changes.

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SupportFooter from './SupportFooter.svelte';
   import BrandMark from './BrandMark.svelte';
 
   let {
@@ -167,6 +168,7 @@
       </div>
     </section>
   </div>
+  <SupportFooter />
 </main>
 
 <style>
@@ -174,6 +176,7 @@
     position: relative;
     min-height: 100dvh;
     display: grid;
+    grid-template-rows: 1fr auto;
     align-items: center;
     padding: var(--gap-6) var(--gap-4);
   }
