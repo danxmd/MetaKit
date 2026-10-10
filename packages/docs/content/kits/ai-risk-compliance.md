@@ -3,7 +3,7 @@ id: ai-risk-compliance
 title: AI risk and compliance
 category: kits
 summary: A built-in Kit for a register of AI systems, with their intended purpose, a risk tier, risks and controls, obligations, assessments, incidents, owners and evidence.
-keywords: [ai risk, ai compliance, ai register, ai system, risk tier, intended purpose, obligation, control, residual risk, impact assessment, ai incident, evidence, owner, governance]
+keywords: [ai risk, ai compliance, ai register, ai system, risk tier, intended purpose, obligation, control, residual risk, ai impact assessment, ai incident, evidence, owner, governance]
 contexts: []
 order: 120
 ---

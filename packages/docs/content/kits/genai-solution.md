@@ -3,7 +3,7 @@ id: genai-solution
 title: Generative AI solution
 category: kits
 summary: A built-in Kit for generative AI solutions, with use cases, the flow, prompts and foundation models, a retrieval pipeline, agents and tools, guardrails, evaluations, human review, and the cost and latency of each request.
-keywords: [generative ai, genai, llm, foundation model, prompt, retrieval, rag, chunking, embedding, vector index, retriever, re-ranker, agent, tool, guardrail, llm evaluation, human review, cost per request, latency per request, tokens, orchestration]
+keywords: [generative ai, genai, llm, foundation model, prompt, retrieval, rag, chunking, embedding, vector index, retriever, re-ranker, agent, tool, guardrail, llm evaluation, human review, cost per request, latency per request, tokens, orchestration flow]
 contexts: []
 order: 110
 ---

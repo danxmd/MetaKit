@@ -375,6 +375,8 @@ export interface KitSpec {
   panels?: PanelSpec[];
   rules?: RuleSpec[];
   sample: SampleSpec;
+  /** Further sample models, such as one per model type. */
+  moreSamples?: SampleSpec[];
 }
 
 // Building -------------------------------------------------------------------------------------
@@ -734,29 +736,34 @@ export function buildSample(kit: Kit, sample: SampleSpec): Model {
 
 export interface BuiltFiles {
   kit: Kit;
+  /** The first sample model. */
   model: Model;
   /** Path under `kits/` and text (Prettier formats it when written). */
   files: { path: string; text: string }[];
 }
 
-/** The Kit and its sample, checked: the sample has no errors and only its intended warnings. */
+/** The Kit and its samples, checked: each has no errors and only its intended warnings. */
 export function renderKit(spec: KitSpec): BuiltFiles {
   const kit = buildKit(spec);
-  const model = buildSample(kit, spec.sample);
-  const issues = validateModel(
-    kit,
-    model,
-    new ModelCalculator(kit, () => model),
-  );
-  const errors = issues.filter((i) => i.severity === 'error');
-  const warnings = issues.filter((i) => i.severity === 'warning');
-  if (errors.length > 0 || warnings.length !== spec.sample.intendedWarnings)
-    throw new Error(
-      `${spec.folder}: the sample has ${errors.length} errors and ${warnings.length} warnings (${spec.sample.intendedWarnings} intended):\n${issues.map((i) => `  ${i.severity}: ${i.message}`).join('\n')}`,
+  const samples = [spec.sample, ...(spec.moreSamples ?? [])];
+  const models = samples.map((sample) => {
+    const model = buildSample(kit, sample);
+    const issues = validateModel(
+      kit,
+      model,
+      new ModelCalculator(kit, () => model),
     );
+    const errors = issues.filter((i) => i.severity === 'error');
+    const warnings = issues.filter((i) => i.severity === 'warning');
+    if (errors.length > 0 || warnings.length !== sample.intendedWarnings)
+      throw new Error(
+        `${spec.folder}/${sample.file}: the sample has ${errors.length} errors and ${warnings.length} warnings (${sample.intendedWarnings} intended):\n${issues.map((i) => `  ${i.severity}: ${i.message}`).join('\n')}`,
+      );
+    return model;
+  });
   return {
     kit,
-    model,
+    model: models[0]!,
     files: [
       {
         path: `${spec.folder}/kit.json`,
@@ -765,10 +772,10 @@ export function renderKit(spec: KitSpec): BuiltFiles {
         text: `${JSON.stringify(kit, null, 2)}
 `,
       },
-      {
-        path: `${spec.folder}/${spec.sample.file}`,
-        text: exportMkModel(kit, model),
-      },
+      ...samples.map((sample, i) => ({
+        path: `${spec.folder}/${sample.file}`,
+        text: exportMkModel(kit, models[i]!),
+      })),
     ],
   };
 }
