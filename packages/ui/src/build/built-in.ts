@@ -115,6 +115,100 @@ export const BUILT_IN_KITS: readonly BuiltInKit[] = [
       ),
   },
   {
+    id: 'kit_datamesh' as KitId,
+    name: 'Data mesh and data products',
+    version: '1.0.0',
+    domain: 'data-ai',
+    description:
+      'Domains that own data products, with input and output ports, data contracts with a schema, a service level and a version, consumers, the self-serve platform and governance policies.',
+    load: () =>
+      import('../../../../kits/data-mesh/kit.json?raw').then((m) => m.default),
+  },
+  {
+    id: 'kit_datamodelling' as KitId,
+    name: 'Data modelling',
+    version: '1.0.0',
+    domain: 'data-ai',
+    description:
+      'Conceptual, logical and physical data models: subject areas, entities with attributes and keys, relationships with cardinality, and tables with typed columns and foreign keys.',
+    load: () =>
+      import('../../../../kits/data-modelling/kit.json?raw').then(
+        (m) => m.default,
+      ),
+  },
+  {
+    id: 'kit_datalineage' as KitId,
+    name: 'Data pipelines and lineage',
+    version: '1.0.0',
+    domain: 'data-ai',
+    description:
+      'Sources, jobs, schedules, datasets, reports and target applications, with lineage down to the field, upstream and downstream counts and checks for unscheduled jobs and orphan datasets.',
+    load: () =>
+      import('../../../../kits/data-pipelines-lineage/kit.json?raw').then(
+        (m) => m.default,
+      ),
+  },
+  {
+    id: 'kit_dataquality' as KitId,
+    name: 'Data quality management',
+    version: '1.0.0',
+    domain: 'data-ai',
+    description:
+      'Quality rules with thresholds and results on data assets, quality dimensions, issues with severity, status and owner, and the actions that resolve them, with pass rates and quality scores.',
+    load: () =>
+      import('../../../../kits/data-quality/kit.json?raw').then(
+        (m) => m.default,
+      ),
+  },
+  {
+    id: 'kit_masterdata' as KitId,
+    name: 'Master data management',
+    version: '1.0.0',
+    domain: 'data-ai',
+    description:
+      'Master data domains with golden records, the source systems that supply them, match and survivorship rules, MDM hubs in the registry, consolidation, coexistence or centralised style, and data stewards.',
+    load: () =>
+      import('../../../../kits/master-data/kit.json?raw').then(
+        (m) => m.default,
+      ),
+  },
+  {
+    id: 'kit_analyticsbi' as KitId,
+    name: 'Analytics and BI landscape',
+    version: '1.0.0',
+    domain: 'data-ai',
+    description:
+      'Reports and dashboards with their owners, usage and refresh, the semantic models and metrics they are built on and the audiences they serve, with checks for metrics defined twice.',
+    load: () =>
+      import('../../../../kits/analytics-bi/kit.json?raw').then(
+        (m) => m.default,
+      ),
+  },
+  {
+    id: 'kit_privacyropa' as KitId,
+    name: 'Privacy and records of processing',
+    version: '1.0.0',
+    domain: 'data-ai',
+    description:
+      'Records of processing: activities with purposes and legal bases, data categories, data subjects, recipients and transfers with safeguards, retention, systems and an impact assessment indication.',
+    load: () =>
+      import('../../../../kits/privacy-ropa/kit.json?raw').then(
+        (m) => m.default,
+      ),
+  },
+  {
+    id: 'kit_clouddatamigration' as KitId,
+    name: 'Cloud data migration',
+    version: '1.0.0',
+    domain: 'data-ai',
+    description:
+      'Workloads moving from source systems to cloud target services in migration waves, with dependencies, cut-over plans, status, risks and the readiness of each wave.',
+    load: () =>
+      import('../../../../kits/cloud-data-migration/kit.json?raw').then(
+        (m) => m.default,
+      ),
+  },
+  {
     id: 'tool_agentpipeline' as KitId,
     name: 'Agent pipeline',
     version: '1.0.0',

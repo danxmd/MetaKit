@@ -3,7 +3,7 @@ id: ml-lifecycle
 title: ML lifecycle (MLOps)
 category: kits
 summary: A built-in Kit for the life of a machine learning model, from data and experiments to versions, evaluations, approvals, deployments, monitoring and retraining.
-keywords: [mlops, machine learning, ml lifecycle, model registry, model version, training run, experiment, feature store, evaluation, threshold, approval gate, deployment, environment, monitor, drift, latency, incident, retraining]
+keywords: [mlops, machine learning, ml lifecycle, model registry, model version, training run, experiment, feature store, evaluation, evaluation threshold, approval gate, deployment, environment, monitor, drift, latency, incident, retraining]
 contexts: []
 order: 100
 ---

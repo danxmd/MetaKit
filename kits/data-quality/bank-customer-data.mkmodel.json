@@ -1,0 +1,479 @@
+{
+  "attributes": {
+    "Organisation": "A retail bank",
+    "Title": "Customer and account data quality"
+  },
+  "connectors": [
+    {
+      "from": "el_r_birth",
+      "id": "cn_001",
+      "relation": "Measures",
+      "to": "el_dim_complete"
+    },
+    {
+      "from": "el_r_email",
+      "id": "cn_002",
+      "relation": "Measures",
+      "to": "el_dim_valid"
+    },
+    {
+      "from": "el_r_unique",
+      "id": "cn_003",
+      "relation": "Measures",
+      "to": "el_dim_unique"
+    },
+    {
+      "from": "el_r_iban",
+      "id": "cn_004",
+      "relation": "Measures",
+      "to": "el_dim_valid"
+    },
+    {
+      "from": "el_r_balances",
+      "id": "cn_005",
+      "relation": "Measures",
+      "to": "el_dim_timely"
+    },
+    {
+      "from": "el_r_account",
+      "id": "cn_006",
+      "relation": "Measures",
+      "to": "el_dim_complete"
+    },
+    {
+      "from": "el_r_birth",
+      "id": "cn_007",
+      "relation": "Checks",
+      "to": "el_ds_customers"
+    },
+    {
+      "from": "el_r_email",
+      "id": "cn_008",
+      "relation": "Checks",
+      "to": "el_ds_customers"
+    },
+    {
+      "from": "el_r_unique",
+      "id": "cn_009",
+      "relation": "Checks",
+      "to": "el_ds_customers"
+    },
+    {
+      "from": "el_r_iban",
+      "id": "cn_010",
+      "relation": "Checks",
+      "to": "el_ds_accounts"
+    },
+    {
+      "from": "el_r_balances",
+      "id": "cn_011",
+      "relation": "Checks",
+      "to": "el_ds_accounts"
+    },
+    {
+      "from": "el_r_account",
+      "id": "cn_012",
+      "relation": "Checks",
+      "to": "el_ds_transactions"
+    },
+    {
+      "from": "el_stw_customer",
+      "id": "cn_013",
+      "relation": "Stewards",
+      "to": "el_ds_customers"
+    },
+    {
+      "from": "el_stw_finance",
+      "id": "cn_014",
+      "relation": "Stewards",
+      "to": "el_ds_accounts"
+    },
+    {
+      "from": "el_stw_finance",
+      "id": "cn_015",
+      "relation": "Stewards",
+      "to": "el_ds_transactions"
+    },
+    {
+      "from": "el_iss_email",
+      "id": "cn_016",
+      "relation": "FoundBy",
+      "to": "el_r_email"
+    },
+    {
+      "from": "el_iss_duplicates",
+      "id": "cn_017",
+      "relation": "FoundBy",
+      "to": "el_r_unique"
+    },
+    {
+      "from": "el_iss_late",
+      "id": "cn_018",
+      "relation": "FoundBy",
+      "to": "el_r_balances"
+    },
+    {
+      "from": "el_iss_email",
+      "id": "cn_019",
+      "relation": "Affects",
+      "to": "el_ds_customers"
+    },
+    {
+      "from": "el_iss_duplicates",
+      "id": "cn_020",
+      "relation": "Affects",
+      "to": "el_ds_customers"
+    },
+    {
+      "from": "el_iss_late",
+      "id": "cn_021",
+      "relation": "Affects",
+      "to": "el_ds_accounts"
+    },
+    {
+      "from": "el_act_form",
+      "id": "cn_022",
+      "relation": "Resolves",
+      "to": "el_iss_email"
+    },
+    {
+      "from": "el_act_cleanup",
+      "id": "cn_023",
+      "relation": "Resolves",
+      "to": "el_iss_email"
+    },
+    {
+      "from": "el_act_alert",
+      "id": "cn_024",
+      "relation": "Resolves",
+      "to": "el_iss_late"
+    }
+  ],
+  "elements": [
+    {
+      "attributes": {
+        "Name": "Completeness",
+        "Target": 99
+      },
+      "class": "QualityDimension",
+      "h": 70,
+      "id": "el_dim_complete",
+      "w": 160,
+      "x": 205,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "Name": "Validity",
+        "Target": 99
+      },
+      "class": "QualityDimension",
+      "h": 70,
+      "id": "el_dim_valid",
+      "w": 160,
+      "x": 530,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "Name": "Uniqueness",
+        "Target": 100
+      },
+      "class": "QualityDimension",
+      "h": 70,
+      "id": "el_dim_unique",
+      "w": 160,
+      "x": 860,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "Name": "Timeliness",
+        "Target": 95
+      },
+      "class": "QualityDimension",
+      "h": 70,
+      "id": "el_dim_timely",
+      "w": 160,
+      "x": 1180,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "Expression": "date_of_birth is not empty",
+        "Frequency": "Daily",
+        "LastRun": "2027-03-15",
+        "Name": "Customer has a date of birth",
+        "RecordsChecked": 1250000,
+        "RecordsFailed": 3100,
+        "Threshold": 99
+      },
+      "class": "DataQualityRule",
+      "h": 110,
+      "id": "el_r_birth",
+      "w": 190,
+      "x": 200,
+      "y": 170
+    },
+    {
+      "attributes": {
+        "Expression": "email matches name@domain",
+        "Frequency": "Daily",
+        "LastRun": "2027-03-15",
+        "Name": "Email is well formed",
+        "RecordsChecked": 980000,
+        "RecordsFailed": 31000,
+        "Threshold": 98
+      },
+      "class": "DataQualityRule",
+      "h": 110,
+      "id": "el_r_email",
+      "w": 190,
+      "x": 415,
+      "y": 170
+    },
+    {
+      "attributes": {
+        "Expression": "national_id is unique",
+        "Frequency": "Daily",
+        "LastRun": "2027-03-15",
+        "Name": "One customer per national id",
+        "RecordsChecked": 1250000,
+        "RecordsFailed": 420,
+        "Threshold": 100
+      },
+      "class": "DataQualityRule",
+      "h": 110,
+      "id": "el_r_unique",
+      "w": 190,
+      "x": 630,
+      "y": 170
+    },
+    {
+      "attributes": {
+        "Expression": "check digits of the account number are correct",
+        "Frequency": "Daily",
+        "LastRun": "2027-03-15",
+        "Name": "Account numbers are valid",
+        "RecordsChecked": 1900000,
+        "RecordsFailed": 0,
+        "Threshold": 100
+      },
+      "class": "DataQualityRule",
+      "h": 110,
+      "id": "el_r_iban",
+      "w": 190,
+      "x": 845,
+      "y": 170
+    },
+    {
+      "attributes": {
+        "Expression": "the daily balance file arrived before 07:00",
+        "Frequency": "Daily",
+        "LastRun": "2027-03-15",
+        "Name": "Balances loaded by 07:00",
+        "RecordsChecked": 30,
+        "RecordsFailed": 1,
+        "Threshold": 95
+      },
+      "class": "DataQualityRule",
+      "h": 110,
+      "id": "el_r_balances",
+      "w": 190,
+      "x": 1060,
+      "y": 170
+    },
+    {
+      "attributes": {
+        "Expression": "account_id is not empty and exists",
+        "Frequency": "Daily",
+        "LastRun": "2027-03-15",
+        "Name": "Transaction has an account",
+        "RecordsChecked": 45000000,
+        "RecordsFailed": 0,
+        "Threshold": 100
+      },
+      "class": "DataQualityRule",
+      "h": 110,
+      "id": "el_r_account",
+      "w": 190,
+      "x": 1275,
+      "y": 170
+    },
+    {
+      "attributes": {
+        "Classification": "Confidential",
+        "ContainsPersonalData": true,
+        "Criticality": "High",
+        "Name": "Customers",
+        "Owner": "Head of retail banking",
+        "RowCount": 1250000
+      },
+      "class": "Dataset",
+      "h": 110,
+      "id": "el_ds_customers",
+      "w": 190,
+      "x": 415,
+      "y": 400
+    },
+    {
+      "attributes": {
+        "Classification": "Confidential",
+        "Criticality": "High",
+        "Name": "Accounts",
+        "Owner": "Head of finance",
+        "RowCount": 1900000
+      },
+      "class": "Dataset",
+      "h": 110,
+      "id": "el_ds_accounts",
+      "w": 190,
+      "x": 950,
+      "y": 400
+    },
+    {
+      "attributes": {
+        "Classification": "Confidential",
+        "Criticality": "High",
+        "Name": "Transactions",
+        "Owner": "Head of finance"
+      },
+      "class": "Dataset",
+      "h": 110,
+      "id": "el_ds_transactions",
+      "w": 190,
+      "x": 1275,
+      "y": 400
+    },
+    {
+      "attributes": {
+        "Domain": "Customer",
+        "Name": "Customer data steward"
+      },
+      "class": "DataSteward",
+      "h": 110,
+      "id": "el_stw_customer",
+      "w": 90,
+      "x": 40,
+      "y": 390
+    },
+    {
+      "attributes": {
+        "Domain": "Finance",
+        "Name": "Finance data steward"
+      },
+      "class": "DataSteward",
+      "h": 110,
+      "id": "el_stw_finance",
+      "w": 90,
+      "x": 1530,
+      "y": 560
+    },
+    {
+      "attributes": {
+        "Due": "2027-04-30",
+        "Found": "2027-02-20",
+        "Name": "Bad emails from the branch sign-up form",
+        "Owner": "Branch systems team",
+        "RecordsAffected": 31000,
+        "RootCause": "The form accepts any text as an email address.",
+        "Severity": "High",
+        "Status": "In progress"
+      },
+      "class": "Issue",
+      "h": 70,
+      "id": "el_iss_email",
+      "w": 180,
+      "x": 290,
+      "y": 580
+    },
+    {
+      "attributes": {
+        "Found": "2027-03-01",
+        "Name": "Duplicate customers after a branch merger",
+        "Owner": "Customer data steward",
+        "RecordsAffected": 420,
+        "Severity": "Critical",
+        "Status": "Open"
+      },
+      "class": "Issue",
+      "h": 70,
+      "id": "el_iss_duplicates",
+      "w": 180,
+      "x": 520,
+      "y": 580
+    },
+    {
+      "attributes": {
+        "Found": "2027-03-03",
+        "Name": "Late balance file on 3 March",
+        "Owner": "Finance data steward",
+        "Severity": "Low",
+        "Status": "Resolved"
+      },
+      "class": "Issue",
+      "h": 70,
+      "id": "el_iss_late",
+      "w": 180,
+      "x": 950,
+      "y": 580
+    },
+    {
+      "attributes": {
+        "ActionType": "Fix the source",
+        "Due": "2027-04-15",
+        "Effort": "Small",
+        "Name": "Check emails on the sign-up form",
+        "Owner": "Branch systems team",
+        "Status": "In progress"
+      },
+      "class": "RemediationAction",
+      "h": 70,
+      "id": "el_act_form",
+      "w": 180,
+      "x": 290,
+      "y": 730
+    },
+    {
+      "attributes": {
+        "ActionType": "Fix the data",
+        "Due": "2027-04-30",
+        "Effort": "Medium",
+        "Name": "Correct the bad emails",
+        "Owner": "Customer data steward",
+        "Status": "Not started"
+      },
+      "class": "RemediationAction",
+      "h": 70,
+      "id": "el_act_cleanup",
+      "w": 180,
+      "x": 520,
+      "y": 730
+    },
+    {
+      "attributes": {
+        "ActionType": "Change the process",
+        "Effort": "Small",
+        "Name": "Alert when the balance file is late",
+        "Owner": "Finance data steward",
+        "Status": "Done"
+      },
+      "class": "RemediationAction",
+      "h": 70,
+      "id": "el_act_alert",
+      "w": 180,
+      "x": 950,
+      "y": 730
+    }
+  ],
+  "formatVersion": 2,
+  "id": "mdl_bankcustomerdata",
+  "kind": "mkmodel",
+  "kit": {
+    "id": "kit_dataquality",
+    "name": "Data quality management",
+    "version": "1.0.0"
+  },
+  "modelType": "DataQuality",
+  "name": "Customer and account data quality"
+}
