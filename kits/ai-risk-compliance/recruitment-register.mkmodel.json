@@ -1,0 +1,478 @@
+{
+  "attributes": {
+    "Organisation": "A recruitment agency",
+    "ReviewedOn": "2027-02-15",
+    "Title": "AI register 2027"
+  },
+  "connectors": [
+    {
+      "from": "el_a_rank",
+      "id": "cn_001",
+      "relation": "Assesses",
+      "to": "el_sys_rank"
+    },
+    {
+      "from": "el_inc_rank",
+      "id": "cn_002",
+      "relation": "Concerns",
+      "to": "el_sys_rank"
+    },
+    {
+      "from": "el_a_chat",
+      "id": "cn_003",
+      "relation": "Assesses",
+      "to": "el_sys_chat"
+    },
+    {
+      "from": "el_p_hr",
+      "id": "cn_004",
+      "relation": "Owns",
+      "to": "el_sys_rank"
+    },
+    {
+      "from": "el_p_hr",
+      "id": "cn_005",
+      "relation": "Owns",
+      "to": "el_sys_chat"
+    },
+    {
+      "from": "el_p_hr",
+      "id": "cn_006",
+      "relation": "Owns",
+      "to": "el_sys_emotion"
+    },
+    {
+      "from": "el_p_it",
+      "id": "cn_007",
+      "relation": "Owns",
+      "to": "el_sys_spam"
+    },
+    {
+      "from": "el_sys_rank",
+      "id": "cn_008",
+      "relation": "SubjectTo",
+      "to": "el_o_oversight"
+    },
+    {
+      "from": "el_sys_rank",
+      "id": "cn_009",
+      "relation": "SubjectTo",
+      "to": "el_o_records"
+    },
+    {
+      "from": "el_sys_chat",
+      "id": "cn_010",
+      "relation": "SubjectTo",
+      "to": "el_o_transparency"
+    },
+    {
+      "from": "el_sys_rank",
+      "id": "cn_011",
+      "relation": "HasRisk",
+      "to": "el_r_bias"
+    },
+    {
+      "from": "el_sys_chat",
+      "id": "cn_012",
+      "relation": "HasRisk",
+      "to": "el_r_errors"
+    },
+    {
+      "from": "el_sys_chat",
+      "id": "cn_013",
+      "relation": "HasRisk",
+      "to": "el_r_privacy"
+    },
+    {
+      "from": "el_c_review",
+      "id": "cn_014",
+      "relation": "Mitigates",
+      "to": "el_r_bias"
+    },
+    {
+      "from": "el_c_biastest",
+      "id": "cn_015",
+      "relation": "Mitigates",
+      "to": "el_r_bias"
+    },
+    {
+      "from": "el_c_disclosure",
+      "id": "cn_016",
+      "relation": "Mitigates",
+      "to": "el_r_errors"
+    },
+    {
+      "from": "el_c_retention",
+      "id": "cn_017",
+      "relation": "Mitigates",
+      "to": "el_r_privacy"
+    },
+    {
+      "from": "el_c_review",
+      "id": "cn_018",
+      "relation": "Satisfies",
+      "to": "el_o_oversight"
+    },
+    {
+      "from": "el_c_biastest",
+      "id": "cn_019",
+      "relation": "Satisfies",
+      "to": "el_o_records"
+    },
+    {
+      "from": "el_c_disclosure",
+      "id": "cn_020",
+      "relation": "Satisfies",
+      "to": "el_o_transparency"
+    },
+    {
+      "from": "el_ev_signoff",
+      "id": "cn_021",
+      "relation": "Proves",
+      "to": "el_c_review"
+    },
+    {
+      "from": "el_ev_report",
+      "id": "cn_022",
+      "relation": "Proves",
+      "to": "el_c_biastest"
+    },
+    {
+      "from": "el_ev_banner",
+      "id": "cn_023",
+      "relation": "Proves",
+      "to": "el_c_disclosure"
+    }
+  ],
+  "elements": [
+    {
+      "attributes": {
+        "Assessor": "Risk officer",
+        "Date": "2027-04-30",
+        "Kind": "Impact assessment",
+        "Name": "Impact of candidate ranking",
+        "Status": "Planned"
+      },
+      "class": "Assessment",
+      "h": 70,
+      "id": "el_a_rank",
+      "w": 180,
+      "x": 40,
+      "y": 20
+    },
+    {
+      "attributes": {
+        "Date": "2026-12-02",
+        "Name": "Ranking favoured one region",
+        "RootCause": "The training data held far more placements from one region; it was rebalanced.",
+        "Severity": "Medium",
+        "Status": "Closed"
+      },
+      "class": "Incident",
+      "h": 70,
+      "id": "el_inc_rank",
+      "w": 180,
+      "x": 240,
+      "y": 20
+    },
+    {
+      "attributes": {
+        "Assessor": "Risk officer",
+        "Date": "2026-11-15",
+        "Kind": "Transparency review",
+        "Name": "Chat assistant review",
+        "Outcome": "Pass",
+        "Status": "Completed"
+      },
+      "class": "Assessment",
+      "h": 70,
+      "id": "el_a_chat",
+      "w": 180,
+      "x": 440,
+      "y": 20
+    },
+    {
+      "attributes": {
+        "Name": "Mia Torres",
+        "Role": "Head of recruitment"
+      },
+      "class": "Person",
+      "h": 110,
+      "id": "el_p_hr",
+      "w": 90,
+      "x": 900,
+      "y": 10
+    },
+    {
+      "attributes": {
+        "Name": "Leo Hartmann",
+        "Role": "IT manager"
+      },
+      "class": "Person",
+      "h": 110,
+      "id": "el_p_it",
+      "w": 90,
+      "x": 700,
+      "y": 10
+    },
+    {
+      "attributes": {
+        "AffectsPeople": true,
+        "ForeseeableMisuse": "Recruiters reject applicants by rank alone, without reading their applications.",
+        "IntendedPurpose": "Ranks applicants for a vacancy by how well their experience matches it, for a recruiter to review.",
+        "LifecycleStage": "In use",
+        "Name": "Candidate ranking",
+        "RiskTier": "High",
+        "Sourcing": "Built on a bought model"
+      },
+      "class": "AISystem",
+      "h": 126,
+      "id": "el_sys_rank",
+      "w": 210,
+      "x": 40,
+      "y": 170
+    },
+    {
+      "attributes": {
+        "IntendedPurpose": "Answers questions of applicants about vacancies and the application process.",
+        "LifecycleStage": "In use",
+        "Name": "Candidate chat assistant",
+        "RiskTier": "Limited",
+        "Sourcing": "Built on a bought model"
+      },
+      "class": "AISystem",
+      "h": 126,
+      "id": "el_sys_chat",
+      "w": 210,
+      "x": 340,
+      "y": 170
+    },
+    {
+      "attributes": {
+        "IntendedPurpose": "Moves unwanted email out of the inbox.",
+        "LifecycleStage": "In use",
+        "Name": "Email spam filter",
+        "RiskTier": "Minimal",
+        "Sourcing": "Bought"
+      },
+      "class": "AISystem",
+      "h": 126,
+      "id": "el_sys_spam",
+      "w": 210,
+      "x": 640,
+      "y": 170
+    },
+    {
+      "attributes": {
+        "AffectsPeople": true,
+        "IntendedPurpose": "Proposed: judge the emotions of applicants from interview videos. Rejected in the review.",
+        "LifecycleStage": "Idea",
+        "Name": "Emotion reading in video interviews",
+        "RiskTier": "Unacceptable"
+      },
+      "class": "AISystem",
+      "h": 126,
+      "id": "el_sys_emotion",
+      "w": 210,
+      "x": 940,
+      "y": 170
+    },
+    {
+      "attributes": {
+        "Name": "Human oversight of decisions about people",
+        "Requirement": "A trained person reviews and can overrule every result that affects an applicant.",
+        "Source": "Law or regulation"
+      },
+      "class": "Obligation",
+      "h": 80,
+      "id": "el_o_oversight",
+      "w": 190,
+      "x": 40,
+      "y": 690
+    },
+    {
+      "attributes": {
+        "Name": "Records of testing",
+        "Requirement": "Keep the results of every fairness test for five years.",
+        "Source": "Internal policy"
+      },
+      "class": "Obligation",
+      "h": 80,
+      "id": "el_o_records",
+      "w": 190,
+      "x": 340,
+      "y": 690
+    },
+    {
+      "attributes": {
+        "Name": "Tell people they talk to AI",
+        "Requirement": "People who chat with an AI system are told so at the start of the chat.",
+        "Source": "Law or regulation"
+      },
+      "class": "Obligation",
+      "h": 80,
+      "id": "el_o_transparency",
+      "w": 190,
+      "x": 640,
+      "y": 690
+    },
+    {
+      "attributes": {
+        "Category": "Fairness",
+        "Impact": 5,
+        "Likelihood": 4,
+        "Name": "Unfair ranking of applicants",
+        "Owner": "Head of recruitment",
+        "Status": "Mitigated"
+      },
+      "class": "Risk",
+      "h": 110,
+      "id": "el_r_bias",
+      "w": 190,
+      "x": 190,
+      "y": 370
+    },
+    {
+      "attributes": {
+        "Category": "Accuracy",
+        "Impact": 2,
+        "Likelihood": 3,
+        "Name": "Wrong answers to applicants",
+        "Owner": "Head of recruitment",
+        "Status": "Mitigated"
+      },
+      "class": "Risk",
+      "h": 110,
+      "id": "el_r_errors",
+      "w": 190,
+      "x": 490,
+      "y": 370
+    },
+    {
+      "attributes": {
+        "Category": "Privacy",
+        "Impact": 4,
+        "Likelihood": 3,
+        "Name": "Personal data kept in chat logs",
+        "Owner": "IT manager",
+        "Status": "Open"
+      },
+      "class": "Risk",
+      "h": 110,
+      "id": "el_r_privacy",
+      "w": 190,
+      "x": 790,
+      "y": 370
+    },
+    {
+      "attributes": {
+        "Effectiveness": "Effective",
+        "Frequency": "Every vacancy",
+        "LastTested": "2027-01-20",
+        "Name": "A recruiter reviews every shortlist",
+        "Type": "Preventive"
+      },
+      "class": "Control",
+      "h": 70,
+      "id": "el_c_review",
+      "w": 180,
+      "x": 40,
+      "y": 550
+    },
+    {
+      "attributes": {
+        "Effectiveness": "Effective",
+        "Frequency": "Quarterly",
+        "LastTested": "2027-01-10",
+        "Name": "Quarterly fairness test",
+        "Type": "Detective"
+      },
+      "class": "Control",
+      "h": 70,
+      "id": "el_c_biastest",
+      "w": 180,
+      "x": 340,
+      "y": 550
+    },
+    {
+      "attributes": {
+        "Effectiveness": "Effective",
+        "Frequency": "Always",
+        "LastTested": "2026-11-15",
+        "Name": "AI notice at the start of each chat",
+        "Type": "Preventive"
+      },
+      "class": "Control",
+      "h": 70,
+      "id": "el_c_disclosure",
+      "w": 180,
+      "x": 640,
+      "y": 550
+    },
+    {
+      "attributes": {
+        "Effectiveness": "Partly effective",
+        "Frequency": "Daily",
+        "Name": "Delete chat logs after 30 days",
+        "Type": "Preventive"
+      },
+      "class": "Control",
+      "h": 70,
+      "id": "el_c_retention",
+      "w": 180,
+      "x": 940,
+      "y": 550
+    },
+    {
+      "attributes": {
+        "Kind": "Log",
+        "Name": "Shortlist sign-off log",
+        "Owner": "Head of recruitment"
+      },
+      "class": "Evidence",
+      "h": 70,
+      "id": "el_ev_signoff",
+      "w": 110,
+      "x": 222,
+      "y": 550
+    },
+    {
+      "attributes": {
+        "Date": "2027-01-10",
+        "Kind": "Test result",
+        "Name": "Fairness test report, Q4",
+        "Owner": "Risk officer"
+      },
+      "class": "Evidence",
+      "h": 70,
+      "id": "el_ev_report",
+      "w": 110,
+      "x": 522,
+      "y": 550
+    },
+    {
+      "attributes": {
+        "Date": "2026-11-15",
+        "Kind": "Screenshot",
+        "Name": "Screenshot of the chat notice",
+        "Owner": "IT manager"
+      },
+      "class": "Evidence",
+      "h": 70,
+      "id": "el_ev_banner",
+      "w": 110,
+      "x": 822,
+      "y": 550
+    }
+  ],
+  "formatVersion": 2,
+  "id": "mdl_recruitmentregister",
+  "kind": "mkmodel",
+  "kit": {
+    "id": "kit_airiskcompliance",
+    "name": "AI risk and compliance",
+    "version": "1.0.0"
+  },
+  "modelType": "AIRegister",
+  "name": "AI register 2027"
+}

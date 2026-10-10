@@ -26,7 +26,7 @@ test.describe('Class catalog', () => {
     await page.getByTestId('catalog-open').click();
     const dialog = page.getByTestId('catalog-dialog');
     await expect(dialog).toBeVisible();
-    await expect(dialog.getByRole('tab')).toHaveCount(7);
+    await expect(dialog.getByRole('tab')).toHaveCount(16);
     await expect(page.getByTestId('catalog-add')).toBeDisabled();
     await expect(page.getByTestId('catalog-relations')).toBeChecked();
 

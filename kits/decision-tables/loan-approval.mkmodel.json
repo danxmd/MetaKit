@@ -1,0 +1,320 @@
+{
+  "attributes": {
+    "Domain": "Lending",
+    "Owner": "Head of business lending",
+    "Title": "Small business loan approval"
+  },
+  "connectors": [
+    {
+      "from": "el_d_fraud",
+      "id": "cn_001",
+      "relation": "InformationRequirement",
+      "to": "el_d_approval"
+    },
+    {
+      "from": "el_d_risk",
+      "id": "cn_002",
+      "relation": "InformationRequirement",
+      "to": "el_d_approval"
+    },
+    {
+      "from": "el_d_afford",
+      "id": "cn_003",
+      "relation": "InformationRequirement",
+      "to": "el_d_approval"
+    },
+    {
+      "from": "el_in_amount",
+      "id": "cn_004",
+      "relation": "InformationRequirement",
+      "to": "el_d_approval"
+    },
+    {
+      "from": "el_in_score",
+      "id": "cn_005",
+      "relation": "InformationRequirement",
+      "to": "el_d_risk"
+    },
+    {
+      "from": "el_in_years",
+      "id": "cn_006",
+      "relation": "InformationRequirement",
+      "to": "el_d_risk"
+    },
+    {
+      "from": "el_in_amount",
+      "id": "cn_007",
+      "relation": "InformationRequirement",
+      "to": "el_d_afford"
+    },
+    {
+      "from": "el_in_turnover",
+      "id": "cn_008",
+      "relation": "InformationRequirement",
+      "to": "el_d_afford"
+    },
+    {
+      "from": "el_bkm_repay",
+      "id": "cn_009",
+      "relation": "KnowledgeRequirement",
+      "to": "el_d_afford"
+    },
+    {
+      "from": "el_ks_policy",
+      "id": "cn_010",
+      "relation": "AuthorityRequirement",
+      "to": "el_d_approval"
+    },
+    {
+      "from": "el_ks_risk",
+      "id": "cn_011",
+      "relation": "AuthorityRequirement",
+      "to": "el_d_risk"
+    },
+    {
+      "from": "el_note_fraud",
+      "id": "cn_012",
+      "relation": "Annotates",
+      "to": "el_d_fraud"
+    }
+  ],
+  "elements": [
+    {
+      "attributes": {
+        "AllowedOutcomes": "Approve, Decline, Refer",
+        "DecisionTable": [
+          {
+            "annotation": "Never decide automatically.",
+            "conditions": "Fraud check is \"Refer\"",
+            "outcome": "Refer"
+          },
+          {
+            "conditions": "Affordable is \"No\"",
+            "outcome": "Decline"
+          },
+          {
+            "conditions": "Risk category is \"High\"",
+            "outcome": "Decline"
+          },
+          {
+            "annotation": "A lending officer decides.",
+            "conditions": "Risk category is \"Medium\" and Loan amount > 100,000",
+            "outcome": "Refer"
+          },
+          {
+            "conditions": "Otherwise",
+            "outcome": "Approve"
+          }
+        ],
+        "HitPolicy": "First",
+        "Logic": "Decision table",
+        "Name": "Loan approval",
+        "Output": "Approval",
+        "Owner": "Head of business lending",
+        "Question": "Do we approve, decline or refer the application?",
+        "Status": "Approved"
+      },
+      "class": "Decision",
+      "h": 110,
+      "id": "el_d_approval",
+      "w": 220,
+      "x": 470,
+      "y": 20
+    },
+    {
+      "attributes": {
+        "Kind": "Policy",
+        "Name": "Lending policy",
+        "Owner": "Credit committee"
+      },
+      "class": "KnowledgeSource",
+      "h": 90,
+      "id": "el_ks_policy",
+      "w": 170,
+      "x": 860,
+      "y": 30
+    },
+    {
+      "attributes": {
+        "AllowedOutcomes": "Clear, Refer",
+        "Logic": "Manual",
+        "Name": "Fraud check",
+        "Output": "Fraud check",
+        "Owner": "Fraud team",
+        "Question": "Does the application need a fraud review?",
+        "Status": "Draft"
+      },
+      "class": "Decision",
+      "h": 110,
+      "id": "el_d_fraud",
+      "w": 220,
+      "x": 40,
+      "y": 240
+    },
+    {
+      "attributes": {
+        "AllowedOutcomes": "Low, Medium, High",
+        "DecisionTable": [
+          {
+            "conditions": "Credit score >= 700 and Years trading >= 3",
+            "outcome": "Low"
+          },
+          {
+            "conditions": "Credit score >= 700 and Years trading < 3",
+            "outcome": "Medium"
+          },
+          {
+            "conditions": "Credit score 600 to 699",
+            "outcome": "Medium"
+          },
+          {
+            "conditions": "Credit score < 600",
+            "outcome": "High"
+          }
+        ],
+        "HitPolicy": "Unique",
+        "Logic": "Decision table",
+        "Name": "Risk category",
+        "Output": "Risk category",
+        "Owner": "Credit risk team",
+        "Question": "How risky is lending to this business?",
+        "Status": "Approved"
+      },
+      "class": "Decision",
+      "h": 110,
+      "id": "el_d_risk",
+      "w": 220,
+      "x": 330,
+      "y": 240
+    },
+    {
+      "attributes": {
+        "AllowedOutcomes": "Yes, No",
+        "DecisionTable": [
+          {
+            "conditions": "Monthly repayment <= 20% of monthly turnover",
+            "outcome": "Yes"
+          },
+          {
+            "annotation": "Turnover is the average of the last twelve months.",
+            "conditions": "Monthly repayment > 20% of monthly turnover",
+            "outcome": "No"
+          }
+        ],
+        "HitPolicy": "Unique",
+        "Logic": "Decision table",
+        "Name": "Affordability",
+        "Output": "Affordable",
+        "Owner": "Credit risk team",
+        "Question": "Can the business afford the repayments?",
+        "Status": "In review"
+      },
+      "class": "Decision",
+      "h": 110,
+      "id": "el_d_afford",
+      "w": 220,
+      "x": 640,
+      "y": 240
+    },
+    {
+      "attributes": {
+        "Logic": "amount * rate / (1 - (1 + rate) ** -months)",
+        "Name": "Repayment calculation",
+        "Parameters": "amount, rate, months"
+      },
+      "class": "BusinessKnowledgeModel",
+      "h": 80,
+      "id": "el_bkm_repay",
+      "w": 200,
+      "x": 950,
+      "y": 460
+    },
+    {
+      "attributes": {
+        "Kind": "Expert",
+        "Name": "Credit risk team"
+      },
+      "class": "KnowledgeSource",
+      "h": 90,
+      "id": "el_ks_risk",
+      "w": 170,
+      "x": 100,
+      "y": 30
+    },
+    {
+      "attributes": {
+        "AllowedValues": "0 to 999",
+        "DataType": "Number",
+        "Name": "Credit score",
+        "Source": "Credit reference check"
+      },
+      "class": "InputData",
+      "h": 54,
+      "id": "el_in_score",
+      "w": 170,
+      "x": 240,
+      "y": 460
+    },
+    {
+      "attributes": {
+        "DataType": "Number",
+        "Name": "Years trading",
+        "Source": "Application form"
+      },
+      "class": "InputData",
+      "h": 54,
+      "id": "el_in_years",
+      "w": 170,
+      "x": 440,
+      "y": 460
+    },
+    {
+      "attributes": {
+        "DataType": "Number",
+        "Name": "Loan amount",
+        "Source": "Application form"
+      },
+      "class": "InputData",
+      "h": 54,
+      "id": "el_in_amount",
+      "w": 170,
+      "x": 960,
+      "y": 268
+    },
+    {
+      "attributes": {
+        "DataType": "Number",
+        "Name": "Monthly turnover",
+        "Source": "Bank statements"
+      },
+      "class": "InputData",
+      "h": 54,
+      "id": "el_in_turnover",
+      "w": 170,
+      "x": 690,
+      "y": 460
+    },
+    {
+      "attributes": {
+        "Name": "Checked by hand",
+        "Text": "The fraud team checks every application by hand until a scoring model is ready."
+      },
+      "class": "Note",
+      "h": 90,
+      "id": "el_note_fraud",
+      "w": 200,
+      "x": 40,
+      "y": 420
+    }
+  ],
+  "formatVersion": 2,
+  "id": "mdl_loanapproval",
+  "kind": "mkmodel",
+  "kit": {
+    "id": "kit_decisiontables",
+    "name": "Decision tables (DMN-style)",
+    "version": "1.0.0"
+  },
+  "modelType": "DecisionModel",
+  "name": "Small business loan approval"
+}

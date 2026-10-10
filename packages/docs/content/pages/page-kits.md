@@ -3,7 +3,7 @@ id: page-kits
 title: Kits page
 category: pages
 summary: The Kits of the workspace and the built-in ones, where you make, copy, add, edit, export and delete them.
-keywords: [new kit, add kit, from file, from git, edit kit, no kit yet, in this workspace, new kit dialog, start from]
+keywords: [new kit, add kit, from file, from git, edit kit, no kit yet, in this workspace, new kit dialog, start from, built-in search]
 contexts: [kits]
 order: 30
 ---
@@ -15,7 +15,7 @@ The Kits page is the home of **Build** mode. It shows two kinds of Kit apart: th
 A page titled **Kits** with the line "Kits define the notation and rules models use." At the top right are the **Add** menu and the **New Kit** button. Below are optional messages, then two sections:
 
 - **In this workspace**: a card for each Kit of the workspace, or an empty state.
-- **Built-in Kits**: a card for each built-in Kit ([[built-in-kits]]). These cards look different on purpose: a grey, dashed card with the badge **Built-in · read-only**.
+- **Built-in Kits**: a search box, then a card for each built-in Kit under the heading of its domain: **Data and AI**, **Business and strategy**, **Delivery**, **Architecture** and **General** ([[built-in-kits]]). These cards look different on purpose: a grey, dashed card with the badge **Built-in · read-only**.
 
 At the bottom is the **Deleted Kits** section.
 
@@ -37,6 +37,11 @@ Choose **Build** in the [[top-bar]] when no Kit is open. **← Kits** in the [[p
 1. Choose **Copy and extend…** on a built-in card, or **… > Copy and extend…** on a card of this workspace. You can also choose **New Kit** and pick the Kit under **Start from**.
 2. Type a **Name** for the copy. A line under the list says what the copy starts with.
 3. Choose **Create and edit**. The copy opens in the Build view with everything the original has: classes, relation classes, model types, looks, panels, rules and scripts. Its version is `1.0.0` and its card says **Based on** with the name and version of the original. The original does not change.
+
+**Find a built-in Kit**
+
+1. Type into **Search the built-in Kits**, for example "maturity". Only the cards whose name or description holds every word stay; headings without a match are hidden.
+2. With no match the section says "No built-in Kit matches." Clear the box to see them all.
 
 **Use a built-in Kit as it is**
 
@@ -67,7 +72,7 @@ Choose **Build** in the [[top-bar]] when no Kit is open. **← Kits** in the [[p
 | **Add > From Git…** | Opens the Git settings to bring in a Kit from GitHub or GitLab. |
 | **New Kit** | Opens the **New Kit** dialog. |
 | **Name** (dialog) | The name of the new Kit. |
-| **Start from** (dialog) | **Empty**, a Kit of this workspace, or a built-in Kit. Anything but Empty makes a copy. |
+| **Start from** (dialog) | **Empty**, a Kit of this workspace, or a built-in Kit, in the order of the Built-in Kits section. Anything but Empty makes a copy. |
 | **Create and edit** (dialog) | Creates the Kit and opens it for editing. |
 | **Cancel** (dialog) | Closes the dialog and creates nothing. `Escape` does the same. |
 | Card heading and badge | Kit name and **Version x.y.z**. |
@@ -83,6 +88,8 @@ Choose **Build** in the [[top-bar]] when no Kit is open. **← Kits** in the [[p
 
 | Control | What it does |
 | --- | --- |
+| **Search the built-in Kits** | Filters the cards by name and description. Every word typed must appear; case does not matter. |
+| Domain headings | Group the cards: **Data and AI**, **Business and strategy**, **Delivery**, **Architecture**, **General**. Only headings with a Kit are shown. |
 | **Built-in · read-only** | Built-in Kits cannot be edited where they are. |
 | **What is inside** | Opens to list the classes and relation classes of the Kit. |
 | **Use in this workspace** | Adds the Kit unchanged, keeping its id and version. Afterwards the card says **✓ In this workspace**. |

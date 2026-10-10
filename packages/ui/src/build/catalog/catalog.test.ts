@@ -9,8 +9,9 @@ import {
   type ClassId,
   type Kit,
 } from '@metakit-app/core';
-import { parseCached } from '@metakit-app/formula';
+import { namesIn, parseCached } from '@metakit-app/formula';
 import { lookAttributeKeys } from '@metakit-app/shapes';
+import { NEUTRAL_NAMES } from '../neutral-names';
 import {
   CATALOG_CLASSES,
   CATALOG_RELATIONS,
@@ -48,20 +49,37 @@ const relationByKey = (kit: Kit, key: string) =>
   Object.values(kit.relations).find((r) => r.key === key);
 
 describe('class catalog entries', () => {
-  it('has seven topics, about sixty classes and about twenty relation classes', () => {
+  it('has sixteen topics, about 250 classes and about sixty relation classes', () => {
     expect(CATALOG_TOPICS.map((t) => t.label)).toEqual([
       'General',
-      'Business and strategy',
+      'People and organisation',
+      'Strategy and value',
+      'Customer and marketing',
+      'Finance and operations',
       'Project delivery',
+      'Enterprise architecture',
+      'Software and cloud',
+      'Security',
       'Data',
-      'AI and machine learning',
-      'Applications and cloud',
-      'Governance and risk',
+      'Data mesh',
+      'Data quality and MDM',
+      'Analytics and BI',
+      'AI and MLOps',
+      'Generative AI',
+      'Governance and privacy',
     ]);
-    expect(CATALOG_CLASSES.length).toBeGreaterThanOrEqual(55);
-    expect(CATALOG_RELATIONS.length).toBeGreaterThanOrEqual(18);
+    expect(new Set(CATALOG_TOPICS.map((t) => t.id)).size).toBe(16);
+    expect(CATALOG_CLASSES.length).toBeGreaterThanOrEqual(240);
+    expect(CATALOG_RELATIONS.length).toBeGreaterThanOrEqual(60);
+    const known = new Set(CATALOG_TOPICS.map((t) => t.id));
+    for (const c of CATALOG_CLASSES)
+      expect(known.has(c.topic), c.key).toBe(true);
+    // Every tab has enough to choose from.
     for (const topic of CATALOG_TOPICS)
-      expect(CATALOG_CLASSES.some((c) => c.topic === topic.id)).toBe(true);
+      expect(
+        CATALOG_CLASSES.filter((c) => c.topic === topic.id).length,
+        topic.id,
+      ).toBeGreaterThanOrEqual(8);
   });
 
   it('uses valid, unique keys for classes, relation classes and attributes', () => {
@@ -122,42 +140,47 @@ describe('class catalog entries', () => {
         expect(known.has(k), `${r.key} names ${k}`).toBe(true);
   });
 
+  it('gives every relation-class end existing, distinct keys, and "any class" only to generic ends', () => {
+    const known = new Set(ALL);
+    // Relation classes with one end open to any class; every other end names its classes.
+    const openEnded = CATALOG_RELATIONS.filter(
+      (r) => (r.from.length === 0) !== (r.to.length === 0),
+    ).map((r) => r.key);
+    expect(openEnded).toEqual(['Owns']);
+    for (const r of CATALOG_RELATIONS)
+      for (const end of [r.from, r.to]) {
+        expect(new Set(end).size, r.key).toBe(end.length);
+        for (const k of end)
+          expect(known.has(k), `${r.key} names ${k}`).toBe(true);
+      }
+  });
+
   it('has formulas that parse and read attributes of their own class', () => {
     const formulas = CATALOG_CLASSES.flatMap((c) =>
       c.attributes.flatMap((a) =>
-        a.type === 'formula' ? [{ cls: c, formula: a.formula }] : [],
+        a.type === 'formula'
+          ? [{ cls: c, key: a.key, formula: a.formula }]
+          : [],
       ),
     );
-    expect(formulas.map((f) => f.cls.key).sort()).toEqual([
-      'DataQualityRule',
-      'Evaluation',
-      'KPI',
-      'Risk',
-      'Risk',
-    ]);
+    expect(formulas.length).toBeGreaterThanOrEqual(40);
     for (const f of formulas) {
       const parsed = parseCached(f.formula);
       expect('error' in parsed ? parsed.error : null, f.formula).toBeNull();
+      if ('error' in parsed) continue;
+      const own = new Set(f.cls.attributes.map((a) => a.key));
+      for (const name of namesIn(parsed.expr))
+        expect(own.has(name), `${f.cls.key}.${f.key} reads ${name}`).toBe(true);
     }
   });
 
-  it('never names a company or a vendor product', () => {
-    const text = JSON.stringify([CATALOG_CLASSES, CATALOG_RELATIONS]);
-    for (const name of [
-      'Accenture',
-      'Microsoft',
-      'Azure',
-      'Google',
-      'Amazon',
-      'AWS',
-      'Snowflake',
-      'Databricks',
-      'OpenAI',
-      'Oracle',
-      'SAP',
-      'Salesforce',
-      'Kafka',
-    ])
+  it('never names a company, a client or a vendor product', () => {
+    const text = JSON.stringify([
+      CATALOG_TOPICS,
+      CATALOG_CLASSES,
+      CATALOG_RELATIONS,
+    ]);
+    for (const name of [...NEUTRAL_NAMES, 'Kafka'])
       expect(text, name).not.toMatch(new RegExp(`\\b${name}\\b`, 'i'));
   });
 });
@@ -289,6 +312,20 @@ describe('catalogCommands', () => {
     const risk = byKey(store.state, 'Risk')!;
     expect(risk.labels).toEqual({ de: 'Risk' });
     expect(errors(store.state)).toEqual([]);
+  });
+
+  it('adds a generative AI set from its tab with the relation classes between them', () => {
+    const picks = ['Prompt', 'KnowledgeBase', 'Retriever', 'FoundationModel'];
+    for (const key of picks)
+      expect(CATALOG_CLASSES.find((c) => c.key === key)?.topic, key).toBe(
+        'genai',
+      );
+    const { store, result } = apply(empty(), picks);
+    expect(result.added.classes.map((c) => c.key)).toEqual(picks);
+    expect(result.added.relations.map((r) => r.key)).toEqual(['Searches']);
+    expect(errors(store.state)).toEqual([]);
+    expect(store.undo()).toBe(true);
+    expect(Object.keys(store.state.classes)).toHaveLength(0);
   });
 
   it('previews the relation classes for picks', () => {
