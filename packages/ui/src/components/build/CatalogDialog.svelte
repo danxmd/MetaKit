@@ -328,8 +328,8 @@
 
 <style>
   dialog.catalog {
-    width: min(60rem, calc(100vw - 2rem));
-    max-width: min(60rem, calc(100vw - 2rem));
+    width: min(66rem, calc(100vw - 2rem));
+    max-width: min(66rem, calc(100vw - 2rem));
     height: min(40rem, calc(100dvh - 3rem));
     padding: 0;
     display: grid;
@@ -354,10 +354,11 @@
     width: 16rem;
     max-width: 50%;
   }
+  /* Sixteen topics wrap onto two rows on a wide screen, so the tabs are kept compact. */
   .tabs {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--gap-1);
+    gap: 2px;
     padding: 0 var(--gap-4) var(--gap-2);
     border-bottom: 1px solid var(--line);
   }
@@ -366,8 +367,9 @@
     background: transparent;
     color: var(--text-muted);
     border-radius: var(--radius);
-    padding: var(--gap-1) var(--gap-2);
+    padding: 3px 6px;
     font-size: var(--text-s);
+    white-space: nowrap;
   }
   .tabs button:hover {
     background: var(--hover-bg);

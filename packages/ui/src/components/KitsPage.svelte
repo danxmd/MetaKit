@@ -5,7 +5,12 @@
     KitEntry,
   } from '@metakit-app/storage';
   import type { Kit } from '@metakit-app/core';
-  import type { BuiltInKit, KitStart } from '../build/built-in';
+  import {
+    groupBuiltIns,
+    searchBuiltIns,
+    type BuiltInKit,
+    type KitStart,
+  } from '../build/built-in';
   import { menuBehaviour } from '../shell/menu-action';
   import NewKitDialog from './NewKitDialog.svelte';
   import PageFrame from './PageFrame.svelte';
@@ -71,6 +76,10 @@
     input.value = '';
     if (file) onAddKit(await file.text());
   }
+
+  /** The search over the built-in Kits, by name and description. */
+  let query = $state('');
+  const groups = $derived(groupBuiltIns(searchBuiltIns(builtIns, query)));
 
   const usedBy = (kit: KitEntry) =>
     models.filter((m) => m.kit === kit.id).length;
@@ -247,73 +256,89 @@
         one as it is, or copy it to make it your own.
       </p>
     </div>
-    <ul class="grid">
-      {#each builtIns as b (b.id)}
-        {@const added = inWorkspace(b)}
-        <li class="card kit built-in" data-testid="built-in-{b.id}">
-          <div class="head">
-            <h3>{b.name}</h3>
-            <span class="badge lock" title="Built-in Kits are read-only"
-              ><svg
-                viewBox="0 0 20 20"
-                width="11"
-                height="11"
-                aria-hidden="true"
-                ><path
-                  d="M6 9V6.5a4 4 0 0 1 8 0V9M5 9h10v8H5z"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linejoin="round"
-                /></svg
-              >Built-in · read-only</span
-            >
-          </div>
-          <p class="muted">{b.description}</p>
-          <details
-            class="inside"
-            ontoggle={(e) => {
-              if ((e.currentTarget as HTMLDetailsElement).open) readContents(b);
-            }}
-          >
-            <summary>What is inside</summary>
-            {#if contents[b.id]}
-              <p>
-                <strong>Classes:</strong>
-                {contents[b.id]!.classes.join(', ')}
-              </p>
-              {#if contents[b.id]!.relations.length > 0}
-                <p>
-                  <strong>Relation classes:</strong>
-                  {contents[b.id]!.relations.join(', ')}
-                </p>
-              {/if}
-            {:else}
-              <p class="muted">Reading…</p>
-            {/if}
-          </details>
-          <div class="foot">
-            {#if added}
-              <span class="muted in-use" data-testid="built-in-added-{b.id}"
-                >✓ In this workspace</span
+    <input
+      type="search"
+      class="search"
+      placeholder="Search the built-in Kits"
+      aria-label="Search the built-in Kits"
+      bind:value={query}
+      data-testid="built-in-search"
+    />
+    {#each groups as group (group.id)}
+      <div class="domain" data-testid="built-in-domain-{group.id}">
+        <h3 class="domain-head">{group.label}</h3>
+        <ul class="grid">
+          {#each group.kits as b (b.id)}
+            {@const added = inWorkspace(b)}
+            <li class="card kit built-in" data-testid="built-in-{b.id}">
+              <div class="head">
+                <h4>{b.name}</h4>
+                <span class="badge lock" title="Built-in Kits are read-only"
+                  ><svg
+                    viewBox="0 0 20 20"
+                    width="11"
+                    height="11"
+                    aria-hidden="true"
+                    ><path
+                      d="M6 9V6.5a4 4 0 0 1 8 0V9M5 9h10v8H5z"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linejoin="round"
+                    /></svg
+                  >Built-in · read-only</span
+                >
+              </div>
+              <p class="muted">{b.description}</p>
+              <details
+                class="inside"
+                ontoggle={(e) => {
+                  if ((e.currentTarget as HTMLDetailsElement).open)
+                    readContents(b);
+                }}
               >
-            {:else}
-              <button
-                onclick={() => onUseBuiltIn(b)}
-                data-testid="use-built-in-{b.id}"
-                data-tour="kits-use">Use in this workspace</button
-              >
-            {/if}
-            <button
-              class="ghost"
-              onclick={() => (creating = { kind: 'built-in', kit: b })}
-              data-testid="copy-built-in-{b.id}"
-              data-tour="kits-copy">Copy and extend…</button
-            >
-          </div>
-        </li>
-      {/each}
-    </ul>
+                <summary>What is inside</summary>
+                {#if contents[b.id]}
+                  <p>
+                    <strong>Classes:</strong>
+                    {contents[b.id]!.classes.join(', ')}
+                  </p>
+                  {#if contents[b.id]!.relations.length > 0}
+                    <p>
+                      <strong>Relation classes:</strong>
+                      {contents[b.id]!.relations.join(', ')}
+                    </p>
+                  {/if}
+                {:else}
+                  <p class="muted">Reading…</p>
+                {/if}
+              </details>
+              <div class="foot">
+                {#if added}
+                  <span class="muted in-use" data-testid="built-in-added-{b.id}"
+                    >✓ In this workspace</span
+                  >
+                {:else}
+                  <button
+                    onclick={() => onUseBuiltIn(b)}
+                    data-testid="use-built-in-{b.id}"
+                    data-tour="kits-use">Use in this workspace</button
+                  >
+                {/if}
+                <button
+                  class="ghost"
+                  onclick={() => (creating = { kind: 'built-in', kit: b })}
+                  data-testid="copy-built-in-{b.id}"
+                  data-tour="kits-copy">Copy and extend…</button
+                >
+              </div>
+            </li>
+          {/each}
+        </ul>
+      </div>
+    {:else}
+      <p class="muted" data-testid="built-in-none">No built-in Kit matches.</p>
+    {/each}
   </section>
 
   {#if trashedKits.length > 0}
@@ -361,6 +386,19 @@
     margin: 0;
     font-size: var(--text-s);
   }
+  .search {
+    max-width: 22rem;
+  }
+  .domain {
+    display: grid;
+    gap: var(--gap-2);
+  }
+  .domain-head {
+    margin: 0;
+    font-size: var(--text-s);
+    font-weight: 600;
+    color: var(--text-muted);
+  }
   .empty {
     padding: var(--gap-5);
     display: grid;
@@ -390,7 +428,8 @@
     gap: var(--gap-3);
     align-content: space-between;
   }
-  .kit h3 {
+  .kit h3,
+  .kit h4 {
     margin: 0;
     font-size: var(--text-m);
   }

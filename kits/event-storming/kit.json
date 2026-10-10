@@ -1,0 +1,1465 @@
+{
+  "formatVersion": 7,
+  "manifest": {
+    "id": "kit_eventstorming",
+    "name": "Event storming",
+    "version": "1.0.0",
+    "languages": ["en"]
+  },
+  "settings": {
+    "grid": {
+      "size": 10,
+      "snap": true,
+      "visible": true
+    },
+    "layers": [],
+    "numbering": {
+      "enabled": false,
+      "prefix": "",
+      "start": 1
+    }
+  },
+  "classes": {
+    "cls_boundedcontext": {
+      "id": "cls_boundedcontext",
+      "key": "BoundedContext",
+      "kind": "swimlane",
+      "labels": {
+        "en": "Bounded context"
+      },
+      "help": {
+        "en": "A part of the domain where words have one meaning and one team owns the model. A lane for its stickies."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Bounded context",
+          "id": "att_boundedcontext_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_boundedcontext_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Team",
+          "id": "att_boundedcontext_team",
+          "labels": {
+            "en": "Team"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Stickies",
+          "formula": "count(children())",
+          "result": "number",
+          "id": "att_boundedcontext_stickies",
+          "labels": {
+            "en": "Stickies"
+          },
+          "help": {
+            "en": "How many stickies sit in it."
+          }
+        }
+      ],
+      "shape": "shp_boundedcontext"
+    },
+    "cls_domainevent": {
+      "id": "cls_domainevent",
+      "key": "DomainEvent",
+      "kind": "node",
+      "labels": {
+        "en": "Domain event"
+      },
+      "help": {
+        "en": "Something that happened in the domain that experts care about, written in the past tense, such as \"Order placed\"."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Domain event",
+          "id": "att_domainevent_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_domainevent_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "Step",
+          "min": 1,
+          "id": "att_domainevent_step",
+          "labels": {
+            "en": "Step"
+          },
+          "help": {
+            "en": "Its place on the timeline: 1 for the first event, then 2, 3 and so on."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Context",
+          "formula": "parent ? parent.Name : null",
+          "result": "text",
+          "id": "att_domainevent_context",
+          "labels": {
+            "en": "Context"
+          },
+          "help": {
+            "en": "The bounded context it sits in."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "StepLabel",
+          "formula": "Step == null ? null : 'Step ' + Step",
+          "result": "text",
+          "id": "att_domainevent_steplabel",
+          "labels": {
+            "en": "Step label"
+          },
+          "help": {
+            "en": "Its step, shown under the name."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_event_order",
+          "formula": "Step == null || count(outgoing('LeadsTo').Step) == 0 || Step < min(outgoing('LeadsTo').Step)",
+          "message": "= 'Domain event \"' + Name + '\" leads to an event with the same or an earlier step: check the order of the timeline.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_domainevent"
+    },
+    "cls_command": {
+      "id": "cls_command",
+      "key": "Command",
+      "kind": "node",
+      "labels": {
+        "en": "Command"
+      },
+      "help": {
+        "en": "A request to do something, written as an instruction, such as \"Place order\". It may be refused."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Command",
+          "id": "att_command_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_command_description",
+          "labels": {
+            "en": "Description"
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_command_event",
+          "formula": "count(outgoing('Raises')) + count(outgoing('HandledBy')) > 0",
+          "message": "= 'Command \"' + Name + '\" leads to nothing yet: connect the event it raises, or the aggregate or system that handles it.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_command"
+    },
+    "cls_actor": {
+      "id": "cls_actor",
+      "key": "Actor",
+      "kind": "node",
+      "labels": {
+        "en": "Actor"
+      },
+      "help": {
+        "en": "A person or role who issues commands, such as a customer or a clerk."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Actor",
+          "id": "att_actor_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_actor_description",
+          "labels": {
+            "en": "Description"
+          }
+        }
+      ],
+      "shape": "shp_actor"
+    },
+    "cls_aggregate": {
+      "id": "cls_aggregate",
+      "key": "Aggregate",
+      "kind": "node",
+      "labels": {
+        "en": "Aggregate"
+      },
+      "help": {
+        "en": "The part of the model that receives commands, checks its rules and raises events, such as an order or an account."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Aggregate",
+          "id": "att_aggregate_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_aggregate_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Rules",
+          "multiline": true,
+          "id": "att_aggregate_rules",
+          "labels": {
+            "en": "Rules"
+          },
+          "help": {
+            "en": "What must always be true, such as \"a bike has one rider at a time\"."
+          }
+        }
+      ],
+      "shape": "shp_aggregate"
+    },
+    "cls_policy": {
+      "id": "cls_policy",
+      "key": "Policy",
+      "kind": "node",
+      "labels": {
+        "en": "Policy"
+      },
+      "help": {
+        "en": "A reaction to an event: \"whenever this happens, do that\". It issues a command, by a person or automatically."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Policy",
+          "id": "att_policy_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_policy_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Kind",
+          "options": ["Automatic", "Manual"],
+          "id": "att_policy_kind",
+          "labels": {
+            "en": "Kind"
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_policy_command",
+          "formula": "count(outgoing('Issues')) > 0",
+          "message": "= 'Policy \"' + Name + '\" issues no command.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_policy"
+    },
+    "cls_readmodel": {
+      "id": "cls_readmodel",
+      "key": "ReadModel",
+      "kind": "node",
+      "labels": {
+        "en": "Read model"
+      },
+      "help": {
+        "en": "The information someone needs to take a decision, such as a list of free bikes."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Read model",
+          "id": "att_readmodel_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_readmodel_description",
+          "labels": {
+            "en": "Description"
+          }
+        }
+      ],
+      "shape": "shp_readmodel"
+    },
+    "cls_externalsystem": {
+      "id": "cls_externalsystem",
+      "key": "ExternalSystem",
+      "kind": "node",
+      "labels": {
+        "en": "External system"
+      },
+      "help": {
+        "en": "A system outside the domain that receives commands or raises events, such as a payment service."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "External system",
+          "id": "att_externalsystem_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_externalsystem_description",
+          "labels": {
+            "en": "Description"
+          }
+        }
+      ],
+      "shape": "shp_externalsystem"
+    },
+    "cls_hotspot": {
+      "id": "cls_hotspot",
+      "key": "Hotspot",
+      "kind": "node",
+      "labels": {
+        "en": "Hotspot"
+      },
+      "help": {
+        "en": "A question, a risk or a disagreement found during the session, to come back to."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Hotspot",
+          "id": "att_hotspot_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Question",
+          "multiline": true,
+          "id": "att_hotspot_question",
+          "labels": {
+            "en": "Question"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Status",
+          "options": ["Open", "Answered"],
+          "default": "Open",
+          "id": "att_hotspot_status",
+          "labels": {
+            "en": "Status"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Answer",
+          "multiline": true,
+          "id": "att_hotspot_answer",
+          "labels": {
+            "en": "Answer"
+          }
+        }
+      ],
+      "shape": "shp_hotspot"
+    }
+  },
+  "relations": {
+    "rel_issues": {
+      "id": "rel_issues",
+      "key": "Issues",
+      "labels": {
+        "en": "Issues"
+      },
+      "help": {
+        "en": "The actor, policy or external system issues the command."
+      },
+      "from": ["cls_actor", "cls_policy", "cls_externalsystem"],
+      "to": ["cls_command"],
+      "attributes": [],
+      "shape": "shp_rel_issues"
+    },
+    "rel_handledby": {
+      "id": "rel_handledby",
+      "key": "HandledBy",
+      "labels": {
+        "en": "Handled by"
+      },
+      "help": {
+        "en": "The aggregate or external system receives the command."
+      },
+      "from": ["cls_command"],
+      "to": ["cls_aggregate", "cls_externalsystem"],
+      "attributes": [],
+      "shape": "shp_rel_handledby"
+    },
+    "rel_raises": {
+      "id": "rel_raises",
+      "key": "Raises",
+      "labels": {
+        "en": "Raises"
+      },
+      "help": {
+        "en": "The aggregate, command or external system results in the event."
+      },
+      "from": ["cls_aggregate", "cls_command", "cls_externalsystem"],
+      "to": ["cls_domainevent"],
+      "attributes": [],
+      "shape": "shp_rel_raises"
+    },
+    "rel_triggers": {
+      "id": "rel_triggers",
+      "key": "Triggers",
+      "labels": {
+        "en": "Triggers"
+      },
+      "help": {
+        "en": "The event sets off the policy."
+      },
+      "from": ["cls_domainevent"],
+      "to": ["cls_policy"],
+      "attributes": [],
+      "shape": "shp_rel_triggers"
+    },
+    "rel_updates": {
+      "id": "rel_updates",
+      "key": "Updates",
+      "labels": {
+        "en": "Updates"
+      },
+      "help": {
+        "en": "The event changes what the read model shows."
+      },
+      "from": ["cls_domainevent"],
+      "to": ["cls_readmodel"],
+      "attributes": [],
+      "shape": "shp_rel_updates"
+    },
+    "rel_informs": {
+      "id": "rel_informs",
+      "key": "Informs",
+      "labels": {
+        "en": "Informs"
+      },
+      "help": {
+        "en": "The read model gives the actor what they need to decide."
+      },
+      "from": ["cls_readmodel"],
+      "to": ["cls_actor"],
+      "attributes": [],
+      "shape": "shp_rel_informs"
+    },
+    "rel_leadsto": {
+      "id": "rel_leadsto",
+      "key": "LeadsTo",
+      "labels": {
+        "en": "Then"
+      },
+      "help": {
+        "en": "The next event on the timeline."
+      },
+      "from": ["cls_domainevent"],
+      "to": ["cls_domainevent"],
+      "attributes": [],
+      "shape": "shp_rel_leadsto"
+    },
+    "rel_about": {
+      "id": "rel_about",
+      "key": "About",
+      "labels": {
+        "en": "About"
+      },
+      "help": {
+        "en": "The hotspot is about this sticky."
+      },
+      "from": ["cls_hotspot"],
+      "to": [
+        "cls_domainevent",
+        "cls_command",
+        "cls_actor",
+        "cls_aggregate",
+        "cls_policy",
+        "cls_readmodel",
+        "cls_externalsystem"
+      ],
+      "attributes": [],
+      "shape": "shp_rel_about"
+    }
+  },
+  "modelTypes": {
+    "mt_eventstorm": {
+      "id": "mt_eventstorm",
+      "key": "EventStorm",
+      "labels": {
+        "en": "Event storm"
+      },
+      "classes": [
+        "cls_boundedcontext",
+        "cls_domainevent",
+        "cls_command",
+        "cls_actor",
+        "cls_aggregate",
+        "cls_policy",
+        "cls_readmodel",
+        "cls_externalsystem",
+        "cls_hotspot"
+      ],
+      "relations": [
+        "rel_issues",
+        "rel_handledby",
+        "rel_raises",
+        "rel_triggers",
+        "rel_updates",
+        "rel_informs",
+        "rel_leadsto",
+        "rel_about"
+      ],
+      "views": [
+        {
+          "id": "vw_bigpicture",
+          "key": "BigPicture",
+          "labels": {
+            "en": "Big picture"
+          },
+          "classes": [
+            "cls_boundedcontext",
+            "cls_domainevent",
+            "cls_actor",
+            "cls_externalsystem",
+            "cls_hotspot"
+          ],
+          "relations": ["rel_leadsto", "rel_about"]
+        }
+      ],
+      "cardinalities": [
+        {
+          "kind": "count",
+          "class": "cls_domainevent",
+          "min": 1
+        }
+      ],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Title",
+          "required": true,
+          "maxLength": 100,
+          "id": "att_mteventstorm_title",
+          "labels": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Facilitator",
+          "id": "att_mteventstorm_facilitator",
+          "labels": {
+            "en": "Facilitator"
+          }
+        },
+        {
+          "type": "text",
+          "key": "SessionDate",
+          "id": "att_mteventstorm_sessiondate",
+          "labels": {
+            "en": "Session date"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Events",
+          "formula": "count(objects('DomainEvent'))",
+          "result": "number",
+          "id": "att_mteventstorm_events",
+          "labels": {
+            "en": "Events"
+          },
+          "help": {
+            "en": "How many domain events the storm found."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Hotspots",
+          "formula": "count(objects('Hotspot'))",
+          "result": "number",
+          "id": "att_mteventstorm_hotspots",
+          "labels": {
+            "en": "Hotspots"
+          },
+          "help": {
+            "en": "How many hotspots were raised."
+          }
+        }
+      ],
+      "help": {
+        "en": "A timeline of domain events with the commands, actors, aggregates, policies, read models and external systems around them, in bounded contexts."
+      },
+      "containers": {
+        "cls_boundedcontext": [
+          "cls_domainevent",
+          "cls_command",
+          "cls_actor",
+          "cls_aggregate",
+          "cls_policy",
+          "cls_readmodel",
+          "cls_externalsystem",
+          "cls_hotspot"
+        ]
+      }
+    }
+  },
+  "shapes": {
+    "shp_boundedcontext": {
+      "id": "shp_boundedcontext",
+      "name": "BoundedContext look",
+      "kind": "node",
+      "size": {
+        "width": 1920,
+        "height": 300,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "fill": "#ffffff00",
+          "stroke": "#868e96",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": 28,
+          "height": "100%",
+          "fill": "#e9ecef",
+          "stroke": "#868e96",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": -66,
+          "y": "50% - 14",
+          "width": 160,
+          "height": 28,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          },
+          "transform": {
+            "rotate": -90
+          }
+        }
+      ],
+      "look": {
+        "base": "swimlane",
+        "fill": "#e9ecef",
+        "border": "#868e96",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 1920,
+          "height": 300,
+          "resizable": true
+        }
+      }
+    },
+    "shp_domainevent": {
+      "id": "shp_domainevent",
+      "name": "DomainEvent look",
+      "kind": "node",
+      "size": {
+        "width": 140,
+        "height": 80,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 0,
+          "fill": "#ffc078",
+          "stroke": "#e8590c",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 4,
+          "width": "100% - 16",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 22",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= StepLabel",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "box",
+        "fill": "#ffc078",
+        "border": "#e8590c",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 140,
+          "height": 80,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "StepLabel"
+        }
+      }
+    },
+    "shp_command": {
+      "id": "shp_command",
+      "name": "Command look",
+      "kind": "node",
+      "size": {
+        "width": 140,
+        "height": 80,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 0,
+          "fill": "#74c0fc",
+          "stroke": "#1971c2",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 4,
+          "width": "100% - 16",
+          "height": "100% - 8",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "box",
+        "fill": "#74c0fc",
+        "border": "#1971c2",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 140,
+          "height": 80,
+          "resizable": true
+        }
+      }
+    },
+    "shp_actor": {
+      "id": "shp_actor",
+      "name": "Actor look",
+      "kind": "node",
+      "size": {
+        "width": 80,
+        "height": 90,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "ellipse",
+          "x": "50% - 16",
+          "y": 4,
+          "width": 32,
+          "height": 32,
+          "fill": "#fff3bf",
+          "stroke": "#f08c00",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 6,
+          "y": 42,
+          "width": "100% - 12",
+          "height": "100% - 46",
+          "radius": 18,
+          "fill": "#fff3bf",
+          "stroke": "#f08c00",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 10,
+          "y": 46,
+          "width": "100% - 20",
+          "height": "100% - 52",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "person",
+        "fill": "#fff3bf",
+        "border": "#f08c00",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 80,
+          "height": 90,
+          "resizable": true
+        }
+      }
+    },
+    "shp_aggregate": {
+      "id": "shp_aggregate",
+      "name": "Aggregate look",
+      "kind": "node",
+      "size": {
+        "width": 140,
+        "height": 80,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 0,
+          "fill": "#ffec99",
+          "stroke": "#e67700",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 4,
+          "width": "100% - 16",
+          "height": "100% - 8",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "box",
+        "fill": "#ffec99",
+        "border": "#e67700",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 140,
+          "height": 80,
+          "resizable": true
+        }
+      }
+    },
+    "shp_policy": {
+      "id": "shp_policy",
+      "name": "Policy look",
+      "kind": "node",
+      "size": {
+        "width": 140,
+        "height": 80,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 0,
+          "fill": "#e599f7",
+          "stroke": "#ae3ec9",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 4,
+          "width": "100% - 16",
+          "height": "100% - 8",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "box",
+        "fill": "#e599f7",
+        "border": "#ae3ec9",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 140,
+          "height": 80,
+          "resizable": true
+        }
+      }
+    },
+    "shp_readmodel": {
+      "id": "shp_readmodel",
+      "name": "ReadModel look",
+      "kind": "node",
+      "size": {
+        "width": 140,
+        "height": 80,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 0,
+          "fill": "#b2f2bb",
+          "stroke": "#2f9e44",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 4,
+          "width": "100% - 16",
+          "height": "100% - 8",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "box",
+        "fill": "#b2f2bb",
+        "border": "#2f9e44",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 140,
+          "height": 80,
+          "resizable": true
+        }
+      }
+    },
+    "shp_externalsystem": {
+      "id": "shp_externalsystem",
+      "name": "ExternalSystem look",
+      "kind": "node",
+      "size": {
+        "width": 140,
+        "height": 80,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 0,
+          "fill": "#fcc2d7",
+          "stroke": "#c2255c",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 4,
+          "width": "100% - 16",
+          "height": "100% - 8",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "box",
+        "fill": "#fcc2d7",
+        "border": "#c2255c",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 140,
+          "height": 80,
+          "resizable": true
+        }
+      }
+    },
+    "shp_hotspot": {
+      "id": "shp_hotspot",
+      "name": "Hotspot look",
+      "kind": "node",
+      "size": {
+        "width": 180,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          ["50%", 0],
+          ["100%", "50%"],
+          ["50%", "100%"],
+          [0, "50%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            ["50%", 0],
+            ["100%", "50%"],
+            ["50%", "100%"],
+            [0, "50%"]
+          ],
+          "fill": "= Status == 'Open' ? '#ff8787' : Status == 'Answered' ? '#e9ecef' : '#ff8787'",
+          "stroke": "#c92a2a",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": "24%",
+          "y": "24% + 18",
+          "width": "52%",
+          "height": "52% - 18",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 3L2 20h20z M12 10v5 M12 18h.01",
+          "viewBox": [0, 0, 24, 24],
+          "x": "50% - 10",
+          "y": "14%",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "diamond",
+        "fill": {
+          "by": "Status",
+          "values": {
+            "Open": "#ff8787",
+            "Answered": "#e9ecef"
+          },
+          "fallback": "#ff8787"
+        },
+        "border": "#c92a2a",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 180,
+          "height": 110,
+          "resizable": true
+        },
+        "icon": {
+          "name": "warning"
+        }
+      }
+    },
+    "shp_rel_issues": {
+      "id": "shp_rel_issues",
+      "name": "Issues look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#1971c2",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#1971c2",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_handledby": {
+      "id": "shp_rel_handledby",
+      "name": "HandledBy look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#e67700",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#e67700",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_raises": {
+      "id": "shp_rel_raises",
+      "name": "Raises look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#e8590c",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#e8590c",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_triggers": {
+      "id": "shp_rel_triggers",
+      "name": "Triggers look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#ae3ec9",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#ae3ec9",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_updates": {
+      "id": "shp_rel_updates",
+      "name": "Updates look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#2f9e44",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#2f9e44",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_informs": {
+      "id": "shp_rel_informs",
+      "name": "Informs look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#2f9e44",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [2, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#2f9e44",
+        "width": 1.5,
+        "style": "dotted",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_leadsto": {
+      "id": "shp_rel_leadsto",
+      "name": "LeadsTo look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#868e96",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [2, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#868e96",
+        "width": 1.5,
+        "style": "dotted",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_about": {
+      "id": "shp_rel_about",
+      "name": "About look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#c92a2a",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [2, 4]
+      },
+      "look": {
+        "colour": "#c92a2a",
+        "width": 1.5,
+        "style": "dotted",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "none",
+        "label": null
+      }
+    }
+  },
+  "panels": {},
+  "rules": {},
+  "scripts": {}
+}

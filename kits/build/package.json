@@ -1,0 +1,15 @@
+{
+  "name": "@metakit-app/kits-build",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate": "esbuild src/main.ts --bundle --platform=node --format=esm --target=node22 --outfile=dist/main.js --external:prettier --log-level=warning && node dist/main.js"
+  },
+  "dependencies": {
+    "@metakit-app/core": "workspace:*",
+    "@metakit-app/shapes": "workspace:*",
+    "@metakit-app/storage": "workspace:*",
+    "@metakit-app/ui": "workspace:*"
+  }
+}

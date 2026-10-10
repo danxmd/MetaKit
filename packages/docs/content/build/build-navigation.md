@@ -52,7 +52,7 @@ The label changes with the section: **New class**, **New relation class** or **N
 
 ### Add from catalog
 
-In the **Classes** section only, an **Add from catalog…** button sits under the add box. It opens a pop-up with ready-made classes in seven topics, a search box across all of them, and a choice to add the relation classes between the picked classes. One **Add** is one undo step. See [[class-catalog]].
+In the **Classes** section only, an **Add from catalog…** button sits under the add box. It opens a pop-up with about 250 ready-made classes in 16 topics, a search box across all of them, and a choice to add the relation classes between the picked classes. One **Add** is one undo step. See [[class-catalog]].
 
 ### The item row
 

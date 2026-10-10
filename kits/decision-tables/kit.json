@@ -1,0 +1,1258 @@
+{
+  "formatVersion": 7,
+  "manifest": {
+    "id": "kit_decisiontables",
+    "name": "Decision tables (DMN-style)",
+    "version": "1.0.0",
+    "languages": ["en"]
+  },
+  "settings": {
+    "grid": {
+      "size": 10,
+      "snap": true,
+      "visible": true
+    },
+    "layers": [],
+    "numbering": {
+      "enabled": false,
+      "prefix": "",
+      "start": 1
+    }
+  },
+  "classes": {
+    "cls_note": {
+      "id": "cls_note",
+      "key": "Note",
+      "kind": "node",
+      "labels": {
+        "en": "Note"
+      },
+      "help": {
+        "en": "A free note on a diagram, for comments and explanations."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Note",
+          "id": "att_note_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_note_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Text",
+          "multiline": true,
+          "id": "att_note_text",
+          "labels": {
+            "en": "Text"
+          }
+        }
+      ],
+      "shape": "shp_note"
+    },
+    "cls_decision": {
+      "id": "cls_decision",
+      "key": "Decision",
+      "kind": "node",
+      "labels": {
+        "en": "Decision"
+      },
+      "help": {
+        "en": "A question that is answered the same way every time, from the inputs it needs. Its logic is a decision table: one row per rule, with conditions and an outcome."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Decision",
+          "id": "att_decision_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Question",
+          "multiline": true,
+          "id": "att_decision_question",
+          "labels": {
+            "en": "Question"
+          },
+          "help": {
+            "en": "The question it answers, such as \"Which risk category does the applicant fall into?\"."
+          }
+        },
+        {
+          "type": "text",
+          "key": "Output",
+          "id": "att_decision_output",
+          "labels": {
+            "en": "Output"
+          },
+          "help": {
+            "en": "What it decides, such as \"Risk category\"."
+          }
+        },
+        {
+          "type": "text",
+          "key": "AllowedOutcomes",
+          "id": "att_decision_allowedoutcomes",
+          "labels": {
+            "en": "Allowed outcomes"
+          },
+          "help": {
+            "en": "The answers it can give, such as \"Low, Medium, High\"."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Logic",
+          "options": ["Decision table", "Expression", "Manual"],
+          "default": "Decision table",
+          "id": "att_decision_logic",
+          "labels": {
+            "en": "Logic"
+          },
+          "help": {
+            "en": "How the answer is found: by a table of rules, by one expression, or by a person."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "HitPolicy",
+          "options": [
+            "Unique",
+            "First",
+            "Priority",
+            "Any",
+            "Collect",
+            "Rule order"
+          ],
+          "id": "att_decision_hitpolicy",
+          "labels": {
+            "en": "Hit policy"
+          },
+          "help": {
+            "en": "What happens when more than one rule matches. Unique: rules never overlap. First: the first match wins. Priority: the match with the highest outcome wins. Any: all matches give the same outcome. Collect: all outcomes are returned. Rule order: all outcomes, in the order of the rules."
+          }
+        },
+        {
+          "type": "table",
+          "key": "DecisionTable",
+          "columns": [
+            {
+              "id": "conditions",
+              "key": "Conditions",
+              "type": "text",
+              "labels": {
+                "en": "Conditions"
+              }
+            },
+            {
+              "id": "outcome",
+              "key": "Outcome",
+              "type": "text",
+              "labels": {
+                "en": "Outcome"
+              }
+            },
+            {
+              "id": "annotation",
+              "key": "Annotation",
+              "type": "text",
+              "labels": {
+                "en": "Annotation"
+              }
+            }
+          ],
+          "id": "att_decision_decisiontable",
+          "labels": {
+            "en": "Rules"
+          },
+          "help": {
+            "en": "One row per rule. Write the conditions on the inputs, such as \"Credit score >= 700 and Years trading >= 3\", and the outcome when they hold."
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_decision_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Status",
+          "options": ["Draft", "In review", "Approved", "Retired"],
+          "id": "att_decision_status",
+          "labels": {
+            "en": "Status"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Rules",
+          "formula": "len(DecisionTable)",
+          "result": "number",
+          "id": "att_decision_rules",
+          "labels": {
+            "en": "Rules"
+          },
+          "help": {
+            "en": "How many rules its table has."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Inputs",
+          "formula": "count(incoming('InformationRequirement'))",
+          "result": "number",
+          "id": "att_decision_inputs",
+          "labels": {
+            "en": "Inputs"
+          },
+          "help": {
+            "en": "How many input data and decisions it needs."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_decision_inputs",
+          "formula": "Inputs > 0",
+          "message": "= 'Decision \"' + Name + '\" has no inputs: connect the input data or decisions it needs with \"Information requirement\".'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_decision_rules",
+          "formula": "Logic != 'Decision table' || Rules > 0",
+          "message": "= 'Decision \"' + Name + '\" is a decision table without rules: add one row per rule.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_decision_policy",
+          "formula": "Logic != 'Decision table' || HitPolicy != null",
+          "message": "= 'Decision \"' + Name + '\" has no hit policy: say what happens when more than one rule matches.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_decision"
+    },
+    "cls_inputdata": {
+      "id": "cls_inputdata",
+      "key": "InputData",
+      "kind": "node",
+      "labels": {
+        "en": "Input data"
+      },
+      "help": {
+        "en": "A piece of information a decision needs, such as the amount of a loan."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Input data",
+          "id": "att_inputdata_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_inputdata_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "DataType",
+          "options": ["Text", "Number", "Yes or no", "Date", "List"],
+          "id": "att_inputdata_datatype",
+          "labels": {
+            "en": "Data type"
+          }
+        },
+        {
+          "type": "text",
+          "key": "AllowedValues",
+          "id": "att_inputdata_allowedvalues",
+          "labels": {
+            "en": "Allowed values"
+          },
+          "help": {
+            "en": "The values it can take, such as \"0 to 999\" or \"Yes, No\"."
+          }
+        },
+        {
+          "type": "text",
+          "key": "Source",
+          "id": "att_inputdata_source",
+          "labels": {
+            "en": "Source"
+          },
+          "help": {
+            "en": "Where the value comes from."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_input_used",
+          "formula": "count(outgoing('InformationRequirement')) > 0",
+          "message": "= 'Input data \"' + Name + '\" is not used by any decision.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_inputdata"
+    },
+    "cls_businessknowledgemodel": {
+      "id": "cls_businessknowledgemodel",
+      "key": "BusinessKnowledgeModel",
+      "kind": "node",
+      "labels": {
+        "en": "Business knowledge model"
+      },
+      "help": {
+        "en": "Logic that can be reused by several decisions, such as a calculation or a scoring table."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Business knowledge model",
+          "id": "att_businessknowledgemodel_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_businessknowledgemodel_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Parameters",
+          "id": "att_businessknowledgemodel_parameters",
+          "labels": {
+            "en": "Parameters"
+          },
+          "help": {
+            "en": "The values it takes, such as \"amount, rate, months\"."
+          }
+        },
+        {
+          "type": "text",
+          "key": "Logic",
+          "multiline": true,
+          "id": "att_businessknowledgemodel_logic",
+          "labels": {
+            "en": "Logic"
+          },
+          "help": {
+            "en": "The calculation or rules it applies."
+          }
+        }
+      ],
+      "shape": "shp_businessknowledgemodel"
+    },
+    "cls_knowledgesource": {
+      "id": "cls_knowledgesource",
+      "key": "KnowledgeSource",
+      "kind": "node",
+      "labels": {
+        "en": "Knowledge source"
+      },
+      "help": {
+        "en": "Where the logic of a decision comes from or who answers for it, such as a policy, a regulation or a team of experts."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Knowledge source",
+          "id": "att_knowledgesource_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_knowledgesource_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Kind",
+          "options": [
+            "Policy",
+            "Regulation",
+            "Guideline",
+            "Expert",
+            "Analysis"
+          ],
+          "id": "att_knowledgesource_kind",
+          "labels": {
+            "en": "Kind"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_knowledgesource_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Reference",
+          "id": "att_knowledgesource_reference",
+          "labels": {
+            "en": "Reference"
+          },
+          "help": {
+            "en": "Where to find it, such as a link."
+          }
+        }
+      ],
+      "shape": "shp_knowledgesource"
+    }
+  },
+  "relations": {
+    "rel_informationrequirement": {
+      "id": "rel_informationrequirement",
+      "key": "InformationRequirement",
+      "labels": {
+        "en": "Information requirement"
+      },
+      "help": {
+        "en": "The decision needs this input data, or the outcome of this other decision."
+      },
+      "from": ["cls_inputdata", "cls_decision"],
+      "to": ["cls_decision"],
+      "attributes": [],
+      "shape": "shp_rel_informationrequirement"
+    },
+    "rel_knowledgerequirement": {
+      "id": "rel_knowledgerequirement",
+      "key": "KnowledgeRequirement",
+      "labels": {
+        "en": "Knowledge requirement"
+      },
+      "help": {
+        "en": "The decision or business knowledge model uses the logic of this business knowledge model."
+      },
+      "from": ["cls_businessknowledgemodel"],
+      "to": ["cls_decision", "cls_businessknowledgemodel"],
+      "attributes": [],
+      "shape": "shp_rel_knowledgerequirement"
+    },
+    "rel_authorityrequirement": {
+      "id": "rel_authorityrequirement",
+      "key": "AuthorityRequirement",
+      "labels": {
+        "en": "Authority requirement"
+      },
+      "help": {
+        "en": "The knowledge source is the authority for the decision, business knowledge model or other knowledge source."
+      },
+      "from": ["cls_knowledgesource", "cls_inputdata"],
+      "to": [
+        "cls_decision",
+        "cls_businessknowledgemodel",
+        "cls_knowledgesource"
+      ],
+      "attributes": [],
+      "shape": "shp_rel_authorityrequirement"
+    },
+    "rel_annotates": {
+      "id": "rel_annotates",
+      "key": "Annotates",
+      "labels": {
+        "en": "Annotates"
+      },
+      "help": {
+        "en": "The note explains the object it points to."
+      },
+      "from": ["cls_note"],
+      "to": [
+        "cls_decision",
+        "cls_inputdata",
+        "cls_businessknowledgemodel",
+        "cls_knowledgesource"
+      ],
+      "attributes": [],
+      "shape": "shp_rel_annotates"
+    }
+  },
+  "modelTypes": {
+    "mt_decisionmodel": {
+      "id": "mt_decisionmodel",
+      "key": "DecisionModel",
+      "labels": {
+        "en": "Decision requirements"
+      },
+      "classes": [
+        "cls_note",
+        "cls_decision",
+        "cls_inputdata",
+        "cls_businessknowledgemodel",
+        "cls_knowledgesource"
+      ],
+      "relations": [
+        "rel_informationrequirement",
+        "rel_knowledgerequirement",
+        "rel_authorityrequirement",
+        "rel_annotates"
+      ],
+      "views": [
+        {
+          "id": "vw_requirements",
+          "key": "Requirements",
+          "labels": {
+            "en": "Requirements only"
+          },
+          "classes": ["cls_decision", "cls_inputdata"],
+          "relations": ["rel_informationrequirement"]
+        }
+      ],
+      "cardinalities": [
+        {
+          "kind": "count",
+          "class": "cls_decision",
+          "min": 1
+        }
+      ],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Title",
+          "required": true,
+          "maxLength": 100,
+          "id": "att_mtdecisionmodel_title",
+          "labels": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Domain",
+          "id": "att_mtdecisionmodel_domain",
+          "labels": {
+            "en": "Domain"
+          },
+          "help": {
+            "en": "The area of the business, such as lending."
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_mtdecisionmodel_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Decisions",
+          "formula": "count(objects('Decision'))",
+          "result": "number",
+          "id": "att_mtdecisionmodel_decisions",
+          "labels": {
+            "en": "Decisions"
+          },
+          "help": {
+            "en": "How many decisions the model has."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "TotalRules",
+          "formula": "sum(objects('Decision').Rules)",
+          "result": "number",
+          "id": "att_mtdecisionmodel_totalrules",
+          "labels": {
+            "en": "Total rules"
+          },
+          "help": {
+            "en": "The rules of all decision tables added up."
+          }
+        }
+      ],
+      "help": {
+        "en": "Decisions with their decision tables, the input data and decisions they need, the business knowledge models they use and the knowledge sources behind them."
+      }
+    }
+  },
+  "shapes": {
+    "shp_note": {
+      "id": "shp_note",
+      "name": "Note look",
+      "kind": "node",
+      "size": {
+        "width": 120,
+        "height": 90,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          [0, 0],
+          ["100% - 18", 0],
+          ["100%", 18],
+          ["100%", "100%"],
+          [0, "100%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            [0, 0],
+            ["100% - 18", 0],
+            ["100%", 18],
+            ["100%", "100%"],
+            [0, "100%"]
+          ],
+          "fill": "#ffec99",
+          "stroke": "#f2c200",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "polygon",
+          "points": [
+            ["100% - 18", 0],
+            ["100% - 18", 18],
+            ["100%", 18]
+          ],
+          "fill": "#00000022",
+          "stroke": "#f2c200",
+          "strokeWidth": 1
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 20,
+          "width": "100% - 16",
+          "height": "100% - 26",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "document",
+        "fill": "#ffec99",
+        "border": "#f2c200",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 120,
+          "height": 90,
+          "resizable": true
+        }
+      }
+    },
+    "shp_decision": {
+      "id": "shp_decision",
+      "name": "Decision look",
+      "kind": "node",
+      "size": {
+        "width": 220,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 4,
+          "fill": "#ffffff",
+          "stroke": "#f08c00",
+          "strokeWidth": 2
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": 28,
+          "radius": 4,
+          "fill": "#fff9db",
+          "stroke": "#f08c00"
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 2,
+          "width": "100% - 36",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 34,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Output: ' + Output",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 50,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'HitPolicy: ' + HitPolicy",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 66,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Rules: ' + Rules",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M19 12l2-1-1-3-2 .5-1.5-1.5.5-2-3-1-1 2h-2l-1-2-3 1 .5 2L6 8.5 4 8l-1 3 2 1v2l-2 1 1 3 2-.5L7.5 19l-.5 2 3 1 1-2h2l1 2 3-1-.5-2 1.5-1.5 2 .5 1-3-2-1z",
+          "viewBox": [0, 0, 24, 24],
+          "x": "100% - 26",
+          "y": 4,
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "header-box",
+        "fill": "#fff9db",
+        "border": "#f08c00",
+        "borderWidth": 2,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 220,
+          "height": 110,
+          "resizable": true
+        },
+        "icon": {
+          "name": "gear"
+        },
+        "fields": ["Output", "HitPolicy", "Rules"]
+      }
+    },
+    "shp_inputdata": {
+      "id": "shp_inputdata",
+      "name": "InputData look",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 54,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 999,
+          "fill": "#d0ebff",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 16,
+          "y": 4,
+          "width": "100% - 32",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 16,
+          "y": "100% - 22",
+          "width": "100% - 32",
+          "height": 18,
+          "text": "= DataType",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "pill",
+        "fill": "#d0ebff",
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 170,
+          "height": 54,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "DataType"
+        }
+      }
+    },
+    "shp_businessknowledgemodel": {
+      "id": "shp_businessknowledgemodel",
+      "name": "BusinessKnowledgeModel look",
+      "kind": "node",
+      "size": {
+        "width": 200,
+        "height": 80,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          ["15%", 0],
+          ["85%", 0],
+          ["100%", "50%"],
+          ["85%", "100%"],
+          ["15%", "100%"],
+          [0, "50%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            ["15%", 0],
+            ["85%", 0],
+            ["100%", "50%"],
+            ["85%", "100%"],
+            ["15%", "100%"],
+            [0, "50%"]
+          ],
+          "fill": "#e5dbff",
+          "stroke": "#6741d9",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": "18%",
+          "y": 4,
+          "width": "64%",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": "18%",
+          "y": "100% - 22",
+          "width": "64%",
+          "height": 18,
+          "text": "= Parameters",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "hexagon",
+        "fill": "#e5dbff",
+        "border": "#6741d9",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 200,
+          "height": 80,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Parameters"
+        }
+      }
+    },
+    "shp_knowledgesource": {
+      "id": "shp_knowledgesource",
+      "name": "KnowledgeSource look",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 90,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          [0, 0],
+          ["100% - 18", 0],
+          ["100%", 18],
+          ["100%", "100%"],
+          [0, "100%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            [0, 0],
+            ["100% - 18", 0],
+            ["100%", 18],
+            ["100%", "100%"],
+            [0, "100%"]
+          ],
+          "fill": "#f8f9fa",
+          "stroke": "#495057",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "polygon",
+          "points": [
+            ["100% - 18", 0],
+            ["100% - 18", 18],
+            ["100%", 18]
+          ],
+          "fill": "#00000022",
+          "stroke": "#495057",
+          "strokeWidth": 1
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 20,
+          "width": "100% - 16",
+          "height": "100% - 46",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 24",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= Kind",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M6 2h8l5 5v15H6z M14 2v5h5 M9 13h7 M9 17h7",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": 4,
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "document",
+        "fill": "#f8f9fa",
+        "border": "#495057",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 170,
+          "height": 90,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Kind"
+        },
+        "icon": {
+          "name": "document"
+        }
+      }
+    },
+    "shp_rel_informationrequirement": {
+      "id": "shp_rel_informationrequirement",
+      "name": "InformationRequirement look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#343a40",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "triangle"
+      },
+      "look": {
+        "colour": "#343a40",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "triangle",
+        "label": null
+      }
+    },
+    "shp_rel_knowledgerequirement": {
+      "id": "shp_rel_knowledgerequirement",
+      "name": "KnowledgeRequirement look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#6741d9",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "open-arrow"
+      },
+      "look": {
+        "colour": "#6741d9",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "open-arrow",
+        "label": null
+      }
+    },
+    "shp_rel_authorityrequirement": {
+      "id": "shp_rel_authorityrequirement",
+      "name": "AuthorityRequirement look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#495057",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "circle"
+      },
+      "look": {
+        "colour": "#495057",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "circle",
+        "label": null
+      }
+    },
+    "shp_rel_annotates": {
+      "id": "shp_rel_annotates",
+      "name": "Annotates look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#adb5bd",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [2, 4]
+      },
+      "look": {
+        "colour": "#adb5bd",
+        "width": 1.5,
+        "style": "dotted",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "none",
+        "label": null
+      }
+    }
+  },
+  "panels": {
+    "cls_decision": {
+      "class": "cls_decision",
+      "tabs": [
+        {
+          "label": "Decision",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Question",
+              "control": "textarea"
+            },
+            {
+              "attribute": "Output"
+            },
+            {
+              "attribute": "AllowedOutcomes"
+            },
+            {
+              "attribute": "Owner"
+            },
+            {
+              "attribute": "Status",
+              "control": "select"
+            }
+          ]
+        },
+        {
+          "label": "Logic",
+          "items": [
+            {
+              "attribute": "Logic",
+              "control": "segmented"
+            },
+            {
+              "attribute": "HitPolicy",
+              "control": "select"
+            },
+            {
+              "attribute": "DecisionTable"
+            },
+            {
+              "attribute": "Rules"
+            },
+            {
+              "attribute": "Inputs"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    }
+  },
+  "rules": {},
+  "scripts": {}
+}

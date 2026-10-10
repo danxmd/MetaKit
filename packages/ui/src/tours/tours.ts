@@ -251,7 +251,7 @@ export const TOURS: readonly Tour[] = [
       {
         anchor: 'kits-built-in',
         title: 'Built-in Kits',
-        text: 'Ready-made Kits that come with MetaKit. They are read-only here.',
+        text: 'Ready-made Kits that come with MetaKit, listed by domain, with a search above them. They are read-only here.',
         placement: 'bottom',
       },
       {

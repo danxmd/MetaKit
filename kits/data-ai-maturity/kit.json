@@ -1,0 +1,1075 @@
+{
+  "formatVersion": 7,
+  "manifest": {
+    "id": "kit_dataaimaturity",
+    "name": "Data and AI maturity assessment",
+    "version": "1.0.0",
+    "languages": ["en"]
+  },
+  "settings": {
+    "grid": {
+      "size": 10,
+      "snap": true,
+      "visible": true
+    },
+    "layers": [],
+    "numbering": {
+      "enabled": false,
+      "prefix": "",
+      "start": 1
+    }
+  },
+  "classes": {
+    "cls_person": {
+      "id": "cls_person",
+      "key": "Person",
+      "kind": "node",
+      "labels": {
+        "en": "Person"
+      },
+      "help": {
+        "en": "A named individual who takes part in the work."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Person",
+          "id": "att_person_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_person_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Role",
+          "id": "att_person_role",
+          "labels": {
+            "en": "Role"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Email",
+          "id": "att_person_email",
+          "labels": {
+            "en": "Email"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Team",
+          "id": "att_person_team",
+          "labels": {
+            "en": "Team"
+          }
+        }
+      ],
+      "shape": "shp_person"
+    },
+    "cls_dimension": {
+      "id": "cls_dimension",
+      "key": "Dimension",
+      "kind": "container",
+      "labels": {
+        "en": "Dimension"
+      },
+      "help": {
+        "en": "An area of the assessment, such as governance or data quality. Place its capabilities inside it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Dimension",
+          "id": "att_dimension_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_dimension_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "AverageCurrent",
+          "formula": "IFERROR(round(avg(children().CurrentScore), 1), null)",
+          "result": "number",
+          "id": "att_dimension_averagecurrent",
+          "labels": {
+            "en": "Average current"
+          },
+          "help": {
+            "en": "The average current score of the capabilities inside."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "AverageTarget",
+          "formula": "IFERROR(round(avg(children().TargetScore), 1), null)",
+          "result": "number",
+          "id": "att_dimension_averagetarget",
+          "labels": {
+            "en": "Average target"
+          },
+          "help": {
+            "en": "The average target score of the capabilities inside."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "AverageGap",
+          "formula": "IFERROR(round(avg(children().Gap), 1), null)",
+          "result": "number",
+          "id": "att_dimension_averagegap",
+          "labels": {
+            "en": "Average gap"
+          },
+          "help": {
+            "en": "The average gap of the capabilities inside."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Summary",
+          "formula": "Name + ': now ' + (AverageCurrent ?? '-') + ', target ' + (AverageTarget ?? '-')",
+          "result": "text",
+          "id": "att_dimension_summary",
+          "labels": {
+            "en": "Summary"
+          },
+          "help": {
+            "en": "The name and the two averages, shown as the heading on the diagram."
+          }
+        }
+      ],
+      "shape": "shp_dimension"
+    },
+    "cls_capability": {
+      "id": "cls_capability",
+      "key": "Capability",
+      "kind": "node",
+      "labels": {
+        "en": "Capability"
+      },
+      "help": {
+        "en": "Something the organisation must be able to do with data or AI, scored from 1 (initial) to 5 (optimised) now and as a target."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Capability",
+          "id": "att_capability_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_capability_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "CurrentScore",
+          "min": 1,
+          "max": 5,
+          "id": "att_capability_currentscore",
+          "labels": {
+            "en": "Current score (1 to 5)"
+          },
+          "help": {
+            "en": "1 initial, 2 repeatable, 3 defined, 4 managed, 5 optimised."
+          }
+        },
+        {
+          "type": "integer",
+          "key": "TargetScore",
+          "min": 1,
+          "max": 5,
+          "id": "att_capability_targetscore",
+          "labels": {
+            "en": "Target score (1 to 5)"
+          },
+          "help": {
+            "en": "The score the organisation needs, on the same scale."
+          }
+        },
+        {
+          "type": "integer",
+          "key": "Importance",
+          "min": 1,
+          "max": 5,
+          "id": "att_capability_importance",
+          "labels": {
+            "en": "Importance (1 to 5)"
+          },
+          "help": {
+            "en": "How much the capability matters for the goals of the business."
+          }
+        },
+        {
+          "type": "text",
+          "key": "Evidence",
+          "multiline": true,
+          "id": "att_capability_evidence",
+          "labels": {
+            "en": "Evidence"
+          },
+          "help": {
+            "en": "What the score is based on: interviews, documents, measurements."
+          }
+        },
+        {
+          "type": "text",
+          "key": "AssessedBy",
+          "id": "att_capability_assessedby",
+          "labels": {
+            "en": "Assessed by"
+          }
+        },
+        {
+          "type": "date",
+          "key": "AssessedOn",
+          "id": "att_capability_assessedon",
+          "labels": {
+            "en": "Assessed on"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Gap",
+          "formula": "CurrentScore == null || TargetScore == null ? null : TargetScore - CurrentScore",
+          "result": "number",
+          "id": "att_capability_gap",
+          "labels": {
+            "en": "Gap"
+          },
+          "help": {
+            "en": "Target score minus current score."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "GapLevel",
+          "formula": "Gap == null ? null : Gap <= 0 ? 'None' : Gap == 1 ? 'Small' : Gap == 2 ? 'Medium' : 'Large'",
+          "result": "text",
+          "id": "att_capability_gaplevel",
+          "labels": {
+            "en": "Gap level"
+          },
+          "help": {
+            "en": "None, Small (1), Medium (2) or Large (3 or more). The fill shows it."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "PriorityScore",
+          "formula": "Gap == null || Importance == null ? null : (Gap > 0 ? Gap * Importance : 0)",
+          "result": "number",
+          "id": "att_capability_priorityscore",
+          "labels": {
+            "en": "Priority score"
+          },
+          "help": {
+            "en": "Gap times importance, from 0 to 20."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Priority",
+          "formula": "PriorityScore == null ? null : PriorityScore >= 10 ? 'High' : PriorityScore >= 5 ? 'Medium' : PriorityScore > 0 ? 'Low' : 'None'",
+          "result": "text",
+          "id": "att_capability_priority",
+          "labels": {
+            "en": "Priority"
+          },
+          "help": {
+            "en": "High from a priority score of 10, Medium from 5, Low above 0."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Actions",
+          "formula": "count(incoming('Improves'))",
+          "result": "number",
+          "id": "att_capability_actions",
+          "labels": {
+            "en": "Actions"
+          },
+          "help": {
+            "en": "How many actions improve this capability."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_capability_target",
+          "formula": "CurrentScore == null || TargetScore == null || TargetScore >= CurrentScore",
+          "message": "= 'The target score of \"' + Name + '\" is below its current score.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_capability_action",
+          "formula": "Priority != 'High' || Actions > 0",
+          "message": "= '\"' + Name + '\" has a high priority but no action improves it.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_capability"
+    },
+    "cls_action": {
+      "id": "cls_action",
+      "key": "Action",
+      "kind": "node",
+      "labels": {
+        "en": "Action"
+      },
+      "help": {
+        "en": "A piece of work that raises the score of one or more capabilities."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Action",
+          "id": "att_action_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_action_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Status",
+          "options": ["Not started", "In progress", "Done", "Blocked"],
+          "default": "Not started",
+          "id": "att_action_status",
+          "labels": {
+            "en": "Status"
+          }
+        },
+        {
+          "type": "date",
+          "key": "Due",
+          "id": "att_action_due",
+          "labels": {
+            "en": "Due"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Effort",
+          "options": ["Small", "Medium", "Large"],
+          "id": "att_action_effort",
+          "labels": {
+            "en": "Effort"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Owner",
+          "formula": "join(incoming('Owns').Name, ', ')",
+          "result": "text",
+          "id": "att_action_owner",
+          "labels": {
+            "en": "Owner"
+          },
+          "help": {
+            "en": "The people with an \"Owns\" connector to this action."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_action_improves",
+          "formula": "count(outgoing('Improves')) > 0",
+          "message": "= 'Action \"' + Name + '\" improves no capability.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_action"
+    }
+  },
+  "relations": {
+    "rel_owns": {
+      "id": "rel_owns",
+      "key": "Owns",
+      "labels": {
+        "en": "Owns"
+      },
+      "help": {
+        "en": "A person or team is accountable for something."
+      },
+      "from": ["cls_person"],
+      "to": ["cls_action", "cls_capability", "cls_dimension"],
+      "attributes": [],
+      "shape": "shp_rel_owns"
+    },
+    "rel_improves": {
+      "id": "rel_improves",
+      "key": "Improves",
+      "labels": {
+        "en": "Improves"
+      },
+      "help": {
+        "en": "The action raises the score of the capability."
+      },
+      "from": ["cls_action"],
+      "to": ["cls_capability"],
+      "attributes": [],
+      "shape": "shp_rel_improves"
+    }
+  },
+  "modelTypes": {
+    "mt_assessment": {
+      "id": "mt_assessment",
+      "key": "Assessment",
+      "labels": {
+        "en": "Maturity assessment"
+      },
+      "classes": [
+        "cls_person",
+        "cls_dimension",
+        "cls_capability",
+        "cls_action"
+      ],
+      "relations": ["rel_owns", "rel_improves"],
+      "views": [
+        {
+          "id": "vw_scores",
+          "key": "Scores",
+          "labels": {
+            "en": "Scores"
+          },
+          "classes": ["cls_dimension", "cls_capability"],
+          "relations": []
+        },
+        {
+          "id": "vw_actionplan",
+          "key": "ActionPlan",
+          "labels": {
+            "en": "Action plan"
+          },
+          "classes": ["cls_capability", "cls_action", "cls_person"],
+          "relations": ["rel_improves", "rel_owns"]
+        }
+      ],
+      "cardinalities": [],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Title",
+          "required": true,
+          "maxLength": 100,
+          "id": "att_mtassessment_title",
+          "labels": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Organisation",
+          "id": "att_mtassessment_organisation",
+          "labels": {
+            "en": "Organisation"
+          }
+        },
+        {
+          "type": "date",
+          "key": "AssessmentDate",
+          "id": "att_mtassessment_assessmentdate",
+          "labels": {
+            "en": "Assessment date"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "OverallCurrent",
+          "formula": "IFERROR(round(avg(objects('Capability').CurrentScore), 1), null)",
+          "result": "number",
+          "id": "att_mtassessment_overallcurrent",
+          "labels": {
+            "en": "Overall current"
+          },
+          "help": {
+            "en": "The average current score of all capabilities."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "OverallTarget",
+          "formula": "IFERROR(round(avg(objects('Capability').TargetScore), 1), null)",
+          "result": "number",
+          "id": "att_mtassessment_overalltarget",
+          "labels": {
+            "en": "Overall target"
+          },
+          "help": {
+            "en": "The average target score of all capabilities."
+          }
+        }
+      ],
+      "help": {
+        "en": "Dimensions with their capabilities scored now and as a target, the gaps and priorities, and the actions that close them."
+      },
+      "containers": {
+        "cls_dimension": ["cls_capability"]
+      }
+    }
+  },
+  "shapes": {
+    "shp_person": {
+      "id": "shp_person",
+      "name": "Person look",
+      "kind": "node",
+      "size": {
+        "width": 90,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "ellipse",
+          "x": "50% - 16",
+          "y": 4,
+          "width": 32,
+          "height": 32,
+          "fill": "#e9ecef",
+          "stroke": "#495057",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 6,
+          "y": 42,
+          "width": "100% - 12",
+          "height": "100% - 46",
+          "radius": 18,
+          "fill": "#e9ecef",
+          "stroke": "#495057",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 10,
+          "y": 46,
+          "width": "100% - 20",
+          "height": "100% - 72",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 10,
+          "y": "100% - 24",
+          "width": "100% - 20",
+          "height": 18,
+          "text": "= Role",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "person",
+        "fill": "#e9ecef",
+        "border": "#495057",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 90,
+          "height": 110,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Role"
+        }
+      }
+    },
+    "shp_rel_owns": {
+      "id": "shp_rel_owns",
+      "name": "Owns look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#6b7a90",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "startMarker": {
+        "type": "diamond"
+      },
+      "look": {
+        "colour": "#6b7a90",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "diamond",
+        "end": "none",
+        "label": null
+      }
+    },
+    "shp_dimension": {
+      "id": "shp_dimension",
+      "name": "Dimension look",
+      "kind": "node",
+      "size": {
+        "width": 440,
+        "height": 210,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 6,
+          "fill": "#f8f9fa",
+          "stroke": "#495057",
+          "strokeWidth": 1.5,
+          "dash": [7, 4]
+        },
+        {
+          "type": "text",
+          "x": 12,
+          "y": 4,
+          "width": "100% - 48",
+          "height": 24,
+          "text": "= Summary",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "container",
+        "fill": "#f8f9fa",
+        "border": "#495057",
+        "borderWidth": 1.5,
+        "borderStyle": "dashed",
+        "title": {
+          "attribute": "Summary",
+          "bold": true
+        },
+        "size": {
+          "width": 440,
+          "height": 210,
+          "resizable": true
+        }
+      }
+    },
+    "shp_capability": {
+      "id": "shp_capability",
+      "name": "Capability look",
+      "kind": "node",
+      "size": {
+        "width": 190,
+        "height": 126,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 4,
+          "fill": "#ffffff",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": 28,
+          "radius": 4,
+          "fill": "= GapLevel == 'None' ? '#d3f9d8' : GapLevel == 'Small' ? '#fff3bf' : GapLevel == 'Medium' ? '#ffd8a8' : GapLevel == 'Large' ? '#ffc9c9' : '#e9ecef'",
+          "stroke": "#1c7ed6"
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 2,
+          "width": "100% - 36",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 34,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'CurrentScore: ' + CurrentScore",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 50,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'TargetScore: ' + TargetScore",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 66,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Gap: ' + Gap",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 82,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Priority: ' + Priority",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "header-box",
+        "fill": {
+          "by": "GapLevel",
+          "values": {
+            "None": "#d3f9d8",
+            "Small": "#fff3bf",
+            "Medium": "#ffd8a8",
+            "Large": "#ffc9c9"
+          },
+          "fallback": "#e9ecef"
+        },
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 190,
+          "height": 126,
+          "resizable": true
+        },
+        "fields": ["CurrentScore", "TargetScore", "Gap", "Priority"]
+      }
+    },
+    "shp_action": {
+      "id": "shp_action",
+      "name": "Action look",
+      "kind": "node",
+      "size": {
+        "width": 280,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "= Status == 'Not started' ? '#e9ecef' : Status == 'In progress' ? '#fff3bf' : Status == 'Done' ? '#d3f9d8' : Status == 'Blocked' ? '#ffc9c9' : '#e9ecef'",
+          "stroke": "#f08c00",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 4,
+          "width": "100% - 16",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 22",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= Due",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": {
+          "by": "Status",
+          "values": {
+            "Not started": "#e9ecef",
+            "In progress": "#fff3bf",
+            "Done": "#d3f9d8",
+            "Blocked": "#ffc9c9"
+          },
+          "fallback": "#e9ecef"
+        },
+        "border": "#f08c00",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 280,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Due"
+        }
+      }
+    },
+    "shp_rel_improves": {
+      "id": "shp_rel_improves",
+      "name": "Improves look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#f08c00",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#f08c00",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    }
+  },
+  "panels": {
+    "cls_capability": {
+      "class": "cls_capability",
+      "tabs": [
+        {
+          "label": "Score",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "CurrentScore"
+            },
+            {
+              "attribute": "TargetScore"
+            },
+            {
+              "attribute": "Importance"
+            },
+            {
+              "attribute": "Gap"
+            },
+            {
+              "attribute": "Priority"
+            }
+          ]
+        },
+        {
+          "label": "Evidence",
+          "items": [
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            },
+            {
+              "attribute": "Evidence",
+              "control": "textarea"
+            },
+            {
+              "attribute": "AssessedBy"
+            },
+            {
+              "attribute": "AssessedOn"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_action": {
+      "class": "cls_action",
+      "tabs": [
+        {
+          "label": "Action",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Status",
+              "control": "segmented"
+            },
+            {
+              "attribute": "Due"
+            },
+            {
+              "attribute": "Effort",
+              "control": "segmented"
+            },
+            {
+              "attribute": "Owner"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    }
+  },
+  "rules": {
+    "rule_actiondone": {
+      "id": "rule_actiondone",
+      "label": "Ask to score again when an action is done",
+      "when": {
+        "event": "attribute.changed",
+        "class": "cls_action",
+        "attribute": "Status"
+      },
+      "if": "= Status == 'Done'",
+      "then": [
+        {
+          "action": "message",
+          "kind": "info",
+          "text": "= 'Action \"' + Name + '\" is done. Score these capabilities again: ' + join(outgoing('Improves').Name, ', ') + '.'"
+        }
+      ]
+    }
+  },
+  "scripts": {}
+}

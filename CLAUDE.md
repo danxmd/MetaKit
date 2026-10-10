@@ -92,6 +92,7 @@ Keep this section current whenever scripts change.
 - `pnpm bench`: canvas benchmark on 5,000 elements and 7,000 connectors; fails when `bench/budget.json` is exceeded (headless; about 1 minute)
 - `pnpm bench:spike`: the phase-0 canvas spike benchmark
 - `pnpm build`: build the web app and the CLI
+- `pnpm kits:build`: regenerate the generated built-in Kits (`kit.json` and sample model) from their descriptions in `kits/build/`; a test fails when the committed files differ
 
 ## Workflow
 

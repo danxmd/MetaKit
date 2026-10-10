@@ -6,6 +6,7 @@ export default defineConfig({
       'packages/*/src/**/*.test.ts',
       'apps/*/src/**/*.test.ts',
       'spikes/*/src/**/*.test.ts',
+      'kits/build/src/**/*.test.ts',
     ],
     environment: 'node',
   },
