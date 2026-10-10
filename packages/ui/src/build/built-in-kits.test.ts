@@ -20,6 +20,7 @@ import {
 } from '@metakit-app/shapes';
 import { importMkModel } from '@metakit-app/storage';
 import { BUILT_IN_DOMAINS, BUILT_IN_KITS } from './built-in';
+import { NEUTRAL_NAME_PATTERN as NAME_PATTERN } from './neutral-names';
 
 /**
  * Every built-in Kit (openspec/changes/kit-library), whatever its domain: it is valid, its
@@ -55,36 +56,6 @@ const TOPIC_IN_TUTORIALS = new Set([
 
 /** Kits from before simple looks (ADR 0009), drawn by hand; they keep their shapes for now. */
 const HAND_DRAWN = new Set(['bpmn-lite', 'er-lite', 'agent-pipeline']);
-
-/** Companies, consultancies and vendor products that built-in content must not name. */
-const NAMES = [
-  'Accenture',
-  'Deloitte',
-  'McKinsey',
-  'PwC',
-  'KPMG',
-  'EY',
-  'Capgemini',
-  'IBM',
-  'Microsoft',
-  'Azure',
-  'AWS',
-  'Amazon',
-  'Google',
-  'GCP',
-  'Snowflake',
-  'Databricks',
-  'Salesforce',
-  'SAP',
-  'Oracle',
-  'OpenAI',
-  'Anthropic',
-  'Tableau',
-  'Power BI',
-  'Informatica',
-  'Collibra',
-];
-const NAME_PATTERN = new RegExp(`\\b(${NAMES.join('|')})\\b`, 'i');
 
 /** The folder under kits/ that holds the Kit with this id. */
 function folderOf(id: string): string {
