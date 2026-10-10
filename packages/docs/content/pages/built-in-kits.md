@@ -37,6 +37,14 @@ They are listed by domain, under one heading each:
 | --- | --- |
 | **BPMN lite** | Business processes: tasks, events, gateways and lanes connected by sequence flows. |
 
+**Delivery**
+
+| Built-in Kit | What it is for |
+| --- | --- |
+| **Project delivery and RAID** | A programme in workstreams with tasks, deliverables and milestones, and a RAID log of risks, assumptions, issues, dependencies and decisions, with progress and overdue dates. See [[project-raid]]. |
+| **Requirements and user stories** | Epics, features and user stories with acceptance criteria, MoSCoW priorities and story points, traced to goals, requirements and tests. See [[requirements-stories]]. |
+| **Decision tables (DMN-style)** | Decisions with their logic as a table of rules and a hit policy, the input data and decisions they need, business knowledge models and knowledge sources. See [[decision-tables]]. |
+
 **Architecture**
 
 | Built-in Kit | What it is for |

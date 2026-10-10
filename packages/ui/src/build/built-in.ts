@@ -137,6 +137,42 @@ export const BUILT_IN_KITS: readonly BuiltInKit[] = [
       import('../../../../kits/bpmn-lite/kit.json?raw').then((m) => m.default),
   },
   {
+    id: 'kit_projectraid' as KitId,
+    name: 'Project delivery and RAID',
+    version: '1.0.0',
+    domain: 'delivery',
+    description:
+      'A programme in workstreams with tasks, deliverables and milestones, and a RAID log of risks, assumptions, issues, dependencies and decisions, with progress and overdue dates.',
+    load: () =>
+      import('../../../../kits/project-raid/kit.json?raw').then(
+        (m) => m.default,
+      ),
+  },
+  {
+    id: 'kit_requirements' as KitId,
+    name: 'Requirements and user stories',
+    version: '1.0.0',
+    domain: 'delivery',
+    description:
+      'Epics, features and user stories with acceptance criteria, MoSCoW priorities and story points, traced to goals, requirements and tests.',
+    load: () =>
+      import('../../../../kits/requirements-stories/kit.json?raw').then(
+        (m) => m.default,
+      ),
+  },
+  {
+    id: 'kit_decisiontables' as KitId,
+    name: 'Decision tables (DMN-style)',
+    version: '1.0.0',
+    domain: 'delivery',
+    description:
+      'Decisions with their logic as a table of rules and a hit policy, the input data and decisions they need, business knowledge models and knowledge sources.',
+    load: () =>
+      import('../../../../kits/decision-tables/kit.json?raw').then(
+        (m) => m.default,
+      ),
+  },
+  {
     id: 'tool_erlite' as KitId,
     name: 'ER lite',
     version: '1.0.0',

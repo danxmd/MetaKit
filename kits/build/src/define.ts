@@ -125,6 +125,32 @@ export const date = (key: string, extra: Common = {}): CatalogAttribute => ({
   label: words(key),
   ...extra,
 });
+export const bool = (
+  key: string,
+  extra: Common & { default?: boolean } = {},
+): CatalogAttribute => ({ type: 'boolean', key, label: words(key), ...extra });
+/** A table; each column's id is its key in lower case, which is how sample rows name it. */
+export const table = (
+  key: string,
+  columns: {
+    key: string;
+    type: 'text' | 'integer' | 'number' | 'boolean' | 'date' | 'choice';
+    options?: string[];
+  }[],
+  extra: Common & { maxRows?: number } = {},
+): CatalogAttribute => ({
+  type: 'table',
+  key,
+  label: words(key),
+  columns: columns.map((c) => ({
+    id: low(c.key),
+    key: c.key,
+    type: c.type,
+    labels: { en: words(c.key) },
+    ...(c.options ? { options: c.options } : {}),
+  })),
+  ...extra,
+});
 /** A whole number from 1 to 5. */
 export const scale = (key: string, extra: Common = {}): CatalogAttribute => ({
   type: 'integer',
@@ -252,6 +278,8 @@ export interface RelationSpec {
   from: string[];
   to: string[];
   attributes?: CatalogAttribute[];
+  /** Checks on each connector; `from` and `to` are its two ends. */
+  constraints?: ConstraintSpec[];
   look: RelationLook;
 }
 
@@ -542,6 +570,7 @@ export function buildKit(spec: KitSpec): Kit {
       attributes: (r.attributes ?? []).map((a) => attributeDef(r.key, a)),
       shape: shape.id,
     };
+    if (r.constraints) def.constraints = r.constraints.map(constraint);
     run([
       { type: 'putShape', def: shape },
       { type: 'putRelation', def },

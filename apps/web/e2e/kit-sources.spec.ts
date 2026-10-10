@@ -136,6 +136,11 @@ test.describe('Built-in and workspace Kits', () => {
         .getByTestId('built-in-domain-business')
         .getByTestId('built-in-tool_bpmnlite'),
     ).toBeVisible();
+    await expect(
+      page
+        .getByTestId('built-in-domain-delivery')
+        .getByTestId('built-in-kit_projectraid'),
+    ).toBeVisible();
 
     // The search keeps the cards whose name or description holds the words.
     const search = page.getByTestId('built-in-search');

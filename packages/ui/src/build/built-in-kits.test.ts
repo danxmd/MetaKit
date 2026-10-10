@@ -40,6 +40,9 @@ const INTENDED_WARNINGS: Record<string, number> = {
   'data-ai-strategy': 1,
   'data-ai-maturity': 1,
   'kpi-metric-tree': 1,
+  'project-raid': 1,
+  'requirements-stories': 1,
+  'decision-tables': 1,
 };
 
 /**

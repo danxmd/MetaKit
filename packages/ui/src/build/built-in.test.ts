@@ -26,6 +26,9 @@ describe('finding a built-in Kit', () => {
     expect(names('lineage')).toContain('Data and AI architecture');
     expect(names('lineage')).not.toContain('ER lite');
     expect(names('MATURITY gap')).toEqual(['Data and AI maturity assessment']);
+    expect(names('acceptance criteria')).toEqual([
+      'Requirements and user stories',
+    ]);
     expect(names('  ')).toHaveLength(BUILT_IN_KITS.length);
     expect(names('nothing like this')).toEqual([]);
   });
@@ -34,6 +37,7 @@ describe('finding a built-in Kit', () => {
     expect(groupBuiltIns(BUILT_IN_KITS).map((g) => g.label)).toEqual([
       'Data and AI',
       'Business and strategy',
+      'Delivery',
       'Architecture',
     ]);
     expect(

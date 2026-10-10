@@ -7,7 +7,7 @@ Starts after the Kit rename's PR 3.
 - [ ] 3 Master data management, Analytics and BI landscape, Privacy and records of processing, Cloud data migration.
 - [ ] 4 ML lifecycle (MLOps), Generative AI solution, AI risk and compliance.
 - [ ] 5 Business capability map, Business model canvas, Value streams and customer journeys, Stakeholder and organisation map, OKRs and goals.
-- [ ] 6 Project delivery and RAID, Requirements and user stories, Decision tables.
+- [x] 6 Project delivery and RAID, Requirements and user stories, Decision tables.
 - [ ] 7 Enterprise architecture, Software architecture (C4-style), Event storming, Security threat model, Mind map and concept map, Org chart.
 - [ ] 8 Catalog growth to about 250 concepts in 16 topics, split into topic files, end-name test.
 - [ ] 9 Help: `kits` category with one topic per Kit; `built-in-kits` overview by domain.

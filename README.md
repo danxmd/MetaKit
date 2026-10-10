@@ -93,6 +93,9 @@ Press **F1** at any time for help on the page you are on.
 | **Data governance and ownership**   | Domains, data products, owners and stewards, policies, classifications and quality rules                          |
 | **Agent pipeline**                  | AI agents and people performing tasks, handing over work and approving results                                    |
 | **BPMN lite**                       | Business processes with tasks, events, gateways and lanes                                                         |
+| **Project delivery and RAID**       | Workstreams, tasks, deliverables and milestones, with a RAID log, progress and overdue dates                      |
+| **Requirements and user stories**   | Epics, features and user stories with acceptance criteria, priorities and points, traced to goals and tests       |
+| **Decision tables (DMN-style)**     | Decisions with tables of rules and a hit policy, input data, knowledge models and knowledge sources               |
 | **ER lite**                         | Entities, attributes and relationships                                                                            |
 
 ![The Kits page: the workspace's own Kits first, then the built-in Kits, which you can use as they are or copy and extend](docs/images/kits-page.png)
