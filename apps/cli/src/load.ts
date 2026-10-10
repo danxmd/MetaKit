@@ -82,7 +82,7 @@ export async function readKitFile(path: string): Promise<KitFile> {
   return { kit: value as Kit, issues: validateKit(value) };
 }
 
-/** Finds the Kit for a model file: the one given with --tool, or `kit.json` (or `tool.json`) next to the model. */
+/** Finds the Kit for a model file: the one given with --kit, or `kit.json` (or `tool.json`) next to the model. */
 export async function findKitFor(
   modelPath: string,
   kitOption: string | undefined,
@@ -91,7 +91,7 @@ export async function findKitFor(
   const sibling = await kitFileIn(dirname(modelPath));
   if (sibling) return sibling;
   throw new CliError(
-    `Cannot find the Kit for "${modelPath}": there is no kit.json or tool.json next to it. Give one with --tool <path>.`,
+    `Cannot find the Kit for "${modelPath}": there is no kit.json or tool.json next to it. Give one with --kit <path>.`,
   );
 }
 

@@ -51,6 +51,27 @@ describe('basics', () => {
     expect(result.err).toContain('export');
   });
 
+  it('lists the commands under their new names and the older names separately in --help', async () => {
+    const help = await capture(['--help']);
+    expect(help.code).toBe(0);
+    expect(help.out).toContain('  export-kit <kit>');
+    expect(help.out).toContain('  import-kit <file>');
+    expect(help.out).toContain('--kit <path>');
+    expect(help.out).toContain('--no-kit');
+    const older = help.out.slice(help.out.indexOf('Older names'));
+    expect(older).toContain('export-tool, import-tool');
+    expect(older).toContain('--tool, --no-tool');
+    expect(help.out.indexOf('Older names')).toBeGreaterThan(
+      help.out.indexOf('export-csv'),
+    );
+  });
+
+  it('names the flag as it was typed when its value is missing', async () => {
+    const result = await capture(['validate', bpmn, '--tool']);
+    expect(result.code).toBe(1);
+    expect(result.err).toContain('--tool needs a value.');
+  });
+
   it('rejects unknown options and a missing path', async () => {
     expect((await capture(['validate', '--nope', bpmn])).code).toBe(1);
     expect((await capture(['validate'])).code).toBe(1);
@@ -145,7 +166,7 @@ describe('validate', () => {
     expect(start).toBeDefined();
     doc.elements.push({ ...start, id: 'start2', y: 400, parent: undefined });
     await writeFile(model, JSON.stringify(doc, null, 2) + '\n');
-    const kit = ['--tool', join(bpmn, 'kit.json')];
+    const kit = ['--kit', join(bpmn, 'kit.json')];
 
     const lenient = await capture(['validate', model, ...kit]);
     expect(lenient.code).toBe(0);
@@ -153,12 +174,27 @@ describe('validate', () => {
 
     const strict = await capture(['validate', model, ...kit, '--strict']);
     expect(strict.code).toBe(1);
+
+    // The flag's name from before the Kit rename still works.
+    const older = await capture([
+      'validate',
+      model,
+      '--tool',
+      join(bpmn, 'kit.json'),
+      '--strict',
+    ]);
+    expect(older.code).toBe(1);
+    expect(older.out).toContain('count-above-max');
   });
 
   it('prints JSON with --json', async () => {
     const result = await capture(['validate', bpmn, '--json']);
     expect(result.code).toBe(0);
-    expect(() => JSON.parse(result.out)).not.toThrow();
+    const report = JSON.parse(result.out) as {
+      documents: { kind: string }[];
+    };
+    // "kit" since the Kit rename; releases before it said "tool".
+    expect(report.documents.map((d) => d.kind)).toEqual(['kit']);
   });
 
   it('validates a workspace folder document by document', async () => {
@@ -187,8 +223,8 @@ describe('validate', () => {
       { recursive: true },
     );
     const pkg = join(scratch, 'er.mkkit');
-    expect((await capture(['export-tool', erLite, '--out', pkg])).code).toBe(0);
-    expect((await capture(['import-tool', pkg, '--workspace', ws])).code).toBe(
+    expect((await capture(['export-kit', erLite, '--out', pkg])).code).toBe(0);
+    expect((await capture(['import-kit', pkg, '--workspace', ws])).code).toBe(
       0,
     );
     const result = await capture(['validate', ws]);

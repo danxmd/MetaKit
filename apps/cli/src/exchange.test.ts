@@ -124,7 +124,7 @@ describe('Kit packages', () => {
     expect(
       (
         await capture([
-          'export-tool',
+          'export-kit',
           kitSlug,
           '--workspace',
           root,
@@ -133,7 +133,7 @@ describe('Kit packages', () => {
         ])
       ).code,
     ).toBe(0);
-    expect((await capture(['export-tool', bpmn, '--out', fromFile])).code).toBe(
+    expect((await capture(['export-kit', bpmn, '--out', fromFile])).code).toBe(
       0,
     );
     expect(
@@ -142,7 +142,7 @@ describe('Kit packages', () => {
 
     const target = join(scratch, 'target');
     const added = await capture([
-      'import-tool',
+      'import-kit',
       fromWorkspace,
       '--workspace',
       target,
@@ -157,13 +157,13 @@ describe('Kit packages', () => {
   it('shows the plan and waits for --yes before updating a Kit', async () => {
     const { root } = await sourceWorkspace();
     const pkg = join(scratch, 'a.mktool');
-    await capture(['export-tool', bpmn, '--out', pkg]);
-    const result = await capture(['import-tool', pkg, '--workspace', root]);
+    await capture(['export-kit', bpmn, '--out', pkg]);
+    const result = await capture(['import-kit', pkg, '--workspace', root]);
     expect(result.code).toBe(1);
     expect(result.out).toContain('Nothing in the Kit changes.');
     expect(result.err).toContain('--yes');
     const confirmed = await capture([
-      'import-tool',
+      'import-kit',
       pkg,
       '--workspace',
       root,
@@ -171,6 +171,39 @@ describe('Kit packages', () => {
     ]);
     expect(confirmed.code).toBe(0);
     expect(confirmed.out).toContain('Updated the Kit');
+  });
+
+  it('keeps the names from before the Kit rename: export-tool, import-tool and --no-tool', async () => {
+    const { root } = await sourceWorkspace();
+    const pkg = join(scratch, 'old-name.mkkit');
+    expect((await capture(['export-tool', bpmn, '--out', pkg])).code).toBe(0);
+    const target = join(scratch, 'old-target');
+    const added = await capture([
+      'import-tool',
+      pkg,
+      '--workspace',
+      target,
+      '--create',
+    ]);
+    expect(added.code).toBe(0);
+    expect(added.out).toContain('Added the Kit as kits/');
+
+    for (const flags of [[], ['--no-kit'], ['--no-tool']]) {
+      const file = join(scratch, `bundle${flags.join('')}.mkbundle`);
+      const exported = await capture([
+        'export-bundle',
+        '--workspace',
+        root,
+        '--out',
+        file,
+        ...flags,
+      ]);
+      expect(exported.code).toBe(0);
+      const names = Object.keys(
+        unzipFiles(new Uint8Array(await readFile(file))),
+      );
+      expect(names.includes('kit/kit.json')).toBe(flags.length === 0);
+    }
   });
 });
 

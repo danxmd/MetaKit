@@ -314,6 +314,7 @@ export function systemPrompt(
         'TARGET: a TypeScript script. It runs in a sandbox with no browser, no fetch and no timers.',
         'It can only import from "metakit" and can change models only through that module (assign task.attrs.X = value, model.create, and so on).',
         'The first line must be a comment "// Name: <short name of the script>". Register menu commands with commands.register and react to events with on(...).',
+        'Read the meta-model of the Kit through "kit" (kit.classes(), kit.class(key), kit.attribute(owner, key), and so on). "tool" is an older name for the same object; do not use it.',
         'The declarations of the "metakit" module for this Kit:',
         '```ts',
         generateDeclarations({ ...kit, scripts: {}, rules: {} }),

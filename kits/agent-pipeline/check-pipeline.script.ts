@@ -1,4 +1,4 @@
-// For the tool "Agent pipeline". The command "Check pipeline" looks for the things that make a
+// For the Kit "Agent pipeline". The command "Check pipeline" looks for the things that make a
 // pipeline of agents and humans unreliable: work nobody owns, artifacts from nowhere, hand-overs
 // to a human who is not there, output of an autonomous agent that nobody approves, and loops.
 import { commands, model, ui } from 'metakit';

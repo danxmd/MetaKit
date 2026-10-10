@@ -172,7 +172,7 @@ export const PRELUDE = String.raw`
   };
 
   // -- the Kit's own meta-model ---------------------------------------------------------------
-  const tool = {
+  const kit = Object.freeze({
     get name() { return call('t.info').name; },
     get version() { return call('t.info').version; },
     classes: () => call('t.classes'),
@@ -182,7 +182,7 @@ export const PRELUDE = String.raw`
     modelTypes: () => call('t.modelTypes'),
     modelType: (key) => call('t.modelType', key),
     attribute: (owner, key) => call('t.attribute', owner, key),
-  };
+  });
 
   // -- dialogs ---------------------------------------------------------------------------------
   const ui = {
@@ -275,7 +275,8 @@ export const PRELUDE = String.raw`
 
   const cancel = (reason) => ({ cancel: reason === undefined ? 'Cancelled by a script.' : String(reason) });
 
-  const metakit = Object.freeze({ on, model, ui, commands, tool, files, http, cancel });
+  // "tool" is the name from before the rename to Kit; it is the same object, so old scripts keep running.
+  const metakit = Object.freeze({ on, model, ui, commands, kit, tool: kit, files, http, cancel });
 
   lock('__loadScript', (id, fn) => {
     currentScript = id;

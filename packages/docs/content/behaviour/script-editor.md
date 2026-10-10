@@ -41,6 +41,7 @@ In Build mode choose **Scripts**, then pick a script in the list (see [[scripts]
 | Bracket matching and closing | Closing brackets and quotes are added. The matching bracket is marked. |
 | Indent on input | Lines indent after a block opens. |
 | Error marks | Errors and warnings from the TypeScript checker, with codes like `TS2322`. They refresh about 0.3 seconds after you stop typing. |
+| Struck-through names | A name that still works but has a newer one, such as `tool` (now `kit`). Hover over it to read `Deprecated. Use kit.` The script still runs. |
 | Completion | Names of the module, your classes, relations and attributes, and the usual language words. |
 | Hover help | The type or signature of what is under the pointer, and its documentation. |
 | Editor history | Undo and redo of your typing. This is separate from the undo of Build mode. |

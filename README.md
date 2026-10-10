@@ -62,9 +62,11 @@ node apps/cli/dist/bin.js validate kits/bpmn-lite             # a Kit
 node apps/cli/dist/bin.js validate kits/bpmn-lite/order-process.mkmodel.json --strict
 node apps/cli/dist/bin.js validate my-workspace --json        # a whole workspace folder
 node apps/cli/dist/bin.js export my-workspace/models/order --format json --out order.mkmodel.json
+node apps/cli/dist/bin.js export-kit kits/bpmn-lite --out bpmn-lite.mkkit
+node apps/cli/dist/bin.js import-kit bpmn-lite.mkkit --workspace my-workspace
 ```
 
-`validate` exits with 1 on errors (or on warnings with `--strict`). Files are in the formats described in `openspec/specs/` once the phase-1 changes are archived, and the sample Kits are in `kits/`.
+`--help` lists every command. `validate` exits with 1 on errors (or on warnings with `--strict`); with `--json`, each document in the report has the kind `workspace`, `kit` or `model` (releases before the Kit rename said `tool`). The names from before the rename, `export-tool`, `import-tool`, `--tool` and `--no-tool`, still work. Files are in the formats described in `openspec/specs/` once the phase-1 changes are archived, and the sample Kits are in `kits/`.
 
 Known limits in phase 1: when two instances have written snapshots of one Kit, the newest snapshot wins and a warning is shown (merging arrives in phase 3). Chromium on Linux needs a UTF-8 locale to store non-ASCII file names.
 

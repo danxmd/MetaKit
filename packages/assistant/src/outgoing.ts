@@ -6,7 +6,7 @@ import { MAX_SENTENCE_CHARS, buildRequest, type DraftKind } from './prompts';
 const MODEL_ID = /\b(?:el|cn|mdl)_[0-9a-z]{4,}\b/;
 // Any real id has exactly ten characters after its prefix (newId).
 const ANY_ID =
-  /\b(?:tool|cls|rel|att|mt|shp|rule|scr|vw)_[0-9a-hjkmnp-tv-z]{10}\b/g;
+  /\b(?:kit|tool|cls|rel|att|mt|shp|rule|scr|vw)_[0-9a-hjkmnp-tv-z]{10}\b/g;
 
 function kitIds(kit: Kit): Set<string> {
   const ids = new Set<string>();

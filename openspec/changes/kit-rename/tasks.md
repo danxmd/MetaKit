@@ -28,6 +28,6 @@ Starts after PRs #17 and #18 are merged.
 
 ## 4. PR 4: script API and CLI (`feat/kit-rename-api`)
 
-- [ ] 4.1 Script API `kit`, with `tool` as a deprecated alias; generated types; examples.
-- [ ] 4.2 CLI `export-kit`, `import-kit`, `--kit`, `--no-kit`, with the old names as aliases; `validate` with `kit.json`.
-- [ ] 4.3 Docs: script API, CLI.
+- [x] 4.1 Script API `kit`, with `tool` as a deprecated alias; generated types; examples.
+- [x] 4.2 CLI `export-kit`, `import-kit`, `--kit`, `--no-kit`, with the old names as aliases; `validate` with `kit.json`.
+- [x] 4.3 Docs: script API, CLI.

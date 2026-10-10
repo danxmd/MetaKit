@@ -284,7 +284,7 @@ ${modelType ? members(modelType.attributes) : ''}
   }
 
   /** The meta-model of the Kit: read-only. */
-  export const tool: {
+  export interface KitInfo {
     readonly name: string;
     readonly version: string;
     classes(): ClassInfo[];
@@ -294,7 +294,11 @@ ${modelType ? members(modelType.attributes) : ''}
     modelTypes(): ModelTypeInfo[];
     modelType(key: ModelTypeName): ModelTypeInfo;
     attribute(owner: ClassName | RelationName | ModelTypeName, key: AttributeKey): AttributeInfo | null;
-  };
+  }
+  /** The meta-model of the Kit: read-only. */
+  export const kit: KitInfo;
+  /** @deprecated Use kit. The same object under its name from before the rename to Kit. */
+  export const tool: KitInfo;
 
   export interface FormField {
     key: string;

@@ -51,7 +51,7 @@ export async function exportBundleCommand(
   args: ParsedArgs,
   io: Io,
 ): Promise<number> {
-  checkFlags(args, ['workspace', 'out', 'name', 'no-tool']);
+  checkFlags(args, ['workspace', 'out', 'name', 'no-kit']);
   const ws = await openWorkspace(
     need(args, 'workspace', 'export-bundle'),
     false,
@@ -65,7 +65,7 @@ export async function exportBundleCommand(
   const name = stringFlag(args, 'name');
   const { bytes } = await exportBundle(ws, {
     models,
-    includeKit: !hasFlag(args, 'no-tool'),
+    includeKit: !hasFlag(args, 'no-kit'),
     ...(name ? { name } : {}),
   });
   await writeOut(out, bytes, io);
@@ -96,9 +96,9 @@ export async function exportKitCommand(
   checkFlags(args, ['workspace', 'out']);
   if (args.positionals.length !== 1)
     throw new UsageError(
-      'export-tool needs one Kit: its folder name together with --workspace, or the path of a Kit.',
+      'export-kit needs one Kit: its folder name together with --workspace, or the path of a Kit.',
     );
-  const out = need(args, 'out', 'export-tool');
+  const out = need(args, 'out', 'export-kit');
   const subject = args.positionals[0]!;
   const workspace = stringFlag(args, 'workspace');
   let bytes: Uint8Array;
@@ -125,10 +125,10 @@ export async function importKitCommand(
   checkFlags(args, ['workspace', 'create', 'yes']);
   if (args.positionals.length !== 1)
     throw new UsageError(
-      'import-tool needs exactly one .mkkit (or older .mktool) file.',
+      'import-kit needs exactly one .mkkit (or older .mktool) file.',
     );
   const ws = await openWorkspace(
-    need(args, 'workspace', 'import-tool'),
+    need(args, 'workspace', 'import-kit'),
     hasFlag(args, 'create'),
   );
   const bytes = new Uint8Array(await readFile(args.positionals[0]!));
@@ -154,7 +154,7 @@ export async function exportCsvCommand(
   args: ParsedArgs,
   io: Io,
 ): Promise<number> {
-  checkFlags(args, ['workspace', 'tool', 'out', 'bom']);
+  checkFlags(args, ['workspace', 'kit', 'out', 'bom']);
   if (args.positionals.length !== 1)
     throw new UsageError(
       'export-csv needs exactly one model: a .mkmodel.json file, or a model folder name together with --workspace.',
@@ -174,7 +174,7 @@ export async function exportCsvCommand(
       );
     kit = (await ws.loadKit(slug)).document;
   } else {
-    const kitPath = await findKitFor(subject, stringFlag(args, 'tool'));
+    const kitPath = await findKitFor(subject, stringFlag(args, 'kit'));
     const read = await readKitFile(kitPath);
     if (read.issues.length > 0)
       throw new CliError(

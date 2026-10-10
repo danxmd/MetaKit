@@ -1,13 +1,13 @@
-// For the tool "Data and AI architecture". The command "Show lineage" lists everything upstream
+// For the Kit "Data and AI architecture". The command "Show lineage" lists everything upstream
 // and downstream of the selected object, grouped by how many steps away it is. It follows
 // "Flows to", and also counts the datasets a model trains on and what a model or service serves,
 // so the lineage of a dataset reaches the consumers of the model built from it.
-import { commands, model, tool, ui } from 'metakit';
+import { commands, model, kit, ui } from 'metakit';
 
 type Item = ReturnType<typeof model.objects>[number];
 
 const describe = (o: Item) =>
-  `${o.attrs.Name || 'unnamed'} (${tool.class(o.class).labels['en'] ?? o.class})`;
+  `${o.attrs.Name || 'unnamed'} (${kit.class(o.class).labels['en'] ?? o.class})`;
 
 const downstreamOf = (o: Item): Item[] => [
   ...o.outgoing('FlowsTo'),

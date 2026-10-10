@@ -127,6 +127,23 @@ commands.register({ id: "x", label: "X", run: async () => { await files.write("b
     ).toEqual([]);
   });
 
+  it('marks the old name "tool" as deprecated and accepts "kit"', () => {
+    expect(
+      server.diagnostics(`import { kit } from "metakit";
+console.log(kit.name, kit.classes().length);`),
+    ).toEqual([]);
+    const source = `import { tool } from "metakit";
+console.log(tool.classes().length);`;
+    const found = server.diagnostics(source);
+    expect(found.length).toBeGreaterThan(0);
+    for (const d of found)
+      expect(d).toMatchObject({ severity: 'hint', deprecated: true });
+    expect(found.map((d) => source.slice(d.from, d.to))).toContain('tool');
+    expect(
+      server.quickInfo(source, source.indexOf('tool.classes'))?.docs,
+    ).toMatch(/^Deprecated. Use kit./);
+  });
+
   it('reports a syntax error with its position', () => {
     const d = server.diagnostics('const a = ;\n');
     expect(d[0]).toMatchObject({ severity: 'error', from: 10 });

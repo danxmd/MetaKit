@@ -452,13 +452,13 @@ describe('the model API', () => {
   it('reads the selection and the meta-model of the Kit', async () => {
     const r = await rig([
       script(
-        `import { model, tool, commands } from "metakit";
+        `import { model, kit, commands } from "metakit";
          commands.register({ id: "info", label: "Info", run: (target) => {
            console.log(model.selection().map((o) => o.id).join(","), target && target.id);
-           const priority = tool.attribute("Task", "Priority");
-           console.log(tool.name, tool.classes().map((c) => c.key).join(","));
-           console.log(JSON.stringify(priority && priority.options), tool.class("Task").extends);
-           console.log(tool.relation("SequenceFlow").from.join(","), tool.modelType("Process").classes.length);
+           const priority = kit.attribute("Task", "Priority");
+           console.log(kit.name, kit.classes().map((c) => c.key).join(","));
+           console.log(JSON.stringify(priority && priority.options), kit.class("Task").extends);
+           console.log(kit.relation("SequenceFlow").from.join(","), kit.modelType("Process").classes.length);
          }});`,
       ),
     ]);
@@ -472,6 +472,24 @@ describe('the model API', () => {
       'log: Sample EndEvent,FlowNode,Gateway,Lane,StartEvent,Task',
       'log: ["Low","Medium","High"] FlowNode',
       'log: FlowNode 5',
+    ]);
+  });
+
+  it('still runs a script written before the rename, which imports "tool", the same object as "kit"', async () => {
+    const r = await rig([
+      script(
+        `import { kit, tool } from "metakit";
+         import * as metakit from "metakit";
+         console.log(kit === tool, Object.isFrozen(kit), metakit.tool === metakit.kit);
+         console.log(tool.name, tool.classes().map((c) => c.key).join(","));
+         console.log(tool.class("Task").extends, tool.relations().length, tool.modelTypes().length);`,
+      ),
+    ]);
+    expect(r.messages).toEqual([]);
+    expect(lines(r)).toEqual([
+      'log: true true true',
+      'log: Sample EndEvent,FlowNode,Gateway,Lane,StartEvent,Task',
+      'log: FlowNode 1 1',
     ]);
   });
 });
