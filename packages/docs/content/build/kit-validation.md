@@ -8,7 +8,7 @@ contexts: []
 order: 240
 ---
 
-MetaKit checks the whole Kit after every change. If something is wrong you see a yellow banner under the Build header with a list of what to fix. A Kit with problems still opens and can be edited, so you can fix it step by step.
+MetaKit checks the whole Kit after every change. If something is wrong you see a yellow banner under the Build toolbar with a list of what to fix. A Kit with problems still opens and can be edited, so you can fix it step by step.
 
 ## What it is
 
@@ -21,7 +21,7 @@ These checks are about the Kit. Problems in a model, such as a missing value, ar
 
 ## Where to find it
 
-Under the header of the [[page-build-view]]. The banner appears only when there is something to report. Its title reads **1 problem in this Kit** or **N problems in this Kit**. Click it to open the list. It shows the first 20 problems.
+Under the toolbar of the [[page-build-view]]. The banner appears only when there is something to report. Its title reads **1 problem in this Kit** or **N problems in this Kit**. Click it to open the list. It shows the first 20 problems.
 
 ## How to use it
 
@@ -50,7 +50,7 @@ Under the header of the [[page-build-view]]. The banner appears only when there 
 | At least one option is required. / The option "A" is listed more than once. | A choice list is empty or repeats a value. | Edit the options ([[attribute-types]]). |
 | A table needs at least one column. / The column key "X" is used twice. | A table is incomplete. | Fix the columns. |
 | The pattern "(" is not a valid regular expression. | A text attribute pattern is broken. | Correct the pattern. |
-| The version must look like 1.0.0 | A hand-edited version. | Set a valid one in the header. |
+| The version must look like 1.0.0 | A hand-edited version. | Set a valid one in **Settings > Name and version** ([[kit-settings]]). |
 
 ### The checks, in short
 

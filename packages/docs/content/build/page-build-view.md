@@ -14,16 +14,18 @@ The Build view is where you design a Kit. You describe the kinds of objects, how
 
 A Kit is a plain JSON file that tells MetaKit which classes, relation classes, model types, looks, rules and scripts a modeller may use (see [[concepts-kit]]). The Build view is the editor for that file. You never type JSON. Every field in every editor is a normal form control.
 
+Above it, the [[top-bar]] shows where you are (`workspace › Kits › Kit name`) and whether your changes are saved.
+
 The screen has four parts:
 
-1. A **header** across the top with the name, version, save status, undo and redo, and (for Git Kits) the **Source control** menu.
+1. A slim **toolbar** across the top, aligned right, with undo and redo, (for Git Kits) the **Source control** menu, and **Try it**.
 2. A **section list** on the left, grouped under four headings.
 3. For lists of things (classes, relation classes, model types), an **item list** with an input for adding new ones.
 4. The **editor** for the selected item, and on the right the docked **Try it** preview ([[try-it-preview]]).
 
 ## Where to find it
 
-Switch to Build mode with the mode switch in the top bar, then open a Kit with **Edit** (see [[page-kits]] and [[concepts-modes]]). To leave, use **← Kits** at the top left of the header.
+Switch to Build mode with the mode switch in the top bar, then open a Kit with **Edit** (see [[page-kits]] and [[concepts-modes]]). To leave, click **Kits** in the location of the top bar.
 
 ## How to use it
 
@@ -33,19 +35,25 @@ Switch to Build mode with the mode switch in the top bar, then open a Kit with *
 4. Fill in the editor. See [[classes]], [[attributes]] and [[appearance-editor]].
 5. Watch the **Try it** preview on the right. Place the class and connect objects to see how the Kit feels.
 6. Add relation classes and a model type so modellers can use the classes. See [[relations]] and [[model-types]].
-7. Click **← Kits** when you are done. Pending changes are written first.
+7. Give the Kit its name and version in **Settings** ([[kit-settings]]).
+8. Click **Kits** in the top bar when you are done. Pending changes are written first.
 
 ## Every option explained
 
-### Header
+### Top bar
 
 | Control | What it does |
 | --- | --- |
-| **← Kits** | Writes pending changes and goes back to the Kits page. |
-| Name box (label "Kit name") | The name modellers see when they create a model. An empty name is ignored. |
-| **Version** | The Kit version, for example `1.0.0`. Models remember which version made them. A text that is not a version is refused with "A version looks like 1.0.0." (the form is `1.0.0`, optionally followed by `-beta.1` or `+build5`). |
+| **Kits** (in the location) | Writes pending changes and goes back to the Kits page. |
+| Kit name (last part of the location) | The name of the Kit. Change it in **Settings** ([[kit-settings]]). |
 | Status text | **Saving…** while changes are being written, **Saved** when everything is written. If saving or syncing fails, the error text is shown here instead. |
-| **↶** (Undo) and **↷** (Redo) | Step back and forward through your changes. They are greyed out when there is nothing to undo or redo. |
+| **Help** | Opens the help topic of the section or editor you are on, the same as `F1`. |
+
+### Toolbar
+
+| Control | What it does |
+| --- | --- |
+| Undo and Redo (curved arrows) | Step back and forward through your changes. They are greyed out when there is nothing to undo or redo. |
 | **Source control** | Appears only for a Kit linked to GitHub or GitLab. It holds **Commit and push**, **Pull** and **Releases**. See the next section. |
 | **Try it** | Shows or hides the preview on the right. The **»** button inside the preview hides it too. |
 
@@ -66,7 +74,7 @@ More on moving around is in [[build-navigation]].
 
 The menu shows the linked repository and branch, for example `acme/tools · main`. **Commit and push** shows the number of pending changes in brackets, for example "Commit and push (3)". **Pull** and **Releases** are greyed out while Git is busy. Choosing an entry closes the menu. The dialogs are explained in [[git-commit]], [[git-pull-conflicts]] and [[git-releases]]. The overall idea is in [[git-mode]].
 
-### Notices under the header
+### Notices under the toolbar
 
 - A green note appears after a Git action succeeds.
 - A red message appears when a command is refused, for example "The key "Task" is already used by another class." Nothing changed in that case. The message disappears after the next successful change.
@@ -88,7 +96,7 @@ Open the Agent pipeline Kit. Under **Classes** you see Actor, Agent, Artifact, G
 - **Browsers.** Build mode needs Chrome or Edge on a desktop. See [[browser-support]].
 
 > **Tip**
-> Use the Undo button in the header, not the browser back button. Undo only covers this Build session.
+> Use the Undo button in the toolbar, not the browser back button. Undo only covers this Build session.
 
 > **Note**
 > Build mode and Model mode share one store for Kits and models. A Kit you have open in Build mode is also synced to the other windows like any other document. See [[sync-overview]].

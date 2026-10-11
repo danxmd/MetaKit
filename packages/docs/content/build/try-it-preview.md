@@ -18,7 +18,7 @@ When you change the Kit, the preview rebuilds itself with the new definitions an
 
 ## Where to find it
 
-It opens as a panel on the right of the Build view, labelled "Try it". Hide it with the **»** button in its header ("Hide the preview") or with the **Try it** button in the Build header, and bring it back with the same **Try it** button.
+It opens as a panel on the right of the Build view, labelled "Try it". Hide it with the **»** button in its header ("Hide the preview") or with the **Try it** button in the Build toolbar, and bring it back with the same **Try it** button.
 
 ## How to use it
 

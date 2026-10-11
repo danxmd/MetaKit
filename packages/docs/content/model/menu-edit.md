@@ -30,7 +30,7 @@ Header of the [[page-model-view|model view]], second row, the second menu.
 | --- | --- | --- | --- |
 | **Undo** | **Ctrl+Z** | Reverses your latest change. A whole gesture, for example a move of several objects, is one step. | Nothing to undo. |
 | **Redo** | **Ctrl+Shift+Z** (also **Ctrl+Y**) | Puts back what you just undid. | Nothing to redo. |
-| **Find** | **Ctrl+F** | Moves the cursor to the find box in the header and selects its text. | Never. |
+| **Find** | **Ctrl+F** | Moves the cursor to the find box in the toolbar and selects its text. | Never. |
 | **Select all** | **Ctrl+A** | Selects every object and every connection in the model. | Never. |
 | **Delete selection** | **Del** (also **Backspace**) | Deletes the selected objects and connections. | Nothing is selected. |
 

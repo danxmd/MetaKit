@@ -8,7 +8,7 @@ contexts: [build.settings]
 order: 220
 ---
 
-Settings hold what belongs to the whole Kit and not to one class: its name and version, the languages of its labels and the grid on the canvas. Most are in the **Settings** section. The name and version are in the header of the Build view.
+Settings hold what belongs to the whole Kit and not to one class: its name and version, the languages of its labels and the grid on the canvas. All of them are in the **Settings** section, except the script permissions.
 
 ## What it is
 
@@ -16,8 +16,8 @@ The Kit file has a **manifest** (its id, name, version, languages and script per
 
 | Part | Where you change it |
 | --- | --- |
-| Name | Header of the Build view |
-| Version | Header of the Build view |
+| Name | **Settings > Name and version** |
+| Version | **Settings > Name and version** |
 | Languages | **Settings > Languages** |
 | Grid size, snap, visible | **Settings > Grid** |
 | Script permissions | **Scripts** section ([[scripts]], [[script-permissions]]) |
@@ -26,22 +26,24 @@ The Kit file has a **manifest** (its id, name, version, languages and script per
 
 ## Where to find it
 
-Build mode, **Kit** group, **Settings**. The heading is **Settings** and it has two blocks, **Languages** and **Grid**. For name and version see the top of [[page-build-view]].
+Build mode, **Kit** group, **Settings**. The heading is **Settings** and it has three blocks: **Name and version**, **Languages** and **Grid**. The name also shows as the last part of the location in the [[top-bar]].
 
 ## How to use it
 
-1. Name the Kit in the box labelled "Kit name" at the top of the Build view. Press Enter or click away.
+1. Open **Settings**. Under **Name and version**, type the Kit's **Name**. Press Enter or click away; the top bar shows the new name.
 2. Set the **Version** next to it before you share a new release.
-3. Open **Settings**. Under **Languages**, add every language you want to write labels in.
+3. Under **Languages**, add every language you want to write labels in.
 4. Under **Grid**, choose the grid that modellers see.
 
 ## Every option explained
 
-### Name and version (header)
+### Name and version
+
+The help text reads: "The name modellers see when they choose a Kit. Raise the version when you share a new release."
 
 | Field | What it does |
 | --- | --- |
-| Kit name | The name shown in lists and in the new-model dialog. An empty name is ignored and the old one stays. |
+| **Name** | The name shown in lists, in the new-model dialog and in the top bar. An empty name is refused with "A Kit needs a name." and the old one stays. |
 | **Version** | Three numbers with dots, such as `1.2.0`, optionally followed by `-beta.1` or `+build5`. Otherwise the message is "A version looks like 1.0.0." and nothing changes. Models record the version of the Kit they were made with. |
 
 ### Languages

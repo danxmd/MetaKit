@@ -28,7 +28,7 @@ The `_state` folders are how several people and several tabs work in the same fo
 ## Where to find it
 
 - On the [[page-start|Start page]] you open or create a workspace.
-- The workspace name is shown in the [[top-bar]], next to the word **Workspace**.
+- The workspace name is shown in the [[top-bar]], as the first part of the location.
 - **Close workspace** in the [[settings-menu]] returns you to the Start page.
 
 ## How to use it

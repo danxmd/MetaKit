@@ -8,36 +8,36 @@ contexts: []
 order: 330
 ---
 
-The model view talks to you in four ways: the status in the header, short messages, notices and messages from rules. This page explains each.
+The model view talks to you in four ways: the status in the top bar, short messages, notices and messages from rules. This page explains each.
 
 ## What it is
 
-- **Status** is always visible in the header and says whether your work is safe.
+- **Status** is always visible in the [[top-bar]] and says whether your work is safe.
 - **Messages** (toasts) appear for a few seconds after something you did, often to explain a refusal.
 - **Notices** stay until you dismiss them. They tell you about changes made by others.
 - **Rule and script messages** come from the Kit.
 
 ## Where to find it
 
-Status in the header. Messages, notices and rule messages on the canvas, mostly in the lower part.
+Status in the top bar, to the left of **Tutorials** and **Help**. Messages, notices and rule messages on the canvas, mostly in the lower part.
 
 ## How to use it
 
-1. Glance at the status in the header. **Saved** means all is stored.
+1. Glance at the status in the top bar. **Saved** means all is stored.
 2. Read a message when it pops up. It disappears after six seconds, or ten when it offers **Undo** ([[undo-and-delete]]).
 3. Click **×** to dismiss a notice or a rule message.
 
 ## Every option explained
 
-### Header status
+### Status in the top bar
 
 | Text | Meaning |
 | --- | --- |
 | **Saved** | Everything is written to the workspace folder. |
 | **Saving…** | Changes are being written. |
-| **Not saved** (in red) | Saving failed. The second line may say why. Check the folder and your connection. See [[sync-status]]. |
-| Second line: "Saved. Last change from Anna, 12 s ago" | The latest change from someone else, with seconds or minutes since it arrived. If the person is not known, "someone else". |
-| Second line: the error text | Why sync stopped. See [[sync-status]]. |
+| **Not saved** (in red) | Saving failed. The sync text beside it may say why. Check the folder and your connection. See [[sync-status]]. |
+| Sync text: "Saved. Last change from Anna, 12 s ago" | The latest change from someone else, with seconds or minutes since it arrived. If the person is not known, "someone else". |
+| Sync text: the error text | Why sync stopped. See [[sync-status]]. |
 
 The second line is hidden when it would only repeat the first.
 

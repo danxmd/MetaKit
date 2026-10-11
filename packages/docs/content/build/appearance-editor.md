@@ -93,7 +93,7 @@ The shipped Agent pipeline Kit draws its classes with hand-drawn shapes (for exa
 
 ## Good to know
 
-- Every change is saved at once as one undoable command. **Undo** in the Build header steps back through them ([[page-build-view]]).
+- Every change is saved at once as one undoable command. **Undo** in the Build toolbar steps back through them ([[page-build-view]]).
 - A look is stored inside its shape (Kit format 5). Older Kits open as before; their shapes are hand-drawn.
 - If you rename an attribute that the look uses, the look follows ([[keys-and-renaming]]).
 - The preview uses sample values; it shows every value of the attributes the look depends on.

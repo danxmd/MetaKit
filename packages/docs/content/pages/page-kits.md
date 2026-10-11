@@ -21,7 +21,7 @@ At the bottom is the **Deleted Kits** section.
 
 ## Where to find it
 
-Choose **Build** in the [[top-bar]] when no Kit is open. **← Kits** in the [[page-build-view|Build view]] brings you back, and **Go to Build** on the empty [[page-models|Models page]] leads here.
+Choose **Build** in the [[top-bar]] when no Kit is open. **Kits** in the location of the [[top-bar]] brings you back from the [[page-build-view|Build view]], and **Go to Build** on the empty [[page-models|Models page]] leads here.
 
 ## How to use it
 

@@ -30,13 +30,13 @@ The **Model** and **Build** buttons sit in the middle of the [[top-bar]], in a g
 
 1. Choose **Model** to see the list of models. Click a model to open it.
 2. Choose **Build** to see the list of Kits. Click **Edit** on a card to open one.
-3. Use **← Models** in the Model view, or **← Kits** in the Build view, to return to the list.
+3. Click **Models** or **Kits** in the location of the top bar to return to the list. The location always reads `workspace › Models › model` or `workspace › Kits › Kit`, so you can see where you are.
 4. Click the other area button at any time to switch.
 
 ## Every option explained
 
 - **Switching closes what is open.** Choosing **Build** while a model is open closes the model. Choosing **Model** while a Kit is open closes the Kit. Your changes are already saved, because MetaKit saves as you work.
-- **The list remembers where you were.** With nothing open, the area you last chose stays. "Back" from a Kit lands on the Kits page, not on the models.
+- **The list remembers where you were.** With nothing open, the area you last chose stays. **Kits** in the location of an open Kit lands on the Kits page, not on the models.
 - **Empty workspace.** In a new workspace the Models page offers **New model**, where you can pick a built-in Kit, and **Go to Build**, which does the same as the **Build** button.
 - **Live updates.** If a Kit is changed while models are open, the models follow. Changes in Build apply to existing models at once.
 
