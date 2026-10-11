@@ -32,6 +32,8 @@ A window of MetaKit is called an instance. Each instance shows itself to the oth
 
 > **Note:** The presence file is the one file an instance rewrites. That is allowed because it is in the instance's own area. Change files are never rewritten.
 
+A tab never counts its own presence file as someone else, even when a sync service has copied it under another name. If two files name the same instance, the newer one counts.
+
 ## Where to find it
 
 In Model mode, to the right of the save word in the toolbar there is a row of round avatars. The first one is you, with your colour and the tooltip "Name (you)". Others who have the same model open follow. The tooltip is their name. The letters inside are the initials of the first two words of the name, or "?" if there is no name.

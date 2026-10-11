@@ -58,7 +58,7 @@ Choose **Model** in the [[top-bar]] with no model open. It is also the page you 
 - A red message is an error, for example a model that cannot be opened because its Kit is missing.
 - Green messages report what the last import did, for example `Imported "order.mkmodel.json".`
 - Yellow messages are warnings. Warnings beginning with `sync:` come from reading other people's files ([[sync-status]]).
-- A yellow box **The folder may not be set up well for sharing** lists findings such as "online only" files, empty or incomplete files, and conflicted copies made by the sync service. It ends: "MetaKit can only see what the files show, not whether your sync program is running. Check its icon."
+- A yellow box **The folder may not be set up well for sharing** lists findings such as "online only" files, empty or incomplete files, and conflicted copies made by the sync service. Files this tab is writing at that moment and presence files are not checked for content, because they are rewritten all the time; only their names are. It ends: "MetaKit can only see what the files show, not whether your sync program is running. Check its icon."
 
 **Deleted**
 

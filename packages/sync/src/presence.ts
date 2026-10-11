@@ -328,7 +328,9 @@ export class PresenceService {
 
   private async read(): Promise<PresenceFile[]> {
     const staleMs = this.options.staleMs ?? 30_000;
-    const out: PresenceFile[] = [];
+    // By the instance inside the file, not the file name: a sync service can copy a file under
+    // another name, and this instance must never show up as someone else.
+    const byInstance = new Map<string, PresenceFile>();
     for (const entry of await this.options.adapter.list('_presence')) {
       if (entry.kind !== 'file' || !entry.name.endsWith('.json')) continue;
       if (entry.name === `${this.me}.json`) continue;
@@ -336,12 +338,18 @@ export class PresenceService {
         const p = parsePresence(
           decode(await this.options.adapter.read(`_presence/${entry.name}`)),
         );
-        if (isFresh(p, this.now(), staleMs)) out.push(p);
+        if (p.instance === this.me || !isFresh(p, this.now(), staleMs))
+          continue;
+        const known = byInstance.get(p.instance);
+        if (!known || Date.parse(p.at) > Date.parse(known.at))
+          byInstance.set(p.instance, p);
       } catch {
         // Half written or from a newer version: it is read again at the next refresh.
       }
     }
-    return out.sort((a, b) => (a.instance < b.instance ? -1 : 1));
+    return [...byInstance.values()].sort((a, b) =>
+      a.instance < b.instance ? -1 : 1,
+    );
   }
 
   /** Stops, and removes this instance's presence file so that others see it leave at once. */
