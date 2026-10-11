@@ -33,8 +33,8 @@
 
 ## 4. PR 4: model view and style cleanup (`feat/ui-coherence-polish`)
 
-- [ ] 4.1 Palette: view switch at the top, hide empty groups, empty text.
-- [ ] 4.2 Remove legacy token aliases and hard-coded colours; spacing to `--gap-*` in the listed components.
-- [ ] 4.3 Scripts and Rules empty states.
-- [ ] 4.4 Docs: palette, menu-view.
-- [ ] 4.5 Full `pnpm typecheck`, `lint`, `test`, `test:e2e`, `bench` (to show nothing on the canvas got slower).
+- [x] 4.1 Palette: view switch at the top, hide empty groups, empty text.
+- [x] 4.2 Remove legacy token aliases and hard-coded colours; spacing to `--gap-*` in the listed components.
+- [x] 4.3 Scripts and Rules empty states.
+- [x] 4.4 Docs: palette, menu-view.
+- [x] 4.5 Full `pnpm typecheck`, `lint`, `test`, `test:e2e`, `bench` (to show nothing on the canvas got slower).
