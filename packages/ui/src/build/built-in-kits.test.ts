@@ -77,9 +77,6 @@ const TOPIC_IN_TUTORIALS = new Set([
   'data-governance',
 ]);
 
-/** Kits from before simple looks (ADR 0009), drawn by hand; they keep their shapes for now. */
-const HAND_DRAWN = new Set(['bpmn-lite', 'er-lite', 'agent-pipeline']);
-
 /** The folder under kits/ that holds the Kit with this id. */
 function folderOf(id: string): string {
   const folder = readdirSync(kitsDir).find((name) => {
@@ -167,32 +164,29 @@ for (const entry of BUILT_IN_KITS) {
       expect(badFormulas(kit)).toEqual([]);
     });
 
-    it.skipIf(HAND_DRAWN.has(folder))(
-      'draws every shape from a simple look, equal to the parts the look makes',
-      () => {
-        for (const shape of Object.values(kit.shapes)) {
-          expect(shape.look, shape.id).toBeDefined();
-          const again =
-            shape.kind === 'node'
-              ? nodeShapeFromLook(
-                  (shape as NodeShape).look!,
-                  shape.id,
-                  shape.name,
-                )
-              : relationShapeFromLook(
-                  (shape as RelationShape).look!,
-                  shape.id,
-                  shape.name,
-                );
-          expect(again, shape.id).toEqual(shape);
-        }
-        for (const owner of [
-          ...Object.values(kit.classes).filter((c) => !c.abstract),
-          ...Object.values(kit.relations),
-        ])
-          expect(kit.shapes[owner.shape!], owner.key).toBeDefined();
-      },
-    );
+    it('draws every shape from a simple look, equal to the parts the look makes', () => {
+      for (const shape of Object.values(kit.shapes)) {
+        expect(shape.look, shape.id).toBeDefined();
+        const again =
+          shape.kind === 'node'
+            ? nodeShapeFromLook(
+                (shape as NodeShape).look!,
+                shape.id,
+                shape.name,
+              )
+            : relationShapeFromLook(
+                (shape as RelationShape).look!,
+                shape.id,
+                shape.name,
+              );
+        expect(again, shape.id).toEqual(shape);
+      }
+      for (const owner of [
+        ...Object.values(kit.classes).filter((c) => !c.abstract),
+        ...Object.values(kit.relations),
+      ])
+        expect(kit.shapes[owner.shape!], owner.key).toBeDefined();
+    });
 
     it('has a sample model that loads and draws without errors and has only its intended warnings', () => {
       const samples = readdirSync(join(kitsDir, folder)).filter((f) =>
@@ -207,12 +201,8 @@ for (const entry of BUILT_IN_KITS) {
         );
         const calc = new ModelCalculator(kit, () => model);
         const issues = validateModel(kit, model, calc);
-        // Every object draws without a problem in its formulas. Hand-drawn shapes read values
-        // the canvas gives them, such as $fill, so only simple looks are drawn here.
-        const drawn = HAND_DRAWN.has(folder)
-          ? []
-          : Object.values(model.elements);
-        for (const el of drawn) {
+        // Every object draws without a problem in its formulas.
+        for (const el of Object.values(model.elements)) {
           const cls = kit.classes[el.class]!;
           const shape = kit.shapes[cls.shape!] as NodeShape;
           const out = compileNode(shape, {

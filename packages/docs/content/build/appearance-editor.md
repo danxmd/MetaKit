@@ -89,7 +89,7 @@ Make the look of **Task** in the Agent pipeline Kit:
 4. Add a mark: **Show a mark on the corner** when **Priority** is **High**, mark text "!", red.
 5. Press **Done**. In the [[try-it-preview]] place a task to see the new look on the canvas. The tiles under the preview in the editor show each Status. To see a task change colour, open a real model and edit its Status in the attribute panel.
 
-The shipped Agent pipeline Kit draws its classes with hand-drawn shapes (for example "Task (status stripe)"). They are a good example of what the [[shape-editor]] can do, and of what you no longer need to do by hand.
+The shipped Agent pipeline Kit has a look like this on its Task ("Task (colour by status)"). Every built-in Kit draws its classes and lines with simple looks, so any of them shows how a look is set: open a class in Build mode and press **Edit appearance**.
 
 ## Good to know
 

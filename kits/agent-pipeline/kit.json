@@ -736,14 +736,14 @@
   "shapes": {
     "shp_agent": {
       "id": "shp_agent",
-      "name": "Agent (bot)",
+      "name": "Agent (robot)",
       "kind": "node",
       "size": {
         "width": 170,
         "height": 80,
         "resizable": true,
-        "minWidth": 100,
-        "minHeight": 50
+        "minWidth": 40,
+        "minHeight": 28
       },
       "outline": "rect",
       "parts": [
@@ -755,70 +755,83 @@
           "height": "100%",
           "radius": 12,
           "fill": "#dbe7ff",
-          "stroke": "= if(Autonomy == 'Autonomous', '#e03131', if(Autonomy == 'Approval', '#f08c00', '#2f9e44'))",
-          "strokeWidth": 3.5
+          "stroke": "= Autonomy == 'Suggest' ? '#2f9e44' : Autonomy == 'Approval' ? '#f08c00' : Autonomy == 'Autonomous' ? '#e03131' : '#2f9e44'",
+          "strokeWidth": 3
         },
         {
-          "type": "rect",
-          "x": 8,
-          "y": 8,
-          "width": 22,
-          "height": 16,
-          "radius": 4,
-          "fill": "#364fc7"
-        },
-        {
-          "type": "ellipse",
-          "x": 12,
-          "y": 13,
-          "width": 5,
-          "height": 5,
-          "fill": "#ffffff"
-        },
-        {
-          "type": "ellipse",
-          "x": 21,
-          "y": 13,
-          "width": 5,
-          "height": 5,
-          "fill": "#ffffff"
-        },
-        {
-          "type": "rect",
-          "x": 17,
+          "type": "text",
+          "x": 34,
           "y": 4,
-          "width": 2,
-          "height": 4,
-          "fill": "#364fc7"
-        },
-        {
-          "type": "text",
-          "x": 36,
-          "y": 6,
-          "width": "100% - 44",
-          "height": 18,
-          "text": "= AgentKind",
-          "font": {
-            "size": 10,
-            "weight": 600
-          },
-          "fill": "#364fc7",
-          "align": "left",
-          "valign": "middle"
-        },
-        {
-          "type": "text",
-          "x": 8,
-          "y": 26,
-          "width": "100% - 16",
-          "height": "100% - 32",
+          "width": "100% - 42",
+          "height": "100% - 28",
           "text": "= $label",
           "wrap": true,
           "fit": "shrink",
           "align": "center",
-          "valign": "middle"
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {}
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= AgentKind",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 2v3 M5 7h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z M8.5 12.5h.01 M15.5 12.5h.01 M9 16h6",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#364fc7",
+          "strokeWidth": 1.8
         }
-      ]
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": "#dbe7ff",
+        "border": {
+          "by": "Autonomy",
+          "values": {
+            "Suggest": "#2f9e44",
+            "Approval": "#f08c00",
+            "Autonomous": "#e03131"
+          },
+          "fallback": "#2f9e44"
+        },
+        "borderWidth": 3,
+        "borderStyle": "solid",
+        "corner": 12,
+        "title": {
+          "attribute": null
+        },
+        "subtitle": {
+          "attribute": "AgentKind"
+        },
+        "icon": {
+          "name": "bot",
+          "colour": "#364fc7"
+        },
+        "size": {
+          "width": 170,
+          "height": 80,
+          "resizable": true
+        }
+      }
     },
     "shp_human": {
       "id": "shp_human",
@@ -828,8 +841,8 @@
         "width": 170,
         "height": 80,
         "resizable": true,
-        "minWidth": 100,
-        "minHeight": 50
+        "minWidth": 40,
+        "minHeight": 28
       },
       "outline": "rect",
       "parts": [
@@ -845,62 +858,82 @@
           "strokeWidth": 2
         },
         {
-          "type": "ellipse",
-          "x": 12,
-          "y": 8,
-          "width": 10,
-          "height": 10,
-          "fill": "#e8590c"
-        },
-        {
-          "type": "path",
-          "d": "M0 14 Q0 7 7 7 Q14 7 14 14 Z",
-          "viewBox": [0, 0, 14, 14],
-          "x": 10,
-          "y": 18,
-          "width": 14,
-          "height": 10,
-          "fill": "#e8590c"
-        },
-        {
           "type": "text",
-          "x": 32,
-          "y": 6,
-          "width": "100% - 40",
-          "height": 18,
-          "text": "= Team",
-          "font": {
-            "size": 10,
-            "weight": 600
-          },
-          "fill": "#e8590c",
-          "align": "left",
-          "valign": "middle"
-        },
-        {
-          "type": "text",
-          "x": 8,
-          "y": 28,
-          "width": "100% - 16",
-          "height": "100% - 34",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
           "text": "= $label",
           "wrap": true,
           "fit": "shrink",
           "align": "center",
-          "valign": "middle"
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {}
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= Team",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#e8590c",
+          "strokeWidth": 1.8
         }
-      ]
+      ],
+      "look": {
+        "base": "box",
+        "fill": "#ffe8cc",
+        "border": "#e8590c",
+        "borderWidth": 2,
+        "borderStyle": "solid",
+        "corner": 4,
+        "title": {
+          "attribute": null
+        },
+        "subtitle": {
+          "attribute": "Team"
+        },
+        "icon": {
+          "name": "person",
+          "colour": "#e8590c"
+        },
+        "size": {
+          "width": 170,
+          "height": 80,
+          "resizable": true
+        }
+      }
     },
     "shp_task": {
       "id": "shp_task",
-      "name": "Task (status stripe)",
+      "name": "Task (colour by status)",
       "kind": "node",
       "size": {
         "width": 170,
         "height": 80,
         "resizable": true,
-        "minWidth": 100,
-        "minHeight": 50
+        "minWidth": 40,
+        "minHeight": 28
       },
       "outline": "rect",
       "parts": [
@@ -911,48 +944,104 @@
           "width": "100%",
           "height": "100%",
           "radius": 8,
-          "fill": "#ffffff",
+          "fill": "= Status == 'Ready' ? '#fff3bf' : Status == 'Running' ? '#d0ebff' : Status == 'Waiting for human' ? '#ffe8cc' : Status == 'Done' ? '#d3f9d8' : Status == 'Failed' ? '#ffe3e3' : '#f1f3f5'",
           "stroke": "#495057",
           "strokeWidth": 1.5
         },
         {
-          "type": "rect",
-          "x": 0,
-          "y": 0,
-          "width": 10,
-          "height": "100%",
-          "radius": 8,
-          "fill": "= if(Status == 'Done', '#d3f9d8', if(Status == 'Failed', '#ffe3e3', if(Status == 'Waiting for human', '#ffe8cc', if(Status == 'Running', '#d0ebff', if(Status == 'Ready', '#fff3bf', '#f1f3f5')))))",
-          "stroke": "#495057",
-          "strokeWidth": 1
-        },
-        {
           "type": "text",
-          "x": 18,
-          "y": 6,
-          "width": "100% - 26",
+          "x": 8,
+          "y": 4,
+          "width": "100% - 16",
           "height": "100% - 28",
           "text": "= $label",
           "wrap": true,
           "fit": "shrink",
-          "align": "left",
-          "valign": "middle"
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {}
         },
         {
           "type": "text",
-          "x": 18,
-          "y": "100% - 20",
-          "width": "100% - 26",
-          "height": 16,
-          "text": "= Status + (Priority == 'High' ? ' · high' : '')",
+          "x": 8,
+          "y": "100% - 22",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= Status",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
           "font": {
-            "size": 10
+            "size": 11
+          }
+        },
+        {
+          "type": "rect",
+          "x": "100% - 34",
+          "y": -6,
+          "width": 30,
+          "height": 16,
+          "radius": 8,
+          "fill": "#e03131",
+          "visible": "= Priority == 'High'"
+        },
+        {
+          "type": "text",
+          "x": "100% - 34",
+          "y": -6,
+          "width": 30,
+          "height": 16,
+          "text": "!",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#ffffff",
+          "font": {
+            "size": 10,
+            "weight": 600
           },
-          "fill": "#495057",
-          "align": "left",
-          "valign": "middle"
+          "visible": "= Priority == 'High'"
         }
-      ]
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": {
+          "by": "Status",
+          "values": {
+            "Ready": "#fff3bf",
+            "Running": "#d0ebff",
+            "Waiting for human": "#ffe8cc",
+            "Done": "#d3f9d8",
+            "Failed": "#ffe3e3"
+          },
+          "fallback": "#f1f3f5"
+        },
+        "border": "#495057",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "corner": 8,
+        "title": {
+          "attribute": null
+        },
+        "subtitle": {
+          "attribute": "Status"
+        },
+        "badge": {
+          "attribute": "Priority",
+          "equals": "High",
+          "text": "!",
+          "colour": "#e03131"
+        },
+        "size": {
+          "width": 170,
+          "height": 80,
+          "resizable": true
+        }
+      }
     },
     "shp_artifact": {
       "id": "shp_artifact",
@@ -962,62 +1051,101 @@
         "width": 120,
         "height": 90,
         "resizable": true,
-        "minWidth": 70,
-        "minHeight": 50
+        "minWidth": 40,
+        "minHeight": 28
       },
-      "outline": "rect",
+      "outline": {
+        "type": "polygon",
+        "points": [
+          [0, 0],
+          ["100% - 18", 0],
+          ["100%", 18],
+          ["100%", "100%"],
+          [0, "100%"]
+        ]
+      },
       "parts": [
         {
           "type": "polygon",
           "points": [
             [0, 0],
-            ["100% - 16", 0],
-            ["100%", 16],
+            ["100% - 18", 0],
+            ["100%", 18],
             ["100%", "100%"],
             [0, "100%"]
           ],
-          "fill": "= if(Status == 'Approved', '#d3f9d8', if(Status == 'In review', '#fff3bf', if(Status == 'Rejected', '#ffe3e3', '#f1f3f5')))",
+          "fill": "= Status == 'In review' ? '#fff3bf' : Status == 'Approved' ? '#d3f9d8' : Status == 'Rejected' ? '#ffe3e3' : '#f1f3f5'",
           "stroke": "#495057",
           "strokeWidth": 1.5
         },
         {
           "type": "polygon",
           "points": [
-            ["100% - 16", 0],
-            ["100% - 16", 16],
-            ["100%", 16]
+            ["100% - 18", 0],
+            ["100% - 18", 18],
+            ["100%", 18]
           ],
-          "fill": "#ced4da",
+          "fill": "#00000022",
           "stroke": "#495057",
           "strokeWidth": 1
         },
         {
           "type": "text",
           "x": 8,
-          "y": 18,
+          "y": 20,
           "width": "100% - 16",
-          "height": "100% - 40",
+          "height": "100% - 46",
           "text": "= $label",
           "wrap": true,
           "fit": "shrink",
           "align": "center",
-          "valign": "middle"
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {}
         },
         {
           "type": "text",
           "x": 8,
-          "y": "100% - 20",
+          "y": "100% - 24",
           "width": "100% - 16",
-          "height": 16,
-          "text": "= ArtifactType + ' v' + Version",
-          "font": {
-            "size": 10
-          },
-          "fill": "#495057",
+          "height": 18,
+          "text": "= ArtifactType",
+          "wrap": true,
+          "fit": "shrink",
           "align": "center",
-          "valign": "middle"
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
         }
-      ]
+      ],
+      "look": {
+        "base": "document",
+        "fill": {
+          "by": "Status",
+          "values": {
+            "In review": "#fff3bf",
+            "Approved": "#d3f9d8",
+            "Rejected": "#ffe3e3"
+          },
+          "fallback": "#f1f3f5"
+        },
+        "border": "#495057",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": null
+        },
+        "subtitle": {
+          "attribute": "ArtifactType"
+        },
+        "size": {
+          "width": 120,
+          "height": 90,
+          "resizable": true
+        }
+      }
     },
     "shp_gate": {
       "id": "shp_gate",
@@ -1027,8 +1155,8 @@
         "width": 110,
         "height": 70,
         "resizable": true,
-        "minWidth": 70,
-        "minHeight": 40
+        "minWidth": 40,
+        "minHeight": 28
       },
       "outline": {
         "type": "polygon",
@@ -1052,23 +1180,47 @@
             ["15%", "100%"],
             [0, "50%"]
           ],
-          "fill": "= if(Decision == 'Approved', '#d3f9d8', if(Decision == 'Rejected', '#ffe3e3', '#e5dbff'))",
+          "fill": "= Decision == 'Approved' ? '#d3f9d8' : Decision == 'Rejected' ? '#ffe3e3' : '#e5dbff'",
           "stroke": "#7048e8",
           "strokeWidth": 2
         },
         {
           "type": "text",
           "x": "18%",
-          "y": "15%",
+          "y": 4,
           "width": "64%",
-          "height": "70%",
+          "height": "100% - 8",
           "text": "= $label",
           "wrap": true,
           "fit": "shrink",
           "align": "center",
-          "valign": "middle"
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {}
         }
-      ]
+      ],
+      "look": {
+        "base": "hexagon",
+        "fill": {
+          "by": "Decision",
+          "values": {
+            "Approved": "#d3f9d8",
+            "Rejected": "#ffe3e3"
+          },
+          "fallback": "#e5dbff"
+        },
+        "border": "#7048e8",
+        "borderWidth": 2,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": null
+        },
+        "size": {
+          "width": 110,
+          "height": 70,
+          "resizable": true
+        }
+      }
     },
     "shp_stage": {
       "id": "shp_stage",
@@ -1078,8 +1230,8 @@
         "width": 720,
         "height": 200,
         "resizable": true,
-        "minWidth": 240,
-        "minHeight": 100
+        "minWidth": 40,
+        "minHeight": 28
       },
       "outline": "rect",
       "parts": [
@@ -1089,10 +1241,10 @@
           "y": 0,
           "width": "100%",
           "height": "100%",
-          "fill": "transparent",
+          "fill": "#ffffff00",
           "stroke": "#868e96",
           "strokeWidth": 1.5,
-          "dash": [6, 4]
+          "dash": [7, 4]
         },
         {
           "type": "rect",
@@ -1111,9 +1263,11 @@
           "width": 160,
           "height": 28,
           "text": "= $label",
+          "wrap": true,
+          "fit": "shrink",
           "align": "center",
           "valign": "middle",
-          "wrap": false,
+          "fill": "#1b1f27",
           "font": {
             "weight": 600
           },
@@ -1121,7 +1275,23 @@
             "rotate": -90
           }
         }
-      ]
+      ],
+      "look": {
+        "base": "swimlane",
+        "fill": "#e9ecef",
+        "border": "#868e96",
+        "borderWidth": 1.5,
+        "borderStyle": "dashed",
+        "title": {
+          "attribute": null,
+          "bold": true
+        },
+        "size": {
+          "width": 720,
+          "height": 200,
+          "resizable": true
+        }
+      }
     },
     "shp_performs": {
       "id": "shp_performs",
@@ -1138,11 +1308,23 @@
           "at": "middle",
           "text": "= Role",
           "font": {
-            "size": 10
+            "size": 11
           },
-          "background": "#ffffff"
+          "background": "#ffffff",
+          "visible": "= Role != null"
         }
-      ]
+      ],
+      "look": {
+        "colour": "#868e96",
+        "width": 1.5,
+        "style": "dotted",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "none",
+        "label": {
+          "attribute": "Role"
+        }
+      }
     },
     "shp_handover": {
       "id": "shp_handover",
@@ -1161,12 +1343,29 @@
           "at": "middle",
           "text": "= Condition",
           "font": {
-            "size": 10
+            "size": 11
           },
           "background": "#ffffff",
           "visible": "= Condition != null"
         }
-      ]
+      ],
+      "look": {
+        "colour": {
+          "by": "Handoff",
+          "values": {
+            "Needs human": "#e8590c"
+          },
+          "fallback": "#364fc7"
+        },
+        "width": 2,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": {
+          "attribute": "Condition"
+        }
+      }
     },
     "shp_produces": {
       "id": "shp_produces",
@@ -1177,26 +1376,43 @@
         "strokeWidth": 1.5,
         "routing": "orthogonal"
       },
+      "startMarker": {
+        "type": "circle"
+      },
       "endMarker": {
         "type": "arrow"
       },
-      "startMarker": {
-        "type": "circle",
-        "size": 6
+      "look": {
+        "colour": "#2f9e44",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "circle",
+        "end": "arrow",
+        "label": null
       }
     },
     "shp_feeds": {
       "id": "shp_feeds",
-      "name": "Feeds (arrow)",
+      "name": "Feeds (dashed arrow)",
       "kind": "relation",
       "line": {
         "stroke": "#868e96",
         "strokeWidth": 1.5,
         "routing": "orthogonal",
-        "dash": [8, 3]
+        "dash": [7, 4]
       },
       "endMarker": {
         "type": "open-arrow"
+      },
+      "look": {
+        "colour": "#868e96",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "open-arrow",
+        "label": null
       }
     },
     "shp_approves": {
@@ -1209,19 +1425,27 @@
         "routing": "orthogonal"
       },
       "endMarker": {
-        "type": "triangle",
-        "fill": "#7048e8"
+        "type": "triangle"
+      },
+      "look": {
+        "colour": "#7048e8",
+        "width": 2,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "triangle",
+        "label": null
       }
     },
     "shp_delegates": {
       "id": "shp_delegates",
-      "name": "Delegates (arrow)",
+      "name": "Delegates (dotted arrow)",
       "kind": "relation",
       "line": {
         "stroke": "#1971c2",
         "strokeWidth": 1.5,
         "routing": "orthogonal",
-        "dash": [2, 3]
+        "dash": [2, 4]
       },
       "endMarker": {
         "type": "arrow"
@@ -1231,12 +1455,23 @@
           "at": "middle",
           "text": "= Scope",
           "font": {
-            "size": 10
+            "size": 11
           },
           "background": "#ffffff",
           "visible": "= Scope != null"
         }
-      ]
+      ],
+      "look": {
+        "colour": "#1971c2",
+        "width": 1.5,
+        "style": "dotted",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": {
+          "attribute": "Scope"
+        }
+      }
     }
   },
   "panels": {
