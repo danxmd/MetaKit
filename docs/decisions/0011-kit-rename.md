@@ -1,6 +1,6 @@
 # ADR 0011: The Kit rename in stored and exchanged files
 
-Status: proposed (Danial to review)
+Status: accepted (approved by Danial, 2026-10-11)
 
 ## Context
 

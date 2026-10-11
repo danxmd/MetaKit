@@ -1,6 +1,6 @@
 # ADR 0010: Copies of Kits and Kit format 6
 
-Status: proposed (Danial to review)
+Status: accepted (approved by Danial, 2026-10-11)
 
 ## Context
 
