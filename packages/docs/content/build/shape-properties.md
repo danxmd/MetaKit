@@ -96,11 +96,12 @@ Help text: "A named value is worked out once and can be used in any formula of t
 
 ## Examples
 
-In the **Task (status stripe)** shape of the Agent pipeline Kit:
+In the **Task (colour by status)** shape of the Agent pipeline Kit, after **Edit as drawing** ([[shape-editor]]):
 
-- The stripe's **Fill colour** is a formula: `= if(Status == 'Done', '#d3f9d8', if(Status == 'Failed', '#ffe3e3', ...))`, with `#f1f3f5` for all other values.
+- The body's **Fill colour** is a formula: `= Status == 'Ready' ? '#fff3bf' : Status == 'Running' ? '#d0ebff' : ...`, with `#f1f3f5` for all other values.
 - The label's **Text** is `= $label`, and its **When too long** is **Shrink**.
-- The small status line has **Text** `= Status + (Priority == 'High' ? ' · high' : '')` and **Font size** 10.
+- The small status line has **Text** `= Status` and **Font size** 11.
+- The two parts of the mark have **Visible** `= Priority == 'High'`.
 
 To show a tooltip on a task, select the body, press **fx** beside **Tooltip** and write `= Description`.
 

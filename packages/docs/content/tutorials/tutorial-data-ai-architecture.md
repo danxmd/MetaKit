@@ -1,5 +1,5 @@
 ---
-id: data-ai-architecture
+id: tutorial-data-ai-architecture
 title: Map a data and AI platform
 category: tutorials
 summary: Draw a data platform from source to consumer with the Data and AI architecture Kit, see the personal-data warning, and list the lineage of a dataset.
@@ -99,4 +99,4 @@ The sample "Customer 360 and churn model" has three zones. CRM, web events and b
 
 ## Related
 
-[[tutorials-index]] · [[quick-tour]] · [[constraints]] · [[behaviour-commands]] · [[scripts]] · [[problems-panel]]
+[[tutorials-index]] · [[data-ai-architecture]] · [[quick-tour]] · [[constraints]] · [[behaviour-commands]] · [[scripts]] · [[problems-panel]]

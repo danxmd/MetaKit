@@ -1,9 +1,9 @@
 ---
-id: ai-use-case-portfolio
+id: tutorial-ai-use-case-portfolio
 title: Score an AI use-case portfolio
 category: tutorials
 summary: Add the AI use-case portfolio Kit, model a few use cases, score them, see their quadrant colours and rank them with one command.
-keywords: [ai use-case portfolio, use case scoring, priority score, quadrant, quick win, strategic bet, rank use cases, ai portfolio tutorial]
+keywords: [use case scoring, priority score, quadrant, quick win, strategic bet, rank use cases, ai portfolio tutorial]
 contexts: []
 order: 370
 ---
@@ -104,4 +104,4 @@ In the sample portfolio, "Email triage" (Value 4, Feasibility 5, Data readiness 
 
 ## Related
 
-[[tutorials-index]] · [[computed-values]] · [[constraints]] · [[rules]] · [[scripts]] · [[menu-commands]]
+[[tutorials-index]] · [[ai-use-case-portfolio]] · [[computed-values]] · [[constraints]] · [[rules]] · [[scripts]] · [[menu-commands]]

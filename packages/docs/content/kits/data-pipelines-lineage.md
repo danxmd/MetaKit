@@ -92,7 +92,7 @@ The sample shows two warnings on purpose: **Export to finance** has no schedule,
 
 - **Direct counts only.** **Upstream** and **Downstream** count direct neighbours; **Steps from source** follows the whole chain. A loop of **Flows to** connectors cannot be calculated and is reported.
 - **Technology stays free text.** Write the tool or orchestrator in **Tool** and **Orchestrator**; the Kit names no products.
-- For a picture of the whole data platform, with zones and AI services, see the Data and AI architecture tutorial ([[data-ai-architecture]]).
+- For a picture of the whole data platform, with zones and AI services, see the Data and AI architecture tutorial ([[tutorial-data-ai-architecture]]).
 
 ## Related
 

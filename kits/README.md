@@ -2,7 +2,7 @@
 
 The built-in Kits, also used as fixtures for tests and CI. Each folder holds:
 
-- `kit.json`: the Kit (format 7: shapes, simple looks, panel layouts, rules and scripts; every shape of the data and AI Kits is a simple look), in the same form the app keeps in its snapshots;
+- `kit.json`: the Kit (format 7: shapes, simple looks, panel layouts, rules and scripts; every shape is a simple look, ADR 0009), in the same form the app keeps in its snapshots;
 - `*.mkmodel.json`: a sample model in the editable format (format 2).
 
 | Folder                    | Classes                                                                                                                                                                                                                                                                                                                                                                                                             | Sample model                                                                                    |

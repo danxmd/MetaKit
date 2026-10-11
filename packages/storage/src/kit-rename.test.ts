@@ -110,12 +110,31 @@ describe('every older format is read and brought up to date', () => {
       instance: 'old00001',
       hash: before['hash'],
     });
-    const kit = materialize(
-      parseSnapshot(`${JSON.stringify(value)}\n`, 'kit').state,
-    );
-    expect(migrate('kit-document', kit).value).toEqual(
-      migrate('kit-document', sampleKitFromDisk('bpmn-lite')).value,
-    );
+    const kit = migrate(
+      'kit-document',
+      materialize(parseSnapshot(`${JSON.stringify(value)}\n`, 'kit').state),
+    ).value as unknown as Kit;
+    // The built-in BPMN lite has since been redrawn with simple looks (ADR 0009) and gives
+    // End event a shape of its own; the snapshot keeps the hand-drawn shapes of its release.
+    expect(Object.keys(kit.shapes).sort()).toEqual([
+      'shp_event',
+      'shp_flow',
+      'shp_gateway',
+      'shp_swimlane',
+      'shp_task',
+    ]);
+    for (const shape of Object.values(kit.shapes))
+      expect(shape.look, shape.id).toBeUndefined();
+    const current = migrate('kit-document', sampleKitFromDisk('bpmn-lite'))
+      .value as unknown as Kit;
+    expect(kit).toEqual({
+      ...current,
+      shapes: kit.shapes,
+      classes: {
+        ...current.classes,
+        cls_end: { ...current.classes['cls_end']!, shape: 'shp_event' },
+      },
+    });
   });
 
   it('a model snapshot with the registers manifest/tool and manifest/toolVersion (format 2)', () => {
