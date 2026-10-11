@@ -361,7 +361,8 @@ test.describe('attribute panel', () => {
     const editor = page.getByTestId('label-editor');
     await expect(editor).toBeVisible();
     await editor.fill('After');
-    await page.getByTestId('model-name').click();
+    // A click on the bar, away from its buttons, ends the edit.
+    await page.getByTestId('model-header').click({ position: { x: 2, y: 2 } });
     await expect(editor).toHaveCount(0);
     expect((await attrsOf(page, id))['att_name']).toBe('After');
   });

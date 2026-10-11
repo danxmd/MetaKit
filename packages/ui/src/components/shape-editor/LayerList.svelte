@@ -142,13 +142,13 @@
 <style>
   .layers {
     display: grid;
-    gap: 0.4rem;
+    gap: var(--gap-2);
     align-content: start;
     min-height: 0;
   }
   .head {
     display: flex;
-    gap: 0.4rem;
+    gap: var(--gap-2);
     align-items: center;
   }
   h3 {
@@ -169,13 +169,13 @@
   li {
     display: flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: var(--gap-1);
     border-radius: 6px;
     padding-top: 2px;
     padding-bottom: 2px;
   }
   li.selected {
-    background: var(--hover, var(--surface-3));
+    background: var(--hover-bg);
   }
   .name {
     flex: 1;
@@ -188,12 +188,12 @@
     white-space: nowrap;
   }
   li button:not(.name) {
-    padding: 0.1rem 0.35rem;
+    padding: 0.1rem var(--gap-1);
     font-size: 0.75rem;
   }
   .hint {
     margin: 0;
     font-size: 0.85rem;
-    color: var(--muted, var(--text-muted));
+    color: var(--text-muted);
   }
 </style>

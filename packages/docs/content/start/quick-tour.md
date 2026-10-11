@@ -24,12 +24,12 @@ Start at the [[page-start|Start page]]. The tour ends in the [[page-model-view|M
 2. **Create the workspace.** MetaKit says "This folder is not a workspace yet". Keep or change the **Workspace name** and choose **Create workspace**.
 3. **See the empty state.** You land on the **Models** page. It says there are no models yet and that a model needs a Kit, the language it is drawn in. Choose **Go to Build**.
 4. **Add a built-in Kit.** The **Kits** page shows **In this workspace** (still empty) and **Built-in Kits**. On the **Agent pipeline** card choose **Use in this workspace**. A card **Agent pipeline** with **Version 1.0.0** and "No models use it yet." appears under **In this workspace** ([[page-kits]], [[built-in-kits]]).
-5. **Look inside (optional).** Choose **Edit** on the card. The Build view lists the **Classes**: Actor, Agent, Human, Task, Artifact, Gate and Stage. Click **Task** to see its attributes such as Status and Priority. Then use **← Kits** to go back ([[page-build-view]]).
+5. **Look inside (optional).** Choose **Edit** on the card. The Build view lists the **Classes**: Actor, Agent, Human, Task, Artifact, Gate and Stage. Click **Task** to see its attributes such as Status and Priority. Then click **Kits** in the location at the top left to go back ([[page-build-view]], [[top-bar]]).
 6. **Make a model.** Choose **Model** in the top bar, then **New model** ([[dialog-new-model]]). Pick **Kit** "Agent pipeline (1.0.0)", **Model type** "Pipeline", type the **Name** `My first pipeline` and choose **Create**. The model opens.
 7. **Place objects.** In the palette on the left, under **Objects**, click **Task**, then click on the canvas. Do the same for **Agent**. Press `Escape` to stop placing ([[placing-objects]]).
 8. **Connect them.** In the palette under **Relations**, click **Performs**. Click the Agent, then click the Task. A line appears. A hint line tells you what each click does ([[connecting-objects]], [[interaction-hints]]).
-9. **Fill in attributes.** Click the Task. The attribute panel on the right shows its fields. Set **Status** to "Running" and **Estimated effort** to 4 ([[attribute-panel]]). Watch the toolbar: **Saving…** turns into **Saved**.
-10. **Check and share.** Open the **Check** menu and choose **Problems** to see whether the model has issues ([[problems-panel]]). Open **File** and choose **Export as image or PDF…** ([[export-image]]). Finally choose **← Models**: your model is in the list, ready to share with anyone who opens the same folder.
+9. **Fill in attributes.** Click the Task. The attribute panel on the right shows its fields. Set **Status** to "Running" and **Estimated effort** to 4 ([[attribute-panel]]). Watch the top bar: **Saving…** turns into **Saved**.
+10. **Check and share.** Open the **Check** menu and choose **Problems** to see whether the model has issues ([[problems-panel]]). Open **File** and choose **Export as image or PDF…** ([[export-image]]). Finally click **Models** in the top bar: your model is in the list, ready to share with anyone who opens the same folder.
 
 ## Every option explained
 

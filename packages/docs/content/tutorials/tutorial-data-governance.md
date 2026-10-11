@@ -1,5 +1,5 @@
 ---
-id: data-governance
+id: tutorial-data-governance
 title: Set up data ownership and governance
 category: tutorials
 summary: Use the Data governance and ownership Kit to record who owns and looks after your data, check it for gaps, and read the quality score of each data asset.
@@ -44,7 +44,7 @@ The Kit is built in ([[built-in-kits]]): its card is in the **Built-in Kits** se
 5. Fix the second one. Draw a **Governed by** connector from **Payroll file** to **Financial records access**.
 6. Choose **Commands**, then **Check governance** ([[menu-commands]]). The message lists what is still open: the failing quality rule "Dashboard matches ledger" and the glossary term "Fiscal period", which defines no data yet.
 7. Select **Dashboard matches ledger** and set **Last result** to 99.5. Its "Fail" badge goes away, and the **Quality score** of **Revenue dashboard** changes from 0 to 100 ([[computed-values]]).
-8. Choose **View**, then **Palette view**, then **RACI** ([[menu-view]]). The palette now offers only **Person**, **Data product**, **Data asset** and the three role relations, which is all you need to assign responsibilities. Objects already on the canvas stay visible.
+8. In the **View** list at the top of the palette, choose **RACI** ([[palette#palette-view]]). The palette now offers only **Person**, **Data product**, **Data asset** and the three role relations, which is all you need to assign responsibilities. Objects already on the canvas stay visible.
 
 **Check:** the Problems panel is empty, and **Check governance** reports the unused term only.
 
@@ -93,4 +93,4 @@ In the sample, **General ledger** is checked by two rules: "Ledger balances" pas
 
 ## Related
 
-[[tutorials-index]] · [[problems-panel]] · [[computed-values]] · [[constraints]] · [[scripts]] · [[menu-commands]]
+[[tutorials-index]] · [[data-governance]] · [[problems-panel]] · [[computed-values]] · [[constraints]] · [[scripts]] · [[menu-commands]]

@@ -57,7 +57,7 @@ An empty library says: "No shapes yet. Add one from a starter below, or create o
 
 ## Examples
 
-The Agent pipeline Kit has twelve shapes. Six draw objects: **Agent (bot)**, **Human (person)**, **Task (status stripe)**, **Artifact (document)**, **Gate (hexagon)** and **Stage (horizontal band)**. Six are lines: **Performs (dotted)**, **Hand-over (arrow)**, **Produces (arrow)**, **Feeds (arrow)**, **Approves (arrow)** and **Delegates (arrow)**. Every card shows "Hand drawn" and which class or relation class uses it. Press **Edit** on **Task (status stripe)** to see how it is drawn with a stripe whose colour follows the Status.
+The Agent pipeline Kit has twelve shapes. Six draw objects: **Agent (robot)**, **Human (person)**, **Task (colour by status)**, **Artifact (document)**, **Gate (hexagon)** and **Stage (horizontal band)**. Six are lines: **Performs (dotted)**, **Hand-over (arrow)**, **Produces (arrow)**, **Feeds (dashed arrow)**, **Approves (arrow)** and **Delegates (dotted arrow)**. Every card shows "Simple look" and which class or relation class uses it. Press **Edit appearance** on **Task (colour by status)** to see how its fill follows the Status.
 
 ## Good to know
 

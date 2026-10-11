@@ -104,7 +104,7 @@ test.describe('Guided tours', () => {
     // The written tutorials come from the docs.
     await expect(
       page.locator(
-        '[data-testid="written-tutorial"][data-topic="data-governance"]',
+        '[data-testid="written-tutorial"][data-topic="tutorial-data-governance"]',
       ),
     ).toBeVisible();
     await page.getByTestId('tour-start-first-steps').click();
@@ -206,7 +206,9 @@ test.describe('Guided tours', () => {
     await page.keyboard.press('F1');
     // A written tutorial opens in the Documentation area.
     await page
-      .locator('[data-testid="written-tutorial"][data-topic="data-governance"]')
+      .locator(
+        '[data-testid="written-tutorial"][data-topic="tutorial-data-governance"]',
+      )
       .click();
     await expect(page.getByTestId('docs-page')).toBeVisible();
     await expect(page.getByTestId('tutorials-page')).toHaveCount(0);
@@ -233,12 +235,12 @@ test.describe('Page tours', () => {
   }) => {
     await prepare(page);
     await newModel(page, 'Order process', 'Sales');
-    await page.getByTestId('back-to-explorer').click();
+    await page.getByTestId('crumb-area').click();
     await page.getByTestId('new-model').click();
     await page.getByTestId('new-model-name').fill('Old draft');
     await page.getByTestId('new-model-create').click();
     await expect(page.getByTestId('model-view')).toBeVisible();
-    await page.getByTestId('back-to-explorer').click();
+    await page.getByTestId('crumb-area').click();
     await page.getByLabel('Actions for Old draft').click();
     await page.getByRole('button', { name: 'Delete Old draft' }).click();
     await expect(page.getByTestId('trash')).toBeVisible();

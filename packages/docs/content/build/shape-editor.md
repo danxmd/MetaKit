@@ -89,14 +89,15 @@ The properties panel: [[shape-properties]].
 
 ## Examples
 
-The shape **Task (status stripe)** in the Agent pipeline Kit is 170 by 80 pixels, can be resized (at least 100 by 50) and has four parts:
+The built-in Kits draw with simple looks. To see the parts a look is made of, turn one into a drawing: in the Agent pipeline Kit, open the class Task, open **More ways to set the look**, press **Edit as drawing** and confirm. The shape **Task (colour by status)** is 170 by 80 pixels, can be resized and has five parts:
 
-1. A white rectangle with radius 8 and a dark border.
-2. A narrow rectangle 10 pixels wide down the left edge. Its fill is a formula that chooses a colour by Status.
-3. A text part showing `= $label`, the name of the object, shrinking to fit.
-4. A small text part at the bottom showing the Status, and ` · high` when Priority is High.
+1. A rectangle with radius 8 and a dark border. Its fill is a formula that chooses a colour by Status.
+2. A text part showing `= $label`, the name of the object, shrinking to fit.
+3. A small text part at the bottom showing `= Status`.
+4. A small red rectangle on the top right corner, visible only when `= Priority == 'High'`.
+5. The text `!` on that rectangle, with the same **Visible** formula.
 
-Open it with **Edit**. Select the stripe to see its **Fill colour** formula. To build a formula like it from a table of colours, use **Colour by attribute...** ([[shape-colour-helper]]).
+Select the body to see its **Fill colour** formula. **Colour by attribute...** reads it back as a table of colours ([[shape-colour-helper]]). To get the simple look back, press **Undo** in the Build header.
 
 ## Good to know
 

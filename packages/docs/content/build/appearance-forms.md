@@ -89,15 +89,16 @@ The default is **Automatic**. MetaKit chooses dark or light text depending on th
 
 ## Examples
 
-Ideas for rebuilding the classes of the Agent pipeline Kit as simple looks:
+How the shipped Agent pipeline Kit draws its classes with simple looks:
 
-- **Agent**: form **Person** with the icon **Robot**.
-- **Gate**: form **Hexagon**, title **Name of the object**, subtitle from the attribute `Decision`.
-- **Artifact**: form **Document**, subtitle from the attribute `ArtifactType`.
+- **Agent**: form **Rounded box** with the icon **Robot**, the subtitle from the attribute `AgentKind` and a thick border whose colour follows `Autonomy` ([[appearance-data-rules]]).
+- **Human**: form **Box** with the icon **Person** and the subtitle from `Team`.
+- **Task**: form **Rounded box**, with the fill and the subtitle following `Status` and a red mark when `Priority` is High.
+- **Artifact**: form **Document**, subtitle from the attribute `ArtifactType`, fill following `Status`.
+- **Gate**: form **Hexagon**, title **Name of the object**, fill following `Decision`.
 - **Stage**: form **Swimlane**, which is also what a class of the kind Swimlane starts with.
-- **Task**: form **Rounded box**, with the fill following `Status` ([[appearance-data-rules]]).
 
-The shipped Agent pipeline Kit draws these with hand-drawn shapes. The simple look reaches the same result in a few clicks.
+Open any of these classes in Build mode and press **Edit appearance** to see its settings. BPMN lite uses the forms **Circle** for its events and **Diamond** for its gateways; ER lite uses **Box with header** for entities (listing the description), **Circle** for attributes and **Diamond** for relationships.
 
 ## Good to know
 

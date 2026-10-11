@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, type ComponentProps } from 'svelte';
   import {
     closeDocs,
     DocsLayer,
@@ -13,7 +13,9 @@
   } from '@metakit-app/ui/docs';
   import {
     AppController,
+    provideDocumentBar,
     ReferenceIndex,
+    type DocumentBar,
     type ReferenceServices,
   } from '@metakit-app/ui';
   import type { ElementId, Kit } from '@metakit-app/core';
@@ -203,6 +205,75 @@
   };
 
   const folders = $derived(folderPaths(app.models));
+
+  // Location ------------------------------------------------------------------------------------
+
+  // The open model or Kit puts its name, save status and people into the top bar.
+  let documentBar = $state.raw<DocumentBar | null>(null);
+  provideDocumentBar((bar) => {
+    documentBar = bar;
+    return () => {
+      if (documentBar === bar) documentBar = null;
+    };
+  });
+
+  /** A crumb was chosen: the Models or Kits page, with nothing open. */
+  async function goToList(next: 'model' | 'build') {
+    docsArea = false;
+    tutorialsArea = false;
+    // Chosen first, so a click on Model or Build while the document closes still wins.
+    area = next;
+    if (app.open) await controller.closeModel();
+    if (app.build) await controller.closeBuild();
+  }
+
+  const crumbs = $derived.by(() => {
+    const list: ComponentProps<typeof TopBar>['crumbs'] = [
+      {
+        id: 'workspace',
+        label: app.workspaceName,
+        title: `Workspace ${app.workspaceName}: go to its models`,
+        testid: 'workspace-title',
+        onSelect: () => void goToList('model'),
+      },
+    ];
+    if (docsArea || tutorialsArea) {
+      list.push({
+        id: 'area',
+        label: docsArea ? 'Documentation' : 'Tutorials',
+      });
+      return list;
+    }
+    const model = app.phase === 'model' ? app.open : null;
+    const kit = app.phase === 'build' ? app.build : null;
+    const open = model ?? kit;
+    const here = area;
+    list.push({
+      id: 'area',
+      label: here === 'build' ? 'Kits' : 'Models',
+      onSelect: open ? () => void goToList(here) : undefined,
+    });
+    if (model)
+      list.push({
+        id: 'document',
+        label:
+          documentBar?.name ??
+          app.models.find((m) => m.slug === model.slug)?.name ??
+          '',
+        testid: 'model-name',
+        onRename: (name) => void controller.renameModel(model.slug, name),
+      });
+    else if (kit)
+      list.push({
+        id: 'document',
+        label:
+          documentBar?.name ??
+          app.kits.find((k) => k.slug === kit.slug)?.name ??
+          '',
+        testid: 'kit-name',
+      });
+    return list;
+  });
 
   // Help ----------------------------------------------------------------------------------------
 
@@ -440,13 +511,13 @@
 {:else}
   <div class="shell" data-testid="app-shell">
     <TopBar
-      workspaceName={app.workspaceName}
+      {crumbs}
+      status={docsArea || tutorialsArea ? undefined : documentBar?.status}
       {area}
       docsActive={docsArea}
       tutorialsActive={tutorialsArea}
       helpOpen={docs.open}
       onMode={chooseArea}
-      onDocs={() => showDocsArea(undefined)}
       onTutorials={showTutorials}
       onHelp={toggleDocs}
       onGit={() => controller.openGitSettings(true)}
@@ -464,12 +535,7 @@
         >
           {#if app.phase === 'build' && app.build}
             {#key app.build.slug}
-              <BuildView
-                {assistant}
-                {app}
-                {controller}
-                onBack={() => undefined}
-              />
+              <BuildView {assistant} {app} {controller} />
             {/key}
           {:else if app.phase === 'model' && app.open}
             {#key app.open.slug}
@@ -478,7 +544,6 @@
                 {controller}
                 {references}
                 registerOpenElement={(fn) => (selectElement = fn)}
-                onBack={() => controller.closeModel()}
               />
             {/key}
           {:else if area === 'build'}

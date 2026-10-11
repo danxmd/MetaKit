@@ -294,31 +294,31 @@
 <style>
   .form {
     display: grid;
-    gap: 0.8rem;
+    gap: var(--gap-3);
   }
   fieldset {
     border: 1px solid var(--line);
     border-radius: 6px;
     display: grid;
-    gap: 0.5rem;
-    padding: 0.6rem;
+    gap: var(--gap-2);
+    padding: var(--gap-2);
   }
   legend {
     font-weight: 600;
-    padding: 0 0.3rem;
+    padding: 0 var(--gap-1);
   }
   label {
     display: grid;
     gap: 0.15rem;
     font-size: 0.85rem;
-    color: var(--muted);
+    color: var(--text-muted);
   }
   .problem {
     color: var(--danger);
     margin: 0;
   }
   .hint {
-    color: var(--muted);
+    color: var(--text-muted);
   }
   .ok {
     color: var(--success);
@@ -333,11 +333,11 @@
   }
   .try {
     display: grid;
-    gap: 0.4rem;
+    gap: var(--gap-2);
     justify-items: start;
   }
   .result p {
-    margin: 0 0 0.3rem;
+    margin: 0 0 var(--gap-1);
   }
   .result ol {
     margin: 0;

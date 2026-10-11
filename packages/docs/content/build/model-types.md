@@ -65,7 +65,7 @@ Each view is a closed section named by its key. Open it to see:
 | Control | What it does |
 | --- | --- |
 | **Key** | The name of the view. Must be unique in this model type: The view key "Flow" is used twice in this model type. |
-| **Label** | The name modellers see in the view switcher. |
+| **Label** | The name modellers see in the **View** list at the top of the palette. |
 | **Classes** | Ticks among the classes allowed by the model type. |
 | **Relation classes** | Ticks among the relation classes allowed. |
 | **Delete view** | Removes the view. |

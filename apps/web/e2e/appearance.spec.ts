@@ -153,7 +153,7 @@ test('a first-time builder makes the Task look without a formula or a layer', as
   // A model of this Kit: a Task with Status Done draws green, and the mark follows Priority.
   await addItem(page, 'modelTypes', 'Pipeline map');
   await page.getByTestId('mt-class-Task').check();
-  await page.getByTestId('build-back').click();
+  await page.getByTestId('crumb-area').click();
   await page.getByTestId('mode-model').click();
   await page.getByTestId('new-model').click();
   await page

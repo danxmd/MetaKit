@@ -1,5 +1,5 @@
 ---
-id: data-ai-architecture
+id: tutorial-data-ai-architecture
 title: Map a data and AI platform
 category: tutorials
 summary: Draw a data platform from source to consumer with the Data and AI architecture Kit, see the personal-data warning, and list the lineage of a dataset.
@@ -85,7 +85,7 @@ All three are warnings: you can save and share the model, and the Problems list 
 
 ### The views
 
-The model type has two views ([[menu-view]]): **Data flow** shows zones, sources, ingestion, pipelines, stores, datasets and consumers with their flows; **AI** shows datasets, ML models, AI services and consumers with Trains on, Serves and Flows to.
+The model type has two palette views ([[palette#palette-view]]): **Data flow** shows zones, sources, ingestion, pipelines, stores, datasets and consumers with their flows; **AI** shows datasets, ML models, AI services and consumers with Trains on, Serves and Flows to.
 
 ## Examples
 
@@ -99,4 +99,4 @@ The sample "Customer 360 and churn model" has three zones. CRM, web events and b
 
 ## Related
 
-[[tutorials-index]] · [[quick-tour]] · [[constraints]] · [[behaviour-commands]] · [[scripts]] · [[problems-panel]]
+[[tutorials-index]] · [[data-ai-architecture]] · [[quick-tour]] · [[constraints]] · [[behaviour-commands]] · [[scripts]] · [[problems-panel]]

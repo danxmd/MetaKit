@@ -74,7 +74,7 @@
           "default": false
         }
       ],
-      "shape": "shp_task"
+      "shape": "shp_er_attribute"
     },
     "cls_relationship": {
       "id": "cls_relationship",
@@ -92,7 +92,7 @@
           "maxLength": 60
         }
       ],
-      "shape": "shp_task"
+      "shape": "shp_er_relationship"
     }
   },
   "relations": {
@@ -124,7 +124,7 @@
           "default": "N"
         }
       ],
-      "shape": "shp_flow"
+      "shape": "shp_er_participates"
     }
   },
   "modelTypes": {
@@ -177,14 +177,14 @@
   "shapes": {
     "shp_er_entity": {
       "id": "shp_er_entity",
-      "name": "ER entity",
+      "name": "Entity (box with header)",
       "kind": "node",
       "size": {
         "width": 150,
         "height": 100,
         "resizable": true,
-        "minWidth": 80,
-        "minHeight": 50
+        "minWidth": 40,
+        "minHeight": 28
       },
       "outline": "rect",
       "parts": [
@@ -194,6 +194,7 @@
           "y": 0,
           "width": "100%",
           "height": "100%",
+          "radius": 2,
           "fill": "#ffffff",
           "stroke": "#364fc7",
           "strokeWidth": 2
@@ -203,14 +204,16 @@
           "x": 0,
           "y": 0,
           "width": "100%",
-          "height": 26,
-          "fill": "#364fc7"
+          "height": 28,
+          "radius": 2,
+          "fill": "#364fc7",
+          "stroke": "#364fc7"
         },
         {
           "type": "text",
           "x": 8,
-          "y": 1,
-          "width": "100% - 16",
+          "y": 2,
+          "width": "100% - 36",
           "height": 24,
           "text": "= $label",
           "wrap": true,
@@ -225,76 +228,218 @@
         {
           "type": "text",
           "x": 8,
-          "y": 32,
+          "y": 34,
           "width": "100% - 16",
           "height": 16,
-          "text": "= item",
-          "wrap": false,
-          "font": {
-            "size": 11
-          },
-          "fill": "#495057",
-          "repeat": {
-            "over": "$fields",
-            "as": "item",
-            "layout": {
-              "kind": "stack",
-              "gap": 0
-            },
-            "cellHeight": 16
-          }
-        }
-      ]
-    },
-    "shp_task": {
-      "id": "shp_task",
-      "name": "Task (rounded box)",
-      "kind": "node",
-      "size": {
-        "width": 140,
-        "height": 70,
-        "resizable": true,
-        "minWidth": 60,
-        "minHeight": 36
-      },
-      "outline": "rect",
-      "parts": [
-        {
-          "type": "rect",
-          "x": 0,
-          "y": 0,
-          "width": "100%",
-          "height": "100%",
-          "radius": 10,
-          "fill": "= $fill",
-          "stroke": "#364fc7",
-          "strokeWidth": 1.5
-        },
-        {
-          "type": "text",
-          "x": 8,
-          "y": 4,
-          "width": "100% - 16",
-          "height": "100% - 8",
-          "text": "= $label",
+          "text": "= 'Description: ' + Description",
           "wrap": true,
           "fit": "shrink",
-          "align": "center",
-          "valign": "middle"
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
         }
-      ]
+      ],
+      "look": {
+        "base": "header-box",
+        "fill": "#364fc7",
+        "border": "#364fc7",
+        "borderWidth": 2,
+        "borderStyle": "solid",
+        "corner": 2,
+        "title": {
+          "attribute": null,
+          "bold": true
+        },
+        "fields": ["Description"],
+        "size": {
+          "width": 150,
+          "height": 100,
+          "resizable": true
+        }
+      }
     },
     "shp_flow": {
       "id": "shp_flow",
-      "name": "Flow (arrow)",
+      "name": "Has (line)",
       "kind": "relation",
       "line": {
         "stroke": "#6b7a90",
         "strokeWidth": 1.5,
-        "routing": "orthogonal"
+        "routing": "straight"
       },
-      "endMarker": {
-        "type": "arrow"
+      "look": {
+        "colour": "#6b7a90",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "straight",
+        "start": "none",
+        "end": "none",
+        "label": null
+      }
+    },
+    "shp_er_attribute": {
+      "id": "shp_er_attribute",
+      "name": "Attribute (ellipse)",
+      "kind": "node",
+      "size": {
+        "width": 120,
+        "height": 50,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "ellipse",
+      "parts": [
+        {
+          "type": "ellipse",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "fill": "= IsKey == true ? '#ffec99' : '#f8f9fa'",
+          "stroke": "= IsKey == true ? '#e67700' : '#364fc7'",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": "15%",
+          "y": "15%",
+          "width": "70%",
+          "height": "70%",
+          "text": "= $label",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {}
+        }
+      ],
+      "look": {
+        "base": "circle",
+        "fill": {
+          "by": "IsKey",
+          "values": {
+            "true": "#ffec99"
+          },
+          "fallback": "#f8f9fa"
+        },
+        "border": {
+          "by": "IsKey",
+          "values": {
+            "true": "#e67700"
+          },
+          "fallback": "#364fc7"
+        },
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": null
+        },
+        "size": {
+          "width": 120,
+          "height": 50,
+          "resizable": true
+        }
+      }
+    },
+    "shp_er_relationship": {
+      "id": "shp_er_relationship",
+      "name": "Relationship (diamond)",
+      "kind": "node",
+      "size": {
+        "width": 120,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          ["50%", 0],
+          ["100%", "50%"],
+          ["50%", "100%"],
+          [0, "50%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            ["50%", 0],
+            ["100%", "50%"],
+            ["50%", "100%"],
+            [0, "50%"]
+          ],
+          "fill": "#e5dbff",
+          "stroke": "#7048e8",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": "24%",
+          "y": "24%",
+          "width": "52%",
+          "height": "52%",
+          "text": "= $label",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {}
+        }
+      ],
+      "look": {
+        "base": "diamond",
+        "fill": "#e5dbff",
+        "border": "#7048e8",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": null
+        },
+        "size": {
+          "width": 120,
+          "height": 70,
+          "resizable": true
+        }
+      }
+    },
+    "shp_er_participates": {
+      "id": "shp_er_participates",
+      "name": "Participates in (line with cardinality)",
+      "kind": "relation",
+      "line": {
+        "stroke": "#7048e8",
+        "strokeWidth": 1.5,
+        "routing": "straight"
+      },
+      "labels": [
+        {
+          "at": "middle",
+          "text": "= Cardinality",
+          "font": {
+            "size": 11
+          },
+          "background": "#ffffff",
+          "visible": "= Cardinality != null"
+        }
+      ],
+      "look": {
+        "colour": "#7048e8",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "straight",
+        "start": "none",
+        "end": "none",
+        "label": {
+          "attribute": "Cardinality"
+        }
       }
     }
   },

@@ -101,7 +101,7 @@ The sample shows one warning on purpose: **Stock levels**, still in development,
 - **Domains and products are see-through.** Containers have no fill, so the lines between the ports and products inside them stay visible.
 - **One contract per output port** is the usual pattern. A product with several output ports can have a different contract, and version, on each.
 - **Global policies need no lines.** A global policy applies to every product. Draw **Governed by** only where you want to show that a product must follow it.
-- For ownership, stewardship and glossary terms in more depth, see the Data governance tutorial ([[data-governance]]).
+- For ownership, stewardship and glossary terms in more depth, see the Data governance tutorial ([[tutorial-data-governance]]).
 
 ## Related
 

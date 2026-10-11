@@ -160,6 +160,8 @@ export const TOURS: readonly Tour[] = [
         title: 'Connecting objects',
         text: 'Pick a relation, then click the first object and then the second one. Escape stops placing or connecting.',
         placement: 'right',
+        // The palette hides the Relations group when the model type or view offers none.
+        optional: true,
       },
       {
         anchor: 'model-canvas',
@@ -199,7 +201,7 @@ export const TOURS: readonly Tour[] = [
       {
         anchor: 'model-save',
         title: 'Save status',
-        text: 'MetaKit saves every change by itself. This shows Saving… and then Saved.',
+        text: 'MetaKit saves every change by itself. The top bar shows Saving… and then Saved.',
         placement: 'bottom',
       },
       {
@@ -209,9 +211,9 @@ export const TOURS: readonly Tour[] = [
         placement: 'bottom',
       },
       {
-        anchor: 'model-back',
-        title: 'Back to Models',
-        text: 'Returns to the list of models. The model stays as you left it.',
+        anchor: 'top-location',
+        title: 'Where you are',
+        text: 'The top bar shows the workspace, Models and this model. Choose Models to go back to the list, or click the name to rename the model.',
         placement: 'bottom',
       },
     ],
@@ -343,9 +345,9 @@ export const TOURS: readonly Tour[] = [
         optional: true,
       },
       {
-        anchor: 'build-back',
-        title: 'Back to Kits',
-        text: 'Returns to the Kits page. The Kit is already saved.',
+        anchor: 'top-location',
+        title: 'Where you are',
+        text: 'The top bar shows the workspace, Kits and this Kit, and that it is saved. Choose Kits to go back to the list; the name and version are in Settings.',
         placement: 'bottom',
       },
     ],
@@ -513,6 +515,8 @@ export const TOURS: readonly Tour[] = [
         title: 'Script editor',
         text: 'Write the script here; the editor completes names and marks mistakes. The console below shows what scripts print.',
         placement: 'left',
+        // Shown only once the Kit has a script.
+        optional: true,
       },
       {
         anchor: 'scripts-permissions',
@@ -526,19 +530,13 @@ export const TOURS: readonly Tour[] = [
     id: 'help-settings',
     title: 'Help and settings',
     summary:
-      'The Help side bar, the documentation, the appearance, your name and colour, Git and the assistant.',
+      'The Help side bar and the documentation, the appearance, your name and colour, Git and the assistant.',
     page: 'any',
     steps: [
       {
         anchor: 'top-help',
         title: 'Help side bar',
-        text: 'Help opens the topic for the page you are on, beside your work. F1 opens and closes it from anywhere.',
-        placement: 'bottom',
-      },
-      {
-        anchor: 'top-docs',
-        title: 'Documentation',
-        text: 'All help topics on a page of their own, with search. Your work stays open underneath.',
+        text: 'Help, or F1 from anywhere, opens the topic for the page you are on beside your work. Open in Documentation shows all topics on a page of their own, with search.',
         placement: 'bottom',
       },
       {

@@ -32,7 +32,7 @@ A model is stored in your [[concepts-workspace|workspace folder]] as a document 
 2. Place objects from the palette and connect them ([[placing-objects]], [[connecting-objects]]).
 3. Fill in attributes on the right.
 4. Watch the save status in the toolbar. It reads **Saving…** and then **Saved**.
-5. Use **← Models** to go back to the list.
+5. Click **Models** in the top bar to go back to the list.
 
 ## Every option explained
 

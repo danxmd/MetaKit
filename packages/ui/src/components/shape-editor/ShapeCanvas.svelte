@@ -2,6 +2,7 @@
   import { paintOps, type ImageCache } from '@metakit-app/canvas';
   import { hitTestParts, type PartBox } from '@metakit-app/shapes';
   import type { ShapeEditorModel } from '../../build/shape-editor-model';
+  import { canvasColors } from '../../theme/theme';
 
   let {
     model,
@@ -102,12 +103,11 @@
     const sh = size.height * zoom;
     // Theme colours are read at draw time so the canvas follows light and dark mode.
     const css = getComputedStyle(canvas);
-    const token = (name: string, fallback: string) =>
-      css.getPropertyValue(name).trim() || fallback;
-    const paper = token('--canvas-bg', '#ffffff');
-    const gridColour = token('--canvas-grid', '#f1f3f5');
-    const edgeColour = token('--canvas-grid-strong', '#adb5bd');
-    const selectColour = token('--canvas-selection', '#364fc7');
+    const colours = canvasColors((name) => css.getPropertyValue(name));
+    const paper = colours.background;
+    const gridColour = colours.grid;
+    const edgeColour = colours.gridStrong;
+    const selectColour = colours.selection;
     ctx.fillStyle = paper;
     ctx.fillRect(PAD, PAD, sw, sh);
     // A faint grid every 10 px of the shape; the drag snaps to whole pixels.
@@ -382,15 +382,15 @@
 <style>
   .stage {
     display: grid;
-    gap: 0.3rem;
+    gap: var(--gap-1);
     min-width: 0;
     min-height: 0;
   }
   .zoom {
     display: flex;
-    gap: 0.4rem;
+    gap: var(--gap-2);
     align-items: center;
-    font-size: 0.85rem;
+    font-size: var(--text-s);
   }
   .scroll {
     overflow: auto;

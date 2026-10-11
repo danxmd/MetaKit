@@ -36,7 +36,7 @@ A tab never counts its own presence file as someone else, even when a sync servi
 
 ## Where to find it
 
-In Model mode, to the right of the save word in the toolbar there is a row of round avatars. The first one is you, with your colour and the tooltip "Name (you)". Others who have the same model open follow. The tooltip is their name. The letters inside are the initials of the first two words of the name, or "?" if there is no name.
+In Model mode, to the right of the save word in the top bar there is a row of round avatars. The first one is you, with your colour and the tooltip "Name (you)". Others who have the same model open follow. The tooltip is their name. The letters inside are the initials of the first two words of the name, or "?" if there is no name.
 
 On the canvas, objects selected by other people get an outline in their colour, with their initials.
 

@@ -78,7 +78,7 @@
 <style>
   .import {
     display: grid;
-    gap: 0.4rem;
+    gap: var(--gap-2);
     align-content: start;
   }
   h3 {
@@ -95,7 +95,7 @@
   }
   legend {
     padding: 0;
-    color: var(--muted, var(--text-muted));
+    color: var(--text-muted);
   }
   .file {
     display: grid;
@@ -113,6 +113,6 @@
     margin: 0;
     padding-left: 1.1rem;
     font-size: 0.8rem;
-    color: var(--muted, var(--text-muted));
+    color: var(--text-muted);
   }
 </style>

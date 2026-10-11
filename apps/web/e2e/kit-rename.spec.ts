@@ -83,7 +83,7 @@ test.describe('data from before the Kit rename', () => {
     expect(Object.keys((await model(page)).elements)).toHaveLength(count + 1);
 
     // Build mode lists the older Kit, and a new Kit goes to kits/.
-    await page.getByTestId('back-to-explorer').click();
+    await page.getByTestId('crumb-area').click();
     await page.getByTestId('mode-build').click();
     await expect(page.getByTestId('kits-page')).toContainText('BPMN lite');
     await page.getByTestId('new-kit').click();

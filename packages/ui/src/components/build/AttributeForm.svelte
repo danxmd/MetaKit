@@ -465,8 +465,8 @@
 <style>
   .form {
     display: grid;
-    gap: 0.6rem;
-    padding: 0.6rem 0.8rem;
+    gap: var(--gap-2);
+    padding: var(--gap-2) var(--gap-3);
     background: var(--surface-2);
     border-radius: 6px;
   }
@@ -477,12 +477,12 @@
   }
   label.inline {
     display: inline-flex;
-    gap: 0.4rem;
+    gap: var(--gap-2);
     align-items: center;
   }
   .row {
     display: flex;
-    gap: 0.8rem;
+    gap: var(--gap-3);
     flex-wrap: wrap;
     align-items: center;
   }
@@ -490,11 +490,11 @@
     border: 1px solid var(--line);
     border-radius: 6px;
     display: flex;
-    gap: 0.8rem;
+    gap: var(--gap-3);
     flex-wrap: wrap;
   }
   .muted {
-    color: var(--muted);
+    color: var(--text-muted);
     margin: 0;
     font-size: 0.85rem;
   }

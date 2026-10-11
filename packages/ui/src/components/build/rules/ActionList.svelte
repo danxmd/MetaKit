@@ -464,46 +464,46 @@
   .actions {
     list-style: none;
     padding: 0;
-    margin: 0 0 0.4rem;
+    margin: 0 0 var(--gap-2);
     display: grid;
-    gap: 0.5rem;
+    gap: var(--gap-2);
   }
   li {
     border: 1px solid var(--line);
     border-radius: 6px;
-    padding: 0.5rem;
+    padding: var(--gap-2);
     display: grid;
-    gap: 0.4rem;
+    gap: var(--gap-2);
   }
   .head {
     display: flex;
-    gap: 0.3rem;
+    gap: var(--gap-1);
   }
   .head select {
     flex: 1;
   }
   .fields {
     display: grid;
-    gap: 0.35rem;
+    gap: var(--gap-1);
   }
   label {
     display: grid;
     gap: 0.15rem;
     font-size: 0.85rem;
-    color: var(--muted);
+    color: var(--text-muted);
   }
   .pair {
     display: flex;
-    gap: 0.3rem;
-    margin-bottom: 0.25rem;
+    gap: var(--gap-1);
+    margin-bottom: var(--gap-1);
   }
   .pair input {
     flex: 1;
   }
   .branch {
     border-left: 3px solid var(--line);
-    padding-left: 0.6rem;
+    padding-left: var(--gap-2);
     display: grid;
-    gap: 0.3rem;
+    gap: var(--gap-1);
   }
 </style>

@@ -62,48 +62,49 @@
     A rule reacts when something happens in a model: when it, if the condition
     is true, then its actions.
   </p>
-  {#if rules.length === 0}<p class="muted" data-testid="rules-empty">
-      No rules yet.
-    </p>{/if}
-  <ul>
-    {#each rules as r (r.id)}
-      <li class="card" class:selected={selected === r.id}>
-        <div class="line">
-          <label class="switch">
-            <input
-              type="checkbox"
-              checked={r.enabled !== false}
-              onchange={(e) =>
-                exec({
-                  type: 'putRule',
-                  rule: { ...r, enabled: e.currentTarget.checked },
-                })}
-              aria-label="{r.label} is on"
-              data-testid="rule-enabled-{r.id}"
-            />
-          </label>
-          <button
-            type="button"
-            class="name"
-            onclick={() => (selected = selected === r.id ? null : r.id)}
-            aria-expanded={selected === r.id}
-            data-testid="rule-row-{r.id}"
-            data-tour="rules-row"
-          >
-            <strong>{r.label}</strong>
-            <span class="muted">{eventLabel(r.when.event)}</span>
-          </button>
-          <button
-            type="button"
-            class="ghost danger"
-            onclick={() => remove(r)}
-            aria-label="Delete {r.label}"
-            data-testid="rule-delete-{r.id}">Delete</button
-          >
-        </div>
-      </li>
-    {/each}
-  </ul>
+  {#if rules.length === 0}
+    <p class="muted" data-testid="rules-empty">No rules yet.</p>
+  {:else}
+    <ul>
+      {#each rules as r (r.id)}
+        <li class="card" class:selected={selected === r.id}>
+          <div class="line">
+            <label class="switch">
+              <input
+                type="checkbox"
+                checked={r.enabled !== false}
+                onchange={(e) =>
+                  exec({
+                    type: 'putRule',
+                    rule: { ...r, enabled: e.currentTarget.checked },
+                  })}
+                aria-label="{r.label} is on"
+                data-testid="rule-enabled-{r.id}"
+              />
+            </label>
+            <button
+              type="button"
+              class="name"
+              onclick={() => (selected = selected === r.id ? null : r.id)}
+              aria-expanded={selected === r.id}
+              data-testid="rule-row-{r.id}"
+              data-tour="rules-row"
+            >
+              <strong>{r.label}</strong>
+              <span class="muted">{eventLabel(r.when.event)}</span>
+            </button>
+            <button
+              type="button"
+              class="ghost danger"
+              onclick={() => remove(r)}
+              aria-label="Delete {r.label}"
+              data-testid="rule-delete-{r.id}">Delete</button
+            >
+          </div>
+        </li>
+      {/each}
+    </ul>
+  {/if}
   <div class="add" data-tour="rules-add">
     <button type="button" class="primary" onclick={add} data-testid="rule-add"
       >Add rule</button
@@ -135,12 +136,12 @@
 <style>
   .rules {
     display: grid;
-    gap: 0.6rem;
+    gap: var(--gap-2);
     justify-items: start;
   }
   .add {
     display: flex;
-    gap: 0.5rem;
+    gap: var(--gap-2);
     align-items: center;
   }
   h2 {
@@ -154,7 +155,7 @@
     padding: 0;
     margin: 0;
     display: grid;
-    gap: 0.3rem;
+    gap: var(--gap-1);
     width: 100%;
   }
   li {
@@ -171,7 +172,7 @@
   .name {
     flex: 1;
     display: flex;
-    gap: 0.6rem;
+    gap: var(--gap-2);
     align-items: baseline;
     text-align: left;
     border-color: transparent;
@@ -182,7 +183,7 @@
     align-items: center;
   }
   .muted {
-    color: var(--muted);
+    color: var(--text-muted);
     font-size: 0.85rem;
   }
   .ghost.danger {
@@ -195,6 +196,6 @@
   .editor {
     width: 100%;
     border-top: 1px solid var(--line);
-    padding-top: 0.8rem;
+    padding-top: var(--gap-3);
   }
 </style>

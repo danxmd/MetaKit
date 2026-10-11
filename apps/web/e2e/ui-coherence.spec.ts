@@ -51,7 +51,7 @@ test.describe('Deleting', () => {
   test('a model goes to the trash and Undo restores it', async ({ page }) => {
     await prepare(page);
     await newModel(page, 'Gone soon');
-    await page.getByTestId('back-to-explorer').click();
+    await page.getByTestId('crumb-area').click();
     await expect(page.getByTestId('models-page')).toBeVisible();
     await page
       .locator('[data-testid^=model-actions-]')
@@ -105,5 +105,75 @@ test.describe('Menus', () => {
     await expect(
       header.locator('details.menu[open] summary', { hasText: 'Edit' }),
     ).toBeVisible();
+  });
+});
+
+test.describe('Location bar', () => {
+  test('leaves the model with a menu open in one click on Models', async ({
+    page,
+  }) => {
+    await prepare(page);
+    await newModel(page);
+    const header = page.getByTestId('model-header');
+    await header.locator('summary', { hasText: 'View' }).click();
+    await expect(header.locator('details.menu[open]')).toHaveCount(1);
+    await page.getByTestId('crumb-area').click();
+    await expect(page.getByTestId('models-page')).toBeVisible();
+    await expect(page.locator('details.menu[open]')).toHaveCount(0);
+  });
+
+  test('shows where you are and renames the model from the last crumb', async ({
+    page,
+  }) => {
+    await prepare(page);
+    await newModel(page, 'Order process');
+    const location = page.getByRole('navigation', { name: 'Location' });
+    await expect(location.getByTestId('crumb-area')).toHaveText('Models');
+    await expect(page.getByTestId('model-name')).toHaveText('Order process');
+    // The model view has the top bar and one toolbar above the canvas, nothing more.
+    const top = (await page.getByTestId('top-bar').boundingBox())!;
+    const tools = (await page.getByTestId('model-header').boundingBox())!;
+    const canvas = (await page.getByTestId('canvas-host').boundingBox())!;
+    expect(tools.y).toBeLessThanOrEqual(top.y + top.height + 1);
+    expect(canvas.y).toBeLessThanOrEqual(tools.y + tools.height + 1);
+
+    // Escape keeps the name; Enter renames.
+    await page.getByTestId('crumb-document').click();
+    await page.getByTestId('crumb-rename').fill('Something else');
+    await page.keyboard.press('Escape');
+    await expect(page.getByTestId('model-name')).toHaveText('Order process');
+    await page.getByTestId('crumb-document').click();
+    await page.getByTestId('crumb-rename').fill('Order handling');
+    await page.keyboard.press('Enter');
+    await expect(page.getByTestId('model-name')).toHaveText('Order handling');
+    await page.getByTestId('crumb-workspace').click();
+    await expect(page.getByTestId('models-page')).toBeVisible();
+    await expect(page.getByRole('tree')).toContainText('Order handling');
+    await expect(page.getByTestId('crumb-document')).toHaveCount(0);
+  });
+
+  test('a Kit keeps its name and version in Settings, and Kits leads back', async ({
+    page,
+  }) => {
+    await openNewKit(page);
+    await expect(page.getByTestId('crumb-area')).toHaveText('Kits');
+    await expect(page.getByTestId('kit-name')).toHaveText('Coherent');
+    await expect(page.getByTestId('build-name')).toHaveCount(0);
+    await page.getByTestId('build-tab-settings').click();
+    await page.getByTestId('build-name').fill('Coherent notation');
+    await page.getByTestId('build-name').press('Tab');
+    await expect(page.getByTestId('kit-name')).toHaveText('Coherent notation');
+    await page.getByTestId('build-version').fill('one');
+    await page.getByTestId('build-version').press('Tab');
+    await expect(page.getByTestId('settings-editor')).toContainText(
+      'A version looks like 1.0.0.',
+    );
+    await page.getByTestId('build-version').fill('1.1.0');
+    await page.getByTestId('build-version').press('Tab');
+    await expect(page.getByTestId('build-status')).toHaveText('Saved');
+    await page.getByTestId('crumb-area').click();
+    await expect(page.getByTestId('kits-page')).toContainText(
+      'Coherent notation',
+    );
   });
 });

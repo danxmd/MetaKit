@@ -523,12 +523,12 @@
 
 <style>
   .editor {
-    padding: 0.5rem 0.75rem;
+    padding: var(--gap-2) var(--gap-3);
     font-size: 0.85rem;
   }
   header {
     display: flex;
-    gap: 0.4rem;
+    gap: var(--gap-2);
     align-items: center;
   }
   header h3 {
@@ -542,19 +542,19 @@
     padding: 0;
   }
   ul ul {
-    padding-left: 1rem;
+    padding-left: var(--gap-4);
   }
   .tabs > li {
     border: 1px solid var(--line);
     border-radius: 4px;
-    padding: 0.35rem 0.5rem;
-    margin: 0.5rem 0;
+    padding: var(--gap-1) var(--gap-2);
+    margin: var(--gap-2) 0;
   }
   .tabs > li.active {
     border-color: var(--accent);
   }
   .group {
-    margin-top: 0.25rem;
+    margin-top: var(--gap-1);
   }
   .row {
     display: flex;
@@ -568,18 +568,18 @@
     border: none;
     background: none;
     cursor: pointer;
-    padding: 0.15rem 0.25rem;
+    padding: 0.15rem var(--gap-1);
     border-radius: 3px;
   }
   .row .name:hover {
-    background: var(--hover);
+    background: var(--hover-bg);
   }
   .details {
     display: grid;
-    gap: 0.35rem;
-    padding: 0.4rem;
-    margin: 0.2rem 0 0.4rem;
-    background: var(--hover);
+    gap: var(--gap-1);
+    padding: var(--gap-2);
+    margin: 0.2rem 0 var(--gap-2);
+    background: var(--hover-bg);
     border-radius: 4px;
   }
   .details label {
@@ -589,7 +589,7 @@
   .condition {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.35rem;
+    gap: var(--gap-1);
     align-items: center;
   }
   .condition .cname {
@@ -598,7 +598,7 @@
   }
   .condition label {
     display: flex;
-    gap: 0.25rem;
+    gap: var(--gap-1);
   }
   .formula {
     flex: 1;
@@ -619,15 +619,15 @@
     margin: 0.2rem 0;
   }
   .note {
-    color: var(--muted);
+    color: var(--text-muted);
   }
   .relations {
     display: flex;
-    gap: 0.35rem;
-    margin: 0.6rem 0;
+    gap: var(--gap-1);
+    margin: var(--gap-2) 0;
   }
   h4 {
-    margin: 0.8rem 0 0.2rem;
+    margin: var(--gap-3) 0 0.2rem;
   }
   .unplaced li {
     display: flex;

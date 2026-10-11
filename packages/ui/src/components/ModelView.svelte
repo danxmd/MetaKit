@@ -64,6 +64,8 @@
   import HintLine from './HintLine.svelte';
   import SuggestionCard from './SuggestionCard.svelte';
   import ModelToolbar from './ModelToolbar.svelte';
+  import DocumentStatus from './DocumentStatus.svelte';
+  import { useDocumentBar } from '../shell/document-bar';
   import PaletteList from './Palette.svelte';
 
   let {
@@ -71,14 +73,12 @@
     controller,
     references,
     registerOpenElement,
-    onBack,
   }: {
     app: AppState;
     controller: ControllerPort;
     references: ReferenceServices;
     /** Lets the app select an element after switching to this model (from a reference "Open"). */
     registerOpenElement: (fn: (id: ElementId) => void) => void;
-    onBack: () => void;
   } = $props();
 
   // The app mounts one ModelView per open model (keyed by its folder), so these never change.
@@ -264,6 +264,21 @@
     }
     return 'Saved';
   });
+
+  const saveText = $derived(
+    app.save === 'saved'
+      ? 'Saved'
+      : app.save === 'saving'
+        ? 'Saving…'
+        : 'Not saved',
+  );
+
+  // The name and the status go into the top bar; only a new name updates the crumbs.
+  const showDocumentBar = useDocumentBar();
+  const documentName = $derived(model.manifest.name);
+  $effect(() =>
+    showDocumentBar({ name: documentName, status: documentStatus }),
+  );
 
   /** Switching the palette view is an event: rules may cancel it, and hear when it happened. */
   function changeView(select: HTMLSelectElement) {
@@ -852,30 +867,30 @@
   onclick={() => (contextMenu = null)}
 />
 
+{#snippet documentStatus()}
+  <DocumentStatus
+    {saveText}
+    saveBad={app.save === 'error'}
+    syncText={statusText}
+    me={{
+      instance: app.me.instance,
+      name: app.me.name,
+      colour: app.me.colour,
+      initials: initials(app.me.name),
+    }}
+    people={here.map((p) => ({
+      instance: p.instance,
+      name: p.name,
+      colour: p.colour,
+      initials: initials(p.name),
+    }))}
+    tour="model"
+  />
+{/snippet}
+
 <div class="workbench" data-testid="model-view">
   <div class="bar">
     <ModelToolbar
-      name={model.manifest.name}
-      saveText={app.save === 'saved'
-        ? 'Saved'
-        : app.save === 'saving'
-          ? 'Saving…'
-          : 'Not saved'}
-      saveBad={app.save === 'error'}
-      syncText={statusText}
-      me={{
-        instance: app.me.instance,
-        name: app.me.name,
-        colour: app.me.colour,
-        initials: initials(app.me.name),
-      }}
-      people={here.map((p) => ({
-        instance: p.instance,
-        name: p.name,
-        colour: p.colour,
-        initials: initials(p.name),
-      }))}
-      {onBack}
       {canUndo}
       {canRedo}
       onUndo={() => editor.undo()}
@@ -892,9 +907,6 @@
       onDistribute={(axis) => editor.distribute(axis)}
       onAutoLayout={autoLayout}
       onExport={() => (exportOpen = true)}
-      views={palette.views.map((v) => ({ id: v.id, label: labelOf(v) }))}
-      {viewId}
-      onViewChange={changeView}
       {minimapOn}
       onToggleMinimap={toggleMinimap}
       {assist}
@@ -956,6 +968,8 @@
       onConnect={chooseConnect}
       onDragClass={dragStart}
       onHover={(target) => (paletteHover = target)}
+      {viewId}
+      onViewChange={changeView}
     />
   </div>
 

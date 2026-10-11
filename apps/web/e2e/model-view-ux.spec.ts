@@ -70,7 +70,7 @@ test.describe('the toolbar menus', () => {
     // The quick buttons stay on the bar, with names for screen readers.
     for (const name of ['Undo', 'Redo', 'Zoom in', 'Zoom out', 'Fit to window'])
       await expect(header.getByRole('button', { name })).toBeVisible();
-    await expect(page.getByTestId('back-to-explorer')).toBeVisible();
+    await expect(page.getByTestId('crumb-area')).toBeVisible();
     await expect(page.getByTestId('model-name')).toHaveText(
       'Code review pipeline',
     );

@@ -1,6 +1,5 @@
 import { expect, test } from '@playwright/test';
 import { canvasPoint, model, newModel, prepare, kitJson } from './app';
-import { openMenu } from './menus';
 
 test.describe('start and explorer', () => {
   test('opens a workspace and reaches an empty model in no more than five clicks', async ({
@@ -113,7 +112,7 @@ test.describe('start and explorer', () => {
   }) => {
     await prepare(page);
     await newModel(page, 'Alpha', 'Sales/2026');
-    await page.getByTestId('back-to-explorer').click();
+    await page.getByTestId('crumb-area').click();
     await expect(page.getByTestId('folder-Sales')).toBeVisible();
     await expect(page.getByTestId('folder-Sales/2026')).toBeVisible();
 
@@ -191,11 +190,56 @@ test.describe('model view', () => {
     await newModel(page);
     const all = await page.locator('[data-testid^="palette-class-"]').count();
     expect(all).toBeGreaterThan(0);
-    await openMenu(page, 'View');
-    await page.getByTestId('view-switcher').selectOption({ index: 1 });
+    // The view switch sits at the top of the palette.
+    const switcher = page.getByTestId('palette').getByTestId('view-switcher');
+    await switcher.selectOption({ index: 1 });
     const filtered = await page
       .locator('[data-testid^="palette-class-"]')
       .count();
     expect(filtered).toBeLessThanOrEqual(all);
+  });
+
+  test('hides empty palette groups and says when a view offers nothing', async ({
+    page,
+  }) => {
+    const kit = JSON.parse(kitJson) as {
+      modelTypes: Record<string, { views: unknown[] }>;
+    };
+    const process = kit.modelTypes['mt_process']!;
+    process.views.push(
+      {
+        id: 'vw_objects',
+        key: 'ObjectsOnly',
+        labels: { en: 'Objects only' },
+        classes: ['cls_task'],
+        relations: [],
+      },
+      {
+        id: 'vw_nothing',
+        key: 'Nothing',
+        labels: { en: 'Nothing' },
+        classes: [],
+        relations: [],
+      },
+    );
+    await prepare(page, { kit: JSON.stringify(kit) });
+    await newModel(page);
+    const palette = page.getByTestId('palette');
+    const heading = (name: string) =>
+      palette.getByRole('heading', { name, exact: true });
+    await expect(heading('Relations')).toBeVisible();
+
+    await palette.getByTestId('view-switcher').selectOption('vw_objects');
+    await expect(heading('Objects')).toBeVisible();
+    await expect(heading('Relations')).toHaveCount(0);
+    await expect(palette.getByTestId('palette-empty')).toHaveCount(0);
+
+    await palette.getByTestId('view-switcher').selectOption('vw_nothing');
+    await expect(heading('Objects')).toHaveCount(0);
+    await expect(palette.getByTestId('palette-empty')).toHaveText(
+      'No objects in this view',
+    );
+    // Select stays, so the person can always leave a placing tool.
+    await expect(page.getByTestId('tool-select')).toBeVisible();
   });
 });

@@ -173,10 +173,10 @@
 <style>
   .panel {
     display: grid;
-    gap: 0.5rem;
+    gap: var(--gap-2);
     align-content: start;
     overflow: auto;
-    padding: 0.5rem 0.75rem;
+    padding: var(--gap-2) var(--gap-3);
   }
   h3 {
     margin: 0;
@@ -186,17 +186,17 @@
     border: 1px solid var(--line, var(--line));
     border-radius: 6px;
     margin: 0;
-    padding: 0.3rem 0.6rem 0.5rem;
+    padding: var(--gap-1) var(--gap-2) var(--gap-2);
   }
   legend {
     font-size: 0.8rem;
-    color: var(--muted, var(--text-muted));
-    padding: 0 0.3rem;
+    color: var(--text-muted);
+    padding: 0 var(--gap-1);
   }
   .line {
     display: grid;
     grid-template-columns: 5rem 1fr;
-    gap: 0.4rem;
+    gap: var(--gap-2);
     align-items: center;
     padding: 0.1rem 0;
     font-size: 0.85rem;
@@ -210,7 +210,7 @@
   .hint {
     margin: 0;
     font-size: 0.85rem;
-    color: var(--muted, var(--text-muted));
+    color: var(--text-muted);
   }
   .problem {
     margin: 0;

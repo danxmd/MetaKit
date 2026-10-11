@@ -232,7 +232,7 @@
       },
       "extends": "cls_flownode",
       "attributes": [],
-      "shape": "shp_event"
+      "shape": "shp_end_event"
     },
     "cls_lane": {
       "id": "cls_lane",
@@ -370,8 +370,8 @@
         "width": 140,
         "height": 70,
         "resizable": true,
-        "minWidth": 60,
-        "minHeight": 36
+        "minWidth": 40,
+        "minHeight": 28
       },
       "outline": "rect",
       "parts": [
@@ -382,7 +382,7 @@
           "width": "100%",
           "height": "100%",
           "radius": 10,
-          "fill": "= $fill",
+          "fill": "#e7f5ff",
           "stroke": "#364fc7",
           "strokeWidth": 1.5
         },
@@ -396,9 +396,61 @@
           "wrap": true,
           "fit": "shrink",
           "align": "center",
-          "valign": "middle"
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {}
+        },
+        {
+          "type": "rect",
+          "x": "100% - 34",
+          "y": -6,
+          "width": 30,
+          "height": 16,
+          "radius": 8,
+          "fill": "#e03131",
+          "visible": "= Priority == 'High'"
+        },
+        {
+          "type": "text",
+          "x": "100% - 34",
+          "y": -6,
+          "width": 30,
+          "height": 16,
+          "text": "!",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#ffffff",
+          "font": {
+            "size": 10,
+            "weight": 600
+          },
+          "visible": "= Priority == 'High'"
         }
-      ]
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": "#e7f5ff",
+        "border": "#364fc7",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "corner": 10,
+        "title": {
+          "attribute": null
+        },
+        "badge": {
+          "attribute": "Priority",
+          "equals": "High",
+          "text": "!",
+          "colour": "#e03131"
+        },
+        "size": {
+          "width": 140,
+          "height": 70,
+          "resizable": true
+        }
+      }
     },
     "shp_gateway": {
       "id": "shp_gateway",
@@ -409,7 +461,7 @@
         "height": 70,
         "resizable": true,
         "minWidth": 40,
-        "minHeight": 40
+        "minHeight": 28
       },
       "outline": {
         "type": "polygon",
@@ -429,34 +481,51 @@
             ["50%", "100%"],
             [0, "50%"]
           ],
-          "fill": "= $fill",
-          "stroke": "#364fc7",
+          "fill": "#fff9db",
+          "stroke": "#e67700",
           "strokeWidth": 1.5
         },
         {
           "type": "text",
-          "x": "22%",
-          "y": "22%",
-          "width": "56%",
-          "height": "56%",
+          "x": "24%",
+          "y": "24%",
+          "width": "52%",
+          "height": "52%",
           "text": "= $label",
           "wrap": true,
           "fit": "shrink",
           "align": "center",
-          "valign": "middle"
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {}
         }
-      ]
+      ],
+      "look": {
+        "base": "diamond",
+        "fill": "#fff9db",
+        "border": "#e67700",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": null
+        },
+        "size": {
+          "width": 70,
+          "height": 70,
+          "resizable": true
+        }
+      }
     },
     "shp_event": {
       "id": "shp_event",
-      "name": "Event (circle)",
+      "name": "Start event (circle)",
       "kind": "node",
       "size": {
         "width": 60,
         "height": 60,
         "resizable": true,
-        "minWidth": 30,
-        "minHeight": 30
+        "minWidth": 40,
+        "minHeight": 28
       },
       "outline": "ellipse",
       "parts": [
@@ -466,8 +535,8 @@
           "y": 0,
           "width": "100%",
           "height": "100%",
-          "fill": "= $fill",
-          "stroke": "#364fc7",
+          "fill": "#ebfbee",
+          "stroke": "#2f9e44",
           "strokeWidth": 1.5
         },
         {
@@ -480,9 +549,26 @@
           "wrap": true,
           "fit": "shrink",
           "align": "center",
-          "valign": "middle"
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {}
         }
-      ]
+      ],
+      "look": {
+        "base": "circle",
+        "fill": "#ebfbee",
+        "border": "#2f9e44",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": null
+        },
+        "size": {
+          "width": 60,
+          "height": 60,
+          "resizable": true
+        }
+      }
     },
     "shp_swimlane": {
       "id": "shp_swimlane",
@@ -492,8 +578,8 @@
         "width": 600,
         "height": 160,
         "resizable": true,
-        "minWidth": 200,
-        "minHeight": 80
+        "minWidth": 40,
+        "minHeight": 28
       },
       "outline": "rect",
       "parts": [
@@ -503,7 +589,7 @@
           "y": 0,
           "width": "100%",
           "height": "100%",
-          "fill": "#ffffff",
+          "fill": "#ffffff00",
           "stroke": "#364fc7",
           "strokeWidth": 1.5
         },
@@ -513,7 +599,7 @@
           "y": 0,
           "width": 28,
           "height": "100%",
-          "fill": "= $fill",
+          "fill": "#dbe4ff",
           "stroke": "#364fc7",
           "strokeWidth": 1.5
         },
@@ -524,9 +610,11 @@
           "width": 160,
           "height": 28,
           "text": "= $label",
+          "wrap": true,
+          "fit": "shrink",
           "align": "center",
           "valign": "middle",
-          "wrap": false,
+          "fill": "#1b1f27",
           "font": {
             "weight": 600
           },
@@ -534,11 +622,27 @@
             "rotate": -90
           }
         }
-      ]
+      ],
+      "look": {
+        "base": "swimlane",
+        "fill": "#dbe4ff",
+        "border": "#364fc7",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": null,
+          "bold": true
+        },
+        "size": {
+          "width": 600,
+          "height": 160,
+          "resizable": true
+        }
+      }
     },
     "shp_flow": {
       "id": "shp_flow",
-      "name": "Flow (arrow)",
+      "name": "Sequence flow (arrow)",
       "kind": "relation",
       "line": {
         "stroke": "#6b7a90",
@@ -547,6 +651,82 @@
       },
       "endMarker": {
         "type": "arrow"
+      },
+      "labels": [
+        {
+          "at": "middle",
+          "text": "= Condition",
+          "font": {
+            "size": 11
+          },
+          "background": "#ffffff",
+          "visible": "= Condition != null"
+        }
+      ],
+      "look": {
+        "colour": "#6b7a90",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": {
+          "attribute": "Condition"
+        }
+      }
+    },
+    "shp_end_event": {
+      "id": "shp_end_event",
+      "name": "End event (thick circle)",
+      "kind": "node",
+      "size": {
+        "width": 60,
+        "height": 60,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "ellipse",
+      "parts": [
+        {
+          "type": "ellipse",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "fill": "#fff5f5",
+          "stroke": "#c92a2a",
+          "strokeWidth": 3.5
+        },
+        {
+          "type": "text",
+          "x": "15%",
+          "y": "15%",
+          "width": "70%",
+          "height": "70%",
+          "text": "= $label",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {}
+        }
+      ],
+      "look": {
+        "base": "circle",
+        "fill": "#fff5f5",
+        "border": "#c92a2a",
+        "borderWidth": 3.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": null
+        },
+        "size": {
+          "width": 60,
+          "height": 60,
+          "resizable": true
+        }
       }
     }
   },

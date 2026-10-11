@@ -1,17 +1,31 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, type Snippet } from 'svelte';
   import { pageTheme, type ThemePreference } from '../theme/theme';
   import { menuBehaviour } from '../shell/menu-action';
   import BrandMark from './BrandMark.svelte';
+  import Icon from './Icon.svelte';
+
+  /** One step of the location: the workspace, Models or Kits, the open document. */
+  interface Crumb {
+    id: 'workspace' | 'area' | 'document';
+    label: string;
+    title?: string;
+    /** Goes to that page; every crumb but the last has it. */
+    onSelect?: () => void;
+    /** The last crumb can be renamed in place (the open model). */
+    onRename?: (name: string) => void;
+    /** A test id for the label, kept from before the breadcrumb. */
+    testid?: string;
+  }
 
   let {
-    workspaceName,
+    crumbs,
+    status,
     area,
     docsActive = false,
     tutorialsActive = false,
     helpOpen = false,
     onMode,
-    onDocs,
     onTutorials,
     onHelp,
     onGit,
@@ -19,7 +33,9 @@
     onProfile,
     onCloseWorkspace,
   }: {
-    workspaceName: string;
+    crumbs: Crumb[];
+    /** Save or sync status and people of the open document, filled by its view. */
+    status?: Snippet;
     area: 'model' | 'build';
     /** The Documentation area is showing: neither Model nor Build is current. */
     docsActive?: boolean;
@@ -27,7 +43,6 @@
     tutorialsActive?: boolean;
     helpOpen?: boolean;
     onMode: (area: 'model' | 'build') => void;
-    onDocs: () => void;
     onTutorials: () => void;
     onHelp: () => void;
     onGit: () => void;
@@ -43,6 +58,24 @@
   let preference = $state<ThemePreference>(theme.preference);
   onMount(() => theme.subscribe((p) => (preference = p)));
 
+  let renaming = $state(false);
+  // A rename left open ends when the document closes.
+  $effect(() => {
+    if (!crumbs.at(-1)?.onRename) renaming = false;
+  });
+
+  function finishRename(crumb: Crumb, input: HTMLInputElement, keep: boolean) {
+    if (!renaming) return;
+    renaming = false;
+    const name = input.value.trim();
+    if (keep && name !== '' && name !== crumb.label) crumb.onRename?.(name);
+  }
+
+  function focusAll(node: HTMLInputElement) {
+    node.focus();
+    node.select();
+  }
+
   const choices: { id: ThemePreference; label: string }[] = [
     { id: 'system', label: 'System' },
     { id: 'light', label: 'Light' },
@@ -55,10 +88,67 @@
     <BrandMark size={22} />
     <strong>MetaKit</strong>
   </div>
-  <span class="workspace" title="Workspace folder">
-    <span class="muted">Workspace</span>
-    <span class="name" data-testid="workspace-title">{workspaceName}</span>
-  </span>
+  <nav class="crumbs" aria-label="Location" data-tour="top-location">
+    <ol>
+      {#each crumbs as crumb, i (crumb.id)}
+        {@const last = i === crumbs.length - 1}
+        <li class={crumb.id}>
+          {#if i > 0}<span class="sep" aria-hidden="true">›</span>{/if}
+          {#if last && crumb.onRename && renaming}
+            <input
+              class="rename"
+              value={crumb.label}
+              aria-label="Name"
+              use:focusAll
+              onkeydown={(e) => {
+                if (e.key === 'Enter')
+                  finishRename(crumb, e.currentTarget, true);
+                else if (e.key === 'Escape') {
+                  e.stopPropagation();
+                  finishRename(crumb, e.currentTarget, false);
+                }
+              }}
+              onblur={(e) => finishRename(crumb, e.currentTarget, true)}
+              data-testid="crumb-rename"
+            />
+          {:else if last && crumb.onRename}
+            <button
+              type="button"
+              class="ghost link"
+              aria-current="page"
+              title="{crumb.label}: click to rename"
+              onclick={() => (renaming = true)}
+              data-testid="crumb-{crumb.id}"
+              ><span class="label" data-testid={crumb.testid}
+                >{crumb.label}</span
+              ></button
+            >
+          {:else if !last && crumb.onSelect}
+            <button
+              type="button"
+              class="ghost link"
+              title={crumb.title ?? crumb.label}
+              onclick={crumb.onSelect}
+              data-testid="crumb-{crumb.id}"
+              ><span class="label" data-testid={crumb.testid}
+                >{crumb.label}</span
+              ></button
+            >
+          {:else}
+            <span
+              class="here"
+              aria-current="page"
+              title={crumb.title ?? crumb.label}
+              data-testid="crumb-{crumb.id}"
+              ><span class="label" data-testid={crumb.testid}
+                >{crumb.label}</span
+              ></span
+            >
+          {/if}
+        </li>
+      {/each}
+    </ol>
+  </nav>
 
   <div
     class="segmented-control mode"
@@ -82,6 +172,10 @@
 
   <span class="spacer"></span>
 
+  {#if status}
+    <div class="status" data-testid="document-status">{@render status()}</div>
+  {/if}
+
   <button
     type="button"
     class="ghost tutorials-btn"
@@ -93,22 +187,12 @@
   >
   <button
     type="button"
-    class="ghost docs-btn"
-    aria-current={docsActive ? 'page' : undefined}
-    onclick={onDocs}
-    title="Read the documentation"
-    data-testid="open-docs"
-    data-tour="top-docs">Docs</button
-  >
-  <button
-    type="button"
     class="ghost help"
     aria-pressed={helpOpen}
     onclick={onHelp}
     title="Help for this page (F1)"
     data-testid="toggle-help"
-    data-tour="top-help"
-    ><span class="mark" aria-hidden="true">?</span> Help</button
+    data-tour="top-help"><Icon name="help" /> Help</button
   >
 
   <details class="menu" use:menuBehaviour data-testid="settings-menu">
@@ -171,34 +255,88 @@
     border-bottom: 1px solid var(--line);
   }
   .brand {
+    flex: none;
     display: flex;
     align-items: center;
     gap: var(--gap-2);
     color: var(--text-strong);
   }
-  .workspace {
-    display: flex;
-    gap: var(--gap-2);
-    align-items: baseline;
+  .crumbs {
+    flex: 0 1 auto;
     min-width: 0;
-    font-size: var(--text-s);
-    padding-left: var(--gap-4);
+    padding-left: var(--gap-3);
     border-left: 1px solid var(--line);
   }
-  .name {
+  .crumbs ol {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--text-s);
+  }
+  .crumbs li {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+  }
+  .crumbs li.area {
+    flex: none;
+  }
+  .sep {
+    padding: 0 var(--gap-1);
+    color: var(--text-faint);
+  }
+  .link,
+  .here {
+    display: flex;
+    min-width: 0;
+    padding: 0.2rem var(--gap-2);
+  }
+  .link {
+    color: var(--text-muted);
+  }
+  .here,
+  .link[aria-current='page'] {
     color: var(--text-strong);
     font-weight: 600;
+  }
+  /* Long names are cut short; the full name is in the window title of the button. */
+  .label {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+  .workspace .label {
+    max-width: 12rem;
+  }
+  .document .label {
+    max-width: 22rem;
+  }
+  .rename {
+    width: 16rem;
+    min-width: 0;
+    font-size: var(--text-s);
+  }
+  /* Only the crumbs give way on a narrow window; the status keeps its size. */
+  .status {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: var(--gap-2);
+  }
   .mode {
-    margin-left: var(--gap-3);
+    flex: none;
+    margin-left: var(--gap-2);
+  }
+  .top-bar > :global(details),
+  .top-bar > button {
+    flex: none;
   }
   .spacer {
     flex: 1;
   }
-  .docs-btn[aria-current='page'],
   .tutorials-btn[aria-current='page'] {
     color: var(--accent);
     background: var(--accent-soft);
@@ -207,17 +345,10 @@
     color: var(--accent);
     background: var(--accent-soft);
   }
-  .mark {
-    display: inline-grid;
-    place-items: center;
-    width: 1.15rem;
-    height: 1.15rem;
-    margin-right: 0.15rem;
-    border: 1.5px solid currentColor;
-    border-radius: 50%;
-    font-size: 0.7rem;
-    font-weight: 700;
-    line-height: 1;
+  .help {
+    display: flex;
+    align-items: center;
+    gap: var(--gap-1);
   }
   .theme {
     padding: var(--gap-1) var(--gap-2);

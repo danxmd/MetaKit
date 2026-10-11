@@ -18,6 +18,7 @@
     onClose: () => void;
   } = $props();
 
+  // Suggested colours for the values: they become part of the shape, so they are data, not theme.
   const PALETTE = [
     '#D93025',
     '#F29900',
@@ -167,38 +168,34 @@
 
 <style>
   dialog {
-    border: 1px solid var(--line, var(--line));
-    border-radius: 10px;
-    padding: 1.25rem 1.5rem;
     min-width: 22rem;
   }
   form {
     display: grid;
-    gap: 0.8rem;
+    gap: var(--gap-3);
   }
   h2 {
     margin: 0;
-    font-size: 1.1rem;
+    font-size: var(--text-l);
   }
   label {
     display: grid;
-    gap: 0.25rem;
-    font-size: 0.9rem;
+    gap: var(--gap-1);
   }
   table {
     border-collapse: collapse;
   }
   th {
     text-align: left;
-    font-size: 0.8rem;
-    color: var(--muted, var(--text-muted));
+    font-size: var(--text-s);
+    color: var(--text-muted);
   }
   td {
-    padding: 0.2rem 0.5rem 0.2rem 0;
+    padding: var(--gap-1) var(--gap-2) var(--gap-1) 0;
   }
   .colour {
     display: flex;
-    gap: 0.4rem;
+    gap: var(--gap-2);
     align-items: center;
   }
   .colour input[type='text'] {
@@ -207,12 +204,12 @@
   .actions {
     display: flex;
     justify-content: flex-end;
-    gap: 0.5rem;
+    gap: var(--gap-2);
   }
   .notice {
     margin: 0;
-    padding: 0.5rem 0.7rem;
-    border-radius: 6px;
+    padding: var(--gap-2) var(--gap-3);
+    border-radius: var(--radius);
     background: var(--warning-soft);
   }
 </style>

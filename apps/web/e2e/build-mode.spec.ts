@@ -71,7 +71,7 @@ test.describe('Build mode', () => {
     await expect(page.getByTestId('preview-place-Entity')).toBeVisible();
 
     // Back to the explorer, then a model made with the new Kit.
-    await page.getByTestId('build-back').click();
+    await page.getByTestId('crumb-area').click();
     await page.getByTestId('mode-model').click();
     await page.getByTestId('new-model').click();
     await page
