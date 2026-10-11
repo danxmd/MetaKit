@@ -149,10 +149,17 @@ test.describe('Help side bar', () => {
       await page.getByTestId(`build-tab-${tab}`).click();
       await context(page).toHaveAttribute('data-context', ctx);
     }
-    // The "?" next to the section opens the topic of the section.
-    await page.getByTestId('build-help').click();
-    await expect(panel(page)).toBeVisible();
-    await expect(panel(page)).toHaveAttribute('data-context', 'build.classes');
+    // Help opens at the topic of the section; there is no second help button in Build.
+    await page.getByTestId('toggle-help').click();
+    await expect(panel(page)).toHaveCount(0);
+    await page.getByTestId('build-tab-rules').click();
+    await page.getByTestId('toggle-help').click();
+    await context(page).toHaveAttribute('data-context', 'build.rules');
+    await expect(page.getByTestId('docs-reader')).toHaveAttribute(
+      'data-topic',
+      'rules',
+    );
+    await expect(page.getByTestId('build-help')).toHaveCount(0);
   });
 
   test('a dialog reports its context and gives it back when it closes', async ({
@@ -173,7 +180,7 @@ test.describe('Help side bar', () => {
 });
 
 test.describe('Documentation area', () => {
-  test('opens from the top bar and brings back the open model unchanged', async ({
+  test('opens from the Help side bar and brings back the open model unchanged', async ({
     page,
   }) => {
     await prepare(page);
@@ -186,13 +193,12 @@ test.describe('Documentation area', () => {
       };
       w.__kept = w.__metakit.store;
     });
-    await page.getByTestId('open-docs').click();
+    await page.getByTestId('toggle-help').click();
+    await page.getByTestId('docs-open-area').click();
     await expect(page.getByTestId('docs-page')).toBeVisible();
     await expect(page.getByTestId('model-view')).toBeHidden();
-    await expect(page.getByTestId('open-docs')).toHaveAttribute(
-      'aria-current',
-      'page',
-    );
+    await expect(page.getByTestId('open-docs')).toHaveCount(0);
+    await expect(page.getByTestId('crumb-area')).toHaveText('Documentation');
     await expect(page.getByTestId('mode-model')).not.toHaveAttribute(
       'aria-current',
       'page',
@@ -242,7 +248,8 @@ test.describe('Documentation area', () => {
   }) => {
     await prepare(page);
     await page.getByTestId('open-folder').click();
-    await page.getByTestId('open-docs').click();
+    await page.getByTestId('toggle-help').click();
+    await page.getByTestId('docs-open-area').click();
     await expect(page.getByTestId('docs-group-start')).toContainText(
       'Getting started',
     );

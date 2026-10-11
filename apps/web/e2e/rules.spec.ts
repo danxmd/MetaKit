@@ -93,7 +93,7 @@ test.describe('Rules', () => {
     await expect(page.getByTestId('rule-error')).toHaveCount(0);
 
     // A model with the Kit.
-    await page.getByTestId('build-back').click();
+    await page.getByTestId('crumb-area').click();
     await page.getByTestId('mode-model').click();
     await page.getByTestId('new-model').click();
     await page

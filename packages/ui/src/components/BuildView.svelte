@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { DocContext } from '@metakit-app/docs';
-  import { openDocs, pushDocsContext } from '../docs/context';
+  import { pushDocsContext } from '../docs/context';
   import {
     effectiveAttributes,
     effectiveRelationAttributes,
@@ -18,6 +18,8 @@
   import { menuBehaviour } from '../shell/menu-action';
   import { tours, type TourRun } from '../tours/tour-state';
   import Icon from './Icon.svelte';
+  import DocumentStatus from './DocumentStatus.svelte';
+  import { useDocumentBar } from '../shell/document-bar';
   import { confirmAction } from '../shell/feedback';
   import { provideBuildUndo, useBuildUndo } from '../build/undo-context';
   import type { AssistantPort } from '../assistant/assistant-service';
@@ -47,12 +49,10 @@
   let {
     app,
     controller,
-    onBack,
     assistant,
   }: {
     app: AppState;
     controller: BuildPort;
-    onBack: () => void;
     /** The optional assistant; the "Draft with assistant" buttons appear only when it is on. */
     assistant?: AssistantPort;
   } = $props();
@@ -88,19 +88,6 @@
     { id: 'behaviour', title: 'Behaviour', sections: ['rules', 'scripts'] },
     { id: 'kit', title: 'Kit', sections: ['settings'] },
   ];
-  // The topic the "?" button of the header opens for each page of Build mode.
-  const HELP_TOPIC: Partial<Record<DocContext, string>> = {
-    'build.classes': 'classes',
-    'build.relations': 'relations',
-    'build.modelTypes': 'model-types',
-    'build.shapes': 'shapes-section',
-    'build.rules': 'rules',
-    'build.scripts': 'scripts',
-    'build.settings': 'kit-settings',
-    'build.panel-layout': 'panel-layout',
-    'build.appearance': 'appearance-editor',
-    'build.shape-editor': 'shape-editor',
-  };
   const NEW_LABEL: Record<string, string> = {
     classes: 'New class',
     relations: 'New relation class',
@@ -396,19 +383,6 @@
     } else overlay = { kind: 'shape', id };
   }
 
-  function rename(text: string) {
-    if (text.trim() === '' || text === kit.manifest.name) return;
-    run({ type: 'updateManifest', name: text.trim() } as never);
-  }
-  function setVersion(text: string) {
-    if (text === kit.manifest.version) return;
-    if (!/^\d+\.\d+\.\d+([-+][0-9A-Za-z.-]+)?$/.test(text)) {
-      message = 'A version looks like 1.0.0.';
-      return;
-    }
-    run({ type: 'updateManifest', version: text } as never);
-  }
-
   const status = $derived(
     app.sync.error
       ? app.sync.error
@@ -417,37 +391,24 @@
         : 'Saved',
   );
 
-  async function back() {
-    await controller.closeBuild();
-    onBack();
-  }
+  // The Kit's name and save status go into the top bar.
+  const showDocumentBar = useDocumentBar();
+  const documentName = $derived(kit.manifest.name);
+  $effect(() =>
+    showDocumentBar({ name: documentName, status: documentStatus }),
+  );
 </script>
+
+{#snippet documentStatus()}
+  <DocumentStatus
+    saveText={status}
+    saveBad={!!app.sync.error}
+    testid="build-status"
+  />
+{/snippet}
 
 <div class="build" data-testid="build-view">
   <header class="bar">
-    <button
-      type="button"
-      class="ghost"
-      onclick={back}
-      data-testid="build-back"
-      data-tour="build-back">← Kits</button
-    >
-    <input
-      class="name"
-      value={kit.manifest.name}
-      onchange={(e) => rename(e.currentTarget.value)}
-      aria-label="Kit name"
-      data-testid="build-name"
-    />
-    <label class="version"
-      >Version <input
-        value={kit.manifest.version}
-        onchange={(e) => setVersion(e.currentTarget.value)}
-        data-testid="build-version"
-      /></label
-    >
-    <span class="status" data-testid="build-status">{status}</span>
-    <span class="spacer"></span>
     <button
       type="button"
       class="icon ghost"
@@ -506,14 +467,6 @@
         </div>
       </details>
     {/if}
-    <button
-      type="button"
-      class="icon"
-      onclick={() => openDocs(HELP_TOPIC[docsContextNow])}
-      title="Help on this section"
-      aria-label="Help on this section"
-      data-testid="build-help">?</button
-    >
     <button
       type="button"
       aria-pressed={showPreview}
@@ -854,31 +807,12 @@
   }
   .bar {
     display: flex;
+    justify-content: flex-end;
     gap: var(--gap-2);
     align-items: center;
-    padding: var(--gap-2) var(--gap-4);
+    padding: var(--gap-1) var(--gap-4);
     background: var(--surface);
     border-bottom: 1px solid var(--line);
-  }
-  .name {
-    font-size: var(--text-m);
-    font-weight: 650;
-    min-width: 12rem;
-  }
-  .version {
-    display: flex;
-    gap: var(--gap-2);
-    align-items: center;
-  }
-  .version input {
-    width: 6rem;
-  }
-  .spacer {
-    flex: 1;
-  }
-  .status {
-    color: var(--text-muted);
-    font-size: var(--text-s);
   }
   .repo {
     padding: 0.2rem 0.6rem;

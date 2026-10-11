@@ -67,7 +67,7 @@ test.describe('Built-in and workspace Kits', () => {
     // It opens in Build with the classes of the original.
     await expect(page.getByTestId('build-view')).toBeVisible();
     await expect(page.getByTestId('build-item-Agent')).toBeVisible();
-    await page.getByTestId('build-back').click();
+    await page.getByTestId('crumb-area').click();
 
     const ours = page.getByTestId('workspace-kits').locator('li.kit', {
       hasText: 'Our agents',
@@ -86,7 +86,7 @@ test.describe('Built-in and workspace Kits', () => {
     await page.getByTestId('new-kit-name').fill('Our agents, team B');
     await page.getByTestId('new-kit-create').click();
     await expect(page.getByTestId('build-view')).toBeVisible();
-    await page.getByTestId('build-back').click();
+    await page.getByTestId('crumb-area').click();
     await expect(
       page
         .getByTestId('workspace-kits')
@@ -111,7 +111,7 @@ test.describe('Built-in and workspace Kits', () => {
     await expect(page.getByTestId('model-view')).toBeVisible();
     await expect(page.getByTestId('palette-class-Entity')).toBeVisible();
 
-    await page.getByTestId('back-to-explorer').click();
+    await page.getByTestId('crumb-area').click();
     await page.getByTestId('mode-build').click();
     await expect(page.getByTestId('built-in-added-tool_erlite')).toBeVisible();
   });

@@ -4,12 +4,6 @@
   import { menuBehaviour } from '../shell/menu-action';
   import Icon from './Icon.svelte';
 
-  interface Person {
-    instance: string;
-    name: string;
-    colour: string;
-    initials: string;
-  }
   interface Command {
     id: string;
     label: string;
@@ -17,13 +11,6 @@
   type AlignMode = 'left' | 'centre' | 'right' | 'top' | 'middle' | 'bottom';
 
   let {
-    name,
-    saveText,
-    saveBad,
-    syncText,
-    me,
-    people,
-    onBack,
     canUndo,
     canRedo,
     onUndo,
@@ -58,13 +45,6 @@
     onRunCommand,
     trailing,
   }: {
-    name: string;
-    saveText: string;
-    saveBad: boolean;
-    syncText: string;
-    me: Person;
-    people: Person[];
-    onBack: () => void;
     canUndo: boolean;
     canRedo: boolean;
     onUndo: () => void;
@@ -113,56 +93,6 @@
 </script>
 
 <header class="header" data-testid="model-header">
-  <div class="top">
-    <button
-      class="ghost back"
-      onclick={onBack}
-      data-testid="back-to-explorer"
-      data-tour="model-back"
-      title="Back to all models">← Models</button
-    >
-    <h2 class="name" data-testid="model-name">{name}</h2>
-    <span
-      class="status"
-      class:bad={saveBad}
-      data-testid="save-status"
-      data-tour="model-save">{saveText}</span
-    >
-    <span
-      class="status sync"
-      class:visually-hidden={syncText === saveText}
-      data-testid="sync-status"
-      title={syncText}>{syncText}</span
-    >
-    <ul
-      class="people"
-      aria-label="People in this model"
-      data-testid="people"
-      data-tour="model-people"
-    >
-      <li
-        class="avatar me"
-        style="background:{me.colour}"
-        title="{me.name} (you)"
-        data-testid="avatar-me"
-      >
-        {me.initials}
-      </li>
-      {#each people as person (person.instance)}
-        <li
-          class="avatar"
-          style="background:{person.colour}"
-          title={person.name}
-          data-testid="avatar-{person.instance}"
-        >
-          {person.initials}
-        </li>
-      {/each}
-    </ul>
-    <span class="grow"></span>
-    {@render trailing?.()}
-  </div>
-
   <div
     class="tools"
     role="toolbar"
@@ -365,52 +295,23 @@
         >
       {/each}
     {/if}
+
+    <span class="grow"></span>
+    {@render trailing?.()}
   </div>
 </header>
 
 <style>
   .header {
-    display: grid;
     background: var(--surface);
     border-bottom: 1px solid var(--line);
   }
-  .top,
   .tools {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: var(--gap-2);
     padding: var(--gap-2) var(--gap-4);
-    min-width: 0;
-  }
-  .top {
-    padding-bottom: var(--gap-1);
-  }
-  .tools {
-    padding-top: var(--gap-1);
-    flex-wrap: wrap;
-  }
-  .back {
-    flex: none;
-    color: var(--text-muted);
-  }
-  .name {
-    font-size: var(--text-l);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 24rem;
-  }
-  .status {
-    color: var(--text-muted);
-    font-size: var(--text-s);
-    white-space: nowrap;
-  }
-  .status.bad {
-    color: var(--danger);
-  }
-  .sync {
-    overflow: hidden;
-    text-overflow: ellipsis;
     min-width: 0;
   }
   .grow {
@@ -421,31 +322,6 @@
     height: 1.2rem;
     background: var(--line);
     margin: 0 var(--gap-1);
-  }
-  .people {
-    display: flex;
-    list-style: none;
-    margin: 0 0 0 var(--gap-2);
-    padding: 0;
-  }
-  .avatar {
-    width: 1.7rem;
-    height: 1.7rem;
-    border-radius: 50%;
-    /* Text on the person's own colour, which is chosen by them and always mid to strong. */
-    color: #fff;
-    font-size: 0.7rem;
-    font-weight: 700;
-    display: grid;
-    place-items: center;
-    border: 2px solid var(--surface);
-    margin-left: -0.35rem;
-  }
-  .avatar:first-child {
-    margin-left: 0;
-  }
-  .avatar.me {
-    outline: 2px solid var(--line-strong);
   }
   .keys {
     float: right;
@@ -465,10 +341,5 @@
   }
   .view-picker .menu-heading {
     padding: var(--gap-1) 0 0;
-  }
-  @media (max-width: 1100px) {
-    .name {
-      max-width: 12rem;
-    }
   }
 </style>

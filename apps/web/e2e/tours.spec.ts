@@ -233,12 +233,12 @@ test.describe('Page tours', () => {
   }) => {
     await prepare(page);
     await newModel(page, 'Order process', 'Sales');
-    await page.getByTestId('back-to-explorer').click();
+    await page.getByTestId('crumb-area').click();
     await page.getByTestId('new-model').click();
     await page.getByTestId('new-model-name').fill('Old draft');
     await page.getByTestId('new-model-create').click();
     await expect(page.getByTestId('model-view')).toBeVisible();
-    await page.getByTestId('back-to-explorer').click();
+    await page.getByTestId('crumb-area').click();
     await page.getByLabel('Actions for Old draft').click();
     await page.getByRole('button', { name: 'Delete Old draft' }).click();
     await expect(page.getByTestId('trash')).toBeVisible();
