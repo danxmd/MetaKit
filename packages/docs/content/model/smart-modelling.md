@@ -54,7 +54,7 @@ Then click as the message says. See [[connecting-objects]].
 
 - It opens only with the **Select** tool and while no mouse button is down. It closes at once if you start dragging or editing text.
 - Hovering over the card keeps it open. Hovering over a row highlights the matching objects on the canvas.
-- If you chose a palette view, only the relations and kinds of that view are offered. See [[menu-view]].
+- If you chose a palette view, only the relations and kinds of that view are offered. See [[palette#palette-view]].
 - Abstract classes are not offered as kinds. Their concrete subclasses are, so the abstract **Actor** shows up as **Agent** and **Human**.
 
 ## Examples

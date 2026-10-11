@@ -40,9 +40,6 @@
     onDistribute,
     onAutoLayout,
     onExport,
-    views,
-    viewId,
-    onViewChange,
     minimapOn,
     onToggleMinimap,
     assist,
@@ -81,9 +78,6 @@
     onDistribute: (axis: 'horizontal' | 'vertical') => void;
     onAutoLayout: () => void;
     onExport: () => void;
-    views: { id: string; label: string }[];
-    viewId: string;
-    onViewChange: (select: HTMLSelectElement) => void;
     minimapOn: boolean;
     onToggleMinimap: () => void;
     /** Help while modelling; a preference of the person, not part of the model. */
@@ -229,21 +223,6 @@
           data-testid="assist-smart"
           >{assist.smart ? '✓ ' : ''}Smart modelling</button
         >
-        {#if views.length > 0}
-          <div class="menu-sep"></div>
-          <label class="view-picker">
-            <span class="menu-heading">Palette view</span>
-            <select
-              value={viewId}
-              onchange={(e) => onViewChange(e.currentTarget)}
-              data-testid="view-switcher"
-            >
-              <option value="">All</option>
-              {#each views as v (v.id)}<option value={v.id}>{v.label}</option
-                >{/each}
-            </select>
-          </label>
-        {/if}
       </div>
     </details>
 
@@ -457,14 +436,6 @@
     margin-left: var(--gap-2);
     background: var(--accent-soft);
     color: var(--accent);
-  }
-  .view-picker {
-    display: grid;
-    gap: var(--gap-1);
-    padding: 0 var(--gap-2) var(--gap-2);
-  }
-  .view-picker .menu-heading {
-    padding: var(--gap-1) 0 0;
   }
   @media (max-width: 1100px) {
     .name {

@@ -83,7 +83,7 @@ Select the **Merge** task and drag from its edge to the gate **Code review**. On
 
 ## Good to know
 
-- Only relations that are in the active palette view can be used. Switch the view to **All** if a connection is refused unexpectedly. See [[menu-view]].
+- Only relations that are in the active palette view can be used. Switch the view to **All** at the top of the palette if a connection is refused unexpectedly. See [[palette#palette-view]].
 - Rules about how many connections an object must or may have (cardinality) are not enforced while drawing. They show up as warnings in the [[problems-panel]].
 - You can draw several connections between the same two objects.
 - Deleting an object deletes the connections attached to it. Undo restores both.

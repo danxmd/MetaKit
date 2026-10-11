@@ -36,7 +36,7 @@ Many things in a Kit have a **Label** and some have a **Help text**: classes, re
 | Class help text | The palette preview that appears when the pointer rests on the class ([[palette-preview]]). |
 | Relation class label | The palette and the palette preview. |
 | Model type label | The list when creating a model. |
-| View label | The view switcher of the model. |
+| View label | The **View** list at the top of the palette. |
 | Attribute label | The name of the field in the attribute panel ([[attribute-panel]]). |
 | Attribute help text | A tooltip on the field name and a line under the field. |
 | Option label | The choice list instead of the stored value. |

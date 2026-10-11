@@ -892,9 +892,6 @@
       onDistribute={(axis) => editor.distribute(axis)}
       onAutoLayout={autoLayout}
       onExport={() => (exportOpen = true)}
-      views={palette.views.map((v) => ({ id: v.id, label: labelOf(v) }))}
-      {viewId}
-      onViewChange={changeView}
       {minimapOn}
       onToggleMinimap={toggleMinimap}
       {assist}
@@ -956,6 +953,8 @@
       onConnect={chooseConnect}
       onDragClass={dragStart}
       onHover={(target) => (paletteHover = target)}
+      {viewId}
+      onViewChange={changeView}
     />
   </div>
 

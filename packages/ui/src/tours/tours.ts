@@ -160,6 +160,8 @@ export const TOURS: readonly Tour[] = [
         title: 'Connecting objects',
         text: 'Pick a relation, then click the first object and then the second one. Escape stops placing or connecting.',
         placement: 'right',
+        // The palette hides the Relations group when the model type or view offers none.
+        optional: true,
       },
       {
         anchor: 'model-canvas',

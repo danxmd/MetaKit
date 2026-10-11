@@ -85,7 +85,7 @@ All three are warnings: you can save and share the model, and the Problems list 
 
 ### The views
 
-The model type has two views ([[menu-view]]): **Data flow** shows zones, sources, ingestion, pipelines, stores, datasets and consumers with their flows; **AI** shows datasets, ML models, AI services and consumers with Trains on, Serves and Flows to.
+The model type has two palette views ([[palette#palette-view]]): **Data flow** shows zones, sources, ingestion, pipelines, stores, datasets and consumers with their flows; **AI** shows datasets, ML models, AI services and consumers with Trains on, Serves and Flows to.
 
 ## Examples
 

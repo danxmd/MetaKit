@@ -1,6 +1,5 @@
 import { expect, test } from '@playwright/test';
 import { canvasPoint, model, newModel, prepare, kitJson } from './app';
-import { openMenu } from './menus';
 
 test.describe('start and explorer', () => {
   test('opens a workspace and reaches an empty model in no more than five clicks', async ({
@@ -191,8 +190,11 @@ test.describe('model view', () => {
     await newModel(page);
     const all = await page.locator('[data-testid^="palette-class-"]').count();
     expect(all).toBeGreaterThan(0);
-    await openMenu(page, 'View');
-    await page.getByTestId('view-switcher').selectOption({ index: 1 });
+    // The view switch sits at the top of the palette.
+    const switcher = page
+      .getByTestId('palette')
+      .getByTestId('view-switcher');
+    await switcher.selectOption({ index: 1 });
     const filtered = await page
       .locator('[data-testid^="palette-class-"]')
       .count();

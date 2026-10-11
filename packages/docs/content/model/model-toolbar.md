@@ -18,7 +18,7 @@ The toolbar gives you every action that is not a direct mouse gesture on the can
 | --- | --- | --- |
 | **File** | Export as image or PDF | [[menu-file]] |
 | **Edit** | Undo, redo, find, select all, delete | [[menu-edit]] |
-| **View** | Zoom, minimap, assistance, palette view | [[menu-view]] |
+| **View** | Zoom, minimap, assistance | [[menu-view]] |
 | **Arrange** | Align, distribute, auto-layout | [[menu-arrange]] |
 | **Check** | Problems, script console | [[menu-check]] |
 | **Commands** | Commands that rules and scripts add | [[menu-commands]] |
@@ -70,7 +70,6 @@ All other items are always available. Toolbar buttons that come from the Kit are
 - A menu is a list under its name. You open it with a click, or with the keyboard: **Tab** to the name and press **Enter** or **Space**.
 - Choosing an item closes the menu. Choosing a grey item does nothing and leaves it open.
 - The tick (✓) in front of **Minimap**, **Interaction hints** and **Smart modelling** shows that the option is on. Clicking toggles it.
-- The **Palette view** list in the **View** menu is a drop-down inside the menu. Choosing a view changes the palette at once.
 - Shortcuts shown on the right of an item (for example **Ctrl+F** next to **Find**) are only reminders. Pressing them works with the menu closed.
 
 ### What is remembered
