@@ -8,3 +8,5 @@ pnpm-lock.yaml
 dist/
 # Written by releases before the Kit rename, byte for byte (ADR 0011).
 packages/storage/fixtures/
+# Written by `pnpm looks:build`; looks.test.ts checks it against looks.ts.
+packages/ui/src/theme/looks.css

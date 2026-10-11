@@ -34,6 +34,7 @@ If a task seems to require breaking a rule, stop and ask. Record agreed changes 
 - Git mode (ADR 0007): a Git Kit is a normal workspace Kit plus a `GitLink` in IndexedDB. `GitRemote` (`packages/storage/src/git/remote.ts`) is the only hosting interface; GitHub and GitLab implement it with their REST APIs and tests use `MemoryRemote`. Tokens live only in IndexedDB (`TokenStore`). Pulls merge per file and field and are applied as one batch of Kit commands. E2E tests replace the services through `__METAKIT_TEST__.gitRemote`.
 - The assistant (ADR 0008, `packages/assistant`) is off by default, uses the person's own key from IndexedDB, sends the Kit definition only, and loads `@anthropic-ai/sdk` lazily. Drafts are validated, then accepted as one undoable batch of Kit commands.
 - Documentation (`packages/docs`, OpenSpec `in-app-documentation`): topics are Markdown files in `packages/docs/content/<category>/<id>.md`, shown in the Help side bar (F1, opens at the current page's topic) and the Docs area. Pages report their context through `setDocsContext`; every context in `contexts.ts` needs a topic and `pnpm test` fails on broken `[[links]]`. **When you change a page, a menu or a function, update its topic in the same change.** Tutorials go in `content/tutorials/`.
+- Looks (OpenSpec `looks`): `packages/ui/src/theme/looks.ts` defines Workshop (default), Drafting, Meadow and Classic as token maps; `looks.css` is generated from it and `data-look`, `data-theme` and `data-mode` on `<html>` select the values. Components read tokens only, never a look id. Fonts are self-hosted WOFF2 under `theme/fonts/`.
 - Build mode edits the Kit through Kit commands (`putClass`, `putAttribute`, `renameKey`, ...); the editors never write state directly.
 - Kit rename in files (ADR 0011): new Kits go to `kits/<slug>/kit.json` with `kit_` ids; Kits in `tools/<slug>/tool.json` are read and edited in place, never moved. Readers accept the old names (`tool_` ids, `kind: "tool"`, `manifest/tool` registers, `.mktool`, Git `tool.json`, `toolSlug`, `toolPermissions`); writers use only the new ones. Stored names live in `packages/storage/src/names.ts`; files of older formats are kept in `packages/storage/fixtures/before-kit-rename/`, and e2e tests seed them with `prepare(page, { layout: 'before-kit-rename' })`.
 
@@ -92,6 +93,7 @@ Keep this section current whenever scripts change.
 - `pnpm bench`: canvas benchmark on 5,000 elements and 7,000 connectors; fails when `bench/budget.json` is exceeded (headless; about 1 minute)
 - `pnpm bench:spike`: the phase-0 canvas spike benchmark
 - `pnpm build`: build the web app and the CLI
+- `pnpm looks:build`: write `packages/ui/src/theme/looks.css` from `looks.ts` after changing a look (a unit test fails when they differ)
 - `pnpm kits:build`: regenerate the generated built-in Kits (`kit.json` and sample model) from their descriptions in `kits/build/`; a test fails when the committed files differ
 
 ## Workflow

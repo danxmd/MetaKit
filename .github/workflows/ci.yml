@@ -41,16 +41,20 @@ jobs:
       - name: Canvas performance budget
         run: pnpm bench
       - name: Bundle-size report
+        # Fonts are listed on their own: a browser downloads only the fonts of the look in use,
+        # on demand, so they are not part of the app download that the budget is about.
         run: |
-          raw=$(find apps/web/dist -type f -exec cat {} + | wc -c)
-          gz=$(find apps/web/dist -type f -exec gzip -9 -c {} \; | wc -c)
+          raw=$(find apps/web/dist -type f ! -name '*.woff2' -exec cat {} + | wc -c)
+          gz=$(find apps/web/dist -type f ! -name '*.woff2' -exec gzip -9 -c {} \; | wc -c)
+          fonts=$(find apps/web/dist -type f -name '*.woff2' -exec cat {} + | wc -c)
           {
             echo "### Web app bundle size"
             echo
             echo "| | Bytes |"
             echo "| --- | --- |"
-            echo "| Raw | $raw |"
-            echo "| Compressed (gzip) | $gz |"
+            echo "| Raw (without fonts) | $raw |"
+            echo "| Compressed (gzip, without fonts) | $gz |"
+            echo "| Fonts (WOFF2, all looks, loaded on demand) | $fonts |"
             echo
             echo "Budget: 1,500,000 bytes compressed (reported only until phase 2)."
           } >> "$GITHUB_STEP_SUMMARY"
