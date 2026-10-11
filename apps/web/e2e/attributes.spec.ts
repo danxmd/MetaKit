@@ -392,6 +392,9 @@ test.describe('attribute panel', () => {
         }),
       )
       .toEqual([a]);
+    // Picking a hit ends the search: no "Nothing found." is left behind.
+    await expect(page.getByTestId('find-input')).toHaveValue('');
+    await expect(page.getByText('Nothing found.')).toHaveCount(0);
     await page.getByTestId('find-input').fill('ship');
     await page.getByTestId('find-results').getByRole('button').first().click();
     // The view moved to the far element.

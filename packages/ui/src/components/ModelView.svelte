@@ -773,7 +773,9 @@
     if (hit.kind === 'element') editor.select([hit.id as ElementId]);
     else editor.select([], [hit.id as ConnectorId]);
     centreOn(hit.id);
+    // The search is done: clear it, or the box would say "Nothing found." under the find field.
     hits = [];
+    query = '';
   }
 
   // Panel edits --------------------------------------------------------------------------------

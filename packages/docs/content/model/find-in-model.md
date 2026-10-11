@@ -22,7 +22,7 @@ The find box at the right end of the toolbar, under the top bar. Its placeholder
 
 1. Press **Ctrl+F**. The cursor jumps into the find box. Or click the box.
 2. Type part of a word. Results appear under the box as you type.
-3. Click a result. The object is selected, the canvas centres on it and the list closes.
+3. Click a result. The object is selected, the canvas centres on it, and the list closes and the box clears.
 4. Press **Escape** in the box to clear it and close the list.
 
 ## Every option explained
