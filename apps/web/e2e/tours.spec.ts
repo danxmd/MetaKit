@@ -104,7 +104,7 @@ test.describe('Guided tours', () => {
     // The written tutorials come from the docs.
     await expect(
       page.locator(
-        '[data-testid="written-tutorial"][data-topic="data-governance"]',
+        '[data-testid="written-tutorial"][data-topic="tutorial-data-governance"]',
       ),
     ).toBeVisible();
     await page.getByTestId('tour-start-first-steps').click();
@@ -206,7 +206,9 @@ test.describe('Guided tours', () => {
     await page.keyboard.press('F1');
     // A written tutorial opens in the Documentation area.
     await page
-      .locator('[data-testid="written-tutorial"][data-topic="data-governance"]')
+      .locator(
+        '[data-testid="written-tutorial"][data-topic="tutorial-data-governance"]',
+      )
       .click();
     await expect(page.getByTestId('docs-page')).toBeVisible();
     await expect(page.getByTestId('tutorials-page')).toHaveCount(0);

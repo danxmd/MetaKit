@@ -101,7 +101,7 @@ The sample shows one warning on purpose: **Supplier** has no data steward yet.
 
 - **The Kit records the design, not the data.** Enter the counts from your MDM tool; MetaKit does not match or merge records.
 - **One hub or several.** Organisations often run one hub for all domains. Draw one **MDM hub** and connect every master entity to it.
-- For ownership, glossary terms and policies, see the Data governance tutorial ([[data-governance]]); for the quality of the golden records, the [[data-quality]] Kit.
+- For ownership, glossary terms and policies, see the Data governance tutorial ([[tutorial-data-governance]]); for the quality of the golden records, the [[data-quality]] Kit.
 
 ## Related
 

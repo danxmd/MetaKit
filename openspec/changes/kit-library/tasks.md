@@ -10,4 +10,4 @@ Starts after the Kit rename's PR 3.
 - [x] 6 Project delivery and RAID, Requirements and user stories, Decision tables.
 - [x] 7 Enterprise architecture, Software architecture (C4-style), Event storming, Security threat model, Mind map and concept map, Org chart.
 - [x] 8 Catalog growth to about 250 concepts in 16 topics, split into topic files, end-name test.
-- [ ] 9 Help: `kits` category with one topic per Kit; `built-in-kits` overview by domain.
+- [x] 9 Help: `kits` category with one topic per Kit; `built-in-kits` overview by domain.

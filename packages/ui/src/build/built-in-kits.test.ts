@@ -66,17 +66,6 @@ const INTENDED_WARNINGS: Record<string, number> = {
   'threat-model': 2,
 };
 
-/**
- * Kits whose topic in the `kits` category comes with the help task of the change (task 9). The
- * three data and AI ones already have a tutorial under the folder name.
- */
-const TOPIC_LATER = new Set(['bpmn-lite', 'er-lite', 'agent-pipeline']);
-const TOPIC_IN_TUTORIALS = new Set([
-  'data-ai-architecture',
-  'ai-use-case-portfolio',
-  'data-governance',
-]);
-
 /** The folder under kits/ that holds the Kit with this id. */
 function folderOf(id: string): string {
   const folder = readdirSync(kitsDir).find((name) => {
@@ -221,13 +210,10 @@ for (const entry of BUILT_IN_KITS) {
       expect(warnings).toBe(INTENDED_WARNINGS[folder] ?? 0);
     });
 
-    const later = TOPIC_LATER.has(folder);
-    it.skipIf(later)(`has a help topic "${folder}"`, () => {
+    it(`has a help topic "${folder}"`, () => {
       const topic = docs.get(folder);
       expect(topic, folder).toBeDefined();
-      expect(topic!.category).toBe(
-        TOPIC_IN_TUTORIALS.has(folder) ? 'tutorials' : 'kits',
-      );
+      expect(topic!.category).toBe('kits');
     });
 
     it('names no company, client or vendor product', () => {
