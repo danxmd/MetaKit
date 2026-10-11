@@ -37,7 +37,7 @@ They are listed by domain, under one heading each:
 | **Analytics and BI landscape** | Reports and dashboards with their owners, usage and refresh, the semantic models and metrics they are built on and the audiences they serve, with checks for metrics defined twice. See [[analytics-bi]]. |
 | **Privacy and records of processing** | Records of processing: activities with purposes and legal bases, data categories, data subjects, recipients and transfers with safeguards, retention, systems and an impact assessment indication. See [[privacy-ropa]]. |
 | **Cloud data migration** | Workloads moving from source systems to cloud target services in migration waves, with dependencies, cut-over plans, status, risks and the readiness of each wave. See [[cloud-data-migration]]. |
-| **Agent pipeline** | Pipelines in which AI agents and people perform tasks, hand over work and approve results. |
+| **Agent pipeline** | Pipelines in which AI agents and people perform tasks, hand over work and approve results. See [[agent-pipeline]]. |
 | **ML lifecycle (MLOps)** | Datasets and features, experiments and training runs, model versions in a registry with evaluations and approvals, deployments per environment, monitors and incidents. See [[ml-lifecycle]]. |
 | **Generative AI solution** | Use cases, flows, prompts and foundation models, a retrieval pipeline, agents and tools, guardrails, evaluations and human review, with the cost and latency of each request. See [[genai-solution]]. |
 | **AI risk and compliance** | AI systems with their intended purpose and a risk tier, risks and controls, obligations, assessments, incidents, owners and evidence. See [[ai-risk-compliance]]. |
@@ -46,7 +46,7 @@ They are listed by domain, under one heading each:
 
 | Built-in Kit | What it is for |
 | --- | --- |
-| **BPMN lite** | Business processes: tasks, events, gateways and lanes connected by sequence flows. |
+| **BPMN lite** | Business processes: tasks, events, gateways and lanes connected by sequence flows. See [[bpmn-lite]]. |
 | **Business capability map** | Capabilities on three levels with maturity, target and strategic importance, a heat colour, and the applications that support them. See [[capability-map]]. |
 | **Business model canvas** | The nine blocks of a business model as containers, with items, how well each is tested, annual amounts and links between items. See [[business-model-canvas]]. |
 | **Value streams and customer journeys** | Value streams and customer journeys: stages, touchpoints scored by emotion, channels, pain points, opportunities and metrics. See [[value-streams-journeys]]. |
@@ -65,7 +65,7 @@ They are listed by domain, under one heading each:
 
 | Built-in Kit | What it is for |
 | --- | --- |
-| **ER lite** | Data models: entities, their attributes and the relationships between them. |
+| **ER lite** | Data models: entities, their attributes and the relationships between them. See [[er-lite]]. |
 | **Enterprise architecture** | Business, application and technology layers: actors, roles, processes and services, application components, interfaces and data objects, nodes, system software and networks, and how they serve, realise and run each other. See [[enterprise-architecture]]. |
 | **Software architecture (C4-style)** | Software at three levels in the C4 style: people and software systems, the containers inside a system and the components inside a container, with what each relationship is for and how it talks. See [[software-c4]]. |
 | **Event storming** | Domain events on a timeline with the commands, actors, aggregates, policies, read models and external systems around them, hotspots for open questions and bounded contexts as lanes. See [[event-storming]]. |

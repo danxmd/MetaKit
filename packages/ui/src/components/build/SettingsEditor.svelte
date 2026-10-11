@@ -12,6 +12,25 @@
     error = r.ok ? null : r.error;
   };
   const grid = $derived(kit.settings.grid);
+
+  function rename(input: HTMLInputElement) {
+    const name = input.value.trim();
+    if (name === '') {
+      error = 'A Kit needs a name.';
+      input.value = kit.manifest.name;
+      return;
+    }
+    if (name !== kit.manifest.name) exec({ type: 'updateManifest', name });
+  }
+  function setVersion(input: HTMLInputElement) {
+    const version = input.value.trim();
+    if (version === kit.manifest.version) return;
+    if (!/^\d+\.\d+\.\d+([-+][0-9A-Za-z.-]+)?$/.test(version)) {
+      error = 'A version looks like 1.0.0.';
+      return;
+    }
+    exec({ type: 'updateManifest', version });
+  }
   let newLanguage = $state('');
   const LANGUAGE = /^[a-z]{2,3}(-[A-Za-z0-9]+)*$/;
   function addLanguage() {
@@ -45,6 +64,28 @@
 <div class="editor" data-testid="settings-editor">
   <h2>Settings</h2>
   {#if error}<p class="notice error" role="alert">{error}</p>{/if}
+  <Section
+    title="Name and version"
+    help="The name modellers see when they choose a Kit. Raise the version when you share a new release."
+  >
+    <div class="row">
+      <label class="name"
+        >Name <input
+          value={kit.manifest.name}
+          onchange={(e) => rename(e.currentTarget)}
+          data-testid="build-name"
+        /></label
+      >
+      <label
+        >Version <input
+          class="version"
+          value={kit.manifest.version}
+          onchange={(e) => setVersion(e.currentTarget)}
+          data-testid="build-version"
+        /></label
+      >
+    </div>
+  </Section>
   <Section
     title="Languages"
     help="Labels can be given in each language. The first one is used for options and previews."
@@ -154,6 +195,13 @@
   label {
     display: grid;
     gap: var(--gap-1);
+  }
+  .name {
+    flex: 1;
+    min-width: 12rem;
+  }
+  .version {
+    width: 7rem;
   }
   label.inline {
     display: inline-flex;

@@ -54,12 +54,12 @@ A guided tour teaches one page in a minute or two. It highlights one button or a
 | --- | --- | --- |
 | **First steps** | Start page | Opening or creating a workspace folder, what a workspace folder is, the three steps, Help and Tutorials. |
 | **Models page** | [[page-models]] | **New model**, **Import / Export**, search across models, the list and its folders, the **…** menu of a model, deleted models, and the Model and Build switch. |
-| **Modelling a model** | An open model ([[page-model-view]]) | The palette, connecting, the canvas, the attribute panel, the menus, **Check** and Problems, find, undo and redo, the save status, the people in the model and **← Models**. Needs an open model. |
+| **Modelling a model** | An open model ([[page-model-view]]) | The palette, connecting, the canvas, the attribute panel, the menus, **Check** and Problems, find, undo and redo, the save status, the people in the model and the location in the top bar. Needs an open model. |
 | **Kits page** | [[page-kits]] | Your Kits, **Add** from a file or Git, **New Kit**, **Edit**, the built-in Kits, **Use in this workspace** and **Copy and extend…**. |
-| **Building a Kit** | An open Kit ([[page-build-view]]) | The sections, **Classes**, adding a class, **Add from catalog…**, the class list, the class editor and its attributes, **Try it**, undo and redo, **Source control** (only for a Kit kept in Git) and **← Kits**. Needs an open Kit. |
+| **Building a Kit** | An open Kit ([[page-build-view]]) | The sections, **Classes**, adding a class, **Add from catalog…**, the class list, the class editor and its attributes, **Try it**, undo and redo, **Source control** (only for a Kit kept in Git) and the location in the top bar. Needs an open Kit. |
 | **Appearance** | An open Kit | A class's appearance, **Edit appearance**, the form, the preview, colours, colour by attribute, badges, **Done**, and **More ways to set the look** for the drawing editor ([[appearance-editor]]). Needs an open Kit. |
 | **Rules and scripts** | An open Kit | **Rules** with When, If and Then, commands, **Add rule**, then **Scripts**: the list, the script editor and the permissions ([[rules]], [[scripts]]). Needs an open Kit. |
-| **Help and settings** | Any workspace page | **Help** (`F1`), **Docs**, **Tutorials** and the **Settings** menu: appearance, your name and colour, Git and the assistant. |
+| **Help and settings** | Any workspace page | **Help** (`F1`) and the Documentation, **Tutorials** and the **Settings** menu: appearance, your name and colour, Git and the assistant. |
 
 ## Examples
 

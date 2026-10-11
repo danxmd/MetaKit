@@ -53,7 +53,7 @@ Ben wants a dark screen for the evening: **Settings**, then **Dark**. Later he w
 
 - **Git settings and the Assistant are also reachable elsewhere.** The Kits page has **Add > From Git…**, and the Build view has a **Source control** menu for linked Kits ([[page-kits]], [[git-mode]]).
 - **Closing a workspace** while a model is open first closes the model. Unsaved work does not exist: changes are saved as you make them. If the status says **Not saved**, wait for **Saved** before closing.
-- Help and Documentation have their own entries in the top bar, not in this menu ([[docs-help]]).
+- Help has its own button in the top bar, not in this menu, and the Documentation opens from the Help side bar ([[docs-help]]).
 - Settings in this menu are per browser. They are not stored in the workspace folder, so colleagues do not see your choices.
 
 ## Related

@@ -100,7 +100,7 @@ The sample shows one warning on purpose: **Duplicate customers after a branch me
 - **Results are entered, not measured.** MetaKit does not run the checks. Enter the counts of the last run, or copy them from your quality tool.
 - **Thresholds are percentages** from 0 to 100. A threshold of 100 means no record may fail.
 - **Overdue** compares the due date with today, so it can change from one day to the next; it is shown, not checked.
-- To show where the checked data comes from, use the [[data-pipelines-lineage]] Kit; for ownership and policies, see the Data governance tutorial ([[data-governance]]).
+- To show where the checked data comes from, use the [[data-pipelines-lineage]] Kit; for ownership and policies, see the Data governance tutorial ([[tutorial-data-governance]]).
 
 ## Related
 

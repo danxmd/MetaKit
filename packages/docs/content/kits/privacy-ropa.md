@@ -106,7 +106,7 @@ The sample shows two warnings on purpose: **Appointment reminders** meets three 
 
 - **Not legal advice.** The criteria and the indication help to spot what to look at. Whether an assessment is required, and which legal basis fits, is for your privacy officer or lawyer to decide.
 - **Generic wording.** Names of laws and authorities are free text in **Reference** and **Country**; the Kit names none.
-- **Systems** links the records to your application landscape. For data flows between systems, use the [[data-pipelines-lineage]] Kit; for classifications and policies, see the Data governance tutorial ([[data-governance]]).
+- **Systems** links the records to your application landscape. For data flows between systems, use the [[data-pipelines-lineage]] Kit; for classifications and policies, see the Data governance tutorial ([[tutorial-data-governance]]).
 
 ## Related
 

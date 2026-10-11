@@ -6,3 +6,4 @@ export * from './palette';
 export * from './references';
 export * from './download';
 export * from './validation-list';
+export * from './document-bar';

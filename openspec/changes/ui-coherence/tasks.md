@@ -15,12 +15,12 @@
 
 ## 2. PR 2: location bar and Help (`feat/ui-coherence-shell`)
 
-- [ ] 2.1 Breadcrumb and status slot in `TopBar`; crumbs from `App.svelte`.
-- [ ] 2.2 Model view: drop the title row, one toolbar row with the find box.
-- [ ] 2.3 Build view: slim toolbar; name and version into Settings.
-- [ ] 2.4 One Help control; remove the top-bar Docs button and `build-help`.
-- [ ] 2.5 Update the e2e specs that used `back-to-explorer`, `build-back`, `open-docs` and `build-help`; add the one-click "leave with a menu open" test.
-- [ ] 2.6 Docs: top-bar, docs-help, page-model-view, model-toolbar, page-build-view, kit-settings, quick-tour, concepts-modes.
+- [x] 2.1 Breadcrumb and status slot in `TopBar`; crumbs from `App.svelte`.
+- [x] 2.2 Model view: drop the title row, one toolbar row with the find box.
+- [x] 2.3 Build view: slim toolbar; name and version into Settings.
+- [x] 2.4 One Help control; remove the top-bar Docs button and `build-help`.
+- [x] 2.5 Update the e2e specs that used `back-to-explorer`, `build-back`, `open-docs` and `build-help`; add the one-click "leave with a menu open" test.
+- [x] 2.6 Docs: top-bar, docs-help, page-model-view, model-toolbar, page-build-view, kit-settings, quick-tour, concepts-modes.
 
 ## 3. PR 3: Build layout (`feat/ui-coherence-build`)
 

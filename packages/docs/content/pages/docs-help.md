@@ -19,7 +19,8 @@ The documentation is built into MetaKit. You can read it beside your work in the
 ## Where to find it
 
 - Open the side bar with the **Help** button in the [[top-bar]], or press `F1`, or press `?` when you are not typing in a text box.
-- Open the Documentation area from the **Documentation** entry in the top bar, or with the full-page button in the side bar.
+- Open the Documentation area with **Open in Documentation** in the side bar. It opens at the topic the side bar shows.
+- **Help** is the only help control. Build mode has no help button of its own: Help and `F1` open the topic of the section you are on.
 - Press the same button or key again, or use the close button in the side bar, to hide the side bar.
 
 ## How to use it
@@ -44,9 +45,10 @@ The documentation is built into MetaKit. You can read it beside your work in the
 
 **Read in the Documentation area**
 
-1. Open it from the top bar.
+1. Open the side bar with **Help**, then choose **Open in Documentation**. The location in the [[top-bar]] reads **Documentation**.
 2. Pick a category in the topic tree on the left (**Getting started**, **Pages and dialogs**, **Model mode**, **Build mode**, **Behaviour**, **Sync, Git and history**, **Assistant**, **Reference**, **Tutorials**), then a topic.
 3. The reading pane shows the topic. Use the search box for any word.
+4. To go back to your work, click **Model** or **Build** in the top bar. Whatever you had open is still there, unchanged.
 
 ## Every option explained
 
@@ -56,7 +58,7 @@ The documentation is built into MetaKit. You can read it beside your work in the
 | Search box | Searches all topics. Clears with the usual clear button. |
 | **Back** / **Forward** | Move through the topics you opened. |
 | Topic links | Links written in the text and linked keywords. External links open in a new browser tab. |
-| Full-page button | Shows the current topic in the Documentation area. |
+| **Open in Documentation** | Closes the side bar and shows its topic in the Documentation area. |
 | Close button | Hides the side bar. |
 | **Documentation** area: topic tree | Lists categories and topics; the current topic is highlighted. |
 | **Tutorials** category | Reserved for step-by-step lessons. It is empty for now. See [[tutorials-index]]. |

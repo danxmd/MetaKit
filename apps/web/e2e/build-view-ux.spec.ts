@@ -30,8 +30,8 @@ test.describe('Build view structure', () => {
       for (const tab of tabs)
         await expect(group.getByTestId(`build-tab-${tab}`)).toBeVisible();
     }
-    // The way back and the status are always in the header.
-    await expect(page.getByTestId('build-back')).toBeVisible();
+    // The way back and the status are always in the top bar.
+    await expect(page.getByTestId('crumb-area')).toBeVisible();
     await expect(page.getByTestId('build-status')).toBeVisible();
     await expect(page.getByTestId('git-menu')).toHaveCount(0);
   });

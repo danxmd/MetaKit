@@ -77,13 +77,24 @@ function builder(kit: Kit, model: Model) {
     x: number,
     y: number,
     parent?: ElementId,
+    size?: { w: number; h: number },
   ): ElementId => {
-    const cls = byKey(kit.classes, key).id as ClassId;
+    const def = byKey(kit.classes, key);
+    const cls = def.id as ClassId;
+    // Objects take the size of their look; a zone is given the size that holds its objects.
+    const look = def.shape ? kit.shapes[def.shape] : undefined;
+    const { w, h } =
+      size ??
+      (look?.kind === 'node'
+        ? { w: look.size.width, h: look.size.height }
+        : { w: 120, h: 60 });
     const r = store.execute({
       type: 'createElement',
       class: cls,
       x,
       y,
+      w,
+      h,
       ...(parent ? { parent } : {}),
       attrs: attrs(cls, values),
     } as never);
@@ -141,50 +152,62 @@ function customer360(kit: Kit): Model {
       'One view of each customer, and a model that predicts which customers are likely to leave.',
   } as never);
 
-  const raw = b.put('Zone', { Name: 'Raw zone', Layer: 'Raw' }, 260, 20);
+  // Each zone is drawn around the objects it contains.
+  const raw = b.put(
+    'Zone',
+    { Name: 'Raw zone', Layer: 'Raw' },
+    260,
+    40,
+    undefined,
+    { w: 460, h: 380 },
+  );
   const curated = b.put(
     'Zone',
     { Name: 'Curated zone', Layer: 'Curated' },
-    820,
-    20,
+    780,
+    40,
+    undefined,
+    { w: 440, h: 380 },
   );
   const serving = b.put(
     'Zone',
     { Name: 'Serving zone', Layer: 'Serving' },
-    1380,
-    20,
+    1280,
+    40,
+    undefined,
+    { w: 460, h: 380 },
   );
 
   const crm = b.put(
     'SourceSystem',
     { Name: 'CRM', Technology: 'CRM', Owner: 'Sales operations' },
-    20,
-    60,
+    40,
+    80,
   );
   const web = b.put(
     'SourceSystem',
     { Name: 'Web events', Technology: 'Web analytics', Owner: 'Digital team' },
-    20,
-    200,
+    40,
+    330,
   );
   const billing = b.put(
     'SourceSystem',
     { Name: 'Billing', Technology: 'Billing system', Owner: 'Finance' },
-    20,
-    340,
+    40,
+    200,
   );
   const batch = b.put(
     'Ingestion',
     { Name: 'Batch import', Mode: 'Batch', Schedule: 'Nightly' },
     290,
-    100,
+    150,
     raw,
   );
   const stream = b.put(
     'Ingestion',
     { Name: 'Event stream', Mode: 'Streaming' },
     290,
-    220,
+    330,
     raw,
   );
   const landing = b.put(
@@ -195,15 +218,15 @@ function customer360(kit: Kit): Model {
       Region: 'Home region',
       ApprovedForPersonalData: true,
     },
-    560,
-    100,
+    520,
+    140,
     raw,
   );
   const archive = b.put(
     'DataStore',
     { Name: 'Event archive', Kind: 'Lake', ApprovedForPersonalData: false },
-    560,
-    220,
+    520,
+    320,
     raw,
   );
   const clean = b.put(
@@ -215,8 +238,8 @@ function customer360(kit: Kit): Model {
       Transformation:
         'Removes duplicates, joins customers across systems and adds session counts.',
     },
-    850,
-    100,
+    810,
+    225,
     curated,
   );
   const lakehouse = b.put(
@@ -228,8 +251,8 @@ function customer360(kit: Kit): Model {
       ApprovedForPersonalData: true,
       Owner: 'Data platform team',
     },
-    1100,
-    100,
+    1020,
+    140,
     curated,
   );
   const profile = b.put(
@@ -242,8 +265,8 @@ function customer360(kit: Kit): Model {
       ContainsPersonalData: true,
       Owner: 'Customer data team',
     },
-    970,
-    200,
+    1030,
+    290,
     curated,
   );
   const features = b.put(
@@ -254,8 +277,8 @@ function customer360(kit: Kit): Model {
       Schedule: 'Daily',
       Transformation: 'Turns profiles into pseudonymous churn features.',
     },
-    1410,
-    100,
+    1310,
+    300,
     serving,
   );
   const featureStore = b.put(
@@ -265,8 +288,8 @@ function customer360(kit: Kit): Model {
       Kind: 'Feature store',
       ApprovedForPersonalData: false,
     },
-    1660,
-    100,
+    1540,
+    300,
     serving,
   );
   const churnFeatures = b.put(
@@ -279,8 +302,8 @@ function customer360(kit: Kit): Model {
       ContainsPersonalData: false,
       Owner: 'Data science team',
     },
-    1530,
-    200,
+    1550,
+    100,
     serving,
   );
   const churn = b.put(
@@ -294,26 +317,26 @@ function customer360(kit: Kit): Model {
       Score: 0.87,
       Owner: 'Data science team',
     },
-    1530,
-    380,
+    1800,
+    110,
   );
   const api = b.put(
     'AIService',
     { Name: 'Churn score API', Kind: 'API', Endpoint: '/churn/score' },
-    1530,
-    520,
+    1800,
+    300,
   );
   const dashboard = b.put(
     'Consumer',
     { Name: 'Retention dashboard', Kind: 'Dashboard', Audience: 'Internal' },
-    1110,
-    520,
+    1020,
+    500,
   );
   const crmApp = b.put(
     'Consumer',
     { Name: 'CRM app', Kind: 'Application', Audience: 'Internal' },
-    1900,
-    520,
+    1800,
+    500,
   );
 
   const pd = { ContainsPersonalData: true };
@@ -454,6 +477,36 @@ describe('the sample model', () => {
     );
     expect(Object.keys(stored.elements).length).toBeGreaterThanOrEqual(15);
     expect(Object.keys(stored.elements).length).toBeLessThanOrEqual(25);
+  });
+
+  it('draws each zone around the objects it contains, where the test builds them', () => {
+    const kit = loadKit();
+    const stored = loadSample(kit);
+    const built = customer360(kit);
+    const nameOf = (m: Model, id: ElementId) => {
+      const el = m.elements[id]!;
+      const name = effectiveAttributes(kit, el.class).find(
+        (d) => d.key === 'Name',
+      )!;
+      return String(el.attrs[name.id]);
+    };
+    const placed = (m: Model) =>
+      Object.fromEntries(
+        Object.values(m.elements).map((e) => [
+          nameOf(m, e.id),
+          [e.x, e.y, e.w, e.h, e.parent ? nameOf(m, e.parent) : null],
+        ]),
+      );
+    expect(placed(stored)).toEqual(placed(built));
+    const children = Object.values(stored.elements).filter((e) => e.parent);
+    expect(children.length).toBeGreaterThan(0);
+    for (const child of children) {
+      const zone = stored.elements[child.parent!]!;
+      expect(child.x, nameOf(stored, child.id)).toBeGreaterThan(zone.x);
+      expect(child.y).toBeGreaterThan(zone.y + 28);
+      expect(child.x + child.w).toBeLessThan(zone.x + zone.w);
+      expect(child.y + child.h).toBeLessThan(zone.y + zone.h);
+    }
   });
 
   it('shows exactly one problem: personal data into the event archive', () => {

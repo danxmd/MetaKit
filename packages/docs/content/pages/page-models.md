@@ -23,7 +23,7 @@ The buttons **Import / Export** and **New model** sit at the top right.
 
 ## Where to find it
 
-Choose **Model** in the [[top-bar]] with no model open. It is also the page you return to with **← Models** in the [[page-model-view|Model view]], and the page that opens after you open a workspace.
+Choose **Model** in the [[top-bar]] with no model open. It is also the page you return to with **Models** in the location of the [[top-bar]] when a [[page-model-view|model]] is open, or with a click on the workspace name, and the page that opens after you open a workspace.
 
 ## How to use it
 

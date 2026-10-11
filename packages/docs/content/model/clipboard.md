@@ -32,7 +32,7 @@ Copy and paste:
 Paste into another model:
 
 1. Copy in one model.
-2. Go back with **← Models**, open the other model.
+2. Go back with **Models** in the top bar, open the other model.
 3. Click the canvas and press **Ctrl+V**.
 
 Cut and delete:

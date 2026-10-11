@@ -1,5 +1,5 @@
 ---
-id: data-governance
+id: tutorial-data-governance
 title: Set up data ownership and governance
 category: tutorials
 summary: Use the Data governance and ownership Kit to record who owns and looks after your data, check it for gaps, and read the quality score of each data asset.
@@ -93,4 +93,4 @@ In the sample, **General ledger** is checked by two rules: "Ledger balances" pas
 
 ## Related
 
-[[tutorials-index]] · [[problems-panel]] · [[computed-values]] · [[constraints]] · [[scripts]] · [[menu-commands]]
+[[tutorials-index]] · [[data-governance]] · [[problems-panel]] · [[computed-values]] · [[constraints]] · [[scripts]] · [[menu-commands]]
