@@ -162,6 +162,8 @@
     padding: 0;
     display: grid;
     gap: 2px;
+    /* A long list scrolls by itself, so the gallery below stays within reach. */
+    max-height: 24rem;
     overflow: auto;
   }
   li {

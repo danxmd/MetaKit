@@ -54,6 +54,8 @@ The editor covers the whole Build view and is titled **Advanced drawing editor**
 | **Starter shapes** | Small thumbnails of the starter shapes. Click one to add its parts. In an empty shape it also takes the starter's size, outline and named values. |
 | **Import SVG** | Brings in a vector drawing ([[shape-svg-import]]). |
 
+The blocks always show at full height. On a small screen the column scrolls to reach **Starter shapes** and **Import SVG**; a long list of layers scrolls by itself.
+
 ### The canvas
 
 The canvas shows the shape on a white sheet with a faint grid every 10 pixels. Click it once to give it the focus.

@@ -18,7 +18,7 @@ A **group** holds several parts and treats them as one. Groups can hold other gr
 
 ## Where to find it
 
-In the [[shape-editor]], top of the left column. The panel is titled **Layers**.
+In the [[shape-editor]], top of the left column. The panel is titled **Layers**. It always shows its rows; when there are many, the list scrolls by itself.
 
 ## How to use it
 
