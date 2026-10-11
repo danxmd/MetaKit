@@ -238,15 +238,16 @@
   }
   h3,
   .heading {
+    font-family: var(--font-display);
     font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--text-faint);
+    font-weight: var(--label-weight);
+    text-transform: var(--label-case);
+    letter-spacing: var(--label-tracking);
+    color: var(--label-text);
     margin: var(--gap-4) var(--gap-1) var(--gap-1);
   }
   .heading {
     margin: 0 var(--gap-1);
-    font-weight: 650;
   }
   .entry {
     display: flex;

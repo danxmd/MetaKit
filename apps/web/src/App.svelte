@@ -36,6 +36,7 @@
   import KitImportDialog from '@metakit-app/ui/components/KitImportDialog.svelte';
   import KitsPage from '@metakit-app/ui/components/KitsPage.svelte';
   import TopBar from '@metakit-app/ui/components/TopBar.svelte';
+  import { pageTheme } from '@metakit-app/ui/theme';
   import ModelView from '@metakit-app/ui/components/ModelView.svelte';
   import NewModelDialog from '@metakit-app/ui/components/NewModelDialog.svelte';
   import PermissionDialog from '@metakit-app/ui/components/build/scripts/PermissionDialog.svelte';
@@ -395,6 +396,8 @@
     if (app.phase === 'model') area = 'model';
     else if (app.phase === 'build') area = 'build';
   });
+  // `data-mode` on <html> lets a look give Model and Build their own accent.
+  $effect(() => pageTheme().setMode(area));
 
   // Deleted models and Kits go to the trash, so they are removed at once and the toast
   // offers Undo, which restores them (ui-coherence).

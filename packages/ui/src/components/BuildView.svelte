@@ -543,7 +543,13 @@
   <div class="body">
     <nav aria-label="Kit sections" data-tour="build-sections">
       {#each GROUPS as group (group.id)}
-        <div class="group" role="group" aria-labelledby="grp-{group.id}">
+        <div
+          class="group"
+          role="group"
+          aria-labelledby="grp-{group.id}"
+          data-section-group={group.id}
+          style:--section="var(--section-{group.id})"
+        >
           <h3 id="grp-{group.id}" class="group-title">{group.title}</h3>
           <div role="tablist" aria-orientation="vertical">
             {#each group.sections as id (id)}
@@ -841,12 +847,14 @@
     align-content: start;
     gap: var(--gap-4);
   }
+  /* Each group has its own colour in a look that colours the parts of a Kit. */
   .group-title {
+    font-family: var(--font-display);
     font-size: 0.7rem;
-    font-weight: 650;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--text-faint);
+    font-weight: var(--label-weight);
+    text-transform: var(--label-case);
+    letter-spacing: var(--label-tracking);
+    color: var(--section);
     padding: 0 var(--gap-2) var(--gap-1);
   }
   .group [role='tablist'] {
@@ -862,9 +870,13 @@
     background: transparent;
   }
   .tab.on {
-    background: var(--accent-soft);
-    color: var(--accent);
+    background: var(--tab-active-bg);
+    color: var(--tab-active-text);
     font-weight: 600;
+    /* The indicator: in the group's colour, or in the mark colour; a look sets one width. */
+    box-shadow:
+      inset var(--tab-indicator-section) 0 0 var(--section),
+      inset var(--tab-indicator-mark) 0 0 var(--mark);
   }
   .count {
     font-size: 0.72rem;

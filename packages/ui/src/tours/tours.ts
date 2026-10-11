@@ -530,7 +530,7 @@ export const TOURS: readonly Tour[] = [
     id: 'help-settings',
     title: 'Help and settings',
     summary:
-      'The Help side bar and the documentation, the appearance, your name and colour, Git and the assistant.',
+      'The Help side bar and the documentation, the look, light or dark, your name and colour, Git and the assistant.',
     page: 'any',
     steps: [
       {
@@ -552,9 +552,15 @@ export const TOURS: readonly Tour[] = [
         placement: 'bottom',
       },
       {
+        anchor: 'settings-look',
+        title: 'Look',
+        text: 'Pick how MetaKit looks: Workshop, Drafting, Meadow or Classic. It changes at once and only in this browser.',
+        placement: 'left',
+      },
+      {
         anchor: 'settings-theme',
-        title: 'Appearance',
-        text: 'Choose Light or Dark. System follows the setting of your computer.',
+        title: 'Light or dark',
+        text: 'Every look comes in light and dark. System follows the setting of your computer.',
         placement: 'left',
       },
       {

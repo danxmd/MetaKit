@@ -15,6 +15,8 @@
     type Kit,
   } from '@metakit-app/core';
   import { labelOf, paletteFor } from '../../shell/palette';
+  import { canvasTheme } from '../../shell/canvas-theme';
+  import { pageTheme } from '../../theme/theme';
 
   let { kit, onCollapse }: { kit: Kit; onCollapse?: () => void } = $props();
 
@@ -61,6 +63,7 @@
     scene = new Scene(model, kit);
     scene.attach(store);
     view = new CanvasView(host, scene, { grid: kit.settings.grid });
+    view.setPalette(canvasTheme().canvas);
     editor = new Editor({
       store,
       kit,
@@ -76,11 +79,19 @@
   }
 
   let mounted = false;
+  let stopTheme: (() => void) | undefined;
   onMount(() => {
     mounted = true;
     mount(null);
+    // The preview canvas follows the look, light or dark, and the mode, like the model canvas.
+    stopTheme = pageTheme().subscribe(() =>
+      view?.setPalette(canvasTheme().canvas),
+    );
   });
-  onDestroy(teardown);
+  onDestroy(() => {
+    stopTheme?.();
+    teardown();
+  });
 
   // Every change to the Kit redraws the preview at once: this is the hot reload.
   $effect(() => {

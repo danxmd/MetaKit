@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+  LOOK_KEY,
   THEME_KEY,
   canvasColors,
   createThemeController,
   effectiveTheme,
+  readLook,
   readPreference,
 } from './theme';
 
@@ -86,6 +88,60 @@ describe('theme', () => {
     dark = true;
     theme.systemChanged();
     expect(seen).toEqual(['dark']);
+  });
+
+  it('starts in Workshop and remembers another look', () => {
+    const storage = memoryStorage();
+    const root = fakeRoot();
+    const theme = createThemeController({
+      storage,
+      prefersDark: () => false,
+      root,
+    });
+    expect(theme.look).toBe('workshop');
+    expect(root.attrs['data-look']).toBe('workshop');
+    theme.setLook('drafting');
+    expect(storage.data[LOOK_KEY]).toBe('drafting');
+    expect(root.attrs['data-look']).toBe('drafting');
+    // The light or dark choice is a separate setting and stays as it was.
+    expect(storage.data[THEME_KEY]).toBeUndefined();
+    const root2 = fakeRoot();
+    const again = createThemeController({
+      storage,
+      prefersDark: () => false,
+      root: root2,
+    });
+    expect(again.look).toBe('drafting');
+    expect(root2.attrs['data-look']).toBe('drafting');
+  });
+
+  it('falls back to Workshop for unknown or unreadable looks', () => {
+    expect(readLook(memoryStorage({ [LOOK_KEY]: 'purple' }))).toBe('workshop');
+    expect(readLook(undefined)).toBe('workshop');
+    expect(
+      readLook({
+        getItem: () => {
+          throw new Error('blocked');
+        },
+        setItem: () => undefined,
+      }),
+    ).toBe('workshop');
+  });
+
+  it('tells listeners about a new look and a new mode', () => {
+    const root = fakeRoot();
+    const theme = createThemeController({
+      storage: memoryStorage(),
+      prefersDark: () => true,
+      root,
+    });
+    const seen: string[] = [];
+    theme.subscribe((p, e, look) => seen.push(`${p} ${e} ${look}`));
+    theme.setLook('meadow');
+    theme.setMode('build');
+    theme.setMode('build');
+    expect(root.attrs['data-mode']).toBe('build');
+    expect(seen).toEqual(['system dark meadow', 'system dark meadow']);
   });
 
   it('reads canvas colours from the tokens, with light fallbacks', () => {

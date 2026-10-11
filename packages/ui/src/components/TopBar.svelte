@@ -1,6 +1,12 @@
 <script lang="ts">
   import { onMount, type Snippet } from 'svelte';
-  import { pageTheme, type ThemePreference } from '../theme/theme';
+  import {
+    pageTheme,
+    type EffectiveTheme,
+    type LookId,
+    type ThemePreference,
+  } from '../theme/theme';
+  import { LOOK_IDS, LOOKS, lookValue } from '../theme/looks';
   import { menuBehaviour } from '../shell/menu-action';
   import BrandMark from './BrandMark.svelte';
   import Icon from './Icon.svelte';
@@ -56,7 +62,15 @@
 
   const theme = pageTheme();
   let preference = $state<ThemePreference>(theme.preference);
-  onMount(() => theme.subscribe((p) => (preference = p)));
+  let effective = $state<EffectiveTheme>(theme.effective);
+  let look = $state<LookId>(theme.look);
+  onMount(() =>
+    theme.subscribe((p, e, l) => {
+      preference = p;
+      effective = e;
+      look = l;
+    }),
+  );
 
   let renaming = $state(false);
   // A rename left open ends when the document closes.
@@ -160,12 +174,14 @@
       type="button"
       aria-current={!away && area === 'model' ? 'page' : undefined}
       onclick={() => onMode('model')}
+      data-mode-button="model"
       data-testid="mode-model">Model</button
     >
     <button
       type="button"
       aria-current={!away && area === 'build' ? 'page' : undefined}
       onclick={() => onMode('build')}
+      data-mode-button="build"
       data-testid="mode-build">Build</button
     >
   </div>
@@ -198,9 +214,41 @@
   <details class="menu" use:menuBehaviour data-testid="settings-menu">
     <summary data-tour="top-settings">Settings</summary>
     <div class="menu-list right">
-      <div class="menu-heading">Appearance</div>
+      <div class="menu-heading">Look</div>
+      <div
+        class="looks"
+        role="group"
+        aria-label="Look"
+        data-keep-open
+        data-tour="settings-look"
+      >
+        {#each LOOK_IDS as id (id)}
+          {@const l = LOOKS[id]}
+          <button
+            type="button"
+            class="look"
+            aria-pressed={look === id}
+            onclick={() => theme.setLook(id)}
+            data-testid="look-{id}"
+          >
+            <span class="swatches" aria-hidden="true">
+              {#each l.swatches as token (token)}
+                <span
+                  class="swatch"
+                  style:background={lookValue(l, effective, token)}
+                ></span>
+              {/each}
+            </span>
+            <span class="look-text">
+              <span class="look-name">{l.name}</span>
+              <span class="look-description">{l.description}</span>
+            </span>
+          </button>
+        {/each}
+      </div>
+      <div class="menu-heading">Light or dark</div>
       <div class="theme" data-keep-open data-tour="settings-theme">
-        <div class="segmented-control" role="group" aria-label="Appearance">
+        <div class="segmented-control" role="group" aria-label="Light or dark">
           {#each choices as c (c.id)}
             <button
               type="button"
@@ -251,8 +299,24 @@
     height: var(--bar-height);
     flex: none;
     padding: 0 var(--gap-4);
-    background: var(--surface);
-    border-bottom: 1px solid var(--line);
+    background: var(--bar-bg);
+    border-bottom: 1px solid var(--bar-line);
+    box-shadow: inset 0 calc(-1 * var(--bar-underline)) 0 var(--bar-accent);
+  }
+  /* What sits on the bar takes the bar's colours; the open settings menu keeps the page's. */
+  .top-bar > :not(details),
+  .top-bar > details > summary {
+    --surface: var(--bar-bg);
+    --surface-3: var(--bar-control);
+    --hover-bg: var(--bar-hover);
+    --line: var(--bar-line);
+    --text: var(--bar-text);
+    --text-strong: var(--bar-text-strong);
+    --text-muted: var(--bar-text-muted);
+    --text-faint: var(--bar-text-faint);
+  }
+  .top-bar > details > summary {
+    color: var(--text);
   }
   .brand {
     flex: none;
@@ -260,6 +324,9 @@
     align-items: center;
     gap: var(--gap-2);
     color: var(--text-strong);
+  }
+  .brand strong {
+    font-family: var(--font-display);
   }
   .crumbs {
     flex: 0 1 auto;
@@ -329,6 +396,10 @@
   .mode {
     flex: none;
     margin-left: var(--gap-2);
+    border-radius: max(var(--radius), var(--radius-pill));
+  }
+  .mode > button {
+    border-radius: calc(max(var(--radius), var(--radius-pill)) - 2px);
   }
   .top-bar > :global(details),
   .top-bar > button {
@@ -349,6 +420,56 @@
     display: flex;
     align-items: center;
     gap: var(--gap-1);
+  }
+  .looks {
+    display: grid;
+    gap: 2px;
+    padding: 0 var(--gap-1) var(--gap-1);
+    min-width: 19rem;
+  }
+  .look {
+    display: flex;
+    align-items: center;
+    gap: var(--gap-3);
+    text-align: left;
+    border: 1px solid transparent;
+    background: transparent;
+    padding: 0.4rem 0.6rem;
+  }
+  .look[aria-pressed='true'] {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+  }
+  .swatches {
+    flex: none;
+    display: flex;
+  }
+  .swatch {
+    width: 0.8rem;
+    height: 1.6rem;
+    border: 1px solid var(--line-strong);
+  }
+  .swatch + .swatch {
+    border-left: 0;
+  }
+  .swatch:first-child {
+    border-radius: var(--radius-s) 0 0 var(--radius-s);
+  }
+  .swatch:last-child {
+    border-radius: 0 var(--radius-s) var(--radius-s) 0;
+  }
+  .look-text {
+    display: grid;
+    min-width: 0;
+  }
+  .look-name {
+    font-weight: 600;
+    color: var(--text-strong);
+  }
+  .look-description {
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--text-muted);
   }
   .theme {
     padding: var(--gap-1) var(--gap-2);
