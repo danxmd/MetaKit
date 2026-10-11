@@ -48,7 +48,7 @@ Move the whole group:
 | Moving the container | Its children move by the same distance, in one undo step. |
 | Selecting a container and a child, then dragging | The child moves only once. |
 | Deleting a container | The container goes. Its children stay and move up to the container's own parent, or to the top level. |
-| Drawing order | A child is drawn above its container. |
+| Drawing order | Containers and swimlanes are drawn first, outer ones below inner ones. Connections come next, then every other object. So a connection between two objects in the same container shows on the container, and a child is always drawn above its container. |
 
 An object cannot be moved into itself or into something it contains.
 

@@ -1,7 +1,7 @@
 import type { CompiledRelation, DrawOp, OpStyle } from '@metakit-app/shapes';
 import type { Point } from '../geometry';
 import { endpoint, pointAlong } from '../paint';
-import type { Scene } from '../scene';
+import { aroundConnectors, type ElementItem, type Scene } from '../scene';
 import { collectContent, type ExportSelection } from './content';
 
 export interface SvgExportOptions {
@@ -412,13 +412,21 @@ export function exportSvg(
   const defs = new Defs();
   const resolve = options.resolveImage ?? (() => null);
 
+  // The same order as the screen: containers, connectors, then the other objects.
+  const { below, above } = aroundConnectors(content.elements);
   const body: string[] = [];
+  const addElements = (elements: readonly ElementItem[]) => {
+    for (const e of elements) {
+      const inner = opsToSvg(e.compiled.compiled.ops, defs, resolve);
+      if (inner === '') continue;
+      body.push(
+        `<g transform="translate(${num(e.x)} ${num(e.y)})">${inner}</g>`,
+      );
+    }
+  };
+  addElements(below);
   for (const c of content.connectors) body.push(connectorSvg(c.route, c.look));
-  for (const e of content.elements) {
-    const inner = opsToSvg(e.compiled.compiled.ops, defs, resolve);
-    if (inner === '') continue;
-    body.push(`<g transform="translate(${num(e.x)} ${num(e.y)})">${inner}</g>`);
-  }
+  addElements(above);
 
   const lines = [
     '<?xml version="1.0" encoding="UTF-8"?>',

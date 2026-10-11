@@ -1,6 +1,6 @@
 import type { ImageSource } from '../paint';
 import { paintConnectors, paintOps } from '../paint';
-import type { Scene } from '../scene';
+import { aroundConnectors, type ElementItem, type Scene } from '../scene';
 import { collectContent, imageSources, type ExportSelection } from './content';
 import { DEFAULT_EXPORT_PADDING } from './svg';
 
@@ -100,20 +100,26 @@ export async function exportPng(
   const at = (x: number, y: number) =>
     ctx.setTransform(k, 0, 0, k, (x - bounds.minX) * k, (y - bounds.minY) * k);
 
+  // The same order as the screen: containers, connectors, then the other objects.
+  const { below, above } = aroundConnectors(content.elements);
+  const paintElements = (elements: readonly ElementItem[]) => {
+    for (const e of elements) {
+      at(e.x, e.y);
+      paintOps(ctx, e.compiled.compiled.ops, {
+        scale: k,
+        minTextPx: 0,
+        images,
+      });
+    }
+  };
+  paintElements(below);
   at(0, 0);
   paintConnectors(
     ctx,
     content.connectors.map((c) => ({ route: c.route, look: c.look })),
     { scale: k, minTextPx: 0, minArrowPx: 0 },
   );
-  for (const e of content.elements) {
-    at(e.x, e.y);
-    paintOps(ctx, e.compiled.compiled.ops, {
-      scale: k,
-      minTextPx: 0,
-      images,
-    });
-  }
+  paintElements(above);
 
   if (offscreen) return offscreen.convertToBlob({ type: 'image/png' });
   return new Promise<Blob>((resolve, reject) =>

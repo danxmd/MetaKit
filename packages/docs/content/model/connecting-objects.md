@@ -75,6 +75,8 @@ Messages show over the canvas for six seconds. See [[status-and-messages]].
 
 Without bend points the line leaves the facing edges of the two objects and turns at right angles in the middle. With bend points it runs in straight pieces through them. The arrowheads and line style come from the Kit.
 
+Connections are drawn above containers and swimlanes and below every other object, so a line between two objects in the same lane stays visible. See [[containers-swimlanes]].
+
 ## Examples
 
 In the Code review pipeline, click **Performs**, press on the agent **Planner**, drag to the task **Draft plan** and let go. The connection is created. Now press on **Planner** and drop on **Sam**, a **Human**, with **Performs** still chosen. Nothing is created. The message says that a **Performs** cannot go from an Agent to a Human, because the Kit says **Performs** goes from an *Actor* (an Agent or a Human) to a *Task*.

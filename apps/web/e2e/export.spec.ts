@@ -189,6 +189,60 @@ test.describe('image export', () => {
     }
   });
 
+  test('a connector inside a lane shows above the lane, on screen and in the PNG', async ({
+    page,
+  }) => {
+    await loadHarness(page, './canvas-harness.ts');
+    await page.evaluate((json) => {
+      (
+        window as unknown as { __canvas: { mount(t: unknown): void } }
+      ).__canvas.mount(JSON.parse(json));
+    }, kitJson);
+    // The lane has an opaque white fill.
+    const lane = (await call(page, 'exec', {
+      type: 'createElement',
+      class: 'cls_lane',
+      x: 0,
+      y: 0,
+      w: 600,
+      h: 200,
+    } as never)) as string;
+    const task = async (x: number) =>
+      (await call(page, 'exec', {
+        type: 'createElement',
+        class: 'cls_task',
+        x,
+        y: 70,
+        w: 100,
+        h: 60,
+        parent: lane,
+      } as never)) as string;
+    const a = await task(100);
+    const b = await task(400);
+    await call(page, 'exec', {
+      type: 'createConnector',
+      relation: 'rel_flow',
+      from: a,
+      to: b,
+      bends: [],
+    } as never);
+    // (300, 100) is on the line between the tasks; (300, 160) is plain lane.
+    const onLine = { x: 300, y: 100 };
+    const onLane = { x: 300, y: 160 };
+    // The line is grey (#6b7a90) and covers part of the pixel; the lane is white.
+    const dark = (p: number[]) => p[0]! + p[1]! + p[2]! < 680 && p[3]! > 0;
+    expect(dark(await call(page, 'pixel', onLane))).toBe(false);
+    expect(dark(await call(page, 'pixel', onLine))).toBe(true);
+    const png = await call(
+      page,
+      'exportPng',
+      { scale: 1, transparent: false },
+      [onLine, onLane],
+    );
+    expect(dark(png.pixels[1]!)).toBe(true);
+    expect(dark(png.pixels[2]!)).toBe(false);
+  });
+
   test('refuses an image that is too large, in plain words', async ({
     page,
   }) => {

@@ -58,6 +58,11 @@ export interface ElementItem {
   fill: string;
   outline: OutlineKind;
   compiled: CachedCompile;
+  /**
+   * A container or swimlane. These are drawn below the connectors and every other object is drawn
+   * above them, so that a line between two objects inside a container shows on its fill.
+   */
+  container: boolean;
   /** Position in drawing order among elements; larger is on top. */
   rank: number;
 }
@@ -77,6 +82,21 @@ export interface ConnectorItem {
 }
 
 export type Item = ElementItem | ConnectorItem;
+
+/**
+ * Splits elements given in drawing order into those drawn below the connectors (containers and
+ * swimlanes) and those drawn above them. The screen, the active layer and every export draw
+ * `below`, then the connectors, then `above`, so they all show the same picture.
+ */
+export function aroundConnectors(elements: readonly ElementItem[]): {
+  below: ElementItem[];
+  above: ElementItem[];
+} {
+  // Ranks put every container before every other object, so one cut is enough.
+  let cut = 0;
+  while (cut < elements.length && elements[cut]!.container) cut++;
+  return { below: elements.slice(0, cut), above: elements.slice(cut) };
+}
 
 /** What the spatial index stores. The rectangle is mutated in place when its item changes. */
 export interface IndexBox extends Rect {
@@ -425,7 +445,13 @@ export class Scene {
     const data = model.elements[id];
     if (!data) return;
     const existing = this.elements.get(id);
-    if (!existing || existing.pos !== data.pos) this.ranksDirty = true;
+    // Containers are ranked by nesting depth, so a new parent can change the order too.
+    if (
+      !existing ||
+      existing.pos !== data.pos ||
+      existing.parent !== data.parent
+    )
+      this.ranksDirty = true;
     const { info, label, scope } = this.scopeFor(data, data.w, data.h);
     const compiled = this.cache.get(
       existing?.compiled,
@@ -459,6 +485,8 @@ export class Scene {
             : '#e9ecef',
       outline: compiled.compiled.outline,
       compiled,
+      container:
+        info?.def.kind === 'container' || info?.def.kind === 'swimlane',
       rank: existing?.rank ?? 0,
     };
     this.elements.set(id, item);
@@ -592,10 +620,30 @@ export class Scene {
     this.ready = true;
     if (!this.ranksDirty) return;
     this.ranksDirty = false;
-    inDrawingOrder(this.model.elements).forEach((e, i) => {
-      const item = this.elements.get(e.id);
-      if (item) item.rank = i;
-    });
+    // Containers first (outer before inner, then in model order), then every other object in
+    // model order. Ranks follow the drawing order, so hit testing picks what is drawn on top.
+    const elements = this.model.elements;
+    const depths = new Map<ElementId, number>();
+    const depthOf = (id: ElementId): number => {
+      const known = depths.get(id);
+      if (known !== undefined) return known;
+      depths.set(id, 0); // guards against a parent cycle in a damaged file
+      const parent = elements[id]?.parent;
+      const depth = parent && parent in elements ? depthOf(parent) + 1 : 0;
+      depths.set(id, depth);
+      return depth;
+    };
+    const containers: ElementId[] = [];
+    const others: ElementId[] = [];
+    for (const e of inDrawingOrder(elements))
+      (this.elements.get(e.id)?.container ? containers : others).push(e.id);
+    // Array.prototype.sort is stable, so containers at one depth keep their model order.
+    containers.sort((a, b) => depthOf(a) - depthOf(b));
+    let rank = 0;
+    for (const id of [...containers, ...others]) {
+      const item = this.elements.get(id);
+      if (item) item.rank = rank++;
+    }
     inDrawingOrder(this.model.connectors).forEach((c, i) => {
       const item = this.connectors.get(c.id);
       if (item) item.rank = i;

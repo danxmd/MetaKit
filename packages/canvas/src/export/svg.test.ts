@@ -70,7 +70,7 @@ function setup() {
   const store = base.store;
   const scene = new Scene(store.state as Model, kit);
   scene.attach(store);
-  const create = (x: number, y: number, name: string) =>
+  const create = (x: number, y: number, name: string, parent?: ElementId) =>
     (
       store.execute({
         type: 'createElement',
@@ -80,6 +80,7 @@ function setup() {
         w: 100,
         h: 50,
         attrs: { [BPMN.name]: name },
+        ...(parent ? { parent } : {}),
       }) as unknown as { value: ElementId }
     ).value;
   const connect = (from: ElementId, to: ElementId) =>
@@ -92,7 +93,7 @@ function setup() {
         bends: [],
       }) as unknown as { value: ConnectorId }
     ).value;
-  return { scene, create, connect };
+  return { scene, store, create, connect };
 }
 
 /** A tiny well-formedness check: tags nest and close, attributes are quoted, no stray `<` or `&`. */
@@ -122,6 +123,32 @@ const count = (xml: string, tag: string) =>
   (xml.match(new RegExp(`<${tag}[ >/]`, 'g')) ?? []).length;
 
 describe('exportSvg', () => {
+  it('draws a connector inside a container above the container and below the objects', () => {
+    const { scene, store, create, connect } = setup();
+    const lane = (
+      store.execute({
+        type: 'createElement',
+        class: BPMN.lane as never,
+        x: -50,
+        y: -40,
+        w: 600,
+        h: 300,
+      }) as unknown as { value: ElementId }
+    ).value;
+    const a = create(0, 0, 'A', lane);
+    const b = create(300, 100, 'B', lane);
+    connect(a, b);
+    const svg = exportSvg(scene);
+    const container = svg.indexOf('<g transform="translate(-50 -40)">');
+    const line = svg.indexOf('<path d=');
+    const first = svg.indexOf('<g transform="translate(0 0)">');
+    const second = svg.indexOf('<g transform="translate(300 100)">');
+    expect(container).toBeGreaterThan(-1);
+    expect(line).toBeGreaterThan(container);
+    expect(first).toBeGreaterThan(line);
+    expect(second).toBeGreaterThan(line);
+  });
+
   it('draws a small model from its draw lists', () => {
     const { scene, create, connect } = setup();
     const a = create(0, 0, 'A');
