@@ -38,7 +38,7 @@ What stays where:
 | Kits, models, history | In your workspace folder, as files. |
 | The folder you last used | In your browser (IndexedDB), as a permission handle. |
 | Your name and colour | In your browser (IndexedDB). |
-| Light or dark choice | In your browser (local storage). See [[theme]]. |
+| Look and light or dark choice | In your browser (local storage). See [[theme]]. |
 | Git tokens, assistant key, script permissions | In your browser (IndexedDB) only. Never in the workspace folder. See [[git-tokens]]. |
 
 Things that do leave your computer, only when you ask for them:

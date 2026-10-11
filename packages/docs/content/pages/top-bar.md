@@ -53,7 +53,7 @@ It is at the top of the window, above everything else. The pages below it fill t
 | Status | **Saved**, **Saving…** or **Not saved**, and in a model the people who have it open. Only shown while a model or Kit is open. |
 | **Tutorials** | Opens the Tutorials page: the guided tours and the written tutorials ([[guided-tours]]). Whatever was open stays open underneath. |
 | **Help** | Opens or closes the Help side bar at the topic of the page you are on. Same as `F1` or `?`. |
-| **Settings** | Menu with Appearance, Connections, This browser and Close workspace. |
+| **Settings** | Menu with Look, Light or dark, Connections, This browser and Close workspace. |
 
 The location is a navigation landmark labelled "Location" for screen readers, and its last part is announced as the current page. The area switch is a group of two buttons labelled "Area".
 
@@ -67,7 +67,7 @@ You are editing a model in Model view. You click **Build**. The model closes (yo
 
 - **Below the top bar the Model view and the Build view have one toolbar each.** The Model view's has the menus **File**, **Edit**, **View**, **Arrange**, **Check** and **Commands**, the quick buttons and the find box. The Build view's has undo, redo, **Source control** (for a Kit kept in Git) and **Try it** ([[model-toolbar]], [[page-build-view]]).
 - **Narrow windows.** MetaKit is designed for desktop screens from about 1024 pixels wide. On a narrow window the names in the location are cut short first.
-- **The top bar follows the theme** ([[theme]]).
+- **The top bar follows the look and theme** ([[theme]]). In Workshop it has a line in the colour of the current mode; in Drafting it is dark.
 - The bar shows the name of the workspace, not of the folder. They are the same unless you changed the name when creating it.
 
 ## Related

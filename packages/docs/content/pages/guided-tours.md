@@ -59,7 +59,7 @@ A guided tour teaches one page in a minute or two. It highlights one button or a
 | **Building a Kit** | An open Kit ([[page-build-view]]) | The sections, **Classes**, adding a class, **Add from catalog…**, the class list, the class editor and its attributes, **Try it**, undo and redo, **Source control** (only for a Kit kept in Git) and the location in the top bar. Needs an open Kit. |
 | **Appearance** | An open Kit | A class's appearance, **Edit appearance**, the form, the preview, colours, colour by attribute, badges, **Done**, and **More ways to set the look** for the drawing editor ([[appearance-editor]]). Needs an open Kit. |
 | **Rules and scripts** | An open Kit | **Rules** with When, If and Then, commands, **Add rule**, then **Scripts**: the list, the script editor and the permissions ([[rules]], [[scripts]]). Needs an open Kit. |
-| **Help and settings** | Any workspace page | **Help** (`F1`) and the Documentation, **Tutorials** and the **Settings** menu: appearance, your name and colour, Git and the assistant. |
+| **Help and settings** | Any workspace page | **Help** (`F1`) and the Documentation, **Tutorials** and the **Settings** menu: the look, light or dark, your name and colour, Git and the assistant. |
 
 ## Examples
 

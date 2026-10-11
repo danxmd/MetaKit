@@ -50,6 +50,7 @@ After step 8 your canvas holds an **Agent** and a **Task** joined by **Performs*
 
 ## Good to know
 
+- **Your look.** The screens here show the default look, Workshop: Model mode is blue and Build mode is magenta. If you prefer other colours, or dark, choose them under **Settings** ([[theme]]).
 - **Undo.** If you slip, press `Ctrl+Z` in the model ([[undo-redo]]).
 - **Delete and restore.** Deleting a model only hides it for 30 days ([[trash-and-restore]]).
 - **The sample is a file you copy.** MetaKit does not ship Kits inside the app. The Kits page names two samples in the repository, `kits/agent-pipeline/kit.json` and `kits/bpmn-lite/kit.json`.

@@ -47,7 +47,7 @@ In a supported browser a few more things can limit you:
 
 - **Folder permission.** Chrome and Edge ask for permission to edit the folder. Choose to allow it. If you refuse, MetaKit says: "The browser did not give access to that folder. Choose it again."
 - **System folders.** Chrome refuses some folders such as the top of your drive or your Documents folder itself. Pick or create a sub-folder.
-- **Private windows.** A private (incognito) window may block browser storage. The app still opens, but it cannot remember your folder, your name or your theme between visits, and [[git-mode]] is switched off.
+- **Private windows.** A private (incognito) window may block browser storage. The app still opens, but it cannot remember your folder, your name or your look and theme between visits, and [[git-mode]] is switched off.
 - **Blocked site data.** If the browser blocks IndexedDB, the same limits apply.
 
 ## Examples
