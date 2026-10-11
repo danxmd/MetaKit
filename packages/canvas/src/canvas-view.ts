@@ -49,6 +49,11 @@ export class CanvasView {
   private panning: { id: number; x: number; y: number } | null = null;
   private spaceDown = false;
   private readonly cleanups: (() => void)[] = [];
+  /**
+   * A fit asked for while the canvas had no size yet (not laid out, or hidden). It is done as soon
+   * as the canvas gets one; `undefined` content means the whole model as it is then.
+   */
+  private pendingFit: { rect: Rect | null | undefined } | null = null;
 
   constructor(
     readonly container: HTMLElement,
@@ -102,6 +107,26 @@ export class CanvasView {
     for (const l of this.viewListeners) l();
     this.dirtyBackground = this.dirtyScene = this.dirtyActive = true;
     this.schedule();
+    if (this.pendingFit) {
+      const { rect: content } = this.pendingFit;
+      this.pendingFit = null;
+      this.fit(content);
+    }
+  }
+
+  /**
+   * Reads the canvas size now. The resize observer reports a new size only before the next frame,
+   * so a fit asked for in between would otherwise use the old one.
+   */
+  private measure(): void {
+    const rect = this.root.getBoundingClientRect();
+    if (
+      rect.width !== 0 &&
+      rect.height !== 0 &&
+      (rect.width !== this.renderer.width ||
+        rect.height !== this.renderer.height)
+    )
+      this.fitToContainer();
   }
 
   /** World position of a pointer event. */
@@ -121,6 +146,8 @@ export class CanvasView {
 
   /** Replaces the viewport. A gesture moves the cached bitmap and settles later. */
   setView(view: View, gesture = true): void {
+    // A view chosen now replaces a fit still waiting for the canvas to get a size.
+    this.pendingFit = null;
     this.renderer.view = view;
     if (gesture) {
       // The browser moves the three bitmaps; they are drawn sharp again when the gesture stops.
@@ -152,10 +179,22 @@ export class CanvasView {
     this.setView({ s: v.s, ox: v.ox + dx, oy: v.oy + dy });
   }
 
-  /** Zooms and moves so that `rect` (or the whole model) is in view. */
-  fit(rect: Rect | null = this.scene.bounds()): void {
+  /**
+   * Zooms and moves so that `rect` (or the whole model) is in view. A canvas without a size yet
+   * would centre the content on its top-left corner, so the fit then waits until it has one.
+   */
+  fit(rect?: Rect | null): void {
+    this.measure();
+    if (this.width === 0 || this.height === 0) {
+      this.pendingFit = { rect };
+      return;
+    }
+    this.pendingFit = null;
+    const content = rect === undefined ? this.scene.bounds() : rect;
     this.setView(
-      rect ? fitRect(rect, this.width, this.height) : { s: 1, ox: 40, oy: 40 },
+      content
+        ? fitRect(content, this.width, this.height)
+        : { s: 1, ox: 40, oy: 40 },
       false,
     );
   }

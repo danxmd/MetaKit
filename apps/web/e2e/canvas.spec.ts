@@ -121,6 +121,33 @@ test.describe('canvas engine', () => {
     expect((await call(page, 'stats')).labels).toBeGreaterThan(0);
   });
 
+  test('fit to window waits for a canvas that has no size yet', async ({
+    page,
+  }) => {
+    const t = await setup(page);
+    // The leftmost object is at a negative x, as in some sample models.
+    await t.create(TASK, -200, 40);
+    await t.create(TASK, 1400, 600);
+    const fitted = await call(page, 'fitBeforeLayout');
+    expect(fitted.width).toBe(600);
+    // The whole model is inside the canvas, not centred on its top-left corner.
+    expect(fitted.left).toBeGreaterThanOrEqual(0);
+    expect(fitted.top).toBeGreaterThanOrEqual(0);
+    expect(fitted.right).toBeLessThanOrEqual(600);
+    expect(fitted.bottom).toBeLessThanOrEqual(400);
+  });
+
+  test('fit to window uses the canvas size of the moment, not the last one reported', async ({
+    page,
+  }) => {
+    const t = await setup(page);
+    await t.create(TASK, -200, 40);
+    await t.create(TASK, 1400, 600);
+    const fitted = await call(page, 'fitRightAfterResize', 500);
+    expect(fitted.left).toBeGreaterThanOrEqual(0);
+    expect(fitted.right).toBeLessThanOrEqual(500);
+  });
+
   test('moves the cached bitmap while zooming and draws sharp after the gesture', async ({
     page,
   }) => {

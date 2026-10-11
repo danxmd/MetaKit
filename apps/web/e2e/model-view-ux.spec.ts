@@ -106,6 +106,58 @@ test.describe('the toolbar menus', () => {
     await chooseFromMenu(page, 'View', 'minimap-toggle');
     await expect(page.getByTestId('minimap')).toBeVisible();
   });
+
+  test('Fit to window right after opening shows the whole model, left side included', async ({
+    page,
+  }) => {
+    // This sample model has objects at a negative x.
+    const portfolio = (path: string) =>
+      fileURLToPath(
+        new URL(`../../../kits/ai-use-case-portfolio/${path}`, import.meta.url),
+      );
+    await prepare(page, {
+      seed: true,
+      kit: readFileSync(portfolio('kit.json'), 'utf8'),
+    });
+    await page.getByTestId('open-folder').click();
+    await page
+      .locator('input[type="file"][aria-label="Files to import"]')
+      .setInputFiles(portfolio('customer-operations.mkmodel.json'));
+    await expect(page.getByTestId('import-note')).toBeVisible();
+    await page
+      .getByRole('tree')
+      .getByRole('button', { name: 'Customer operations AI portfolio' })
+      .click();
+    // No waiting for the canvas: the button is pressed as soon as it can be.
+    await page
+      .getByTestId('model-header')
+      .getByRole('button', { name: 'Fit to window' })
+      .click();
+    const placed = await page.evaluate(() => {
+      const { view, scene } = (
+        window as unknown as {
+          __metakit: {
+            view: {
+              view: { s: number; ox: number; oy: number };
+              width: number;
+            };
+            scene: { bounds(): { minX: number; maxX: number } };
+          };
+        }
+      ).__metakit;
+      const b = scene.bounds();
+      const { s, ox } = view.view;
+      return {
+        left: b.minX * s + ox,
+        right: b.maxX * s + ox,
+        width: view.width,
+      };
+    });
+    const host = (await page.getByTestId('canvas-host').boundingBox())!;
+    expect(placed.width).toBeCloseTo(host.width, 0);
+    expect(placed.left).toBeGreaterThanOrEqual(0);
+    expect(placed.right).toBeLessThanOrEqual(host.width);
+  });
 });
 
 test.describe('the palette preview', () => {

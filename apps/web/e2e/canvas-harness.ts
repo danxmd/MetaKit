@@ -201,6 +201,48 @@ const api = {
     flush();
   },
   viewState: () => ({ ...need().view.view }),
+  /**
+   * Opens a second canvas on the mounted model in a box that is not laid out yet, fits as the model
+   * view does when it opens, then lets the box get its size. Returns where the model's bounds end
+   * up on that canvas, in its pixels.
+   */
+  async fitBeforeLayout() {
+    const m = need();
+    const box = document.createElement('div');
+    box.style.cssText =
+      'position:fixed;left:0;top:0;width:600px;height:400px;display:none;';
+    document.body.append(box);
+    const view = new CanvasView(box, m.scene);
+    view.fit();
+    box.style.display = 'block';
+    for (let i = 0; i < 2; i++)
+      await new Promise((done) => requestAnimationFrame(done));
+    const b = m.scene.bounds()!;
+    const { s, ox, oy } = view.view;
+    const out = {
+      width: view.width,
+      height: view.height,
+      left: b.minX * s + ox,
+      top: b.minY * s + oy,
+      right: b.maxX * s + ox,
+      bottom: b.maxY * s + oy,
+    };
+    view.destroy();
+    box.remove();
+    return out;
+  },
+  /**
+   * Narrows the canvas and fits in the same task, before the resize observer has reported the new
+   * size. Returns where the model's bounds end up.
+   */
+  fitRightAfterResize(width: number) {
+    const m = need();
+    m.host.style.width = `${width}px`;
+    m.view.fit();
+    const b = m.scene.bounds()!;
+    const { s, ox } = m.view.view;
+    return { left: b.minX * s + ox, right: b.maxX * s + ox };
+  },
   setTool(tool: EditorTool) {
     need().editor.setTool(tool);
   },
