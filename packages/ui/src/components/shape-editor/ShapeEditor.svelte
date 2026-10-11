@@ -228,8 +228,11 @@
     min-height: 0;
   }
   .left {
-    padding-right: 0.25rem;
+    padding-right: var(--gap-1);
     grid-template-columns: minmax(0, 1fr);
+    /* Full-height rows: on a short window the column scrolls, instead of squeezing the layer
+       list (which can shrink to nothing, because it scrolls itself) out of sight. */
+    grid-auto-rows: max-content;
   }
   .centre,
   .right {
