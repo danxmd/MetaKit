@@ -26,7 +26,7 @@ Key facts:
 
 Open a Kit in Build mode (see [[page-build-view]]) and choose **Scripts** in the section list. The page says: "Scripts are TypeScript for what formulas and rules cannot do. They run only in the browser where a change was made, and they can only change the open model through commands, so everything they do can be undone."
 
-The page has four parts: the list of scripts on the left, the editor and a console area on the right, and at the bottom the box **What the scripts of this Kit may do**.
+The page has four parts: the list of scripts on the left, the editor and a console area on the right, and at the bottom the box **What the scripts of this Kit may do**. A Kit without scripts shows only "No scripts yet." and the **Add a script** button; the editor and the console appear once there is a script.
 
 > **Note:** Build mode and an open model are never open together in this version. Scripts run only in a model, so the console area and the **Run** button of this page become useful only when scripts are running next to it. Today you test a script in Model mode.
 

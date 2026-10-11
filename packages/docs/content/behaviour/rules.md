@@ -29,7 +29,7 @@ The engine is careful. A rule that has a problem never crashes the app. It shows
 1. Open a Kit in Build mode (see [[page-build-view]]).
 2. Choose **Rules** in the section list on the left. The sections are Classes, Relation classes, Model types, Shapes, **Rules**, [[scripts|Scripts]] and Settings.
 
-The page shows the text "A rule reacts when something happens in a model: when it, if the condition is true, then its actions." Below it is the list of rules, sorted by name. An empty list says "No rules yet."
+The page shows the text "A rule reacts when something happens in a model: when it, if the condition is true, then its actions." Below it is the list of rules, sorted by name. A Kit without rules shows only "No rules yet." and the **Add rule** button.
 
 ## How to use it
 

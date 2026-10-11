@@ -192,10 +192,7 @@
           {#if note}<p class="problem" role="status">{note}</p>{/if}
         </li>
       {:else}
-        <li class="muted">
-          No scripts yet. A script is TypeScript for what formulas and rules
-          cannot do, such as a check across the whole model.
-        </li>
+        <li class="muted" data-testid="scripts-empty">No scripts yet.</li>
       {/each}
       <li>
         <button
@@ -220,8 +217,8 @@
       </li>
     </ul>
 
-    <div class="work" data-tour="scripts-editor">
-      {#if selected}
+    {#if selected}
+      <div class="work" data-tour="scripts-editor">
         <div class="bar">
           <strong>{selected.name}</strong>
           <span class="spacer"></span>
@@ -244,11 +241,9 @@
             {createClient}
           />
         {/key}
-      {:else}
-        <p class="muted">Add a script on the left to start writing.</p>
-      {/if}
-      <ScriptConsole {lines} onClear={() => api?.clearLog()} />
-    </div>
+        <ScriptConsole {lines} onClear={() => api?.clearLog()} />
+      </div>
+    {/if}
   </div>
 
   <fieldset data-tour="scripts-permissions">
@@ -300,7 +295,7 @@
 <style>
   .section {
     display: grid;
-    gap: 0.7rem;
+    gap: var(--gap-3);
   }
   h2 {
     margin: 0;
@@ -309,7 +304,7 @@
   .layout {
     display: grid;
     grid-template-columns: minmax(16rem, 20rem) 1fr;
-    gap: 1rem;
+    gap: var(--gap-4);
     align-items: start;
   }
   @media (max-width: 800px) {
@@ -322,10 +317,10 @@
     margin: 0;
     padding: 0;
     display: grid;
-    gap: 0.3rem;
+    gap: var(--gap-1);
   }
   .list li {
-    padding: 0.3rem 0.4rem;
+    padding: var(--gap-1) var(--gap-2);
     border-radius: 6px;
   }
   .list li.current {
@@ -333,7 +328,7 @@
   }
   .line {
     display: flex;
-    gap: 0.4rem;
+    gap: var(--gap-2);
     align-items: center;
   }
   .name {
@@ -355,12 +350,12 @@
   }
   .work {
     display: grid;
-    gap: 0.7rem;
+    gap: var(--gap-3);
     min-width: 0;
   }
   .bar {
     display: flex;
-    gap: 0.5rem;
+    gap: var(--gap-2);
     align-items: center;
   }
   .spacer {
@@ -376,11 +371,11 @@
   }
   .check {
     display: flex;
-    gap: 0.4rem;
+    gap: var(--gap-2);
     align-items: center;
   }
   .muted {
-    color: var(--muted);
+    color: var(--text-muted);
     font-size: 0.85rem;
     margin: 0;
   }

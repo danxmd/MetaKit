@@ -172,16 +172,16 @@
     display: flex;
     width: 100%;
     justify-content: space-between;
-    gap: 0.5rem;
+    gap: var(--gap-2);
     border: 0;
     border-radius: 4px;
     text-align: left;
     background: transparent;
   }
   .options button.active {
-    background: var(--hover, var(--surface-3));
+    background: var(--hover-bg);
   }
   small {
-    color: var(--muted, var(--text-muted));
+    color: var(--text-muted);
   }
 </style>

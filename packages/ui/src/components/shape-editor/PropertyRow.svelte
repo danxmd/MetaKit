@@ -170,17 +170,17 @@
   .row {
     display: grid;
     grid-template-columns: 6.5rem minmax(0, 1fr) auto;
-    gap: 0.4rem;
+    gap: var(--gap-2);
     align-items: center;
     padding: 0.15rem 0;
   }
   .label {
     font-size: 0.85rem;
-    color: var(--muted, var(--text-muted));
+    color: var(--text-muted);
   }
   .control {
     display: flex;
-    gap: 0.3rem;
+    gap: var(--gap-1);
     min-width: 0;
   }
   .control input[type='text'],
@@ -199,12 +199,12 @@
     grid-column: 2 / -1;
     justify-self: start;
     font-size: 0.8rem;
-    padding: 0.1rem 0.5rem;
+    padding: 0.1rem var(--gap-2);
   }
   .fx {
     font-style: italic;
     font-family: serif;
-    padding: 0.15rem 0.5rem;
+    padding: 0.15rem var(--gap-2);
   }
   .fx[aria-pressed='true'] {
     background: var(--accent);

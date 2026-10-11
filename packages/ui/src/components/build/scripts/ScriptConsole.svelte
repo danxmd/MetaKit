@@ -71,9 +71,9 @@
   }
   header {
     display: flex;
-    gap: 0.6rem;
+    gap: var(--gap-2);
     align-items: center;
-    padding: 0.3rem 0.6rem;
+    padding: var(--gap-1) var(--gap-2);
     border-bottom: 1px solid var(--line);
   }
   h3 {
@@ -83,7 +83,7 @@
   .check {
     font-size: 0.85rem;
     display: flex;
-    gap: 0.3rem;
+    gap: var(--gap-1);
     align-items: center;
   }
   .spacer {
@@ -92,7 +92,7 @@
   ol {
     list-style: none;
     margin: 0;
-    padding: 0.3rem 0;
+    padding: var(--gap-1) 0;
     max-height: 12rem;
     overflow: auto;
     font-family: ui-monospace, Consolas, monospace;
@@ -100,8 +100,8 @@
   }
   li {
     display: flex;
-    gap: 0.6rem;
-    padding: 0.1rem 0.6rem;
+    gap: var(--gap-2);
+    padding: 0.1rem var(--gap-2);
     white-space: pre-wrap;
     overflow-wrap: anywhere;
   }
@@ -120,7 +120,7 @@
     font-family: inherit;
   }
   time {
-    color: var(--muted);
+    color: var(--text-muted);
     flex: none;
   }
   .origin {

@@ -515,6 +515,8 @@ export const TOURS: readonly Tour[] = [
         title: 'Script editor',
         text: 'Write the script here; the editor completes names and marks mistakes. The console below shows what scripts print.',
         placement: 'left',
+        // Shown only once the Kit has a script.
+        optional: true,
       },
       {
         anchor: 'scripts-permissions',

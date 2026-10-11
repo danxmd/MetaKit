@@ -69,18 +69,18 @@
   --gap-6: 2rem;
   --bar-height: 3rem;
 
-  /* Names used before the design system existed */
-  --bg: var(--surface);
-  --panel: var(--surface-2);
-  --muted: var(--text-muted);
-  --hover: var(--hover-bg);
-
   font-family: var(--font);
   font-size: 15px;
   line-height: 1.45;
   color: var(--text);
 }
 
+/*
+ * The dark values are written out twice, for a chosen Dark theme and for a system that prefers
+ * dark. They are not folded into light-dark(): canvasColors() in theme.ts reads the tokens back
+ * with getComputedStyle, and a light-dark() value comes back as the function, not a colour the
+ * canvas can paint with. Change both blocks together.
+ */
 :root[data-theme='dark'] {
   color-scheme: dark;
   --app-bg: #0f1218;

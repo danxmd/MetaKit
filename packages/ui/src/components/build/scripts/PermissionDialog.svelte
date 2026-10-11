@@ -62,30 +62,27 @@
 
 <style>
   dialog {
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 1.25rem 1.5rem;
     max-width: 30rem;
   }
   h2 {
-    margin: 0 0 0.6rem;
+    margin: 0 0 var(--gap-2);
     font-size: 1.15rem;
   }
   .hint {
-    margin: 0.5rem 0;
-    color: var(--muted);
+    margin: var(--gap-2) 0;
+    color: var(--text-muted);
     font-size: 0.9rem;
   }
   ul {
-    margin: 0.5rem 0;
+    margin: var(--gap-2) 0;
     padding-left: 1.2rem;
     display: grid;
-    gap: 0.4rem;
+    gap: var(--gap-2);
   }
   .actions {
     display: flex;
     justify-content: flex-end;
-    gap: 0.5rem;
-    margin-top: 0.8rem;
+    gap: var(--gap-2);
+    margin-top: var(--gap-3);
   }
 </style>

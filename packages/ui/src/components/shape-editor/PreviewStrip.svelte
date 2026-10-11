@@ -144,7 +144,7 @@
 <style>
   .strip {
     display: grid;
-    gap: 0.5rem;
+    gap: var(--gap-2);
     min-width: 0;
   }
   h3 {
@@ -153,7 +153,7 @@
   }
   .sizes {
     display: flex;
-    gap: 1rem;
+    gap: var(--gap-4);
     align-items: flex-end;
     flex-wrap: wrap;
   }
@@ -168,19 +168,19 @@
   }
   figcaption {
     font-size: 0.75rem;
-    color: var(--muted, var(--text-muted));
+    color: var(--text-muted);
   }
   .samples {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem 1rem;
+    gap: var(--gap-2) var(--gap-4);
     border: 1px solid var(--line, var(--line));
     border-radius: 6px;
-    padding: 0.3rem 0.6rem 0.5rem;
+    padding: var(--gap-1) var(--gap-2) var(--gap-2);
   }
   legend {
     font-size: 0.8rem;
-    color: var(--muted, var(--text-muted));
+    color: var(--text-muted);
   }
   label {
     display: grid;
@@ -201,6 +201,6 @@
   .hint {
     margin: 0;
     font-size: 0.85rem;
-    color: var(--muted, var(--text-muted));
+    color: var(--text-muted);
   }
 </style>
