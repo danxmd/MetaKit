@@ -5,7 +5,7 @@ import {
   effectiveRelationAttributes,
   isA,
 } from '../meta/inherit';
-import type { AttributeDef, ToolLibrary } from '../meta/types';
+import type { AttributeDef, Kit } from '../meta/types';
 import type { ModelCommand } from '../model/commands';
 import type { ModelStore } from '../model/commands';
 import type { Model } from '../model/types';
@@ -13,22 +13,18 @@ import type { Patch } from '../store/tx';
 import { EventBus, type EventPayload } from './bus';
 
 export interface BridgeOptions {
-  /** The tool library the model follows; read on every event so that edits to it are seen. */
-  tool: () => ToolLibrary;
+  /** The Kit the model follows; read on every event so that edits to it are seen. */
+  kit: () => Kit;
 }
 
-function attrDefs(
-  tool: ToolLibrary,
-  model: Model,
-  target: string,
-): AttributeDef[] {
+function attrDefs(kit: Kit, model: Model, target: string): AttributeDef[] {
   try {
     if (target === 'model')
-      return tool.modelTypes[model.manifest.modelType]?.attributes ?? [];
+      return kit.modelTypes[model.manifest.modelType]?.attributes ?? [];
     const el = model.elements[target as ElementId];
-    if (el) return effectiveAttributes(tool, el.class);
+    if (el) return effectiveAttributes(kit, el.class);
     const cn = model.connectors[target as ConnectorId];
-    if (cn) return effectiveRelationAttributes(tool, cn.relation);
+    if (cn) return effectiveRelationAttributes(kit, cn.relation);
   } catch {
     // A broken class chain has no attributes to report.
   }
@@ -212,7 +208,7 @@ export function attachEvents(
     store.before('setAttribute', ({ command, state, user }) => {
       const c = command as Extract<ModelCommand, { type: 'setAttribute' }>;
       const m = state as Model;
-      const def = attrDefs(options.tool(), m, c.target).find(
+      const def = attrDefs(options.kit(), m, c.target).find(
         (a) => a.id === c.attr,
       );
       const data =
@@ -239,8 +235,8 @@ export function attachEvents(
       const m = state as Model;
       const p = patches.find((q) => q.path.at(-1) === c.attr);
       if (!p) return;
-      const tool = options.tool();
-      const defs = attrDefs(tool, m, c.target);
+      const kit = options.kit();
+      const defs = attrDefs(kit, m, c.target);
       const def = defs.find((a) => a.id === c.attr);
       const payload = {
         ...target(m, c.target),

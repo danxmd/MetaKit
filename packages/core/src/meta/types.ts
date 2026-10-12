@@ -4,12 +4,12 @@ import type {
   ModelTypeId,
   RelationId,
   ShapeId,
-  ToolId,
+  KitId,
   ViewId,
 } from '../ids';
 import type { Json } from '../json';
 import type { Constraint, Rule, RuleId } from './rule-types';
-import type { Script, ScriptId, ToolPermissions } from './script-types';
+import type { Script, ScriptId, KitPermissions } from './script-types';
 import type { PanelLayout, ShapeDef } from './shape-types';
 
 /** Text per language code, for example `{ "en": "Task", "de": "Aufgabe" }`. */
@@ -229,34 +229,34 @@ export interface ModelTypeDef {
   help?: Labels;
 }
 
-export interface ToolManifest {
-  id: ToolId;
+export interface KitManifest {
+  id: KitId;
   name: string;
   version: string;
   languages: string[];
-  /** What the scripts of this tool need beyond models and dialogs (ADR 0006). */
-  permissions?: ToolPermissions;
-  /** The tool library this one was copied from, shown as "Based on …" (ADR 0010). */
-  basedOn?: ToolOrigin;
+  /** What the scripts of this Kit need beyond models and dialogs (ADR 0006). */
+  permissions?: KitPermissions;
+  /** The Kit this one was copied from, shown as "Based on …" (ADR 0010). */
+  basedOn?: KitOrigin;
 }
 
-/** Where a copied tool library came from, as it was when it was copied. */
-export interface ToolOrigin {
-  id: ToolId;
+/** Where a copied Kit came from, as it was when it was copied. */
+export interface KitOrigin {
+  id: KitId;
   name: string;
   version: string;
 }
 
-export interface ToolSettings {
+export interface KitSettings {
   grid: { size: number; snap: boolean; visible: boolean };
   layers: { key: string; labels: Labels; visible: boolean }[];
   numbering: { enabled: boolean; prefix: string; start: number };
 }
 
-export interface ToolLibrary {
+export interface Kit {
   formatVersion: number;
-  manifest: ToolManifest;
-  settings: ToolSettings;
+  manifest: KitManifest;
+  settings: KitSettings;
   classes: Record<ClassId, ClassDef>;
   relations: Record<RelationId, RelationDef>;
   modelTypes: Record<ModelTypeId, ModelTypeDef>;
@@ -270,14 +270,14 @@ export interface ToolLibrary {
   scripts: Record<ScriptId, Script>;
 }
 
-/** The format version this release writes for tool libraries (2: shapes and panels, ADR 0004; 3: rules, constraints and default formulas, ADR 0005; 4: scripts and permissions, ADR 0006; 5: simple looks of shapes, ADR 0009; 6: `manifest.basedOn` for copies, ADR 0010). */
-export const TOOL_FORMAT_VERSION = 6;
+/** The format version this release writes for Kits (2: shapes and panels, ADR 0004; 3: rules, constraints and default formulas, ADR 0005; 4: scripts and permissions, ADR 0006; 5: simple looks of shapes, ADR 0009; 6: `manifest.basedOn` for copies, ADR 0010; 7: `kit_` ids, ADR 0011). */
+export const KIT_FORMAT_VERSION = 7;
 
 export function optionValue(option: ChoiceOption): string {
   return typeof option === 'string' ? option : option.value;
 }
 
-export function emptyToolSettings(): ToolSettings {
+export function emptyKitSettings(): KitSettings {
   return {
     grid: { size: 10, snap: true, visible: true },
     layers: [],

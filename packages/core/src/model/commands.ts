@@ -15,7 +15,7 @@ import {
   effectiveAttributes,
   effectiveRelationAttributes,
 } from '../meta/inherit';
-import type { AttributeDef, ToolLibrary } from '../meta/types';
+import type { AttributeDef, Kit } from '../meta/types';
 import {
   DocumentStore,
   type BatchCommand,
@@ -84,7 +84,7 @@ export type ModelCommand =
       /**
        * The element was dropped here: with no explicit `parent`, its new container is the deepest
        * container that holds its centre and accepts its class (none puts it at the top level).
-       * Needs a tool library; without one the container is kept.
+       * Needs a Kit; without one the container is kept.
        */
       drop?: boolean;
     }
@@ -129,14 +129,14 @@ export type ModelCommand =
       type: 'updateManifest';
       name?: string;
       folder?: string | null;
-      toolVersion?: string;
+      kitVersion?: string;
     };
 
 export type ModelCommandOrBatch = ModelCommand | BatchCommand<ModelCommand>;
 
 export interface ModelContext {
-  /** The tool library this model uses. Without it, commands check structure only. */
-  tool?: ToolLibrary;
+  /** The Kit this model uses. Without it, commands check structure only. */
+  kit?: Kit;
   random?: RandomSource;
 }
 
@@ -184,7 +184,7 @@ function defaultsOf(attributes: AttributeDef[]): Record<string, Json> {
 /**
  * Fills attributes the command did not set from their default formulas, in list order, so a
  * later default can read an earlier one. A formula that fails leaves the attribute empty:
- * creating an object must never fail because of a tool library formula.
+ * creating an object must never fail because of a Kit formula.
  */
 function applyDefaultFormulas(
   attributes: AttributeDef[],
@@ -277,16 +277,16 @@ function growToFit(tx: Tx<Model>, id: ElementId, padding: number): void {
 function fitUp(
   tx: Tx<Model>,
   start: ElementId | undefined,
-  tool: ToolLibrary | undefined,
+  kit: Kit | undefined,
   padding = FIT_PADDING,
 ): void {
-  if (!tool) return;
+  if (!kit) return;
   const seen = new Set<ElementId>();
   let current = start;
   while (current !== undefined && !seen.has(current)) {
     seen.add(current);
     const lane = tx.view.elements[current];
-    if (!lane || !isSwimlaneClass(tool, lane.class)) return;
+    if (!lane || !isSwimlaneClass(kit, lane.class)) return;
     growToFit(tx, current, padding);
     current = tx.view.elements[current]!.parent;
   }
@@ -306,22 +306,22 @@ function requireElement(
 function attributeDefsFor(
   model: Model,
   target: string,
-  tool: ToolLibrary,
+  kit: Kit,
 ): AttributeDef[] | null {
   try {
     if (target === 'model')
-      return tool.modelTypes[model.manifest.modelType]?.attributes ?? null;
+      return kit.modelTypes[model.manifest.modelType]?.attributes ?? null;
     if (target.startsWith('el_'))
       return effectiveAttributes(
-        tool,
+        kit,
         model.elements[target as ElementId]!.class,
       );
     return effectiveRelationAttributes(
-      tool,
+      kit,
       model.connectors[target as ConnectorId]!.relation,
     );
   } catch {
-    // A class or relation the tool no longer has: nothing is known about its attributes.
+    // A class or relation the Kit no longer has: nothing is known about its attributes.
     return null;
   }
 }
@@ -332,14 +332,14 @@ function applyModelCommand(
   ctx: ModelContext,
 ): unknown {
   const model = tx.view;
-  const tool = ctx.tool;
+  const kit = ctx.kit;
   switch (command.type) {
     case 'createElement': {
-      const cls = tool?.classes[command.class];
-      if (tool) {
+      const cls = kit?.classes[command.class];
+      if (kit) {
         if (!cls)
           throw new CommandError(
-            `The class ${command.class} does not exist in the tool library.`,
+            `The class ${command.class} does not exist in the Kit.`,
           );
         if (cls.abstract)
           throw new CommandError(
@@ -368,14 +368,14 @@ function applyModelCommand(
           );
       }
       const attrs: Record<string, Json> = {
-        ...(tool && cls
-          ? defaultsOf(effectiveAttributes(tool, command.class))
+        ...(kit && cls
+          ? defaultsOf(effectiveAttributes(kit, command.class))
           : {}),
         ...(command.attrs ?? {}),
       };
-      if (tool && cls)
+      if (kit && cls)
         applyDefaultFormulas(
-          effectiveAttributes(tool, command.class),
+          effectiveAttributes(kit, command.class),
           command.attrs,
           attrs,
         );
@@ -395,7 +395,7 @@ function applyModelCommand(
         pos: positionBetween(last, null, ctx.random),
       };
       tx.set(['elements', id], element);
-      fitUp(tx, command.parent, tool);
+      fitUp(tx, command.parent, kit);
       return id;
     }
     case 'createConnector': {
@@ -403,17 +403,17 @@ function applyModelCommand(
       requireElement(model, command.to, 'The TO element');
       let defaults: Record<string, Json> = {};
       let relDefs: AttributeDef[] = [];
-      if (tool) {
-        const rel = tool.relations[command.relation];
+      if (kit) {
+        const rel = kit.relations[command.relation];
         if (!rel)
           throw new CommandError(
-            `The relation class ${command.relation} does not exist in the tool library.`,
+            `The relation class ${command.relation} does not exist in the Kit.`,
           );
         if (rel.abstract)
           throw new CommandError(
             `The relation class "${rel.key}" is abstract, so connectors of it cannot be created.`,
           );
-        relDefs = effectiveRelationAttributes(tool, command.relation);
+        relDefs = effectiveRelationAttributes(kit, command.relation);
         defaults = defaultsOf(relDefs);
       } else if (!isId('relation', command.relation)) {
         throw new CommandError(
@@ -476,8 +476,8 @@ function applyModelCommand(
           `${String(command.target)} is neither an element, a connector nor "model".`,
         );
       }
-      if (tool) {
-        const defs = attributeDefsFor(model, command.target, tool);
+      if (kit) {
+        const defs = attributeDefsFor(model, command.target, kit);
         const def = defs?.find((d) => d.id === command.attr);
         if (defs && !def)
           throw new CommandError(
@@ -516,8 +516,8 @@ function applyModelCommand(
           `${String(command.target)} is neither an element, a connector nor "model".`,
         );
       }
-      if (tool) {
-        const defs = attributeDefsFor(model, command.target, tool);
+      if (kit) {
+        const defs = attributeDefsFor(model, command.target, kit);
         const def = defs?.find((d) => d.id === command.attr);
         if (def)
           throw new CommandError(
@@ -546,16 +546,16 @@ function applyModelCommand(
       // Read everything before the first write: later reads see the changed state.
       const dx = x - el.x;
       const dy = y - el.y;
-      // Without a tool library the kind is unknown, so every element is checked for contents.
+      // Without a Kit the kind is unknown, so every element is checked for contents.
       const inside =
-        (dx !== 0 || dy !== 0) && (!tool || isContainerClass(tool, el.class))
+        (dx !== 0 || dy !== 0) && (!kit || isContainerClass(kit, el.class))
           ? descendantsOf(model, el.id).map((id) => model.elements[id]!)
           : [];
       let parent: ElementId | null | undefined = command.parent;
-      if (parent === undefined && command.drop && tool)
+      if (parent === undefined && command.drop && kit)
         parent = containerAt(
           model,
-          tool,
+          kit,
           model.manifest.modelType,
           { x: x + el.w / 2, y: y + el.h / 2 },
           [el.id],
@@ -574,12 +574,12 @@ function applyModelCommand(
         tx.set(['elements', el.id, 'parent'], parent);
         raiseAbove(tx, el.id, parent, ctx.random);
       }
-      fitUp(tx, parent === undefined ? was : (parent ?? undefined), tool);
+      fitUp(tx, parent === undefined ? was : (parent ?? undefined), kit);
       return undefined;
     }
     case 'fitContainer': {
       const lane = requireElement(model, command.id);
-      if (tool && !isSwimlaneClass(tool, lane.class))
+      if (kit && !isSwimlaneClass(kit, lane.class))
         throw new CommandError(
           'Only a swimlane can be fitted to its contents.',
         );
@@ -604,7 +604,7 @@ function applyModelCommand(
         tx.set(['elements', el.id, 'x'], finite(command.x, 'x'));
       if (command.y !== undefined && el.y !== command.y)
         tx.set(['elements', el.id, 'y'], finite(command.y, 'y'));
-      fitUp(tx, el.parent, tool);
+      fitUp(tx, el.parent, kit);
       return undefined;
     }
     case 'setBends': {
@@ -650,7 +650,7 @@ function applyModelCommand(
       for (const b of bendLists)
         if (!deepEqual(model.connectors[b.id]!.bends, b.bends))
           tx.set(['connectors', b.id, 'bends'], b.bends);
-      for (const parent of parents) fitUp(tx, parent, tool);
+      for (const parent of parents) fitUp(tx, parent, kit);
       return undefined;
     }
     case 'reconnect': {
@@ -759,10 +759,10 @@ function applyModelCommand(
           tx.set(['manifest', 'folder'], command.folder);
       }
       if (
-        command.toolVersion !== undefined &&
-        model.manifest.toolVersion !== command.toolVersion
+        command.kitVersion !== undefined &&
+        model.manifest.kitVersion !== command.kitVersion
       ) {
-        tx.set(['manifest', 'toolVersion'], command.toolVersion);
+        tx.set(['manifest', 'kitVersion'], command.kitVersion);
       }
       return undefined;
     }
@@ -782,7 +782,7 @@ export type ModelStore = DocumentStore<Model, ModelCommand, ModelContext>;
 export function createModelStore(
   model: Model,
   options: {
-    tool?: ToolLibrary;
+    kit?: Kit;
     user?: string;
     random?: RandomSource;
     historyLimit?: number;
@@ -792,7 +792,7 @@ export function createModelStore(
     kind: modelKind,
     initial: model,
     context: {
-      ...(options.tool ? { tool: options.tool } : {}),
+      ...(options.kit ? { kit: options.kit } : {}),
       ...(options.random ? { random: options.random } : {}),
     },
     ...(options.user ? { user: options.user } : {}),

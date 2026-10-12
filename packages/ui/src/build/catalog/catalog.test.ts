@@ -1,16 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import {
-  createEmptyTool,
-  createToolStore,
+  createEmptyKit,
+  createKitStore,
   keyProblem,
   LOOK_BASE_IDS,
   LOOK_ICON_NAMES,
-  validateToolLibrary,
+  validateKit,
   type ClassId,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
-import { parseCached } from '@metakit-app/formula';
+import { namesIn, parseCached } from '@metakit-app/formula';
 import { lookAttributeKeys } from '@metakit-app/shapes';
+import { NEUTRAL_NAMES } from '../neutral-names';
 import {
   CATALOG_CLASSES,
   CATALOG_RELATIONS,
@@ -22,15 +23,15 @@ import {
 } from './catalog';
 
 const ALL = CATALOG_CLASSES.map((c) => c.key);
-const empty = () => createEmptyTool({ name: 'Catalog test' });
+const empty = () => createEmptyKit({ name: 'Catalog test' });
 
 function apply(
-  tool: ToolLibrary,
+  kit: Kit,
   picks: string[],
   withRelations = true,
   generic: string[] = [],
 ) {
-  const store = createToolStore(tool);
+  const store = createKitStore(kit);
   const result = catalogCommands(store.state, picks, {
     withRelations,
     generic,
@@ -40,28 +41,45 @@ function apply(
   return { store, result };
 }
 
-const errors = (tool: ToolLibrary) => validateToolLibrary(tool);
+const errors = (kit: Kit) => validateKit(kit);
 
-const byKey = (tool: ToolLibrary, key: string) =>
-  Object.values(tool.classes).find((c) => c.key === key);
-const relationByKey = (tool: ToolLibrary, key: string) =>
-  Object.values(tool.relations).find((r) => r.key === key);
+const byKey = (kit: Kit, key: string) =>
+  Object.values(kit.classes).find((c) => c.key === key);
+const relationByKey = (kit: Kit, key: string) =>
+  Object.values(kit.relations).find((r) => r.key === key);
 
 describe('class catalog entries', () => {
-  it('has seven topics, about sixty classes and about twenty relation classes', () => {
+  it('has sixteen topics, about 250 classes and about sixty relation classes', () => {
     expect(CATALOG_TOPICS.map((t) => t.label)).toEqual([
       'General',
-      'Business and strategy',
+      'People and organisation',
+      'Strategy and value',
+      'Customer and marketing',
+      'Finance and operations',
       'Project delivery',
+      'Enterprise architecture',
+      'Software and cloud',
+      'Security',
       'Data',
-      'AI and machine learning',
-      'Applications and cloud',
-      'Governance and risk',
+      'Data mesh',
+      'Data quality and MDM',
+      'Analytics and BI',
+      'AI and MLOps',
+      'Generative AI',
+      'Governance and privacy',
     ]);
-    expect(CATALOG_CLASSES.length).toBeGreaterThanOrEqual(55);
-    expect(CATALOG_RELATIONS.length).toBeGreaterThanOrEqual(18);
+    expect(new Set(CATALOG_TOPICS.map((t) => t.id)).size).toBe(16);
+    expect(CATALOG_CLASSES.length).toBeGreaterThanOrEqual(240);
+    expect(CATALOG_RELATIONS.length).toBeGreaterThanOrEqual(60);
+    const known = new Set(CATALOG_TOPICS.map((t) => t.id));
+    for (const c of CATALOG_CLASSES)
+      expect(known.has(c.topic), c.key).toBe(true);
+    // Every tab has enough to choose from.
     for (const topic of CATALOG_TOPICS)
-      expect(CATALOG_CLASSES.some((c) => c.topic === topic.id)).toBe(true);
+      expect(
+        CATALOG_CLASSES.filter((c) => c.topic === topic.id).length,
+        topic.id,
+      ).toBeGreaterThanOrEqual(8);
   });
 
   it('uses valid, unique keys for classes, relation classes and attributes', () => {
@@ -122,83 +140,88 @@ describe('class catalog entries', () => {
         expect(known.has(k), `${r.key} names ${k}`).toBe(true);
   });
 
+  it('gives every relation-class end existing, distinct keys, and "any class" only to generic ends', () => {
+    const known = new Set(ALL);
+    // Relation classes with one end open to any class; every other end names its classes.
+    const openEnded = CATALOG_RELATIONS.filter(
+      (r) => (r.from.length === 0) !== (r.to.length === 0),
+    ).map((r) => r.key);
+    expect(openEnded).toEqual(['Owns']);
+    for (const r of CATALOG_RELATIONS)
+      for (const end of [r.from, r.to]) {
+        expect(new Set(end).size, r.key).toBe(end.length);
+        for (const k of end)
+          expect(known.has(k), `${r.key} names ${k}`).toBe(true);
+      }
+  });
+
   it('has formulas that parse and read attributes of their own class', () => {
     const formulas = CATALOG_CLASSES.flatMap((c) =>
       c.attributes.flatMap((a) =>
-        a.type === 'formula' ? [{ cls: c, formula: a.formula }] : [],
+        a.type === 'formula'
+          ? [{ cls: c, key: a.key, formula: a.formula }]
+          : [],
       ),
     );
-    expect(formulas.map((f) => f.cls.key).sort()).toEqual([
-      'DataQualityRule',
-      'Evaluation',
-      'KPI',
-      'Risk',
-      'Risk',
-    ]);
+    expect(formulas.length).toBeGreaterThanOrEqual(40);
     for (const f of formulas) {
       const parsed = parseCached(f.formula);
       expect('error' in parsed ? parsed.error : null, f.formula).toBeNull();
+      if ('error' in parsed) continue;
+      const own = new Set(f.cls.attributes.map((a) => a.key));
+      for (const name of namesIn(parsed.expr))
+        expect(own.has(name), `${f.cls.key}.${f.key} reads ${name}`).toBe(true);
     }
   });
 
-  it('never names a company or a vendor product', () => {
-    const text = JSON.stringify([CATALOG_CLASSES, CATALOG_RELATIONS]);
-    for (const name of [
-      'Accenture',
-      'Microsoft',
-      'Azure',
-      'Google',
-      'Amazon',
-      'AWS',
-      'Snowflake',
-      'Databricks',
-      'OpenAI',
-      'Oracle',
-      'SAP',
-      'Salesforce',
-      'Kafka',
-    ])
+  it('never names a company, a client or a vendor product', () => {
+    const text = JSON.stringify([
+      CATALOG_TOPICS,
+      CATALOG_CLASSES,
+      CATALOG_RELATIONS,
+    ]);
+    for (const name of [...NEUTRAL_NAMES, 'Kafka'])
       expect(text, name).not.toMatch(new RegExp(`\\b${name}\\b`, 'i'));
   });
 });
 
 describe('catalogCommands', () => {
-  it('adds everything to an empty tool library as a valid result', () => {
+  it('adds everything to an empty Kit as a valid result', () => {
     const { store, result } = apply(
       empty(),
       ALL,
       true,
       GENERIC_RELATIONS.map((r) => r.key),
     );
-    const tool = store.state;
-    expect(errors(tool)).toEqual([]);
-    expect(Object.keys(tool.classes)).toHaveLength(CATALOG_CLASSES.length);
-    expect(Object.keys(tool.relations)).toHaveLength(CATALOG_RELATIONS.length);
-    expect(Object.keys(tool.shapes)).toHaveLength(
+    const kit = store.state;
+    expect(errors(kit)).toEqual([]);
+    expect(Object.keys(kit.classes)).toHaveLength(CATALOG_CLASSES.length);
+    expect(Object.keys(kit.relations)).toHaveLength(CATALOG_RELATIONS.length);
+    expect(Object.keys(kit.shapes)).toHaveLength(
       CATALOG_CLASSES.length + CATALOG_RELATIONS.length,
     );
     expect(result.skipped).toEqual([]);
     // Every class draws with its own simple look.
-    for (const c of Object.values(tool.classes))
-      expect(tool.shapes[c.shape!]?.look, c.key).toBeDefined();
+    for (const c of Object.values(kit.classes))
+      expect(kit.shapes[c.shape!]?.look, c.key).toBeDefined();
     // Every formula in the result parses.
-    for (const c of Object.values(tool.classes))
+    for (const c of Object.values(kit.classes))
       for (const a of c.attributes)
         if (a.type === 'formula')
           expect('error' in parseCached(a.formula), a.key).toBe(false);
     // "Any class" ends list every class.
-    const every = Object.keys(tool.classes).sort();
-    expect([...relationByKey(tool, 'DependsOn')!.from].sort()).toEqual(every);
-    expect([...relationByKey(tool, 'DependsOn')!.to].sort()).toEqual(every);
-    expect([...relationByKey(tool, 'Owns')!.to].sort()).toEqual(every);
+    const every = Object.keys(kit.classes).sort();
+    expect([...relationByKey(kit, 'DependsOn')!.from].sort()).toEqual(every);
+    expect([...relationByKey(kit, 'DependsOn')!.to].sort()).toEqual(every);
+    expect([...relationByKey(kit, 'Owns')!.to].sort()).toEqual(every);
   });
 
-  it('is one undo step, and undo restores the tool library', () => {
-    const tool = empty();
-    const { store } = apply(tool, ['Dataset', 'DataPipeline', 'DataStore']);
+  it('is one undo step, and undo restores the Kit', () => {
+    const kit = empty();
+    const { store } = apply(kit, ['Dataset', 'DataPipeline', 'DataStore']);
     expect(Object.keys(store.state.classes)).toHaveLength(3);
     expect(store.undo()).toBe(true);
-    expect(store.state).toEqual(tool);
+    expect(store.state).toEqual(kit);
     expect(store.canUndo()).toBe(false);
   });
 
@@ -208,16 +231,16 @@ describe('catalogCommands', () => {
       'DataPipeline',
       'DataStore',
     ]);
-    const tool = store.state;
+    const kit = store.state;
     const keys = result.added.relations.map((r) => r.key).sort();
     // Depends on connects any two classes, so it only comes when it is ticked.
     expect(keys).toEqual(['FlowsTo', 'ReadsFrom', 'WritesTo']);
-    const id = (k: string) => byKey(tool, k)!.id;
-    expect(relationByKey(tool, 'WritesTo')).toMatchObject({
+    const id = (k: string) => byKey(kit, k)!.id;
+    expect(relationByKey(kit, 'WritesTo')).toMatchObject({
       from: [id('DataPipeline')],
       to: [id('DataStore'), id('Dataset')],
     });
-    expect(relationByKey(tool, 'ReadsFrom')).toMatchObject({
+    expect(relationByKey(kit, 'ReadsFrom')).toMatchObject({
       from: [id('DataPipeline')],
       to: [id('DataStore'), id('Dataset')],
     });
@@ -239,40 +262,40 @@ describe('catalogCommands', () => {
   it('skips taken keys and connects relation classes to the existing class', () => {
     const start = apply(empty(), ['Dataset'], false).store.state;
     const existing = byKey(start, 'Dataset')!.id;
-    const store = createToolStore(start);
+    const store = createKitStore(start);
     const result = catalogCommands(store.state, ['Dataset', 'DataPipeline'], {
       withRelations: true,
     });
     expect(result.skipped).toEqual(['Dataset']);
     expect(result.added.classes.map((c) => c.key)).toEqual(['DataPipeline']);
     expect(store.execute(result.batch).ok).toBe(true);
-    const tool = store.state;
+    const kit = store.state;
     expect(
-      Object.values(tool.classes).filter((c) => c.key === 'Dataset'),
+      Object.values(kit.classes).filter((c) => c.key === 'Dataset'),
     ).toHaveLength(1);
-    expect(relationByKey(tool, 'WritesTo')?.to).toEqual([existing]);
+    expect(relationByKey(kit, 'WritesTo')?.to).toEqual([existing]);
     expect(catalogResultText(result)).toContain(
-      'Already in this tool library, so not added again: Dataset.',
+      'Already in this Kit, so not added again: Dataset.',
     );
-    expect(errors(tool)).toEqual([]);
+    expect(errors(kit)).toEqual([]);
   });
 
   it('connects to a hand-made class that has a catalog key', () => {
-    const tool = empty();
+    const kit = empty();
     const own = 'cls_handmade00' as ClassId;
-    tool.classes[own] = {
+    kit.classes[own] = {
       id: own,
       key: 'MLModel',
       kind: 'node',
       labels: { en: 'My model' },
       attributes: [],
     };
-    const { store } = apply(tool, ['ModelDeployment']);
+    const { store } = apply(kit, ['ModelDeployment']);
     expect(relationByKey(store.state, 'DeployedAs')).toMatchObject({
       from: [own],
     });
     // The hand-made class is left as it was.
-    expect(store.state.classes[own]).toEqual(tool.classes[own]);
+    expect(store.state.classes[own]).toEqual(kit.classes[own]);
   });
 
   it('does not add a relation class whose key is taken', () => {
@@ -283,12 +306,26 @@ describe('catalogCommands', () => {
     expect(relationByKey(store.state, 'WritesTo')).toEqual(before);
   });
 
-  it('puts labels under the first language when the tool has no English', () => {
-    const tool = createEmptyTool({ name: 'Deutsch', languages: ['de'] });
-    const { store } = apply(tool, ['Risk', 'Control']);
+  it('puts labels under the first language when the Kit has no English', () => {
+    const kit = createEmptyKit({ name: 'Deutsch', languages: ['de'] });
+    const { store } = apply(kit, ['Risk', 'Control']);
     const risk = byKey(store.state, 'Risk')!;
     expect(risk.labels).toEqual({ de: 'Risk' });
     expect(errors(store.state)).toEqual([]);
+  });
+
+  it('adds a generative AI set from its tab with the relation classes between them', () => {
+    const picks = ['Prompt', 'KnowledgeBase', 'Retriever', 'FoundationModel'];
+    for (const key of picks)
+      expect(CATALOG_CLASSES.find((c) => c.key === key)?.topic, key).toBe(
+        'genai',
+      );
+    const { store, result } = apply(empty(), picks);
+    expect(result.added.classes.map((c) => c.key)).toEqual(picks);
+    expect(result.added.relations.map((r) => r.key)).toEqual(['Searches']);
+    expect(errors(store.state)).toEqual([]);
+    expect(store.undo()).toBe(true);
+    expect(Object.keys(store.state.classes)).toHaveLength(0);
   });
 
   it('previews the relation classes for picks', () => {

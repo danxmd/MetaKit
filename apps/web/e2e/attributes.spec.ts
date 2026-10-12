@@ -361,7 +361,8 @@ test.describe('attribute panel', () => {
     const editor = page.getByTestId('label-editor');
     await expect(editor).toBeVisible();
     await editor.fill('After');
-    await page.getByTestId('model-name').click();
+    // A click on the bar, away from its buttons, ends the edit.
+    await page.getByTestId('model-header').click({ position: { x: 2, y: 2 } });
     await expect(editor).toHaveCount(0);
     expect((await attrsOf(page, id))['att_name']).toBe('After');
   });
@@ -391,6 +392,9 @@ test.describe('attribute panel', () => {
         }),
       )
       .toEqual([a]);
+    // Picking a hit ends the search: no "Nothing found." is left behind.
+    await expect(page.getByTestId('find-input')).toHaveValue('');
+    await expect(page.getByText('Nothing found.')).toHaveCount(0);
     await page.getByTestId('find-input').fill('ship');
     await page.getByTestId('find-results').getByRole('button').first().click();
     // The view moved to the far element.

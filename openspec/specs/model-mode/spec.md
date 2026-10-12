@@ -1,7 +1,7 @@
 # model-mode Specification
 
 ## Purpose
-Describes the Model mode shell around the canvas: the start page, explorer, new models, tool libraries, palette and views, find, and saving.
+Describes the Model mode shell around the canvas: the start page, explorer, new models, Kits, palette and views, find, and saving.
 
 ## Requirements
 
@@ -20,21 +20,21 @@ The explorer SHALL list models grouped by their folder field and let the user cr
 - **THEN** it appears under Sales, then 2026, and its manifest folder is that path
 
 ### Requirement: New model
-The new-model dialog SHALL let the user choose a tool library and a model type and create an empty model of that type.
+The new-model dialog SHALL let the user choose a Kit and a model type and create an empty model of that type.
 
 #### Scenario: Five clicks
 - **WHEN** the user opens a workspace
 - **THEN** an empty model can be reached in no more than five clicks
 
-### Requirement: Tool libraries
-The explorer SHALL let the user add a tool library to the workspace from a file, SHALL check the file first and say what is wrong with one that is not valid, and SHALL NOT add a tool library that is already there.
+### Requirement: Kits
+The explorer SHALL let the user add a Kit to the workspace from a file, SHALL check the file first and say what is wrong with one that is not valid, and SHALL NOT add a Kit that is already there.
 
 #### Scenario: Broken file
-- **WHEN** the user picks a file that is not a valid tool library
+- **WHEN** the user picks a file that is not a valid Kit
 - **THEN** nothing is added and the message names the problem
 
 #### Scenario: Added once
-- **WHEN** the same tool library file is added twice
+- **WHEN** the same Kit file is added twice
 - **THEN** the second attempt is refused with a message that it is already in the workspace
 
 ### Requirement: Palette and views

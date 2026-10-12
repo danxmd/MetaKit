@@ -12,4 +12,4 @@
 
 ## 3. Usability
 
-- [x] 3.1 Usability test protocol for Danial (build a small ER tool in under an hour) in `docs/phase-4-usability-protocol.md`.
+- [x] 3.1 Usability test protocol for Danial (build a small ER Kit in under an hour) in `docs/phase-4-usability-protocol.md`.

@@ -15,7 +15,7 @@ import {
   type SettingsStore,
   type TypeCheck,
 } from '@metakit-app/assistant';
-import type { ToolLibrary } from '@metakit-app/core';
+import type { Kit } from '@metakit-app/core';
 import { kvGet, kvSet } from '@metakit-app/storage';
 
 /** What the editors need from the assistant; `AssistantService` is the implementation. */
@@ -24,7 +24,7 @@ export interface AssistantPort {
   readonly enabled: boolean;
   draft<K extends DraftKind>(
     kind: K,
-    tool: ToolLibrary,
+    kit: Kit,
     sentence: string,
     language?: string,
   ): Promise<DraftOutcome<K>>;
@@ -133,7 +133,7 @@ export class AssistantService implements AssistantPort {
     return key;
   }
 
-  /** Checks the saved key with a tiny request that holds no tool or model content. */
+  /** Checks the saved key with a tiny request that holds no Kit or model content. */
   async testKey(): Promise<string> {
     const key = await this.key();
     try {
@@ -147,7 +147,7 @@ export class AssistantService implements AssistantPort {
 
   async draft<K extends DraftKind>(
     kind: K,
-    tool: ToolLibrary,
+    kit: Kit,
     sentence: string,
     language?: string,
   ): Promise<DraftOutcome<K>> {
@@ -156,7 +156,7 @@ export class AssistantService implements AssistantPort {
     return runDraft({
       provider: this.provider(),
       key: await this.key(),
-      tool,
+      kit,
       kind,
       sentence,
       ...(language ? { language } : {}),

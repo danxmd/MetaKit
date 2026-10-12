@@ -22,8 +22,8 @@ Three rules make it safe.
 
 ```text
 workspace.json
-tools/<tool-folder>/
-  tool.json
+kits/<kit-folder>/
+  kit.json
   assets/
   _state/<instanceId>/
     000001.jsonl      change files
@@ -36,7 +36,7 @@ models/<model-folder>/
 _presence/<instanceId>.json
 ```
 
-A tool library and a model are both documents with the same layout. Their folder names never change, even if you rename them. See [[file-formats]] for every file.
+A Kit and a model are both documents with the same layout. Their folder names never change, even if you rename them. See [[file-formats]] for every file.
 
 ### Changes and snapshots
 
@@ -103,7 +103,7 @@ There is nothing to configure. The numbers are listed so that you know what to e
 - **Do not edit files by hand** while the app is open. If you must, close the model first. A file that does not end with a new line is treated as unfinished and read later.
 - **Leftover folders.** Each closed tab leaves its `_state/<instanceId>/` folder. This is harmless: their files are read like any others, and their snapshots carry everything.
 - **Newer files.** A file written by a newer version of MetaKit is refused rather than risked. See [[format-versions]].
-- **Git is different.** Tool libraries can also live in Git, where you commit and pull on purpose. See [[git-mode]].
+- **Git is different.** Kits can also live in Git, where you commit and pull on purpose. See [[git-mode]].
 
 ## Related
 

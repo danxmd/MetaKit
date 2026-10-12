@@ -4,7 +4,7 @@ import {
   type ElementId,
   type Model,
   type NodeShape,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 import { Scene } from './scene';
 import { BPMN, bpmnStore } from './testing';
@@ -31,18 +31,18 @@ const shape: NodeShape = {
 
 function setup() {
   const base = bpmnStore();
-  const tool: ToolLibrary = {
-    ...base.tool,
+  const kit: Kit = {
+    ...base.kit,
     shapes: { shp_calc: shape },
     classes: {
-      ...base.tool.classes,
-      [BPMN.task]: { ...base.tool.classes[BPMN.task]!, shape: 'shp_calc' },
+      ...base.kit.classes,
+      [BPMN.task]: { ...base.kit.classes[BPMN.task]!, shape: 'shp_calc' },
     },
   };
-  const calc = new ModelCalculator(tool, () => base.store.state as Model);
+  const calc = new ModelCalculator(kit, () => base.store.state as Model);
   calc.attach(base.store);
   // The scene follows the store after the calculator, as the app wires them.
-  const scene = new Scene(base.store.state as Model, tool, {
+  const scene = new Scene(base.store.state as Model, kit, {
     calculator: calc,
   });
   scene.attach(base.store);
@@ -65,7 +65,7 @@ function setup() {
   };
   const text = (id: ElementId) =>
     ops(id).flatMap((o) => (o.op === 'text' ? o.lines.map((l) => l.text) : []));
-  return { ...base, tool, calc, scene, create, fill, text };
+  return { ...base, kit, calc, scene, create, fill, text };
 }
 
 describe('Scene with a calculator', () => {
@@ -103,16 +103,16 @@ describe('Scene with a calculator', () => {
     expect(seen.flat()).toContain(a);
     scene.destroy();
     const before = seen.length;
-    calc.setTool(calc['tool'] as ToolLibrary);
+    calc.setKit(calc['kit'] as Kit);
     expect(seen.length).toBe(before);
     void store;
   });
 
   it('can be given a calculator later', () => {
     const base = bpmnStore();
-    const scene = new Scene(base.store.state as Model, base.tool);
+    const scene = new Scene(base.store.state as Model, base.kit);
     scene.setCalculator(
-      new ModelCalculator(base.tool, () => base.store.state as Model),
+      new ModelCalculator(base.kit, () => base.store.state as Model),
     );
     expect(scene.elements.size).toBe(0);
   });

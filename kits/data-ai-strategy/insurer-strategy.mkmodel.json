@@ -1,0 +1,672 @@
+{
+  "attributes": {
+    "Organisation": "A regional insurer",
+    "StrategyOwner": "Chief data officer",
+    "Title": "Data and AI strategy 2027 to 2029"
+  },
+  "connectors": [
+    {
+      "from": "el_goal_keep",
+      "id": "cn_001",
+      "relation": "Refines",
+      "to": "el_vision"
+    },
+    {
+      "from": "el_goal_claims",
+      "id": "cn_002",
+      "relation": "Refines",
+      "to": "el_vision"
+    },
+    {
+      "from": "el_goal_risk",
+      "id": "cn_003",
+      "relation": "Refines",
+      "to": "el_vision"
+    },
+    {
+      "from": "el_obj_renewals",
+      "id": "cn_004",
+      "relation": "Refines",
+      "to": "el_goal_keep"
+    },
+    {
+      "from": "el_obj_oneday",
+      "id": "cn_005",
+      "relation": "Refines",
+      "to": "el_goal_claims"
+    },
+    {
+      "from": "el_obj_fraud",
+      "id": "cn_006",
+      "relation": "Refines",
+      "to": "el_goal_risk"
+    },
+    {
+      "from": "el_drv_growth",
+      "id": "cn_007",
+      "relation": "Drives",
+      "to": "el_goal_keep"
+    },
+    {
+      "from": "el_drv_cost",
+      "id": "cn_008",
+      "relation": "Drives",
+      "to": "el_goal_claims"
+    },
+    {
+      "from": "el_drv_risk",
+      "id": "cn_009",
+      "relation": "Drives",
+      "to": "el_goal_risk"
+    },
+    {
+      "from": "el_ben_premium",
+      "id": "cn_010",
+      "relation": "ContributesTo",
+      "to": "el_drv_growth"
+    },
+    {
+      "from": "el_ben_handling",
+      "id": "cn_011",
+      "relation": "ContributesTo",
+      "to": "el_drv_cost"
+    },
+    {
+      "from": "el_ben_fraud",
+      "id": "cn_012",
+      "relation": "ContributesTo",
+      "to": "el_drv_risk"
+    },
+    {
+      "from": "el_uc_churn",
+      "id": "cn_013",
+      "relation": "ContributesTo",
+      "to": "el_obj_renewals"
+    },
+    {
+      "from": "el_uc_triage",
+      "id": "cn_014",
+      "relation": "ContributesTo",
+      "to": "el_obj_oneday"
+    },
+    {
+      "from": "el_uc_documents",
+      "id": "cn_015",
+      "relation": "ContributesTo",
+      "to": "el_obj_oneday"
+    },
+    {
+      "from": "el_uc_fraud",
+      "id": "cn_016",
+      "relation": "ContributesTo",
+      "to": "el_obj_fraud"
+    },
+    {
+      "from": "el_ini_platform",
+      "id": "cn_017",
+      "relation": "ContributesTo",
+      "to": "el_obj_renewals"
+    },
+    {
+      "from": "el_ini_governance",
+      "id": "cn_018",
+      "relation": "ContributesTo",
+      "to": "el_goal_risk"
+    },
+    {
+      "from": "el_ini_churn",
+      "id": "cn_019",
+      "relation": "Implements",
+      "to": "el_uc_churn"
+    },
+    {
+      "from": "el_ini_triage",
+      "id": "cn_020",
+      "relation": "Implements",
+      "to": "el_uc_triage"
+    },
+    {
+      "from": "el_ini_fraud",
+      "id": "cn_021",
+      "relation": "Implements",
+      "to": "el_uc_fraud"
+    },
+    {
+      "from": "el_ini_churn",
+      "id": "cn_022",
+      "relation": "Realises",
+      "to": "el_ben_premium"
+    },
+    {
+      "from": "el_ini_triage",
+      "id": "cn_023",
+      "relation": "Realises",
+      "to": "el_ben_handling"
+    },
+    {
+      "from": "el_ini_fraud",
+      "id": "cn_024",
+      "relation": "Realises",
+      "to": "el_ben_fraud"
+    },
+    {
+      "from": "el_uc_churn",
+      "id": "cn_025",
+      "relation": "Needs",
+      "to": "el_cap_platform"
+    },
+    {
+      "from": "el_uc_churn",
+      "id": "cn_026",
+      "relation": "Needs",
+      "to": "el_cap_mlops"
+    },
+    {
+      "from": "el_uc_triage",
+      "id": "cn_027",
+      "relation": "Needs",
+      "to": "el_cap_mlops"
+    },
+    {
+      "from": "el_uc_documents",
+      "id": "cn_028",
+      "relation": "Needs",
+      "to": "el_cap_mlops"
+    },
+    {
+      "from": "el_uc_fraud",
+      "id": "cn_029",
+      "relation": "Needs",
+      "to": "el_cap_governance"
+    },
+    {
+      "from": "el_uc_fraud",
+      "id": "cn_030",
+      "relation": "Needs",
+      "to": "el_cap_mlops"
+    },
+    {
+      "from": "el_ini_platform",
+      "id": "cn_031",
+      "relation": "Builds",
+      "to": "el_cap_platform"
+    },
+    {
+      "from": "el_ini_governance",
+      "id": "cn_032",
+      "relation": "Builds",
+      "to": "el_cap_governance"
+    },
+    {
+      "from": "el_ini_churn",
+      "id": "cn_033",
+      "relation": "Builds",
+      "to": "el_cap_mlops"
+    },
+    {
+      "from": "el_ini_literacy",
+      "id": "cn_034",
+      "relation": "Builds",
+      "to": "el_cap_literacy"
+    },
+    {
+      "from": "el_ini_churn",
+      "id": "cn_035",
+      "relation": "DependsOn",
+      "to": "el_ini_platform"
+    },
+    {
+      "from": "el_ini_triage",
+      "id": "cn_036",
+      "relation": "DependsOn",
+      "to": "el_ini_platform"
+    },
+    {
+      "from": "el_ini_fraud",
+      "id": "cn_037",
+      "relation": "DependsOn",
+      "to": "el_ini_governance"
+    }
+  ],
+  "elements": [
+    {
+      "attributes": {
+        "Horizon": "2030",
+        "Name": "Trusted data and AI in every decision",
+        "Statement": "By 2030 every pricing, claims and service decision is informed by data we trust and by AI we can explain."
+      },
+      "class": "Vision",
+      "h": 80,
+      "id": "el_vision",
+      "w": 260,
+      "x": 540,
+      "y": 20
+    },
+    {
+      "attributes": {
+        "Category": "Revenue growth",
+        "Name": "Revenue growth"
+      },
+      "class": "ValueDriver",
+      "h": 44,
+      "id": "el_drv_growth",
+      "w": 160,
+      "x": 40,
+      "y": 163
+    },
+    {
+      "attributes": {
+        "Category": "Cost reduction",
+        "Name": "Lower cost to serve"
+      },
+      "class": "ValueDriver",
+      "h": 44,
+      "id": "el_drv_cost",
+      "w": 160,
+      "x": 440,
+      "y": 163
+    },
+    {
+      "attributes": {
+        "Category": "Risk reduction",
+        "Name": "Fewer losses"
+      },
+      "class": "ValueDriver",
+      "h": 44,
+      "id": "el_drv_risk",
+      "w": 160,
+      "x": 840,
+      "y": 163
+    },
+    {
+      "attributes": {
+        "Horizon": "Medium term",
+        "Measure": "Policy renewal rate",
+        "Name": "Keep more customers"
+      },
+      "class": "Goal",
+      "h": 70,
+      "id": "el_goal_keep",
+      "w": 120,
+      "x": 230,
+      "y": 150
+    },
+    {
+      "attributes": {
+        "Horizon": "Medium term",
+        "Measure": "Days to settle a claim",
+        "Name": "Settle claims faster"
+      },
+      "class": "Goal",
+      "h": 70,
+      "id": "el_goal_claims",
+      "w": 120,
+      "x": 630,
+      "y": 150
+    },
+    {
+      "attributes": {
+        "Horizon": "Long term",
+        "Measure": "Loss ratio",
+        "Name": "Price and detect risk better"
+      },
+      "class": "Goal",
+      "h": 70,
+      "id": "el_goal_risk",
+      "w": 120,
+      "x": 1030,
+      "y": 150
+    },
+    {
+      "attributes": {
+        "Measure": "Renewal rate of home and car policies",
+        "Name": "Raise renewals from 82% to 86%",
+        "Owner": "Head of customer",
+        "TargetDate": "2028-12-31"
+      },
+      "class": "Objective",
+      "h": 70,
+      "id": "el_obj_renewals",
+      "w": 150,
+      "x": 215,
+      "y": 270
+    },
+    {
+      "attributes": {
+        "Measure": "Share of simple claims settled within a day",
+        "Name": "Settle simple claims in one day",
+        "Owner": "Head of claims",
+        "TargetDate": "2029-06-30"
+      },
+      "class": "Objective",
+      "h": 70,
+      "id": "el_obj_oneday",
+      "w": 150,
+      "x": 615,
+      "y": 270
+    },
+    {
+      "attributes": {
+        "Measure": "Fraud losses per year",
+        "Name": "Cut fraud losses by a fifth",
+        "Owner": "Head of risk",
+        "TargetDate": "2029-12-31"
+      },
+      "class": "Objective",
+      "h": 70,
+      "id": "el_obj_fraud",
+      "w": 150,
+      "x": 1015,
+      "y": 270
+    },
+    {
+      "attributes": {
+        "Confidence": "Medium",
+        "EstimatedValue": 2400000,
+        "Name": "Retained premium",
+        "Type": "Revenue"
+      },
+      "class": "Benefit",
+      "h": 110,
+      "id": "el_ben_premium",
+      "w": 170,
+      "x": 205,
+      "y": 390
+    },
+    {
+      "attributes": {
+        "Confidence": "High",
+        "EstimatedValue": 1500000,
+        "Name": "Lower claims handling cost",
+        "RealisedValue": 150000,
+        "Type": "Cost"
+      },
+      "class": "Benefit",
+      "h": 110,
+      "id": "el_ben_handling",
+      "w": 170,
+      "x": 605,
+      "y": 390
+    },
+    {
+      "attributes": {
+        "Confidence": "Low",
+        "EstimatedValue": 900000,
+        "Name": "Fraud losses avoided",
+        "Type": "Risk"
+      },
+      "class": "Benefit",
+      "h": 110,
+      "id": "el_ben_fraud",
+      "w": 170,
+      "x": 1005,
+      "y": 390
+    },
+    {
+      "attributes": {
+        "Feasibility": 4,
+        "Name": "Churn prediction",
+        "Status": "Pilot",
+        "Value": 4
+      },
+      "class": "AIUseCase",
+      "h": 126,
+      "id": "el_uc_churn",
+      "w": 170,
+      "x": 100,
+      "y": 550
+    },
+    {
+      "attributes": {
+        "Feasibility": 3,
+        "Name": "Claims triage assistant",
+        "Status": "Assessed",
+        "Value": 5
+      },
+      "class": "AIUseCase",
+      "h": 126,
+      "id": "el_uc_triage",
+      "w": 170,
+      "x": 400,
+      "y": 550
+    },
+    {
+      "attributes": {
+        "Feasibility": 4,
+        "Name": "Reading claim documents",
+        "Status": "Idea",
+        "Value": 3
+      },
+      "class": "AIUseCase",
+      "h": 126,
+      "id": "el_uc_documents",
+      "w": 170,
+      "x": 700,
+      "y": 550
+    },
+    {
+      "attributes": {
+        "Feasibility": 3,
+        "Name": "Fraud detection",
+        "Status": "Idea",
+        "Value": 5
+      },
+      "class": "AIUseCase",
+      "h": 126,
+      "id": "el_uc_fraud",
+      "w": 170,
+      "x": 1000,
+      "y": 550
+    },
+    {
+      "attributes": {
+        "Category": "Data platform",
+        "CurrentMaturity": 2,
+        "Name": "Customer data platform",
+        "TargetMaturity": 4
+      },
+      "class": "DataAICapability",
+      "h": 126,
+      "id": "el_cap_platform",
+      "w": 170,
+      "x": 100,
+      "y": 720
+    },
+    {
+      "attributes": {
+        "Category": "Governance",
+        "CurrentMaturity": 1,
+        "Name": "Data governance",
+        "TargetMaturity": 3
+      },
+      "class": "DataAICapability",
+      "h": 126,
+      "id": "el_cap_governance",
+      "w": 170,
+      "x": 400,
+      "y": 720
+    },
+    {
+      "attributes": {
+        "Category": "AI and machine learning",
+        "CurrentMaturity": 1,
+        "Name": "Model building and operations",
+        "TargetMaturity": 3
+      },
+      "class": "DataAICapability",
+      "h": 126,
+      "id": "el_cap_mlops",
+      "w": 170,
+      "x": 700,
+      "y": 720
+    },
+    {
+      "attributes": {
+        "Category": "People and skills",
+        "CurrentMaturity": 2,
+        "Name": "Data literacy",
+        "TargetMaturity": 3
+      },
+      "class": "DataAICapability",
+      "h": 126,
+      "id": "el_cap_literacy",
+      "w": 170,
+      "x": 1000,
+      "y": 720
+    },
+    {
+      "attributes": {
+        "Name": "2027: Foundations",
+        "Period": "2027"
+      },
+      "class": "RoadmapPhase",
+      "h": 180,
+      "id": "el_phase_2027",
+      "w": 400,
+      "x": 40,
+      "y": 890
+    },
+    {
+      "attributes": {
+        "Name": "2028: Scale",
+        "Period": "2028"
+      },
+      "class": "RoadmapPhase",
+      "h": 180,
+      "id": "el_phase_2028",
+      "w": 400,
+      "x": 460,
+      "y": 890
+    },
+    {
+      "attributes": {
+        "Name": "2029: Optimise",
+        "Period": "2029"
+      },
+      "class": "RoadmapPhase",
+      "h": 180,
+      "id": "el_phase_2029",
+      "w": 400,
+      "x": 880,
+      "y": 890
+    },
+    {
+      "attributes": {
+        "Budget": 1200000,
+        "End": "2027-12-17",
+        "Name": "Customer data platform",
+        "Quarter": "2027 Q4",
+        "Sponsor": "Chief data officer",
+        "Start": "2027-01-04",
+        "Status": "Approved"
+      },
+      "class": "Initiative",
+      "h": 110,
+      "id": "el_ini_platform",
+      "parent": "el_phase_2027",
+      "w": 170,
+      "x": 55,
+      "y": 930
+    },
+    {
+      "attributes": {
+        "Budget": 400000,
+        "End": "2027-09-30",
+        "Name": "Data governance office",
+        "Quarter": "2027 Q3",
+        "Sponsor": "Chief data officer",
+        "Start": "2027-02-01",
+        "Status": "In progress"
+      },
+      "class": "Initiative",
+      "h": 110,
+      "id": "el_ini_governance",
+      "parent": "el_phase_2027",
+      "w": 170,
+      "x": 245,
+      "y": 930
+    },
+    {
+      "attributes": {
+        "Budget": 600000,
+        "End": "2028-06-30",
+        "Name": "Churn prediction in production",
+        "Quarter": "2028 Q2",
+        "Sponsor": "Head of customer",
+        "Start": "2028-01-10",
+        "Status": "Proposed"
+      },
+      "class": "Initiative",
+      "h": 110,
+      "id": "el_ini_churn",
+      "parent": "el_phase_2028",
+      "w": 170,
+      "x": 475,
+      "y": 930
+    },
+    {
+      "attributes": {
+        "Budget": 900000,
+        "End": "2028-12-15",
+        "Name": "Claims triage assistant",
+        "Quarter": "2028 Q4",
+        "Sponsor": "Head of claims",
+        "Start": "2028-03-01",
+        "Status": "Proposed"
+      },
+      "class": "Initiative",
+      "h": 110,
+      "id": "el_ini_triage",
+      "parent": "el_phase_2028",
+      "w": 170,
+      "x": 665,
+      "y": 930
+    },
+    {
+      "attributes": {
+        "Budget": 700000,
+        "End": "2029-09-28",
+        "Name": "Fraud detection",
+        "Quarter": "2029 Q3",
+        "Sponsor": "Head of risk",
+        "Start": "2029-01-08",
+        "Status": "Proposed"
+      },
+      "class": "Initiative",
+      "h": 110,
+      "id": "el_ini_fraud",
+      "parent": "el_phase_2029",
+      "w": 170,
+      "x": 895,
+      "y": 930
+    },
+    {
+      "attributes": {
+        "Budget": 250000,
+        "End": "2029-12-14",
+        "Name": "Data literacy programme",
+        "Quarter": "2029 Q4",
+        "Sponsor": "Head of people",
+        "Start": "2029-01-08",
+        "Status": "Proposed"
+      },
+      "class": "Initiative",
+      "h": 110,
+      "id": "el_ini_literacy",
+      "parent": "el_phase_2029",
+      "w": 170,
+      "x": 1085,
+      "y": 930
+    }
+  ],
+  "formatVersion": 2,
+  "id": "mdl_insurerstrategy",
+  "kind": "mkmodel",
+  "kit": {
+    "id": "kit_dataaistrategy",
+    "name": "Data and AI strategy",
+    "version": "1.0.0"
+  },
+  "modelType": "Strategy",
+  "name": "Data and AI strategy 2027 to 2029"
+}

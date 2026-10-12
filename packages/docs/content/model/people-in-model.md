@@ -2,7 +2,7 @@
 id: people-in-model
 title: People in a model
 category: model
-summary: Round avatars in the header show who else has the model open, and their selections appear on your canvas in their colour with their initials.
+summary: Round avatars in the top bar show who else has the model open, and their selections appear on your canvas in their colour with their initials.
 keywords: [people avatars, people badges, other people in the model, selection of others, collaborators]
 contexts: []
 order: 320
@@ -12,11 +12,11 @@ Several people can work in the same model at the same time. MetaKit shows who is
 
 ## What it is
 
-Everyone who opens a model through the same workspace folder appears as a round badge in the header, with their initials on their own colour. What they select is outlined on your canvas. Changes made by others arrive by themselves while you work. See [[sync-overview]] for how this works without a server.
+Everyone who opens a model through the same workspace folder appears as a round badge in the [[top-bar]], with their initials on their own colour. What they select is outlined on your canvas. Changes made by others arrive by themselves while you work. See [[sync-overview]] for how this works without a server.
 
 ## Where to find it
 
-- Avatars: in the first header row, next to the save status.
+- Avatars: in the top bar, next to the save status.
 - Other people's selections: on the canvas.
 - Notes about simultaneous edits: as notices on the canvas. See [[status-and-messages]].
 

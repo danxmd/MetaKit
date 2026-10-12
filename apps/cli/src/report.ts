@@ -12,7 +12,8 @@ export interface ReportIssue {
 export interface DocumentReport {
   /** The file or folder, as given or relative to the workspace. */
   path: string;
-  kind: 'workspace' | 'tool' | 'model';
+  /** "kit" since the Kit rename; releases before it said "tool". */
+  kind: 'workspace' | 'kit' | 'model';
   issues: ReportIssue[];
 }
 
@@ -39,7 +40,7 @@ export function formatText(reports: readonly DocumentReport[]): string {
   const lines: string[] = [];
   for (const report of reports) {
     lines.push(
-      `${report.path} (${report.kind})${report.issues.length === 0 ? ': ok' : ''}`,
+      `${report.path} (${report.kind === 'kit' ? 'Kit' : report.kind})${report.issues.length === 0 ? ': ok' : ''}`,
     );
     for (const issue of report.issues) {
       lines.push(

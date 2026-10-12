@@ -1,0 +1,238 @@
+{
+  "attributes": {
+    "Owner": "Head of digital",
+    "Title": "Ticket booking: containers"
+  },
+  "connectors": [
+    {
+      "attributes": {
+        "Description": "Sells tickets",
+        "Technology": "HTTPS"
+      },
+      "from": "el_p_staff",
+      "id": "cn_001",
+      "relation": "Uses",
+      "to": "el_c_boxoffice"
+    },
+    {
+      "attributes": {
+        "Description": "Books tickets",
+        "Technology": "HTTPS"
+      },
+      "from": "el_p_customer",
+      "id": "cn_002",
+      "relation": "Uses",
+      "to": "el_c_shop"
+    },
+    {
+      "attributes": {
+        "Description": "Makes bookings",
+        "Technology": "JSON/HTTPS"
+      },
+      "from": "el_c_boxoffice",
+      "id": "cn_003",
+      "relation": "Uses",
+      "to": "el_c_api"
+    },
+    {
+      "attributes": {
+        "Description": "Finds shows and books",
+        "Technology": "JSON/HTTPS"
+      },
+      "from": "el_c_shop",
+      "id": "cn_004",
+      "relation": "Uses",
+      "to": "el_c_api"
+    },
+    {
+      "attributes": {
+        "Description": "Reads and writes",
+        "Technology": "SQL"
+      },
+      "from": "el_c_api",
+      "id": "cn_005",
+      "relation": "Uses",
+      "to": "el_c_db"
+    },
+    {
+      "attributes": {
+        "Description": "Takes payments",
+        "Technology": "HTTPS"
+      },
+      "from": "el_c_api",
+      "id": "cn_006",
+      "relation": "Uses",
+      "to": "el_x_payments"
+    },
+    {
+      "attributes": {
+        "Description": "Queues confirmations",
+        "Technology": "Message queue"
+      },
+      "from": "el_c_api",
+      "id": "cn_007",
+      "relation": "Uses",
+      "to": "el_c_worker"
+    },
+    {
+      "attributes": {
+        "Description": "Sends emails",
+        "Technology": "SMTP"
+      },
+      "from": "el_c_worker",
+      "id": "cn_008",
+      "relation": "Uses",
+      "to": "el_x_email"
+    },
+    {
+      "from": "el_x_email",
+      "id": "cn_009",
+      "relation": "Uses",
+      "to": "el_p_customer"
+    }
+  ],
+  "elements": [
+    {
+      "attributes": {
+        "Description": "Sells tickets at the desk and by phone.",
+        "Location": "Internal",
+        "Name": "Box office staff"
+      },
+      "class": "Person",
+      "h": 110,
+      "id": "el_p_staff",
+      "w": 90,
+      "x": 170,
+      "y": 20
+    },
+    {
+      "attributes": {
+        "Description": "Books tickets online.",
+        "Location": "External",
+        "Name": "Theatre visitor"
+      },
+      "class": "Person",
+      "h": 110,
+      "id": "el_p_customer",
+      "w": 90,
+      "x": 630,
+      "y": 20
+    },
+    {
+      "attributes": {
+        "Description": "Sells tickets for the shows of a regional theatre group.",
+        "Name": "Ticketing system"
+      },
+      "class": "SystemBoundary",
+      "h": 380,
+      "id": "el_b_ticketing",
+      "w": 960,
+      "x": 40,
+      "y": 170
+    },
+    {
+      "attributes": {
+        "Kind": "Web application",
+        "Name": "Box office app",
+        "Technology": "Server-rendered"
+      },
+      "class": "Container",
+      "h": 80,
+      "id": "el_c_boxoffice",
+      "parent": "el_b_ticketing",
+      "w": 230,
+      "x": 100,
+      "y": 200
+    },
+    {
+      "attributes": {
+        "Kind": "Web application",
+        "Name": "Web shop",
+        "Technology": "Single-page app"
+      },
+      "class": "Container",
+      "h": 80,
+      "id": "el_c_shop",
+      "parent": "el_b_ticketing",
+      "w": 230,
+      "x": 550,
+      "y": 200
+    },
+    {
+      "attributes": {
+        "Kind": "API",
+        "Name": "Booking API",
+        "Technology": "Java, REST"
+      },
+      "class": "Container",
+      "h": 80,
+      "id": "el_c_api",
+      "parent": "el_b_ticketing",
+      "w": 230,
+      "x": 330,
+      "y": 330
+    },
+    {
+      "attributes": {
+        "Kind": "Background job",
+        "Name": "Email worker",
+        "Technology": "Python"
+      },
+      "class": "Container",
+      "h": 80,
+      "id": "el_c_worker",
+      "parent": "el_b_ticketing",
+      "w": 230,
+      "x": 700,
+      "y": 450
+    },
+    {
+      "attributes": {
+        "Kind": "Database",
+        "Name": "Booking database",
+        "Technology": "Relational database"
+      },
+      "class": "Container",
+      "h": 80,
+      "id": "el_c_db",
+      "parent": "el_b_ticketing",
+      "w": 230,
+      "x": 330,
+      "y": 450
+    },
+    {
+      "attributes": {
+        "Description": "Takes card payments.",
+        "Name": "Payment provider"
+      },
+      "class": "ExternalSystem",
+      "h": 80,
+      "id": "el_x_payments",
+      "w": 200,
+      "x": 1080,
+      "y": 330
+    },
+    {
+      "attributes": {
+        "Description": "Sends emails on behalf of the theatre.",
+        "Name": "Email service"
+      },
+      "class": "ExternalSystem",
+      "h": 80,
+      "id": "el_x_email",
+      "w": 200,
+      "x": 1080,
+      "y": 40
+    }
+  ],
+  "formatVersion": 2,
+  "id": "mdl_ticketbooking",
+  "kind": "mkmodel",
+  "kit": {
+    "id": "kit_c4",
+    "name": "Software architecture (C4-style)",
+    "version": "1.0.0"
+  },
+  "modelType": "Containers",
+  "name": "Ticket booking: containers"
+}

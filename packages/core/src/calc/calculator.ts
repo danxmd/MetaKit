@@ -16,7 +16,7 @@ import {
   isA,
 } from '../meta/inherit';
 import { formulaSource } from '../meta/shape-types';
-import type { AttributeDef, TableAttribute, ToolLibrary } from '../meta/types';
+import type { AttributeDef, TableAttribute, Kit } from '../meta/types';
 import type { Model } from '../model/types';
 import type { Patch } from '../store/tx';
 
@@ -60,7 +60,7 @@ export class ModelCalculator {
   evaluations = 0;
 
   constructor(
-    private tool: ToolLibrary,
+    private kit: Kit,
     private readonly getModel: () => Model,
   ) {}
 
@@ -74,9 +74,9 @@ export class ModelCalculator {
     return () => this.listeners.delete(listener);
   }
 
-  /** Takes a changed tool library (hot reload): everything is calculated again. */
-  setTool(tool: ToolLibrary): void {
-    this.tool = tool;
+  /** Takes a changed Kit (hot reload): everything is calculated again. */
+  setKit(kit: Kit): void {
+    this.kit = kit;
     this.defsCache.clear();
     this.cache.clear();
     this.readers.clear();
@@ -103,10 +103,10 @@ export class ModelCalculator {
       try {
         if (owner === 'model') {
           const m = this.getModel().manifest.modelType;
-          list = this.tool.modelTypes[m]?.attributes ?? [];
+          list = this.kit.modelTypes[m]?.attributes ?? [];
         } else if (owner.startsWith('rel_'))
-          list = effectiveRelationAttributes(this.tool, owner as RelationId);
-        else list = effectiveAttributes(this.tool, owner as ClassId);
+          list = effectiveRelationAttributes(this.kit, owner as RelationId);
+        else list = effectiveAttributes(this.kit, owner as ClassId);
       } catch {
         // A broken class chain has no attributes to calculate.
       }
@@ -312,7 +312,7 @@ export class ModelCalculator {
   private classOf(name: Value | undefined): ClassId | null {
     if (typeof name !== 'string') return null;
     return (
-      (this.tool.classes[name as ClassId] ?? findClassByKey(this.tool, name))
+      (this.kit.classes[name as ClassId] ?? findClassByKey(this.kit, name))
         ?.id ?? null
     );
   }
@@ -326,7 +326,7 @@ export class ModelCalculator {
         this.note(`c:${cls}`);
         const out: string[] = [];
         for (const e of Object.values(m.elements))
-          if (isA(this.tool, e.class, cls)) out.push(e.id);
+          if (isA(this.kit, e.class, cls)) out.push(e.id);
         return out;
       }
       case 'children': {
@@ -341,8 +341,8 @@ export class ModelCalculator {
       case 'outgoing': {
         const rel =
           typeof args[0] === 'string'
-            ? (findRelationByKey(this.tool, args[0])?.id ??
-              this.tool.relations[args[0] as RelationId]?.id)
+            ? (findRelationByKey(this.kit, args[0])?.id ??
+              this.kit.relations[args[0] as RelationId]?.id)
             : undefined;
         if (!rel) return [];
         const of = typeof args[1] === 'string' ? args[1] : self;
@@ -391,7 +391,7 @@ export class ModelCalculator {
             while (c && !guard.has(c)) {
               guard.add(c);
               tokens.add(`c:${c}`);
-              c = this.tool.classes[c]?.extends;
+              c = this.kit.classes[c]?.extends;
             }
           }
           const was = (p.before as { parent?: string } | undefined)?.parent;

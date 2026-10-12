@@ -1,4 +1,5 @@
 import { toBytes, type StorageAdapter } from './adapter';
+import { ownerOf } from './paths';
 
 export type HealthKind =
   | 'slow-read'
@@ -72,6 +73,12 @@ export async function checkFolderHealth(
   }[] = [];
   await walk(adapter, '', 0, files);
   const findings: HealthFinding[] = [];
+  // This instance's own files may be half written right now (a new file is empty until the
+  // browser swaps its content in), and presence files are rewritten every few seconds and read
+  // again at the next refresh. Neither says anything about how the folder is synced, so only
+  // their names are checked.
+  const settled = (path: string) =>
+    ownerOf(path) !== adapter.instanceId && !path.startsWith('_presence/');
 
   for (const f of files) {
     if (CONFLICT.test(f.path.split('/').pop()!))
@@ -80,7 +87,7 @@ export async function checkFolderHealth(
         path: f.path,
         message: `"${f.path}" looks like a conflicted copy made by the sync service. MetaKit never edits a file twice, so this should not happen; check whether another program changed files in the folder.`,
       });
-    if (f.size === 0 && /\.jsonl?$/.test(f.path))
+    if (f.size === 0 && /\.jsonl?$/.test(f.path) && settled(f.path))
       findings.push({
         kind: 'empty-file',
         path: f.path,
@@ -90,7 +97,7 @@ export async function checkFolderHealth(
 
   // Read some files and time them. Change files and snapshots are the ones sync depends on.
   const sample = files
-    .filter((f) => /\.jsonl?$/.test(f.path) && f.size !== 0)
+    .filter((f) => /\.jsonl?$/.test(f.path) && f.size !== 0 && settled(f.path))
     .sort((a, b) => (b.modified ?? 0) - (a.modified ?? 0))
     .slice(0, options.sample ?? 20);
   let slow = 0;

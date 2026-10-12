@@ -25,10 +25,10 @@ When a remote edit overwrote a field this instance had edited without having rea
 - **THEN** no notice appears
 
 ### Requirement: Thirty-day trash
-Deleted models and tool libraries SHALL stay in the workspace and be restorable for 30 days, after which they are hidden from the trash list. No file written by another instance SHALL be removed.
+Deleted models and Kits SHALL stay in the workspace and be restorable for 30 days, after which they are hidden from the trash list. No file written by another instance SHALL be removed.
 
 #### Scenario: Restore
-- **WHEN** a tool library is deleted and restored on the same day
+- **WHEN** a Kit is deleted and restored on the same day
 - **THEN** it is back in the list with its content
 
 #### Scenario: Expiry

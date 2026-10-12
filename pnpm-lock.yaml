@@ -105,6 +105,21 @@ importers:
         specifier: workspace:*
         version: link:../packages/core
 
+  kits/build:
+    dependencies:
+      '@metakit-app/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@metakit-app/shapes':
+        specifier: workspace:*
+        version: link:../../packages/shapes
+      '@metakit-app/storage':
+        specifier: workspace:*
+        version: link:../../packages/storage
+      '@metakit-app/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+
   packages/assistant:
     dependencies:
       '@anthropic-ai/sdk':

@@ -1,0 +1,561 @@
+{
+  "attributes": {
+    "AssessmentDate": "2027-01-29",
+    "Organisation": "A logistics company",
+    "Title": "Data and AI maturity 2027"
+  },
+  "connectors": [
+    {
+      "from": "el_act_owners",
+      "id": "cn_001",
+      "relation": "Improves",
+      "to": "el_cap_ownership"
+    },
+    {
+      "from": "el_act_owners",
+      "id": "cn_002",
+      "relation": "Improves",
+      "to": "el_cap_roles"
+    },
+    {
+      "from": "el_act_checks",
+      "id": "cn_003",
+      "relation": "Improves",
+      "to": "el_cap_monitoring"
+    },
+    {
+      "from": "el_act_refresh",
+      "id": "cn_004",
+      "relation": "Improves",
+      "to": "el_cap_strategy"
+    },
+    {
+      "from": "el_act_refresh",
+      "id": "cn_005",
+      "relation": "Improves",
+      "to": "el_cap_value"
+    },
+    {
+      "from": "el_act_course",
+      "id": "cn_006",
+      "relation": "Improves",
+      "to": "el_cap_literacy"
+    },
+    {
+      "from": "el_act_pipeline",
+      "id": "cn_007",
+      "relation": "Improves",
+      "to": "el_cap_development"
+    },
+    {
+      "from": "el_act_training",
+      "id": "cn_008",
+      "relation": "Improves",
+      "to": "el_cap_selfservice"
+    },
+    {
+      "from": "el_per_priya",
+      "id": "cn_009",
+      "relation": "Owns",
+      "to": "el_act_owners"
+    },
+    {
+      "from": "el_per_priya",
+      "id": "cn_010",
+      "relation": "Owns",
+      "to": "el_act_refresh"
+    },
+    {
+      "from": "el_per_tom",
+      "id": "cn_011",
+      "relation": "Owns",
+      "to": "el_act_checks"
+    },
+    {
+      "from": "el_per_tom",
+      "id": "cn_012",
+      "relation": "Owns",
+      "to": "el_act_pipeline"
+    },
+    {
+      "from": "el_per_sara",
+      "id": "cn_013",
+      "relation": "Owns",
+      "to": "el_act_course"
+    },
+    {
+      "from": "el_per_sara",
+      "id": "cn_014",
+      "relation": "Owns",
+      "to": "el_act_training"
+    }
+  ],
+  "elements": [
+    {
+      "attributes": {
+        "Description": "How clearly data and AI serve the goals of the business.",
+        "Name": "Strategy"
+      },
+      "class": "Dimension",
+      "h": 210,
+      "id": "el_dim_strategy",
+      "w": 440,
+      "x": 40,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "CurrentScore": 2,
+        "Importance": 4,
+        "Name": "Data and AI strategy",
+        "TargetScore": 4
+      },
+      "class": "Capability",
+      "h": 126,
+      "id": "el_cap_strategy",
+      "parent": "el_dim_strategy",
+      "w": 190,
+      "x": 60,
+      "y": 100
+    },
+    {
+      "attributes": {
+        "CurrentScore": 1,
+        "Importance": 3,
+        "Name": "Value tracking",
+        "TargetScore": 3
+      },
+      "class": "Capability",
+      "h": 126,
+      "id": "el_cap_value",
+      "parent": "el_dim_strategy",
+      "w": 190,
+      "x": 270,
+      "y": 100
+    },
+    {
+      "attributes": {
+        "Description": "Who decides about data, and by which rules.",
+        "Name": "Governance"
+      },
+      "class": "Dimension",
+      "h": 210,
+      "id": "el_dim_governance",
+      "w": 440,
+      "x": 510,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "CurrentScore": 2,
+        "Importance": 5,
+        "Name": "Data ownership",
+        "TargetScore": 4
+      },
+      "class": "Capability",
+      "h": 126,
+      "id": "el_cap_ownership",
+      "parent": "el_dim_governance",
+      "w": 190,
+      "x": 530,
+      "y": 100
+    },
+    {
+      "attributes": {
+        "CurrentScore": 2,
+        "Importance": 3,
+        "Name": "Policies and standards",
+        "TargetScore": 3
+      },
+      "class": "Capability",
+      "h": 126,
+      "id": "el_cap_policies",
+      "parent": "el_dim_governance",
+      "w": 190,
+      "x": 740,
+      "y": 100
+    },
+    {
+      "attributes": {
+        "Description": "How far the data can be trusted for its purpose.",
+        "Name": "Data quality"
+      },
+      "class": "Dimension",
+      "h": 210,
+      "id": "el_dim_quality",
+      "w": 440,
+      "x": 980,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "CurrentScore": 1,
+        "Importance": 4,
+        "Name": "Quality monitoring",
+        "TargetScore": 4
+      },
+      "class": "Capability",
+      "h": 126,
+      "id": "el_cap_monitoring",
+      "parent": "el_dim_quality",
+      "w": 190,
+      "x": 1000,
+      "y": 100
+    },
+    {
+      "attributes": {
+        "CurrentScore": 2,
+        "Importance": 3,
+        "Name": "Master data",
+        "TargetScore": 3
+      },
+      "class": "Capability",
+      "h": 126,
+      "id": "el_cap_master",
+      "parent": "el_dim_quality",
+      "w": 190,
+      "x": 1210,
+      "y": 100
+    },
+    {
+      "attributes": {
+        "Description": "The platforms and integrations that store and move data.",
+        "Name": "Architecture"
+      },
+      "class": "Dimension",
+      "h": 210,
+      "id": "el_dim_architecture",
+      "w": 440,
+      "x": 1450,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "CurrentScore": 3,
+        "Importance": 4,
+        "Name": "Data platform",
+        "TargetScore": 4
+      },
+      "class": "Capability",
+      "h": 126,
+      "id": "el_cap_platform",
+      "parent": "el_dim_architecture",
+      "w": 190,
+      "x": 1470,
+      "y": 100
+    },
+    {
+      "attributes": {
+        "CurrentScore": 3,
+        "Importance": 2,
+        "Name": "Integration",
+        "TargetScore": 3
+      },
+      "class": "Capability",
+      "h": 126,
+      "id": "el_cap_integration",
+      "parent": "el_dim_architecture",
+      "w": 190,
+      "x": 1680,
+      "y": 100
+    },
+    {
+      "attributes": {
+        "Description": "Reporting and analysis that people use to decide.",
+        "Name": "Analytics"
+      },
+      "class": "Dimension",
+      "h": 210,
+      "id": "el_dim_analytics",
+      "w": 440,
+      "x": 40,
+      "y": 290
+    },
+    {
+      "attributes": {
+        "CurrentScore": 3,
+        "Importance": 3,
+        "Name": "Reporting and dashboards",
+        "TargetScore": 4
+      },
+      "class": "Capability",
+      "h": 126,
+      "id": "el_cap_reporting",
+      "parent": "el_dim_analytics",
+      "w": 190,
+      "x": 60,
+      "y": 350
+    },
+    {
+      "attributes": {
+        "CurrentScore": 2,
+        "Importance": 3,
+        "Name": "Self-service analytics",
+        "TargetScore": 4
+      },
+      "class": "Capability",
+      "h": 126,
+      "id": "el_cap_selfservice",
+      "parent": "el_dim_analytics",
+      "w": 190,
+      "x": 270,
+      "y": 350
+    },
+    {
+      "attributes": {
+        "Description": "Building, running and watching models.",
+        "Name": "AI and machine learning"
+      },
+      "class": "Dimension",
+      "h": 210,
+      "id": "el_dim_ai",
+      "w": 440,
+      "x": 510,
+      "y": 290
+    },
+    {
+      "attributes": {
+        "CurrentScore": 2,
+        "Importance": 4,
+        "Name": "Model development",
+        "TargetScore": 4
+      },
+      "class": "Capability",
+      "h": 126,
+      "id": "el_cap_development",
+      "parent": "el_dim_ai",
+      "w": 190,
+      "x": 530,
+      "y": 350
+    },
+    {
+      "attributes": {
+        "CurrentScore": 1,
+        "Importance": 5,
+        "Name": "Model monitoring",
+        "TargetScore": 4
+      },
+      "class": "Capability",
+      "h": 126,
+      "id": "el_cap_modelmonitoring",
+      "parent": "el_dim_ai",
+      "w": 190,
+      "x": 740,
+      "y": 350
+    },
+    {
+      "attributes": {
+        "Description": "The skills of everyone who works with data.",
+        "Name": "People and skills"
+      },
+      "class": "Dimension",
+      "h": 210,
+      "id": "el_dim_people",
+      "w": 440,
+      "x": 980,
+      "y": 290
+    },
+    {
+      "attributes": {
+        "CurrentScore": 2,
+        "Importance": 4,
+        "Name": "Data literacy",
+        "TargetScore": 4
+      },
+      "class": "Capability",
+      "h": 126,
+      "id": "el_cap_literacy",
+      "parent": "el_dim_people",
+      "w": 190,
+      "x": 1000,
+      "y": 350
+    },
+    {
+      "attributes": {
+        "CurrentScore": 2,
+        "Importance": 3,
+        "Name": "Specialist skills",
+        "TargetScore": 3
+      },
+      "class": "Capability",
+      "h": 126,
+      "id": "el_cap_specialists",
+      "parent": "el_dim_people",
+      "w": 190,
+      "x": 1210,
+      "y": 350
+    },
+    {
+      "attributes": {
+        "Description": "Roles, teams and funding of data and AI work.",
+        "Name": "Operating model"
+      },
+      "class": "Dimension",
+      "h": 210,
+      "id": "el_dim_operating",
+      "w": 440,
+      "x": 1450,
+      "y": 290
+    },
+    {
+      "attributes": {
+        "CurrentScore": 2,
+        "Importance": 4,
+        "Name": "Roles and responsibilities",
+        "TargetScore": 4
+      },
+      "class": "Capability",
+      "h": 126,
+      "id": "el_cap_roles",
+      "parent": "el_dim_operating",
+      "w": 190,
+      "x": 1470,
+      "y": 350
+    },
+    {
+      "attributes": {
+        "CurrentScore": 2,
+        "Importance": 2,
+        "Name": "Funding of data work",
+        "TargetScore": 3
+      },
+      "class": "Capability",
+      "h": 126,
+      "id": "el_cap_funding",
+      "parent": "el_dim_operating",
+      "w": 190,
+      "x": 1680,
+      "y": 350
+    },
+    {
+      "attributes": {
+        "Due": "2027-06-30",
+        "Effort": "Medium",
+        "Name": "Name an owner for each data domain",
+        "Status": "In progress"
+      },
+      "class": "Action",
+      "h": 70,
+      "id": "el_act_owners",
+      "w": 280,
+      "x": 40,
+      "y": 560
+    },
+    {
+      "attributes": {
+        "Due": "2027-09-30",
+        "Effort": "Large",
+        "Name": "Automated quality checks on key tables",
+        "Status": "Not started"
+      },
+      "class": "Action",
+      "h": 70,
+      "id": "el_act_checks",
+      "w": 280,
+      "x": 350,
+      "y": 560
+    },
+    {
+      "attributes": {
+        "Due": "2027-03-31",
+        "Effort": "Small",
+        "Name": "Refresh the strategy with business leaders",
+        "Status": "Done"
+      },
+      "class": "Action",
+      "h": 70,
+      "id": "el_act_refresh",
+      "w": 280,
+      "x": 660,
+      "y": 560
+    },
+    {
+      "attributes": {
+        "Due": "2027-12-15",
+        "Effort": "Medium",
+        "Name": "Data literacy course for managers",
+        "Status": "In progress"
+      },
+      "class": "Action",
+      "h": 70,
+      "id": "el_act_course",
+      "w": 280,
+      "x": 970,
+      "y": 560
+    },
+    {
+      "attributes": {
+        "Due": "2028-03-31",
+        "Effort": "Large",
+        "Name": "Shared pipeline for building models",
+        "Status": "Not started"
+      },
+      "class": "Action",
+      "h": 70,
+      "id": "el_act_pipeline",
+      "w": 280,
+      "x": 1280,
+      "y": 560
+    },
+    {
+      "attributes": {
+        "Due": "2027-11-30",
+        "Effort": "Small",
+        "Name": "Self-service analytics training",
+        "Status": "Not started"
+      },
+      "class": "Action",
+      "h": 70,
+      "id": "el_act_training",
+      "w": 280,
+      "x": 1590,
+      "y": 560
+    },
+    {
+      "attributes": {
+        "Name": "Priya Raman",
+        "Role": "Chief data officer"
+      },
+      "class": "Person",
+      "h": 110,
+      "id": "el_per_priya",
+      "w": 90,
+      "x": 300,
+      "y": 700
+    },
+    {
+      "attributes": {
+        "Name": "Tom Becker",
+        "Role": "Head of data platform"
+      },
+      "class": "Person",
+      "h": 110,
+      "id": "el_per_tom",
+      "w": 90,
+      "x": 920,
+      "y": 700
+    },
+    {
+      "attributes": {
+        "Name": "Sara Lindqvist",
+        "Role": "Head of analytics"
+      },
+      "class": "Person",
+      "h": 110,
+      "id": "el_per_sara",
+      "w": 90,
+      "x": 1540,
+      "y": 700
+    }
+  ],
+  "formatVersion": 2,
+  "id": "mdl_maturity2027",
+  "kind": "mkmodel",
+  "kit": {
+    "id": "kit_dataaimaturity",
+    "name": "Data and AI maturity assessment",
+    "version": "1.0.0"
+  },
+  "modelType": "Assessment",
+  "name": "Data and AI maturity 2027"
+}

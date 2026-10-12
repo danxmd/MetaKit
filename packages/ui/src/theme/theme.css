@@ -1,63 +1,17 @@
 /*
  * MetaKit design system: tokens, base styles and a few shared patterns. Components keep only their
  * own layout; colours, type, spacing, buttons, fields, menus and dialogs come from here.
- * The theme is set by `data-theme="light|dark"` on <html> (see theme.ts); without it the system
- * setting decides.
+ *
+ * The colours, fonts and radii belong to the look (`data-look` on <html>) and come from looks.css,
+ * which `pnpm looks:build` writes from looks.ts. Light or dark is set by `data-theme="light|dark"`
+ * (see theme.ts); without it the system setting decides.
  */
 
+@import './fonts.css';
+@import './looks.css';
+
 :root {
-  color-scheme: light;
-
-  /* Surfaces */
-  --app-bg: #f4f5f8;
-  --surface: #ffffff;
-  --surface-2: #f0f2f6;
-  --surface-3: #e7eaf0;
-  --hover-bg: #eceff4;
-  --overlay: rgb(15 18 30 / 45%);
-
-  /* Lines */
-  --line: #dfe3ea;
-  --line-strong: #c6ccd7;
-
-  /* Text */
-  --text: #1c2029;
-  --text-strong: #0f1219;
-  --text-muted: #5a6373;
-  --text-faint: #8a93a3;
-
-  /* Brand and status */
-  --accent: #4263eb;
-  --accent-hover: #3454d1;
-  --accent-soft: #e8edff;
-  --on-accent: #ffffff;
-  --danger: #d6336c;
-  --danger-soft: #ffe8f0;
-  --warning: #e67700;
-  --warning-soft: #fff4e0;
-  --success: #2b8a3e;
-  --success-soft: #e6f6ea;
-  --info-soft: #e7f1ff;
-
-  /* Canvas */
-  --canvas-bg: #fbfbfd;
-  --canvas-grid: #e4e8ef;
-  --canvas-grid-strong: #d3d9e3;
-  --canvas-selection: #4263eb;
-
-  /* Shape of things */
-  --radius-s: 4px;
-  --radius: 8px;
-  --radius-l: 12px;
-  --shadow-s: 0 1px 2px rgb(16 24 40 / 8%);
-  --shadow: 0 4px 14px rgb(16 24 40 / 12%);
-  --shadow-l: 0 16px 40px rgb(16 24 40 / 22%);
-
-  /* Type and space */
-  --font:
-    Inter, 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial,
-    sans-serif;
-  --font-mono: ui-monospace, 'Cascadia Code', 'SF Mono', Menlo, monospace;
+  /* Type and space: the same in every look. */
   --text-s: 0.8125rem;
   --text-m: 0.9375rem;
   --text-l: 1.125rem;
@@ -69,87 +23,10 @@
   --gap-6: 2rem;
   --bar-height: 3rem;
 
-  /* Names used before the design system existed */
-  --bg: var(--surface);
-  --panel: var(--surface-2);
-  --muted: var(--text-muted);
-  --hover: var(--hover-bg);
-
   font-family: var(--font);
   font-size: 15px;
   line-height: 1.45;
   color: var(--text);
-}
-
-:root[data-theme='dark'] {
-  color-scheme: dark;
-  --app-bg: #0f1218;
-  --surface: #171b24;
-  --surface-2: #1e2330;
-  --surface-3: #272d3c;
-  --hover-bg: #252b3a;
-  --overlay: rgb(0 0 0 / 60%);
-  --line: #2b3242;
-  --line-strong: #3b4357;
-  --text: #e4e7ee;
-  --text-strong: #f6f7fb;
-  --text-muted: #a0a9ba;
-  --text-faint: #7a8396;
-  --accent: #7f97ff;
-  --accent-hover: #9aacff;
-  --accent-soft: #232b4d;
-  --on-accent: #0d1020;
-  --danger: #ff7aa2;
-  --danger-soft: #3b1e2b;
-  --warning: #ffb454;
-  --warning-soft: #3a2c14;
-  --success: #6fd085;
-  --success-soft: #17301f;
-  --info-soft: #1b2b45;
-  --canvas-bg: #131720;
-  --canvas-grid: #1f2530;
-  --canvas-grid-strong: #2a3140;
-  --canvas-selection: #9aacff;
-  --shadow-s: 0 1px 2px rgb(0 0 0 / 40%);
-  --shadow: 0 4px 14px rgb(0 0 0 / 45%);
-  --shadow-l: 0 16px 40px rgb(0 0 0 / 60%);
-}
-
-/* Follow the system when the person has not chosen. */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']):not([data-theme='dark']) {
-    color-scheme: dark;
-    --app-bg: #0f1218;
-    --surface: #171b24;
-    --surface-2: #1e2330;
-    --surface-3: #272d3c;
-    --hover-bg: #252b3a;
-    --overlay: rgb(0 0 0 / 60%);
-    --line: #2b3242;
-    --line-strong: #3b4357;
-    --text: #e4e7ee;
-    --text-strong: #f6f7fb;
-    --text-muted: #a0a9ba;
-    --text-faint: #7a8396;
-    --accent: #7f97ff;
-    --accent-hover: #9aacff;
-    --accent-soft: #232b4d;
-    --on-accent: #0d1020;
-    --danger: #ff7aa2;
-    --danger-soft: #3b1e2b;
-    --warning: #ffb454;
-    --warning-soft: #3a2c14;
-    --success: #6fd085;
-    --success-soft: #17301f;
-    --info-soft: #1b2b45;
-    --canvas-bg: #131720;
-    --canvas-grid: #1f2530;
-    --canvas-grid-strong: #2a3140;
-    --canvas-selection: #9aacff;
-    --shadow-s: 0 1px 2px rgb(0 0 0 / 40%);
-    --shadow: 0 4px 14px rgb(0 0 0 / 45%);
-    --shadow-l: 0 16px 40px rgb(0 0 0 / 60%);
-  }
 }
 
 /* Base ---------------------------------------------------------------------------------------- */
@@ -175,14 +52,20 @@ h4 {
   line-height: 1.25;
   font-weight: 650;
 }
+h1,
+h2 {
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+}
 h1 {
-  font-size: 1.75rem;
-  letter-spacing: -0.01em;
+  font-size: var(--h1-size);
+  letter-spacing: var(--h1-tracking);
 }
 h2 {
   font-size: var(--text-l);
 }
 h3 {
+  font-family: var(--font-heading);
   font-size: var(--text-m);
 }
 p {
@@ -208,7 +91,7 @@ hr {
   margin: var(--gap-4) 0;
 }
 ::selection {
-  background: var(--accent-soft);
+  background: var(--mark-soft);
 }
 
 :focus-visible {
@@ -248,6 +131,13 @@ button.primary {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--on-accent);
+}
+/* Weight and shape as low as the base button rule, so components that size a button still win. A
+   look with round buttons (--radius-pill) also gives them a little more room. */
+button:where(.primary) {
+  font-weight: var(--primary-weight);
+  border-radius: max(var(--radius-s), var(--radius-pill));
+  padding-inline: calc(0.75rem + min(var(--radius-pill), 0.25rem));
 }
 button.primary:hover:not(:disabled) {
   background: var(--accent-hover);
@@ -341,8 +231,8 @@ label {
   color: var(--text-muted);
 }
 .badge.accent {
-  background: var(--accent-soft);
-  color: var(--accent);
+  background: var(--mark-soft);
+  color: var(--mark-text);
 }
 
 .notice {
@@ -382,6 +272,15 @@ label {
   background: var(--accent);
   color: var(--on-accent);
   box-shadow: var(--shadow-s);
+}
+/* The Model and Build buttons take the colour of their mode. */
+.segmented-control > button[data-mode-button='model'][aria-current='page'] {
+  background: var(--mode-model);
+  color: var(--on-mode);
+}
+.segmented-control > button[data-mode-button='build'][aria-current='page'] {
+  background: var(--mode-build);
+  color: var(--on-mode);
 }
 .segmented-control
   > button:not([aria-current='page']):not([aria-pressed='true']):hover:not(

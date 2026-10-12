@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import type { EditorTool, PreviewTarget } from '@metakit-app/canvas';
-  import type { ClassId, RelationId, ToolLibrary } from '@metakit-app/core';
+  import type { ClassId, RelationId, Kit } from '@metakit-app/core';
   import { labelOf, type Palette } from '../shell/palette';
   import {
     previewOfClass,
@@ -12,7 +12,7 @@
   import ShapePreview from './ShapePreview.svelte';
 
   let {
-    tool,
+    kit,
     palette,
     activeTool,
     onSelect,
@@ -20,9 +20,11 @@
     onConnect,
     onDragClass,
     onHover,
+    viewId = '',
+    onViewChange,
     language = 'en',
   }: {
-    tool: ToolLibrary;
+    kit: Kit;
     palette: Palette;
     activeTool: EditorTool;
     onSelect: () => void;
@@ -31,6 +33,10 @@
     onDragClass: (event: DragEvent, cls: ClassId) => void;
     /** Tells the hint line which entry is hovered or focused, and null when none is. */
     onHover?: (target: PreviewTarget | null) => void;
+    /** The chosen palette view, '' for all. */
+    viewId?: string;
+    /** Gets the list itself, so that a rule that cancels the switch can put the old view back. */
+    onViewChange?: (select: HTMLSelectElement) => void;
     language?: string;
   } = $props();
 
@@ -83,7 +89,7 @@
       event,
       cls.id,
       { class: cls.id },
-      () => previewOfClass(tool, cls, language),
+      () => previewOfClass(kit, cls, language),
       delay,
     );
   const forRelation = (
@@ -95,7 +101,7 @@
       event,
       rel.id,
       { relation: rel.id },
-      () => previewOfRelation(tool, rel, language),
+      () => previewOfRelation(kit, rel, language),
       delay,
     );
 
@@ -105,6 +111,23 @@
 <svelte:window onkeydown={(e) => e.key === 'Escape' && close()} />
 
 <nav class="palette" aria-label="Palette" data-testid="palette">
+  {#if palette.views.length > 0}
+    <label class="view">
+      <span class="heading">View</span>
+      <select
+        value={viewId}
+        onchange={(e) => onViewChange?.(e.currentTarget)}
+        title="Palette view: which objects and relations the palette offers"
+        data-testid="view-switcher"
+      >
+        <option value="">All</option>
+        {#each palette.views as v (v.id)}<option value={v.id}
+            >{labelOf(v, language)}</option
+          >{/each}
+      </select>
+    </label>
+  {/if}
+
   <button
     class="entry select"
     class:on={activeTool.type === 'select'}
@@ -115,7 +138,9 @@
     <span class="name">Select</span>
   </button>
 
-  <h3>Objects</h3>
+  {#if palette.classes.length > 0}
+    <h3>Objects</h3>
+  {/if}
   {#each palette.classes as cls (cls.id)}
     <button
       class="entry"
@@ -135,7 +160,7 @@
     >
       <span class="thumb">
         <ShapePreview
-          {tool}
+          {kit}
           target={{ class: cls.id }}
           width={34}
           height={22}
@@ -146,7 +171,9 @@
     </button>
   {/each}
 
-  <h3>Relations</h3>
+  {#if palette.relations.length > 0}
+    <h3 data-tour="model-relations">Relations</h3>
+  {/if}
   {#each palette.relations as rel (rel.id)}
     <button
       class="entry"
@@ -161,7 +188,7 @@
     >
       <span class="thumb">
         <ShapePreview
-          {tool}
+          {kit}
           target={{ relation: rel.id }}
           width={34}
           height={22}
@@ -173,14 +200,14 @@
     </button>
   {/each}
 
-  {#if palette.classes.length === 0}
-    <p class="hint">This view lists no objects.</p>
+  {#if palette.classes.length === 0 && palette.relations.length === 0}
+    <p class="hint" data-testid="palette-empty">No objects in this view</p>
   {/if}
 </nav>
 
 {#if shown}
   <PalettePreview
-    {tool}
+    {kit}
     target={shown.target}
     info={shown.info}
     id={CARD_ID}
@@ -201,12 +228,26 @@
     background: var(--surface-2);
     border-right: 1px solid var(--line);
   }
-  h3 {
+  .view {
+    display: grid;
+    gap: var(--gap-1);
+    margin-bottom: var(--gap-2);
+  }
+  .view select {
+    width: 100%;
+  }
+  h3,
+  .heading {
+    font-family: var(--font-display);
     font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--text-faint);
+    font-weight: var(--label-weight);
+    text-transform: var(--label-case);
+    letter-spacing: var(--label-tracking);
+    color: var(--label-text);
     margin: var(--gap-4) var(--gap-1) var(--gap-1);
+  }
+  .heading {
+    margin: 0 var(--gap-1);
   }
   .entry {
     display: flex;

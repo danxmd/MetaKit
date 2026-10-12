@@ -14,7 +14,7 @@ A token is a long secret text that proves to GitHub or GitLab that MetaKit may a
 
 MetaKit has no accounts and no server (see [[concepts-no-server]]). To read and write your repository, your browser sends your token directly to GitHub or GitLab. The rules for tokens are strict:
 
-- **Stored in your browser only.** Tokens live in IndexedDB of your browser profile, under the key `gitTokens`. They are never written to the workspace folder, the repository, a model, a tool library, a log or a test file.
+- **Stored in your browser only.** Tokens live in IndexedDB of your browser profile, under the key `gitTokens`. They are never written to the workspace folder, the repository, a model, a Kit, a log or a test file.
 - **Shown once.** After you save a token, the screen shows only its name and where it works. The secret is not shown again.
 - **Sent only in one header.** The token goes in the `Authorization` header of requests to the service you chose, and nowhere else.
 - **Cleaned from messages.** Every error text passes a filter that replaces the token, and anything shaped like a GitHub or GitLab token, with `[token hidden]`.
@@ -24,7 +24,7 @@ MetaKit has no accounts and no server (see [[concepts-no-server]]). To read and 
 
 ## Where to find it
 
-Models page, **Open from Git**, then the **Git settings** page. The sections are **Saved tokens**, **Add a token** and **Choose the tool library**. See [[git-mode]].
+Models page, **Open from Git**, then the **Git settings** page. The sections are **Saved tokens**, **Add a token** and **Choose the Kit**. See [[git-mode]].
 
 ## How to use it
 
@@ -33,7 +33,7 @@ Models page, **Open from Git**, then the **Git settings** page. The sections are
 Make one token per person and per repository.
 
 1. On GitHub open Settings, Developer settings, Personal access tokens, **Fine-grained tokens**, **Generate new token**.
-2. Token name: for example `MetaKit tool library`. Resource owner: the account or organisation that owns the repository. Expiration: 30 to 90 days.
+2. Token name: for example `MetaKit Kits`. Resource owner: the account or organisation that owns the repository. Expiration: 30 to 90 days.
 3. Repository access: **Only select repositories**. Choose the one repository.
 4. Permissions, Repository permissions: **Contents: Read and write**. (**Metadata: Read** is added for you.) Leave everything else on "No access".
 5. Generate the token and copy it. You see it only once.
@@ -44,12 +44,12 @@ The repository needs at least one commit, for example a README. If your organisa
 ### GitLab: a personal access token
 
 1. In GitLab open your avatar, Preferences, **Access tokens**, **Add new token**.
-2. Name it `MetaKit tool library`. Expiry: within 90 days. Scope: **api**. GitLab has no narrower scope that can commit. Your role on the project must be Developer or higher.
+2. Name it `MetaKit Kits`. Expiry: within 90 days. Scope: **api**. GitLab has no narrower scope that can commit. Your role on the project must be Developer or higher.
 3. In MetaKit choose **GitLab**. For a self-managed GitLab, change the **Address of the service**.
 
 ### Test it
 
-Under **Choose the tool library** pick the token, type the repository and press **Test the token**. You should read `owner/name, can write`.
+Under **Choose the Kit** pick the token, type the repository and press **Test the token**. You should read `owner/name, can write`.
 
 ## Every option explained
 
@@ -85,7 +85,7 @@ The package contains the code for a GitLab sign-in without a stored secret (OAut
 ## Good to know
 
 - **Clearing site data removes tokens.** If you clear the data of MetaKit in the browser, or use a private window, your tokens are gone and you add them again. See [[script-permissions]] for other things kept in the browser.
-- **Do not paste tokens into rules, scripts, models or chat.** A tool library is shared in the folder and in Git.
+- **Do not paste tokens into rules, scripts, models or chat.** A Kit is shared in the folder and in Git.
 - **Not tested on the real services.** The checks against github.com and gitlab.com, including browser access, are written in `docs/git-oauth-setup.md` and are run by the project owner.
 - **Troubleshooting.** See [[troubleshooting]].
 

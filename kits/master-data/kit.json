@@ -1,0 +1,1887 @@
+{
+  "formatVersion": 7,
+  "manifest": {
+    "id": "kit_masterdata",
+    "name": "Master data management",
+    "version": "1.0.0",
+    "languages": ["en"]
+  },
+  "settings": {
+    "grid": {
+      "size": 10,
+      "snap": true,
+      "visible": true
+    },
+    "layers": [],
+    "numbering": {
+      "enabled": false,
+      "prefix": "",
+      "start": 1
+    }
+  },
+  "classes": {
+    "cls_dataentity": {
+      "id": "cls_dataentity",
+      "key": "DataEntity",
+      "kind": "node",
+      "labels": {
+        "en": "Master entity"
+      },
+      "help": {
+        "en": "One kind of master data, such as Customer or Product, whose golden records combine the records of several sources. Fields lists the attributes of the golden record."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Data entity",
+          "id": "att_dataentity_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_dataentity_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "table",
+          "key": "Fields",
+          "columns": [
+            {
+              "id": "name",
+              "key": "Name",
+              "type": "text"
+            },
+            {
+              "id": "type",
+              "key": "Type",
+              "type": "text"
+            },
+            {
+              "id": "key",
+              "key": "Key",
+              "type": "boolean"
+            },
+            {
+              "id": "nullable",
+              "key": "Nullable",
+              "type": "boolean"
+            }
+          ],
+          "id": "att_dataentity_fields",
+          "labels": {
+            "en": "Fields"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "SourceRecords",
+          "min": 0,
+          "id": "att_dataentity_sourcerecords",
+          "labels": {
+            "en": "Source records"
+          },
+          "help": {
+            "en": "How many records all sources hold together."
+          }
+        },
+        {
+          "type": "integer",
+          "key": "GoldenRecords",
+          "min": 0,
+          "id": "att_dataentity_goldenrecords",
+          "labels": {
+            "en": "Golden records"
+          },
+          "help": {
+            "en": "How many golden records remain after matching and merging."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "DuplicateShare",
+          "formula": "SourceRecords == null || GoldenRecords == null || SourceRecords == 0 ? null : round((SourceRecords - GoldenRecords) / SourceRecords * 100, 1)",
+          "result": "number",
+          "id": "att_dataentity_duplicateshare",
+          "labels": {
+            "en": "Duplicates (%)"
+          },
+          "help": {
+            "en": "The share of source records that were duplicates, in percent."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Sources",
+          "formula": "count(incoming('Supplies'))",
+          "result": "number",
+          "id": "att_dataentity_sources",
+          "labels": {
+            "en": "Sources"
+          },
+          "help": {
+            "en": "How many source systems supply records."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "MatchRules",
+          "formula": "count(outgoing('MatchedBy'))",
+          "result": "number",
+          "id": "att_dataentity_matchrules",
+          "labels": {
+            "en": "Match rules"
+          },
+          "help": {
+            "en": "How many match rules it uses."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "SurvivorshipRules",
+          "formula": "count(outgoing('MergedBy'))",
+          "result": "number",
+          "id": "att_dataentity_survivorshiprules",
+          "labels": {
+            "en": "Survivorship rules"
+          },
+          "help": {
+            "en": "How many survivorship rules it uses."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Hub",
+          "formula": "join(outgoing('ManagedIn').Name, ', ')",
+          "result": "text",
+          "id": "att_dataentity_hub",
+          "labels": {
+            "en": "Hub"
+          },
+          "help": {
+            "en": "The MDM hub that manages it."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Steward",
+          "formula": "join(incoming('Stewards').Name, ', ')",
+          "result": "text",
+          "id": "att_dataentity_steward",
+          "labels": {
+            "en": "Steward"
+          },
+          "help": {
+            "en": "The data stewards who look after it."
+          }
+        }
+      ],
+      "shape": "shp_dataentity",
+      "constraints": [
+        {
+          "id": "k_master_match",
+          "formula": "Sources < 2 || MatchRules > 0",
+          "message": "= 'Master entity \"' + Name + '\" has ' + text(Sources) + ' sources but no match rule to find duplicates.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_master_survivorship",
+          "formula": "Sources < 2 || SurvivorshipRules > 0",
+          "message": "= 'Master entity \"' + Name + '\" has ' + text(Sources) + ' sources but no survivorship rule to decide which value wins.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_master_steward",
+          "formula": "!isEmpty(Steward)",
+          "message": "= 'Master entity \"' + Name + '\" has no data steward: connect one with \"Stewards\".'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_master_counts",
+          "formula": "SourceRecords == null || GoldenRecords == null || GoldenRecords <= SourceRecords",
+          "message": "= 'Master entity \"' + Name + '\" has more golden records than source records.'",
+          "severity": "warning"
+        }
+      ]
+    },
+    "cls_sourcesystem": {
+      "id": "cls_sourcesystem",
+      "key": "SourceSystem",
+      "kind": "node",
+      "labels": {
+        "en": "Source system"
+      },
+      "help": {
+        "en": "A system that creates or changes master data and supplies records to the golden record."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Source system",
+          "id": "att_sourcesystem_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_sourcesystem_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Technology",
+          "id": "att_sourcesystem_technology",
+          "labels": {
+            "en": "Technology"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_sourcesystem_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Hosting",
+          "options": ["On-premises", "Cloud", "Software as a service"],
+          "id": "att_sourcesystem_hosting",
+          "labels": {
+            "en": "Hosting"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "Records",
+          "min": 0,
+          "id": "att_sourcesystem_records",
+          "labels": {
+            "en": "Records"
+          },
+          "help": {
+            "en": "How many master data records it holds."
+          }
+        }
+      ],
+      "shape": "shp_sourcesystem"
+    },
+    "cls_application": {
+      "id": "cls_application",
+      "key": "Application",
+      "kind": "node",
+      "labels": {
+        "en": "Application"
+      },
+      "help": {
+        "en": "A system that uses golden records, such as billing or a customer portal."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Application",
+          "id": "att_application_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_application_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_application_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Lifecycle",
+          "options": ["Invest", "Tolerate", "Migrate", "Eliminate"],
+          "id": "att_application_lifecycle",
+          "labels": {
+            "en": "Lifecycle"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "Users",
+          "min": 0,
+          "id": "att_application_users",
+          "labels": {
+            "en": "Users"
+          }
+        }
+      ],
+      "shape": "shp_application"
+    },
+    "cls_datasteward": {
+      "id": "cls_datasteward",
+      "key": "DataSteward",
+      "kind": "node",
+      "labels": {
+        "en": "Data steward"
+      },
+      "help": {
+        "en": "The person who looks after the quality and meaning of a set of data day to day."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Data steward",
+          "id": "att_datasteward_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_datasteward_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Domain",
+          "id": "att_datasteward_domain",
+          "labels": {
+            "en": "Domain"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Email",
+          "id": "att_datasteward_email",
+          "labels": {
+            "en": "Email"
+          }
+        }
+      ],
+      "shape": "shp_datasteward"
+    },
+    "cls_masterdatadomain": {
+      "id": "cls_masterdatadomain",
+      "key": "MasterDataDomain",
+      "kind": "container",
+      "labels": {
+        "en": "Master data domain"
+      },
+      "help": {
+        "en": "A kind of master data with its own owner, such as customer, product or supplier. Place its master entities and their rules inside it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Master data domain",
+          "id": "att_masterdatadomain_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_masterdatadomain_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_masterdatadomain_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        }
+      ],
+      "shape": "shp_masterdatadomain"
+    },
+    "cls_matchrule": {
+      "id": "cls_matchrule",
+      "key": "MatchRule",
+      "kind": "node",
+      "labels": {
+        "en": "Match rule"
+      },
+      "help": {
+        "en": "How records from different sources are recognised as the same thing: which attributes are compared, how, and from which score two records are merged."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Match rule",
+          "id": "att_matchrule_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_matchrule_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "ComparedAttributes",
+          "id": "att_matchrule_comparedattributes",
+          "labels": {
+            "en": "Compared attributes"
+          },
+          "help": {
+            "en": "The attributes compared, such as \"name, date of birth and postcode\"."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "MatchType",
+          "options": ["Exact", "Fuzzy", "Probabilistic"],
+          "id": "att_matchrule_matchtype",
+          "labels": {
+            "en": "Type"
+          }
+        },
+        {
+          "type": "number",
+          "key": "MatchThreshold",
+          "unit": "%",
+          "min": 0,
+          "max": 100,
+          "id": "att_matchrule_matchthreshold",
+          "labels": {
+            "en": "Match from"
+          },
+          "help": {
+            "en": "From this score two records are a possible match, which a steward reviews."
+          }
+        },
+        {
+          "type": "number",
+          "key": "AutoMergeFrom",
+          "unit": "%",
+          "min": 0,
+          "max": 100,
+          "id": "att_matchrule_automergefrom",
+          "labels": {
+            "en": "Merge without review from"
+          },
+          "help": {
+            "en": "From this score two records are merged without review."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Bands",
+          "formula": "MatchThreshold == null || AutoMergeFrom == null ? null : MatchThreshold == AutoMergeFrom ? 'Merge from ' + text(AutoMergeFrom) + '%' : 'Review from ' + text(MatchThreshold) + '%, merge from ' + text(AutoMergeFrom) + '%'",
+          "result": "text",
+          "id": "att_matchrule_bands",
+          "labels": {
+            "en": "Bands"
+          },
+          "help": {
+            "en": "The scores that go to review and the scores that merge, shown under the name."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_match_bands",
+          "formula": "MatchThreshold == null || AutoMergeFrom == null || AutoMergeFrom >= MatchThreshold",
+          "message": "= 'Match rule \"' + Name + '\" merges without review below the score at which it starts to match.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_matchrule"
+    },
+    "cls_survivorshiprule": {
+      "id": "cls_survivorshiprule",
+      "key": "SurvivorshipRule",
+      "kind": "node",
+      "labels": {
+        "en": "Survivorship rule"
+      },
+      "help": {
+        "en": "Which value wins when sources disagree, for some attributes of the golden record: the most trusted source, the most recent value, the most complete one, the most frequent one, or the steward decides."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Survivorship rule",
+          "id": "att_survivorshiprule_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_survivorshiprule_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "AppliesTo",
+          "id": "att_survivorshiprule_appliesto",
+          "labels": {
+            "en": "Applies to"
+          },
+          "help": {
+            "en": "The attributes it decides, such as \"address and phone\"."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Strategy",
+          "options": [
+            "Most trusted source",
+            "Most recent",
+            "Most complete",
+            "Most frequent",
+            "Steward decides"
+          ],
+          "id": "att_survivorshiprule_strategy",
+          "labels": {
+            "en": "Strategy"
+          }
+        },
+        {
+          "type": "text",
+          "key": "SourceOrder",
+          "id": "att_survivorshiprule_sourceorder",
+          "labels": {
+            "en": "Source order"
+          },
+          "help": {
+            "en": "For \"Most trusted source\": the sources from the most to the least trusted."
+          }
+        }
+      ],
+      "shape": "shp_survivorshiprule"
+    },
+    "cls_mdmhub": {
+      "id": "cls_mdmhub",
+      "key": "MDMHub",
+      "kind": "node",
+      "labels": {
+        "en": "MDM hub"
+      },
+      "help": {
+        "en": "Where the golden records are managed. Its style says how it works with the sources: a registry only links them, consolidation copies them for reporting, coexistence sends golden records back to the sources, and a centralised hub is where master data is created."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "MDM hub",
+          "id": "att_mdmhub_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_mdmhub_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Style",
+          "options": [
+            "Registry",
+            "Consolidation",
+            "Coexistence",
+            "Centralised"
+          ],
+          "id": "att_mdmhub_style",
+          "labels": {
+            "en": "Style"
+          },
+          "help": {
+            "en": "Registry: an index that links the records in the sources. Consolidation: a golden copy for reporting. Coexistence: golden records are sent back to the sources. Centralised: master data is created in the hub."
+          }
+        },
+        {
+          "type": "text",
+          "key": "Technology",
+          "id": "att_mdmhub_technology",
+          "labels": {
+            "en": "Technology"
+          },
+          "help": {
+            "en": "As free text."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "SendsBack",
+          "formula": "Style == 'Coexistence' || Style == 'Centralised'",
+          "result": "boolean",
+          "id": "att_mdmhub_sendsback",
+          "labels": {
+            "en": "Sends golden records out"
+          },
+          "help": {
+            "en": "Yes for the styles that send golden records to other systems."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Entities",
+          "formula": "count(incoming('ManagedIn'))",
+          "result": "number",
+          "id": "att_mdmhub_entities",
+          "labels": {
+            "en": "Entities"
+          },
+          "help": {
+            "en": "How many master entities it manages."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_hub_distributes",
+          "formula": "!SendsBack || count(outgoing('Distributes')) > 0",
+          "message": "= 'MDM hub \"' + Name + '\" is of the style ' + Style + ' but sends golden records to no system: connect it with \"Distributes to\".'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_mdmhub"
+    }
+  },
+  "relations": {
+    "rel_stewards": {
+      "id": "rel_stewards",
+      "key": "Stewards",
+      "labels": {
+        "en": "Stewards"
+      },
+      "help": {
+        "en": "A data steward looks after data day to day."
+      },
+      "from": ["cls_datasteward"],
+      "to": ["cls_dataentity", "cls_masterdatadomain"],
+      "attributes": [],
+      "shape": "shp_rel_stewards"
+    },
+    "rel_supplies": {
+      "id": "rel_supplies",
+      "key": "Supplies",
+      "labels": {
+        "en": "Supplies"
+      },
+      "help": {
+        "en": "The source system sends its records to the master entity. Trust says how much its values are trusted when sources disagree: 1 is the most trusted."
+      },
+      "from": ["cls_sourcesystem"],
+      "to": ["cls_dataentity"],
+      "attributes": [
+        {
+          "type": "integer",
+          "key": "Trust",
+          "min": 1,
+          "id": "att_supplies_trust",
+          "labels": {
+            "en": "Trust"
+          },
+          "help": {
+            "en": "1 for the most trusted source."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "TrustText",
+          "formula": "Trust == null ? null : 'trust ' + text(Trust)",
+          "result": "text",
+          "id": "att_supplies_trusttext",
+          "labels": {
+            "en": "Trust text"
+          },
+          "help": {
+            "en": "The trust rank, shown on the line."
+          }
+        }
+      ],
+      "shape": "shp_rel_supplies"
+    },
+    "rel_matchedby": {
+      "id": "rel_matchedby",
+      "key": "MatchedBy",
+      "labels": {
+        "en": "Matched by"
+      },
+      "help": {
+        "en": "The match rule finds the duplicates of the master entity."
+      },
+      "from": ["cls_dataentity"],
+      "to": ["cls_matchrule"],
+      "attributes": [],
+      "shape": "shp_rel_matchedby"
+    },
+    "rel_mergedby": {
+      "id": "rel_mergedby",
+      "key": "MergedBy",
+      "labels": {
+        "en": "Merged by"
+      },
+      "help": {
+        "en": "The survivorship rule decides which values the golden record keeps."
+      },
+      "from": ["cls_dataentity"],
+      "to": ["cls_survivorshiprule"],
+      "attributes": [],
+      "shape": "shp_rel_mergedby"
+    },
+    "rel_managedin": {
+      "id": "rel_managedin",
+      "key": "ManagedIn",
+      "labels": {
+        "en": "Managed in"
+      },
+      "help": {
+        "en": "The golden records of the master entity are kept in the MDM hub."
+      },
+      "from": ["cls_dataentity"],
+      "to": ["cls_mdmhub"],
+      "attributes": [],
+      "shape": "shp_rel_managedin"
+    },
+    "rel_distributes": {
+      "id": "rel_distributes",
+      "key": "Distributes",
+      "labels": {
+        "en": "Distributes to"
+      },
+      "help": {
+        "en": "The hub sends golden records to the system."
+      },
+      "from": ["cls_mdmhub"],
+      "to": ["cls_application", "cls_sourcesystem"],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Frequency",
+          "id": "att_distributes_frequency",
+          "labels": {
+            "en": "Frequency"
+          }
+        }
+      ],
+      "shape": "shp_rel_distributes"
+    }
+  },
+  "modelTypes": {
+    "mt_masterdata": {
+      "id": "mt_masterdata",
+      "key": "MasterData",
+      "labels": {
+        "en": "Master data management"
+      },
+      "classes": [
+        "cls_dataentity",
+        "cls_sourcesystem",
+        "cls_application",
+        "cls_datasteward",
+        "cls_masterdatadomain",
+        "cls_matchrule",
+        "cls_survivorshiprule",
+        "cls_mdmhub"
+      ],
+      "relations": [
+        "rel_stewards",
+        "rel_supplies",
+        "rel_matchedby",
+        "rel_mergedby",
+        "rel_managedin",
+        "rel_distributes"
+      ],
+      "views": [
+        {
+          "id": "vw_rules",
+          "key": "Rules",
+          "labels": {
+            "en": "Golden records and rules"
+          },
+          "classes": [
+            "cls_masterdatadomain",
+            "cls_dataentity",
+            "cls_matchrule",
+            "cls_survivorshiprule",
+            "cls_datasteward"
+          ],
+          "relations": ["rel_matchedby", "rel_mergedby", "rel_stewards"]
+        },
+        {
+          "id": "vw_systems",
+          "key": "Systems",
+          "labels": {
+            "en": "Systems and hubs"
+          },
+          "classes": [
+            "cls_sourcesystem",
+            "cls_dataentity",
+            "cls_mdmhub",
+            "cls_application"
+          ],
+          "relations": ["rel_supplies", "rel_managedin", "rel_distributes"]
+        }
+      ],
+      "cardinalities": [],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Title",
+          "required": true,
+          "maxLength": 100,
+          "id": "att_mtmasterdata_title",
+          "labels": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Organisation",
+          "id": "att_mtmasterdata_organisation",
+          "labels": {
+            "en": "Organisation"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "MasterEntities",
+          "formula": "count(objects('DataEntity'))",
+          "result": "number",
+          "id": "att_mtmasterdata_masterentities",
+          "labels": {
+            "en": "Master entities"
+          },
+          "help": {
+            "en": "How many master entities the model holds."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "GoldenRecords",
+          "formula": "sum(objects('DataEntity').GoldenRecords)",
+          "result": "number",
+          "id": "att_mtmasterdata_goldenrecords",
+          "labels": {
+            "en": "Golden records"
+          },
+          "help": {
+            "en": "The golden records of all master entities."
+          }
+        }
+      ],
+      "help": {
+        "en": "Master data domains with their master entities, match and survivorship rules, the source systems that supply them, the MDM hubs that manage them, the systems that use them and their stewards."
+      },
+      "containers": {
+        "cls_masterdatadomain": [
+          "cls_dataentity",
+          "cls_matchrule",
+          "cls_survivorshiprule",
+          "cls_datasteward"
+        ]
+      }
+    }
+  },
+  "shapes": {
+    "shp_dataentity": {
+      "id": "shp_dataentity",
+      "name": "DataEntity look",
+      "kind": "node",
+      "size": {
+        "width": 190,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 4,
+          "fill": "#ffffff",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": 28,
+          "radius": 4,
+          "fill": "#a5d8ff",
+          "stroke": "#1c7ed6"
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 2,
+          "width": "100% - 36",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 34,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Sources: ' + Sources",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 50,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'DuplicateShare: ' + DuplicateShare",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 66,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Steward: ' + Steward",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z",
+          "viewBox": [0, 0, 24, 24],
+          "x": "100% - 26",
+          "y": 4,
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "header-box",
+        "fill": "#a5d8ff",
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 190,
+          "height": 110,
+          "resizable": true
+        },
+        "icon": {
+          "name": "star"
+        },
+        "fields": ["Sources", "DuplicateShare", "Steward"]
+      }
+    },
+    "shp_sourcesystem": {
+      "id": "shp_sourcesystem",
+      "name": "SourceSystem look",
+      "kind": "node",
+      "size": {
+        "width": 150,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 0,
+          "fill": "#a5d8ff",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= Technology",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6 M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "box",
+        "fill": "#a5d8ff",
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 150,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Technology"
+        },
+        "icon": {
+          "name": "database"
+        }
+      }
+    },
+    "shp_application": {
+      "id": "shp_application",
+      "name": "Application look",
+      "kind": "node",
+      "size": {
+        "width": 150,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 0,
+          "fill": "#96f2d7",
+          "stroke": "#0c8599",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 4,
+          "width": "100% - 16",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 22",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= Lifecycle",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "box",
+        "fill": "#96f2d7",
+        "border": "#0c8599",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 150,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Lifecycle"
+        }
+      }
+    },
+    "shp_datasteward": {
+      "id": "shp_datasteward",
+      "name": "DataSteward look",
+      "kind": "node",
+      "size": {
+        "width": 90,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "ellipse",
+          "x": "50% - 16",
+          "y": 4,
+          "width": 32,
+          "height": 32,
+          "fill": "#ffc9c9",
+          "stroke": "#e03131",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 6,
+          "y": 42,
+          "width": "100% - 12",
+          "height": "100% - 46",
+          "radius": 18,
+          "fill": "#ffc9c9",
+          "stroke": "#e03131",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 10,
+          "y": 46,
+          "width": "100% - 20",
+          "height": "100% - 72",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 10,
+          "y": "100% - 24",
+          "width": "100% - 20",
+          "height": 18,
+          "text": "= Domain",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "person",
+        "fill": "#ffc9c9",
+        "border": "#e03131",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 90,
+          "height": 110,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Domain"
+        }
+      }
+    },
+    "shp_rel_stewards": {
+      "id": "shp_rel_stewards",
+      "name": "Stewards look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#6b7a90",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "startMarker": {
+        "type": "circle"
+      },
+      "look": {
+        "colour": "#6b7a90",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "circle",
+        "end": "none",
+        "label": null
+      }
+    },
+    "shp_masterdatadomain": {
+      "id": "shp_masterdatadomain",
+      "name": "MasterDataDomain look",
+      "kind": "node",
+      "size": {
+        "width": 520,
+        "height": 330,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 6,
+          "fill": "#ffffff00",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5,
+          "dash": [7, 4]
+        },
+        {
+          "type": "text",
+          "x": 12,
+          "y": 4,
+          "width": "100% - 48",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "container",
+        "fill": "#ffffff00",
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "dashed",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 520,
+          "height": 330,
+          "resizable": true
+        }
+      }
+    },
+    "shp_matchrule": {
+      "id": "shp_matchrule",
+      "name": "MatchRule look",
+      "kind": "node",
+      "size": {
+        "width": 200,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "#fff3bf",
+          "stroke": "#f08c00",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= Bands",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M4 12.5l5 5L20 6.5",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": "#fff3bf",
+        "border": "#f08c00",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 200,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Bands"
+        },
+        "icon": {
+          "name": "check"
+        }
+      }
+    },
+    "shp_survivorshiprule": {
+      "id": "shp_survivorshiprule",
+      "name": "SurvivorshipRule look",
+      "kind": "node",
+      "size": {
+        "width": 200,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "#e5dbff",
+          "stroke": "#6741d9",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= Strategy",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": "#e5dbff",
+        "border": "#6741d9",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 200,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Strategy"
+        },
+        "icon": {
+          "name": "star"
+        }
+      }
+    },
+    "shp_mdmhub": {
+      "id": "shp_mdmhub",
+      "name": "MDMHub look",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 0,
+          "fill": "= Style == 'Registry' ? '#e7f5ff' : Style == 'Consolidation' ? '#d0ebff' : Style == 'Coexistence' ? '#a5d8ff' : Style == 'Centralised' ? '#74c0fc' : '#e9ecef'",
+          "stroke": "#1864ab",
+          "strokeWidth": 2
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= Style",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6 M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "box",
+        "fill": {
+          "by": "Style",
+          "values": {
+            "Registry": "#e7f5ff",
+            "Consolidation": "#d0ebff",
+            "Coexistence": "#a5d8ff",
+            "Centralised": "#74c0fc"
+          },
+          "fallback": "#e9ecef"
+        },
+        "border": "#1864ab",
+        "borderWidth": 2,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 170,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Style"
+        },
+        "icon": {
+          "name": "database"
+        }
+      }
+    },
+    "shp_rel_supplies": {
+      "id": "shp_rel_supplies",
+      "name": "Supplies look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#1c7ed6",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "labels": [
+        {
+          "at": "middle",
+          "text": "= TrustText",
+          "font": {
+            "size": 11
+          },
+          "background": "#ffffff",
+          "visible": "= TrustText != null"
+        }
+      ],
+      "look": {
+        "colour": "#1c7ed6",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": {
+          "attribute": "TrustText"
+        }
+      }
+    },
+    "shp_rel_matchedby": {
+      "id": "shp_rel_matchedby",
+      "name": "MatchedBy look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#f08c00",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "open-arrow"
+      },
+      "look": {
+        "colour": "#f08c00",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "open-arrow",
+        "label": null
+      }
+    },
+    "shp_rel_mergedby": {
+      "id": "shp_rel_mergedby",
+      "name": "MergedBy look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#6741d9",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "open-arrow"
+      },
+      "look": {
+        "colour": "#6741d9",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "open-arrow",
+        "label": null
+      }
+    },
+    "shp_rel_managedin": {
+      "id": "shp_rel_managedin",
+      "name": "ManagedIn look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#1864ab",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "triangle"
+      },
+      "look": {
+        "colour": "#1864ab",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "triangle",
+        "label": null
+      }
+    },
+    "shp_rel_distributes": {
+      "id": "shp_rel_distributes",
+      "name": "Distributes look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#2f9e44",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "labels": [
+        {
+          "at": "middle",
+          "text": "= Frequency",
+          "font": {
+            "size": 11
+          },
+          "background": "#ffffff",
+          "visible": "= Frequency != null"
+        }
+      ],
+      "look": {
+        "colour": "#2f9e44",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": {
+          "attribute": "Frequency"
+        }
+      }
+    }
+  },
+  "panels": {
+    "cls_dataentity": {
+      "class": "cls_dataentity",
+      "tabs": [
+        {
+          "label": "Master entity",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            },
+            {
+              "attribute": "Hub"
+            },
+            {
+              "attribute": "Steward"
+            },
+            {
+              "attribute": "Fields"
+            }
+          ]
+        },
+        {
+          "label": "Records",
+          "items": [
+            {
+              "attribute": "SourceRecords"
+            },
+            {
+              "attribute": "GoldenRecords"
+            },
+            {
+              "attribute": "DuplicateShare"
+            },
+            {
+              "attribute": "Sources"
+            },
+            {
+              "attribute": "MatchRules"
+            },
+            {
+              "attribute": "SurvivorshipRules"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    }
+  },
+  "rules": {},
+  "scripts": {}
+}

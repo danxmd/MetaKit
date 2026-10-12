@@ -60,7 +60,7 @@ describe('ClaudeProvider', () => {
     expect(f.calls[0]!.headers.get('x-api-key')).toBe(FAKE_KEY);
   });
 
-  it('tests a key with a request that holds no tool or model content', async () => {
+  it('tests a key with a request that holds no Kit or model content', async () => {
     const f = fakeFetch(() => reply('ok'));
     const message = await new ClaudeProvider({
       fetch: f.fetch,

@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { ElementId, Model } from '@metakit-app/core';
-import { Scene } from './scene';
-import { BPMN, bpmnStore } from './testing';
+import { aroundConnectors, Scene } from './scene';
+import { BPMN, bpmnStore, emptyModel } from './testing';
 
 function setup() {
-  const { tool, store } = bpmnStore();
-  const scene = new Scene(store.state as Model, tool);
+  const { kit, store } = bpmnStore();
+  const scene = new Scene(store.state as Model, kit);
   scene.attach(store);
   const create = (
     x: number,
@@ -25,7 +25,7 @@ function setup() {
     if (!result.ok) throw new Error('cancelled');
     return result.value as ElementId;
   };
-  return { tool, store, scene, create };
+  return { kit, store, scene, create };
 }
 
 describe('Scene', () => {
@@ -126,7 +126,7 @@ describe('Scene', () => {
   });
 
   it('matches a full rebuild after any sequence of commands, undos and redos', () => {
-    const { store, scene, create, tool } = setup();
+    const { store, scene, create, kit } = setup();
     const ids: ElementId[] = [];
     for (let i = 0; i < 12; i++)
       ids.push(create(i * 130, (i % 3) * 90, `N${i}`));
@@ -143,7 +143,7 @@ describe('Scene', () => {
     store.undo();
     store.undo();
     store.redo();
-    const fresh = new Scene(store.state as Model, tool);
+    const fresh = new Scene(store.state as Model, kit);
     const view = (s: Scene) => ({
       elements: [...s.elements.values()]
         .map((e) => ({ ...e, compiled: e.compiled.compiled.ops }))
@@ -157,6 +157,61 @@ describe('Scene', () => {
         .sort(),
     });
     expect(view(scene)).toEqual(view(fresh));
+  });
+
+  it('ranks containers below every other object, outer ones first', () => {
+    const { kit } = bpmnStore();
+    const model = emptyModel(kit);
+    const el = (
+      id: string,
+      cls: string,
+      pos: string,
+      parent?: string,
+    ): Model['elements'][ElementId] => ({
+      id: id as ElementId,
+      class: cls as never,
+      x: 0,
+      y: 0,
+      w: 400,
+      h: 200,
+      attrs: {},
+      pos,
+      ...(parent ? { parent: parent as ElementId } : {}),
+    });
+    // Model order (pos) says: loose task, inner lane, task in it, outer lane on top. A merge can
+    // leave the inner lane below its own container like this.
+    model.elements = {
+      ['el_loose' as ElementId]: el('el_loose', BPMN.task, 'a'),
+      ['el_inner' as ElementId]: el('el_inner', BPMN.lane, 'b', 'el_outer'),
+      ['el_task' as ElementId]: el('el_task', BPMN.task, 'c', 'el_inner'),
+      ['el_outer' as ElementId]: el('el_outer', BPMN.lane, 'd'),
+    };
+    const scene = new Scene(model, kit);
+    const order = [...scene.elements.values()]
+      .sort((a, b) => a.rank - b.rank)
+      .map((e) => e.id);
+    expect(order).toEqual(['el_outer', 'el_inner', 'el_loose', 'el_task']);
+    const sorted = order.map((id) => scene.elements.get(id as ElementId)!);
+    const { below, above } = aroundConnectors(sorted);
+    expect(below.map((e) => e.id)).toEqual(['el_outer', 'el_inner']);
+    expect(above.map((e) => e.id)).toEqual(['el_loose', 'el_task']);
+    // Hit testing follows the drawing: the topmost item at a point is an ordinary object.
+    expect(scene.elementAt({ x: 10, y: 10 })?.id).toBe('el_task');
+  });
+
+  it('ranks again when an element changes container', () => {
+    const { store, scene, create } = setup();
+    const a = create(0, 0, undefined, BPMN.lane);
+    const b = create(0, 300, undefined, BPMN.lane);
+    const c = create(0, 600, undefined, BPMN.lane);
+    const rank = (id: ElementId) => scene.elements.get(id)!.rank;
+    expect(rank(b)).toBeLessThan(rank(c));
+    // `b` is already above `a` in model order, so only its container changes, not its position.
+    const pos = store.state.elements[b]!.pos;
+    store.execute({ type: 'move', id: b, x: 0, y: 0, parent: a });
+    expect(store.state.elements[b]!.pos).toBe(pos);
+    // Nested one level deeper, it is now drawn above the top-level lane `c`.
+    expect(rank(b)).toBeGreaterThan(rank(c));
   });
 
   it('reports what changed', () => {

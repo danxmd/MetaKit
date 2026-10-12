@@ -1,15 +1,15 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { SAMPLE, sampleTool } from '../testing/sample-tool';
-import { createToolStore } from './commands';
-import { validateToolLibrary } from './guards';
+import { SAMPLE, sampleKit } from '../testing/sample-kit';
+import { createKitStore } from './commands';
+import { validateKit } from './guards';
 import { findKeyUsages, keyProblem } from './keys';
 import type { NodeShape } from './shape-types';
-import type { AttributeDef, ToolLibrary } from './types';
+import type { AttributeDef, Kit } from './types';
 
-/** The sample tool with a shape and a panel layout that read the Name attribute of the task. */
-function toolWithUses(): ToolLibrary {
-  const tool = sampleTool();
+/** The sample Kit with a shape and a panel layout that read the Name attribute of the task. */
+function kitWithUses(): Kit {
+  const kit = sampleKit();
   const shape = {
     id: 'shp_task',
     kind: 'node',
@@ -23,7 +23,7 @@ function toolWithUses(): ToolLibrary {
     variants: [{ when: '= Name == null', parts: [] }],
   } as NodeShape;
   return {
-    ...tool,
+    ...kit,
     shapes: { shp_task: shape },
     panels: {
       [SAMPLE.task]: {
@@ -40,20 +40,20 @@ function toolWithUses(): ToolLibrary {
       },
     },
     classes: {
-      ...tool.classes,
-      [SAMPLE.task]: { ...tool.classes[SAMPLE.task]!, shape: 'shp_task' },
+      ...kit.classes,
+      [SAMPLE.task]: { ...kit.classes[SAMPLE.task]!, shape: 'shp_task' },
     },
-  } as unknown as ToolLibrary;
+  } as unknown as Kit;
 }
 
-const nameAttr = (tool: ToolLibrary): AttributeDef =>
-  Object.values(tool.classes)
+const nameAttr = (kit: Kit): AttributeDef =>
+  Object.values(kit.classes)
     .flatMap((c) => c.attributes)
     .find((a) => a.key === 'Name')!;
 
 describe('renameKey and simple looks', () => {
   it('rewrites the keys a look names, and leaves colour values alone', () => {
-    const tool = sampleTool();
+    const kit = sampleKit();
     const shape = {
       id: 'shp_look',
       kind: 'node',
@@ -82,14 +82,14 @@ describe('renameKey and simple looks', () => {
       },
     } as unknown as NodeShape;
     const t = {
-      ...tool,
+      ...kit,
       shapes: { shp_look: shape },
       classes: {
-        ...tool.classes,
-        [SAMPLE.task]: { ...tool.classes[SAMPLE.task]!, shape: 'shp_look' },
+        ...kit.classes,
+        [SAMPLE.task]: { ...kit.classes[SAMPLE.task]!, shape: 'shp_look' },
       },
-    } as unknown as ToolLibrary;
-    const store = createToolStore(t);
+    } as unknown as Kit;
+    const store = createKitStore(t);
     store.execute({
       type: 'renameKey',
       scope: {
@@ -119,15 +119,15 @@ describe('renameKey and simple looks', () => {
 
 describe('renameKey', () => {
   it('rewrites formulas, shapes and panel layouts, and leaves strings and longer names alone', () => {
-    const tool = toolWithUses();
+    const kit = kitWithUses();
     // Make the panel valid for this test: it lists attributes the class has.
-    delete (tool.panels[SAMPLE.task]!.tabs[0]!.items as unknown[])[1];
-    tool.panels[SAMPLE.task]!.tabs[0]!.items.length = 1;
-    const owner = Object.values(tool.classes).find((c) =>
+    delete (kit.panels[SAMPLE.task]!.tabs[0]!.items as unknown[])[1];
+    kit.panels[SAMPLE.task]!.tabs[0]!.items.length = 1;
+    const owner = Object.values(kit.classes).find((c) =>
       c.attributes.some((a) => a.key === 'Name'),
     )!;
-    const store = createToolStore(tool);
-    const attr = nameAttr(tool);
+    const store = createKitStore(kit);
+    const attr = nameAttr(kit);
     store.execute({
       type: 'renameKey',
       scope: {
@@ -160,21 +160,21 @@ describe('renameKey', () => {
     expect(
       after.classes[owner.id]!.attributes.find((a) => a.id === attr.id)!.key,
     ).toBe('Title2');
-    expect(validateToolLibrary(after)).toEqual([]);
+    expect(validateKit(after)).toEqual([]);
     store.undo();
-    expect(store.state).toEqual(tool);
+    expect(store.state).toEqual(kit);
   });
 
   it('rewrites formula attributes of the class and its subclasses', () => {
-    const tool = sampleTool();
-    const store = createToolStore(tool);
-    const base = Object.values(tool.classes).find(
+    const kit = sampleKit();
+    const store = createKitStore(kit);
+    const base = Object.values(kit.classes).find(
       (c) =>
         c.attributes.length > 0 &&
-        Object.values(tool.classes).some((d) => d.extends === c.id),
+        Object.values(kit.classes).some((d) => d.extends === c.id),
     )!;
     const attr = base.attributes[0]!;
-    const sub = Object.values(tool.classes).find((d) => d.extends === base.id)!;
+    const sub = Object.values(kit.classes).find((d) => d.extends === base.id)!;
     store.execute({
       type: 'putAttribute',
       owner: { kind: 'class', id: sub.id },
@@ -208,9 +208,9 @@ describe('renameKey', () => {
   });
 
   it('refuses bad, reserved and clashing keys, and nothing changes', () => {
-    const tool = sampleTool();
-    const store = createToolStore(tool);
-    const cls = Object.values(tool.classes).find(
+    const kit = sampleKit();
+    const store = createKitStore(kit);
+    const cls = Object.values(kit.classes).find(
       (c) => c.attributes.length >= 1,
     )!;
     const attr = cls.attributes[0]!;
@@ -225,7 +225,7 @@ describe('renameKey', () => {
     expect(() =>
       store.execute({ type: 'renameKey', scope, newKey: 'true' }),
     ).toThrow(/reserved/);
-    const other = Object.values(tool.classes).find((c) => c.key !== cls.key)!;
+    const other = Object.values(kit.classes).find((c) => c.key !== cls.key)!;
     expect(() =>
       store.execute({
         type: 'renameKey',
@@ -243,14 +243,14 @@ describe('renameKey', () => {
   });
 
   it('refuses a key that a subclass already has', () => {
-    const tool = sampleTool();
-    const store = createToolStore(tool);
-    const base = Object.values(tool.classes).find((c) =>
-      Object.values(tool.classes).some(
+    const kit = sampleKit();
+    const store = createKitStore(kit);
+    const base = Object.values(kit.classes).find((c) =>
+      Object.values(kit.classes).some(
         (d) => d.extends === c.id && d.attributes.length > 0,
       ),
     )!;
-    const sub = Object.values(tool.classes).find(
+    const sub = Object.values(kit.classes).find(
       (d) => d.extends === base.id && d.attributes.length > 0,
     )!;
     store.execute({
@@ -277,9 +277,9 @@ describe('renameKey', () => {
         fc.constantFrom('A', 'B', 'AB', 'Total'),
         fc.constantFrom('Z', 'Q1', 'New_name'),
         (from, to) => {
-          const tool = sampleTool();
-          const store = createToolStore(tool);
-          const cls = Object.values(tool.classes)[0]!;
+          const kit = sampleKit();
+          const store = createKitStore(kit);
+          const cls = Object.values(kit.classes)[0]!;
           store.execute({
             type: 'putAttribute',
             owner: { kind: 'class', id: cls.id },
@@ -318,11 +318,11 @@ describe('renameKey', () => {
 
 describe('attribute commands', () => {
   it('adds, moves, replaces and removes attributes, and refuses a key change through put', () => {
-    const tool = sampleTool();
-    const store = createToolStore(tool);
+    const kit = sampleKit();
+    const store = createKitStore(kit);
     const cls =
-      Object.values(tool.classes).find((c) => c.attributes.length === 0) ??
-      Object.values(tool.classes)[0]!;
+      Object.values(kit.classes).find((c) => c.attributes.length === 0) ??
+      Object.values(kit.classes)[0]!;
     const owner = { kind: 'class', id: cls.id } as const;
     const n = store.state.classes[cls.id]!.attributes.length;
     store.execute({
@@ -392,20 +392,20 @@ describe('attribute commands', () => {
     expect(
       store.state.classes[cls.id]!.attributes.some((a) => a.id === 'att_one'),
     ).toBe(false);
-    expect(validateToolLibrary(store.state)).toEqual([]);
+    expect(validateKit(store.state)).toEqual([]);
   });
 
   it('removing an attribute also removes it from panel layouts', () => {
-    const tool = toolWithUses();
-    tool.panels[SAMPLE.task]!.tabs[0]!.items.length = 1;
-    const owner = Object.values(tool.classes).find((c) =>
+    const kit = kitWithUses();
+    kit.panels[SAMPLE.task]!.tabs[0]!.items.length = 1;
+    const owner = Object.values(kit.classes).find((c) =>
       c.attributes.some((a) => a.key === 'Name'),
     )!;
-    const store = createToolStore(tool);
+    const store = createKitStore(kit);
     store.execute({
       type: 'removeAttribute',
       owner: { kind: 'class', id: owner.id },
-      id: nameAttr(tool).id,
+      id: nameAttr(kit).id,
     });
     expect(store.state.panels[SAMPLE.task]!.tabs[0]!.items).toEqual([]);
     store.undo();

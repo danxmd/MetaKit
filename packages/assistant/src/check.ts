@@ -8,14 +8,14 @@ import {
   effectiveAttributes,
   effectiveRelationAttributes,
   subclasses,
-  validateToolLibrary,
+  validateKit,
   type AttributeDef,
   type ClassDef,
   type Issue,
   type Rule,
   type RuleId,
   type ShapeDef,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 import {
   FUNCTION_NAMES,
@@ -128,29 +128,29 @@ function issueLines(issues: Issue[], prefix: string): string[] {
 
 // -- attribute names --------------------------------------------------------------------------
 
-function allAttributeKeys(tool: ToolLibrary): Set<string> {
+function allAttributeKeys(kit: Kit): Set<string> {
   const keys = new Set<string>();
   for (const owner of [
-    ...Object.values(tool.classes),
-    ...Object.values(tool.relations),
-    ...Object.values(tool.modelTypes),
+    ...Object.values(kit.classes),
+    ...Object.values(kit.relations),
+    ...Object.values(kit.modelTypes),
   ])
     for (const a of owner.attributes) keys.add(a.key);
   return keys;
 }
 
 /** The names a rule's formulas can read: the attributes of its class and its subclasses. */
-function ruleNames(tool: ToolLibrary, rule: RuleDraft): Set<string> {
+function ruleNames(kit: Kit, rule: RuleDraft): Set<string> {
   const names = new Set<string>(BUILTIN_NAMES);
-  const cls = rule.when?.class ? tool.classes[rule.when.class] : undefined;
+  const cls = rule.when?.class ? kit.classes[rule.when.class] : undefined;
   const rel = rule.when?.relation
-    ? tool.relations[rule.when.relation]
+    ? kit.relations[rule.when.relation]
     : undefined;
   const add = (attrs: AttributeDef[]) => attrs.forEach((a) => names.add(a.key));
   if (cls) {
-    for (const c of [cls, ...subclasses(tool, cls.id)]) {
+    for (const c of [cls, ...subclasses(kit, cls.id)]) {
       try {
-        add(effectiveAttributes(tool, c.id));
+        add(effectiveAttributes(kit, c.id));
       } catch {
         add(c.attributes);
       }
@@ -159,13 +159,13 @@ function ruleNames(tool: ToolLibrary, rule: RuleDraft): Set<string> {
   }
   if (rel) {
     try {
-      add(effectiveRelationAttributes(tool, rel.id));
+      add(effectiveRelationAttributes(kit, rel.id));
     } catch {
       add(rel.attributes);
     }
     return names;
   }
-  allAttributeKeys(tool).forEach((k) => names.add(k));
+  allAttributeKeys(kit).forEach((k) => names.add(k));
   return names;
 }
 
@@ -184,19 +184,19 @@ const idOrKey = (
 };
 
 /** The drafting model sees ids in the summary but may write a key; both are accepted. */
-function resolveRuleRefs(tool: ToolLibrary, rule: Rec): void {
+function resolveRuleRefs(kit: Kit, rule: Rec): void {
   const when = rule.when;
   if (isRec(when)) {
-    if ('class' in when) when.class = idOrKey(tool.classes, when.class);
+    if ('class' in when) when.class = idOrKey(kit.classes, when.class);
     if ('relation' in when)
-      when.relation = idOrKey(tool.relations, when.relation);
+      when.relation = idOrKey(kit.relations, when.relation);
   }
   const fix = (actions: unknown): void => {
     if (!Array.isArray(actions)) return;
     for (const a of actions) {
       if (!isRec(a)) continue;
-      if ('class' in a) a.class = idOrKey(tool.classes, a.class);
-      if ('relation' in a) a.relation = idOrKey(tool.relations, a.relation);
+      if ('class' in a) a.class = idOrKey(kit.classes, a.class);
+      if ('relation' in a) a.relation = idOrKey(kit.relations, a.relation);
       fix(a.then);
       fix(a.else);
     }
@@ -207,7 +207,7 @@ function resolveRuleRefs(tool: ToolLibrary, rule: Rec): void {
 export function parseDraftReply<K extends DraftKind>(
   kind: K,
   reply: string,
-  tool: ToolLibrary,
+  kit: Kit,
   sentence: string,
 ): Parsed<K> {
   type R = Parsed<K>;
@@ -236,7 +236,7 @@ export function parseDraftReply<K extends DraftKind>(
   delete value.id;
 
   if (kind === 'rule') {
-    resolveRuleRefs(tool, value);
+    resolveRuleRefs(kit, value);
     if (typeof value.if === 'string' && value.if.trim() !== '') {
       if (!value.if.trimStart().startsWith('=')) value.if = `= ${value.if}`;
     } else if (value.if === '' || value.if === null) delete value.if;
@@ -263,7 +263,7 @@ export function parseDraftReply<K extends DraftKind>(
   }
 
   // class
-  const languages = tool.manifest.languages;
+  const languages = kit.manifest.languages;
   const cleanLabels = (labels: unknown): Record<string, string> | undefined => {
     if (!isRec(labels)) return undefined;
     const out: Record<string, string> = {};
@@ -306,25 +306,25 @@ function sanitiseKey(key: string): string {
 }
 
 /** A class key that no class has yet: `Task`, then `Task2`, `Task3`. */
-export function uniqueClassKey(tool: ToolLibrary, wanted: string): string {
+export function uniqueClassKey(kit: Kit, wanted: string): string {
   const base = sanitiseKey(wanted || 'NewClass');
-  const used = new Set(Object.values(tool.classes).map((c) => c.key));
+  const used = new Set(Object.values(kit.classes).map((c) => c.key));
   if (!used.has(base)) return base;
   for (let n = 2; ; n++) if (!used.has(`${base}${n}`)) return `${base}${n}`;
 }
 
 export function classDefFromDraft(
-  tool: ToolLibrary,
+  kit: Kit,
   draft: ClassDraft,
   ids: { class: string; attribute: (n: number) => string },
 ): ClassDef {
   const parent = draft.extends
-    ? (tool.classes[draft.extends as never] ??
-      Object.values(tool.classes).find((c) => c.key === draft.extends))
+    ? (kit.classes[draft.extends as never] ??
+      Object.values(kit.classes).find((c) => c.key === draft.extends))
     : undefined;
   return {
     id: ids.class,
-    key: uniqueClassKey(tool, draft.key),
+    key: uniqueClassKey(kit, draft.key),
     kind: draft.kind,
     labels: draft.labels,
     ...(parent ? { extends: parent.id } : {}),
@@ -341,29 +341,29 @@ export function classDefFromDraft(
 
 // -- validation -------------------------------------------------------------------------------
 
-function validateRule(tool: ToolLibrary, draft: RuleDraft): string[] {
+function validateRule(kit: Kit, draft: RuleDraft): string[] {
   if (!isRec(draft)) return ['The rule must be an object.'];
   const id = CHECK_IDS.rule;
   const rule = { id, ...draft } as Rule;
   const c = new Checker();
   checkRules(c, { [id]: rule });
   if (c.issues.length === 0)
-    checkRuleReferences(c, { ...tool, rules: { [id]: rule } });
+    checkRuleReferences(c, { ...kit, rules: { [id]: rule } });
   const errors = issueLines(c.issues, `rules.${id}`);
   if (errors.length > 0) return errors;
 
-  const names = ruleNames(tool, draft);
+  const names = ruleNames(kit, draft);
   const found: { path: string; text: string }[] = [];
   if (typeof draft.if === 'string') found.push({ path: 'if', text: draft.if });
   found.push(...formulasIn(draft.then, 'then'));
   errors.push(...formulaErrors(found, names));
 
   // An attribute key that no class has would fail when the rule runs.
-  const known = allAttributeKeys(tool);
+  const known = allAttributeKeys(kit);
   const missing = (key: unknown, path: string) => {
     if (typeof key === 'string' && !known.has(key))
       errors.push(
-        `${path}: There is no attribute with the key "${key}" in this tool. Attributes: ${[...known].join(', ') || 'none'}.`,
+        `${path}: There is no attribute with the key "${key}" in this Kit. Attributes: ${[...known].join(', ') || 'none'}.`,
       );
   };
   missing(draft.when?.attribute, 'when.attribute');
@@ -384,13 +384,13 @@ function validateRule(tool: ToolLibrary, draft: RuleDraft): string[] {
   return errors;
 }
 
-function validateShape(tool: ToolLibrary, draft: ShapeDraft): string[] {
+function validateShape(kit: Kit, draft: ShapeDraft): string[] {
   if (!isRec(draft)) return ['The shape must be an object.'];
   const id = CHECK_IDS.shape;
   const def = { id, ...draft } as ShapeDef;
-  const probe = { ...tool, shapes: { ...tool.shapes, [id]: def } };
+  const probe = { ...kit, shapes: { ...kit.shapes, [id]: def } };
   const prefix = `shapes.${id}`;
-  let issues = validateToolLibrary(probe);
+  let issues = validateKit(probe);
   const errors = issueLines(issues, prefix);
   if (errors.length === 0) {
     const c = new Checker();
@@ -403,26 +403,26 @@ function validateShape(tool: ToolLibrary, draft: ShapeDraft): string[] {
   return formulaErrors(formulasIn(draft, '', ['when', 'over']));
 }
 
-function validateClass(tool: ToolLibrary, draft: ClassDraft): string[] {
+function validateClass(kit: Kit, draft: ClassDraft): string[] {
   if (!isRec(draft)) return ['The class must be an object.'];
   const errors: string[] = [];
   if (
     typeof draft.extends === 'string' &&
-    !tool.classes[draft.extends as never] &&
-    !Object.values(tool.classes).some((c) => c.key === draft.extends)
+    !kit.classes[draft.extends as never] &&
+    !Object.values(kit.classes).some((c) => c.key === draft.extends)
   )
     errors.push(`extends: There is no class called "${draft.extends}".`);
   if (!Array.isArray(draft.attributes))
     return [...errors, 'attributes: The attributes must be a list.'];
-  const def = classDefFromDraft(tool, draft, {
+  const def = classDefFromDraft(kit, draft, {
     class: CHECK_IDS.class,
     attribute: CHECK_IDS.attribute,
   });
   const probe = {
-    ...tool,
-    classes: { ...tool.classes, [def.id]: def },
-  } as ToolLibrary;
-  errors.push(...issueLines(validateToolLibrary(probe), `classes.${def.id}`));
+    ...kit,
+    classes: { ...kit.classes, [def.id]: def },
+  } as Kit;
+  errors.push(...issueLines(validateKit(probe), `classes.${def.id}`));
   if (errors.length > 0) return errors;
   const found = [
     ...formulasIn(draft.attributes, 'attributes'),
@@ -440,7 +440,7 @@ const IMPORT =
   /\b(?:import|export)\b[^'"`;]*?\bfrom\s*['"]([^'"]+)['"]|\bimport\s*['"]([^'"]+)['"]|\brequire\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
 
 async function validateScript(
-  tool: ToolLibrary,
+  kit: Kit,
   draft: ScriptDraft,
   typeCheck?: TypeCheck,
 ): Promise<string[]> {
@@ -465,7 +465,7 @@ async function validateScript(
   if (errors.length > 0) return errors;
   if (typeCheck) {
     const declarations = generateDeclarations({
-      ...tool,
+      ...kit,
       scripts: {},
       rules: {},
     });
@@ -478,18 +478,18 @@ async function validateScript(
 export async function validateDraft<K extends DraftKind>(
   kind: K,
   draft: DraftMap[K],
-  tool: ToolLibrary,
+  kit: Kit,
   options: { typeCheck?: TypeCheck } = {},
 ): Promise<string[]> {
   switch (kind) {
     case 'rule':
-      return validateRule(tool, draft as RuleDraft);
+      return validateRule(kit, draft as RuleDraft);
     case 'shape':
-      return validateShape(tool, draft as ShapeDraft);
+      return validateShape(kit, draft as ShapeDraft);
     case 'class':
-      return validateClass(tool, draft as ClassDraft);
+      return validateClass(kit, draft as ClassDraft);
     case 'script':
-      return validateScript(tool, draft as ScriptDraft, options.typeCheck);
+      return validateScript(kit, draft as ScriptDraft, options.typeCheck);
     default:
       return ['Unknown kind of draft.'];
   }

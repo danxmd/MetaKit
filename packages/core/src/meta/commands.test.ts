@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { sampleTool, SAMPLE, clone } from '../testing/sample-tool';
+import { sampleKit, SAMPLE, clone } from '../testing/sample-kit';
 import { CommandError } from '../store/tx';
-import { createToolStore } from './commands';
-import { validateToolLibrary } from './guards';
+import { createKitStore } from './commands';
+import { validateKit } from './guards';
 import type { ClassDef, ModelTypeDef } from './types';
 
-const make = () => createToolStore(sampleTool());
+const make = () => createKitStore(sampleKit());
 
-describe('tool library commands', () => {
+describe('Kit commands', () => {
   it('update the manifest and settings', () => {
     const store = make();
     store.execute({
@@ -25,7 +25,7 @@ describe('tool library commands', () => {
       name: 'Renamed',
       version: '1.1.0',
       languages: ['en'],
-      id: SAMPLE.tool,
+      id: SAMPLE.kit,
     });
     expect(store.state.settings.grid).toEqual({
       size: 20,
@@ -82,7 +82,7 @@ describe('tool library commands', () => {
         },
       ],
     });
-    expect(validateToolLibrary(store.state)).toEqual([]);
+    expect(validateKit(store.state)).toEqual([]);
   });
 
   it('refuse to remove a class that is still used, and say who uses it', () => {

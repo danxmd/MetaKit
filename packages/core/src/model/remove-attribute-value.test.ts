@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { SAMPLE, emptySampleModel, sampleTool } from '../testing/sample-tool';
+import { SAMPLE, emptySampleModel, sampleKit } from '../testing/sample-kit';
 import { CommandError } from '../store/tx';
 import { validateModel } from '../validation/validate';
 import { createModelStore, type ModelStore } from './commands';
 import type { ElementId } from '../ids';
 
-const tool = sampleTool();
-const fresh = (): ModelStore => createModelStore(emptySampleModel(), { tool });
+const kit = sampleKit();
+const fresh = (): ModelStore => createModelStore(emptySampleModel(), { kit });
 const created = (
   store: ModelStore,
   cmd: Parameters<ModelStore['execute']>[0],
@@ -29,7 +29,7 @@ const withStale = () => {
     class: SAMPLE.task,
     x: 0,
     y: 0,
-    // An id the class does not define: what is left behind when a tool removes an attribute.
+    // An id the class does not define: what is left behind when a Kit removes an attribute.
     attrs: { att_removed: 'legacy' } as never,
   }) as ElementId;
   return { store, a };
@@ -105,7 +105,7 @@ describe('remove attribute value', () => {
     // Seed through a model with a leftover value.
     const model = emptySampleModel();
     (model.attrs as Record<string, unknown>).att_old = 'old';
-    const other = createModelStore(model, { tool });
+    const other = createModelStore(model, { kit });
     other.execute({
       type: 'removeAttributeValue',
       target: 'model',
@@ -134,7 +134,7 @@ describe('remove attribute value', () => {
 
   it('validation only informs about unknown values and goes quiet after removal', () => {
     const { store, a } = withStale();
-    const before = validateModel(tool, store.state);
+    const before = validateModel(kit, store.state);
     expect(
       before
         .filter((i) => i.code === 'unknown-attribute')
@@ -146,7 +146,7 @@ describe('remove attribute value', () => {
       attr: 'att_removed',
     });
     expect(
-      validateModel(tool, store.state).some(
+      validateModel(kit, store.state).some(
         (i) => i.code === 'unknown-attribute',
       ),
     ).toBe(false);

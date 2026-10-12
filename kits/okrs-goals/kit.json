@@ -1,0 +1,1383 @@
+{
+  "formatVersion": 7,
+  "manifest": {
+    "id": "kit_okrs",
+    "name": "OKRs and goals",
+    "version": "1.0.0",
+    "languages": ["en"]
+  },
+  "settings": {
+    "grid": {
+      "size": 10,
+      "snap": true,
+      "visible": true
+    },
+    "layers": [],
+    "numbering": {
+      "enabled": false,
+      "prefix": "",
+      "start": 1
+    }
+  },
+  "classes": {
+    "cls_goal": {
+      "id": "cls_goal",
+      "key": "Goal",
+      "kind": "node",
+      "labels": {
+        "en": "Goal"
+      },
+      "help": {
+        "en": "Something the organisation wants to achieve, with a time horizon and a way to measure it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Goal",
+          "id": "att_goal_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_goal_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Horizon",
+          "options": ["Short term", "Medium term", "Long term"],
+          "id": "att_goal_horizon",
+          "labels": {
+            "en": "Horizon"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Measure",
+          "id": "att_goal_measure",
+          "labels": {
+            "en": "Measure"
+          }
+        }
+      ],
+      "shape": "shp_goal"
+    },
+    "cls_initiative": {
+      "id": "cls_initiative",
+      "key": "Initiative",
+      "kind": "node",
+      "labels": {
+        "en": "Initiative"
+      },
+      "help": {
+        "en": "A project or piece of work that should move one or more key results."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Initiative",
+          "id": "att_initiative_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_initiative_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Sponsor",
+          "id": "att_initiative_sponsor",
+          "labels": {
+            "en": "Sponsor"
+          }
+        },
+        {
+          "type": "number",
+          "key": "Budget",
+          "min": 0,
+          "id": "att_initiative_budget",
+          "labels": {
+            "en": "Budget"
+          }
+        },
+        {
+          "type": "date",
+          "key": "Start",
+          "id": "att_initiative_start",
+          "labels": {
+            "en": "Start"
+          }
+        },
+        {
+          "type": "date",
+          "key": "End",
+          "id": "att_initiative_end",
+          "labels": {
+            "en": "End"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Status",
+          "options": ["Proposed", "Approved", "In progress", "Done", "Stopped"],
+          "id": "att_initiative_status",
+          "labels": {
+            "en": "Status"
+          }
+        }
+      ],
+      "shape": "shp_initiative",
+      "constraints": [
+        {
+          "id": "k_initiative_contributes",
+          "formula": "count(outgoing('ContributesTo')) > 0",
+          "message": "= 'Initiative \"' + Name + '\" moves no key result: connect it with \"Contributes to\".'",
+          "severity": "warning"
+        }
+      ]
+    },
+    "cls_person": {
+      "id": "cls_person",
+      "key": "Person",
+      "kind": "node",
+      "labels": {
+        "en": "Person"
+      },
+      "help": {
+        "en": "A named individual who takes part in the work."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Person",
+          "id": "att_person_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_person_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Role",
+          "id": "att_person_role",
+          "labels": {
+            "en": "Role"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Email",
+          "id": "att_person_email",
+          "labels": {
+            "en": "Email"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Team",
+          "id": "att_person_team",
+          "labels": {
+            "en": "Team"
+          }
+        }
+      ],
+      "shape": "shp_person"
+    },
+    "cls_period": {
+      "id": "cls_period",
+      "key": "Period",
+      "kind": "container",
+      "labels": {
+        "en": "Period"
+      },
+      "help": {
+        "en": "A stretch of time for a set of OKRs, such as a quarter or a half year. Place its objectives inside it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Period",
+          "id": "att_period_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "date",
+          "key": "Start",
+          "id": "att_period_start",
+          "labels": {
+            "en": "Start"
+          }
+        },
+        {
+          "type": "date",
+          "key": "End",
+          "id": "att_period_end",
+          "labels": {
+            "en": "End"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Objectives",
+          "formula": "count(children())",
+          "result": "number",
+          "id": "att_period_objectives",
+          "labels": {
+            "en": "Objectives"
+          },
+          "help": {
+            "en": "How many objectives sit inside."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Progress",
+          "formula": "IFERROR(round(avg(children().Progress), 0), null)",
+          "result": "number",
+          "id": "att_period_progress",
+          "labels": {
+            "en": "Progress (%)"
+          },
+          "help": {
+            "en": "The average progress of the objectives inside, in percent."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Heading",
+          "formula": "Name + (Progress == null ? '' : ', ' + Progress + '%')",
+          "result": "text",
+          "id": "att_period_heading",
+          "labels": {
+            "en": "Heading"
+          },
+          "help": {
+            "en": "The name and the progress, shown as the heading."
+          }
+        }
+      ],
+      "shape": "shp_period"
+    },
+    "cls_objective": {
+      "id": "cls_objective",
+      "key": "Objective",
+      "kind": "container",
+      "labels": {
+        "en": "Objective"
+      },
+      "help": {
+        "en": "What you want to achieve in the period, in words that inspire. Place its key results inside it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Objective",
+          "id": "att_objective_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_objective_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Ambition",
+          "options": ["Committed", "Aspirational"],
+          "id": "att_objective_ambition",
+          "labels": {
+            "en": "Ambition"
+          },
+          "help": {
+            "en": "Committed: expected to be met in full. Aspirational: a stretch, where 70% is a good result."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Owner",
+          "formula": "join(incoming('Owns').Name, ', ')",
+          "result": "text",
+          "id": "att_objective_owner",
+          "labels": {
+            "en": "Owner"
+          },
+          "help": {
+            "en": "The people with an \"Owns\" connector to it."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "KeyResults",
+          "formula": "count(children())",
+          "result": "number",
+          "id": "att_objective_keyresults",
+          "labels": {
+            "en": "Key results"
+          },
+          "help": {
+            "en": "How many key results sit inside."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Progress",
+          "formula": "IFERROR(round(avg(children().Progress), 0), null)",
+          "result": "number",
+          "id": "att_objective_progress",
+          "labels": {
+            "en": "Progress (%)"
+          },
+          "help": {
+            "en": "The average progress of its key results, in percent."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Status",
+          "formula": "Progress == null ? null : (Progress >= 70 ? 'On track' : (Progress >= 40 ? 'At risk' : 'Off track'))",
+          "result": "text",
+          "id": "att_objective_status",
+          "labels": {
+            "en": "Status"
+          },
+          "help": {
+            "en": "On track from 70%, At risk from 40%, otherwise Off track. The fill shows it."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Heading",
+          "formula": "Name + (Progress == null ? '' : ', ' + Progress + '%')",
+          "result": "text",
+          "id": "att_objective_heading",
+          "labels": {
+            "en": "Heading"
+          },
+          "help": {
+            "en": "The name and the progress, shown as the heading."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_objective_few",
+          "formula": "KeyResults >= 2",
+          "message": "= 'Objective \"' + Name + '\" has fewer than two key results.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_objective_many",
+          "formula": "KeyResults <= 5",
+          "message": "= 'Objective \"' + Name + '\" has more than five key results; keep the focus.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_objective_owner",
+          "formula": "count(incoming('Owns')) > 0",
+          "message": "= 'Objective \"' + Name + '\" has no owner.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_objective_aligned",
+          "formula": "count(outgoing('ContributesTo')) > 0",
+          "message": "= 'Objective \"' + Name + '\" is not aligned: connect it to a goal or a higher objective with \"Contributes to\".'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_objective"
+    },
+    "cls_keyresult": {
+      "id": "cls_keyresult",
+      "key": "KeyResult",
+      "kind": "node",
+      "labels": {
+        "en": "Key result"
+      },
+      "help": {
+        "en": "A measurable result that shows the objective is met, from a start value to a target. Progress follows the current value."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Key result",
+          "id": "att_keyresult_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Unit",
+          "id": "att_keyresult_unit",
+          "labels": {
+            "en": "Unit"
+          }
+        },
+        {
+          "type": "number",
+          "key": "StartValue",
+          "id": "att_keyresult_startvalue",
+          "labels": {
+            "en": "Start value"
+          },
+          "help": {
+            "en": "The value at the start of the period."
+          }
+        },
+        {
+          "type": "number",
+          "key": "Target",
+          "id": "att_keyresult_target",
+          "labels": {
+            "en": "Target"
+          }
+        },
+        {
+          "type": "number",
+          "key": "Current",
+          "id": "att_keyresult_current",
+          "labels": {
+            "en": "Current"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Confidence",
+          "options": ["Low", "Medium", "High"],
+          "id": "att_keyresult_confidence",
+          "labels": {
+            "en": "Confidence"
+          },
+          "help": {
+            "en": "How sure the owner is that the target will be reached."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Progress",
+          "formula": "IFERROR(Current == null || StartValue == null || Target == null ? null : round(max(0, min(100, (Current - StartValue) / (Target - StartValue) * 100)), 0), null)",
+          "result": "number",
+          "id": "att_keyresult_progress",
+          "labels": {
+            "en": "Progress (%)"
+          },
+          "help": {
+            "en": "How far the current value has come from the start towards the target, from 0 to 100%. Works for targets below the start too."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Status",
+          "formula": "Progress == null ? null : (Progress >= 70 ? 'On track' : (Progress >= 40 ? 'At risk' : 'Off track'))",
+          "result": "text",
+          "id": "att_keyresult_status",
+          "labels": {
+            "en": "Status"
+          },
+          "help": {
+            "en": "On track from 70%, At risk from 40%, otherwise Off track. The fill shows it."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Reading",
+          "formula": "(Current == null ? '-' : text(Current)) + ' of ' + (Target == null ? '-' : text(Target)) + (Unit ? ' ' + Unit : '')",
+          "result": "text",
+          "id": "att_keyresult_reading",
+          "labels": {
+            "en": "Reading"
+          },
+          "help": {
+            "en": "The current value and the target, shown on the diagram."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_kr_objective",
+          "formula": "parent != null",
+          "message": "= 'Key result \"' + Name + '\" is not inside an objective.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_kr_target",
+          "formula": "Target != null && StartValue != Target",
+          "message": "= 'Key result \"' + Name + '\" needs a target that differs from its start value.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_keyresult"
+    }
+  },
+  "relations": {
+    "rel_owns": {
+      "id": "rel_owns",
+      "key": "Owns",
+      "labels": {
+        "en": "Owns"
+      },
+      "help": {
+        "en": "A person or team is accountable for something."
+      },
+      "from": ["cls_person"],
+      "to": ["cls_objective", "cls_keyresult", "cls_initiative"],
+      "attributes": [],
+      "shape": "shp_rel_owns"
+    },
+    "rel_contributesto": {
+      "id": "rel_contributesto",
+      "key": "ContributesTo",
+      "labels": {
+        "en": "Contributes to"
+      },
+      "help": {
+        "en": "Something helps to reach a goal or to move a KPI."
+      },
+      "from": ["cls_initiative", "cls_objective"],
+      "to": ["cls_goal", "cls_objective", "cls_keyresult"],
+      "attributes": [],
+      "shape": "shp_rel_contributesto"
+    }
+  },
+  "modelTypes": {
+    "mt_okrs": {
+      "id": "mt_okrs",
+      "key": "OKRs",
+      "labels": {
+        "en": "OKRs"
+      },
+      "classes": [
+        "cls_goal",
+        "cls_initiative",
+        "cls_person",
+        "cls_period",
+        "cls_objective",
+        "cls_keyresult"
+      ],
+      "relations": ["rel_owns", "rel_contributesto"],
+      "views": [
+        {
+          "id": "vw_objectives",
+          "key": "Objectives",
+          "labels": {
+            "en": "Objectives"
+          },
+          "classes": [
+            "cls_goal",
+            "cls_period",
+            "cls_objective",
+            "cls_keyresult"
+          ],
+          "relations": ["rel_contributesto"]
+        },
+        {
+          "id": "vw_delivery",
+          "key": "Delivery",
+          "labels": {
+            "en": "Delivery"
+          },
+          "classes": [
+            "cls_objective",
+            "cls_keyresult",
+            "cls_initiative",
+            "cls_person"
+          ],
+          "relations": ["rel_contributesto", "rel_owns"]
+        }
+      ],
+      "cardinalities": [],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Title",
+          "required": true,
+          "maxLength": 100,
+          "id": "att_mtokrs_title",
+          "labels": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Organisation",
+          "id": "att_mtokrs_organisation",
+          "labels": {
+            "en": "Organisation"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "OverallProgress",
+          "formula": "IFERROR(round(avg(objects('Objective').Progress), 0), null)",
+          "result": "number",
+          "id": "att_mtokrs_overallprogress",
+          "labels": {
+            "en": "Overall progress (%)"
+          },
+          "help": {
+            "en": "The average progress of all objectives, in percent."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "KeyResults",
+          "formula": "count(objects('KeyResult'))",
+          "result": "number",
+          "id": "att_mtokrs_keyresults",
+          "labels": {
+            "en": "Key results"
+          },
+          "help": {
+            "en": "How many key results there are."
+          }
+        }
+      ],
+      "help": {
+        "en": "Goals, periods with objectives and their key results, the initiatives that move them and the people who own them."
+      },
+      "containers": {
+        "cls_period": ["cls_objective"],
+        "cls_objective": ["cls_keyresult"]
+      }
+    }
+  },
+  "shapes": {
+    "shp_goal": {
+      "id": "shp_goal",
+      "name": "Goal look",
+      "kind": "node",
+      "size": {
+        "width": 220,
+        "height": 80,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          ["15%", 0],
+          ["85%", 0],
+          ["100%", "50%"],
+          ["85%", "100%"],
+          ["15%", "100%"],
+          [0, "50%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            ["15%", 0],
+            ["85%", 0],
+            ["100%", "50%"],
+            ["85%", "100%"],
+            ["15%", "100%"],
+            [0, "50%"]
+          ],
+          "fill": "#b2f2bb",
+          "stroke": "#2f9e44",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": "18% + 26",
+          "y": 4,
+          "width": "64% - 26",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": "18% + 26",
+          "y": "100% - 22",
+          "width": "64% - 26",
+          "height": 18,
+          "text": "= Horizon",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z",
+          "viewBox": [0, 0, 24, 24],
+          "x": "18% + 4",
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "hexagon",
+        "fill": "#b2f2bb",
+        "border": "#2f9e44",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 220,
+          "height": 80,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Horizon"
+        },
+        "icon": {
+          "name": "star"
+        }
+      }
+    },
+    "shp_initiative": {
+      "id": "shp_initiative",
+      "name": "Initiative look",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 4,
+          "fill": "#ffffff",
+          "stroke": "#f08c00",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": 28,
+          "radius": 4,
+          "fill": "#ffd8a8",
+          "stroke": "#f08c00"
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 2,
+          "width": "100% - 36",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 34,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Sponsor: ' + Sponsor",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 50,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Status: ' + Status",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 66,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'End: ' + End",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "header-box",
+        "fill": "#ffd8a8",
+        "border": "#f08c00",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 170,
+          "height": 110,
+          "resizable": true
+        },
+        "fields": ["Sponsor", "Status", "End"]
+      }
+    },
+    "shp_person": {
+      "id": "shp_person",
+      "name": "Person look",
+      "kind": "node",
+      "size": {
+        "width": 90,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "ellipse",
+          "x": "50% - 16",
+          "y": 4,
+          "width": 32,
+          "height": 32,
+          "fill": "#e9ecef",
+          "stroke": "#495057",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 6,
+          "y": 42,
+          "width": "100% - 12",
+          "height": "100% - 46",
+          "radius": 18,
+          "fill": "#e9ecef",
+          "stroke": "#495057",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 10,
+          "y": 46,
+          "width": "100% - 20",
+          "height": "100% - 72",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 10,
+          "y": "100% - 24",
+          "width": "100% - 20",
+          "height": 18,
+          "text": "= Role",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "person",
+        "fill": "#e9ecef",
+        "border": "#495057",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 90,
+          "height": 110,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Role"
+        }
+      }
+    },
+    "shp_rel_owns": {
+      "id": "shp_rel_owns",
+      "name": "Owns look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#6b7a90",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "startMarker": {
+        "type": "diamond"
+      },
+      "look": {
+        "colour": "#6b7a90",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "diamond",
+        "end": "none",
+        "label": null
+      }
+    },
+    "shp_rel_contributesto": {
+      "id": "shp_rel_contributesto",
+      "name": "ContributesTo look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#2f9e44",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#2f9e44",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_period": {
+      "id": "shp_period",
+      "name": "Period look",
+      "kind": "node",
+      "size": {
+        "width": 830,
+        "height": 500,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 6,
+          "fill": "#f8f9fa66",
+          "stroke": "#495057",
+          "strokeWidth": 1.5,
+          "dash": [7, 4]
+        },
+        {
+          "type": "text",
+          "x": 12,
+          "y": 4,
+          "width": "100% - 48",
+          "height": 24,
+          "text": "= Heading",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "container",
+        "fill": "#f8f9fa66",
+        "border": "#495057",
+        "borderWidth": 1.5,
+        "borderStyle": "dashed",
+        "title": {
+          "attribute": "Heading",
+          "bold": true
+        },
+        "size": {
+          "width": 830,
+          "height": 500,
+          "resizable": true
+        }
+      }
+    },
+    "shp_objective": {
+      "id": "shp_objective",
+      "name": "Objective look",
+      "kind": "node",
+      "size": {
+        "width": 250,
+        "height": 430,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 6,
+          "fill": "= Status == 'On track' ? '#b2f2bb55' : Status == 'At risk' ? '#ffec9955' : Status == 'Off track' ? '#ffc9c955' : '#f1f3f555'",
+          "stroke": "#2f9e44",
+          "strokeWidth": 2,
+          "dash": [7, 4]
+        },
+        {
+          "type": "text",
+          "x": 12,
+          "y": 4,
+          "width": "100% - 48",
+          "height": 24,
+          "text": "= Heading",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "container",
+        "fill": {
+          "by": "Status",
+          "values": {
+            "On track": "#b2f2bb55",
+            "At risk": "#ffec9955",
+            "Off track": "#ffc9c955"
+          },
+          "fallback": "#f1f3f555"
+        },
+        "border": "#2f9e44",
+        "borderWidth": 2,
+        "borderStyle": "dashed",
+        "title": {
+          "attribute": "Heading",
+          "bold": true
+        },
+        "size": {
+          "width": 250,
+          "height": 430,
+          "resizable": true
+        }
+      }
+    },
+    "shp_keyresult": {
+      "id": "shp_keyresult",
+      "name": "KeyResult look",
+      "kind": "node",
+      "size": {
+        "width": 210,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 4,
+          "fill": "#ffffff",
+          "stroke": "#2f9e44",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": 28,
+          "radius": 4,
+          "fill": "= Status == 'On track' ? '#b2f2bb' : Status == 'At risk' ? '#ffec99' : Status == 'Off track' ? '#ffc9c9' : '#e9ecef'",
+          "stroke": "#2f9e44"
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 2,
+          "width": "100% - 36",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 34,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Reading: ' + Reading",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 50,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Progress: ' + Progress",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 66,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Confidence: ' + Confidence",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "header-box",
+        "fill": {
+          "by": "Status",
+          "values": {
+            "On track": "#b2f2bb",
+            "At risk": "#ffec99",
+            "Off track": "#ffc9c9"
+          },
+          "fallback": "#e9ecef"
+        },
+        "border": "#2f9e44",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 210,
+          "height": 110,
+          "resizable": true
+        },
+        "fields": ["Reading", "Progress", "Confidence"]
+      }
+    }
+  },
+  "panels": {
+    "cls_keyresult": {
+      "class": "cls_keyresult",
+      "tabs": [
+        {
+          "label": "Key result",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Unit"
+            },
+            {
+              "attribute": "StartValue"
+            },
+            {
+              "attribute": "Target"
+            },
+            {
+              "attribute": "Current"
+            },
+            {
+              "attribute": "Progress"
+            },
+            {
+              "attribute": "Status"
+            },
+            {
+              "attribute": "Confidence",
+              "control": "segmented"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_objective": {
+      "class": "cls_objective",
+      "tabs": [
+        {
+          "label": "Objective",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            },
+            {
+              "attribute": "Ambition",
+              "control": "segmented"
+            },
+            {
+              "attribute": "Owner"
+            },
+            {
+              "attribute": "KeyResults"
+            },
+            {
+              "attribute": "Progress"
+            },
+            {
+              "attribute": "Status"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    }
+  },
+  "rules": {
+    "rule_krtarget": {
+      "id": "rule_krtarget",
+      "label": "Say so when a key result reaches its target",
+      "when": {
+        "event": "attribute.changed",
+        "class": "cls_keyresult",
+        "attribute": "Current"
+      },
+      "if": "= Progress == 100",
+      "then": [
+        {
+          "action": "message",
+          "kind": "info",
+          "text": "= 'Key result \"' + Name + '\" has reached its target: ' + Reading + '.'"
+        }
+      ]
+    }
+  },
+  "scripts": {}
+}

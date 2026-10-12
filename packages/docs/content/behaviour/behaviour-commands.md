@@ -8,7 +8,7 @@ contexts: []
 order: 90
 ---
 
-A command is something a person starts by hand: "Check pipeline", "Mark ready", "Total effort". A tool library adds commands with [[rules]] and with [[scripts]]. They appear in Model mode next to the built-in controls.
+A command is something a person starts by hand: "Check pipeline", "Mark ready", "Total effort". A Kit adds commands with [[rules]] and with [[scripts]]. They appear in Model mode next to the built-in controls.
 
 ## What it is
 
@@ -27,13 +27,13 @@ Each command has a label (the text people see) and a place:
 | Toolbar | As a button on the model toolbar, right after the model name. |
 | Right-click menu | In the menu that opens when you right-click in the model. |
 
-The list is sorted by label. When rules or scripts are reloaded, their old commands are removed and the new ones added, so the menus follow the tool library.
+The list is sorted by label. When rules or scripts are reloaded, their old commands are removed and the new ones added, so the menus follow the Kit.
 
 ## Where to find it
 
 - Make a command rule: Build mode, **Rules**, event "A person runs it", then fill in **Name in the menu** and **Where it appears**. See [[rules]].
 - Make a script command: Build mode, **Scripts**, and call `commands.register(...)`. See [[script-api]].
-- Use a command: open a model of that tool in Model mode. Look in the toolbar, in **Commands**, or right-click an object. See [[model-toolbar]] and [[context-menu]].
+- Use a command: open a model of that Kit in Model mode. Look in the toolbar, in **Commands**, or right-click an object. See [[model-toolbar]] and [[context-menu]].
 
 ## How to use it
 
@@ -89,7 +89,7 @@ The action **Run a command** starts a command by label or id. The command then r
 
 ## Examples
 
-- "Check pipeline" (script, Model menu) in the Agent pipeline tool checks the whole model and shows one message with all problems. See [[script-examples]].
+- "Check pipeline" (script, Model menu) in the Agent pipeline Kit checks the whole model and shows one message with all problems. See [[script-examples]].
 - "Mark ready" (rule, Toolbar) sets the status of the selected task.
 - "Total effort" (rule, Model menu) shows the sum of all task efforts.
 

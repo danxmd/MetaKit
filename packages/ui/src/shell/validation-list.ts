@@ -3,7 +3,7 @@ import {
   effectiveRelationAttributes,
   type Model,
   type Severity,
-  type ToolLibrary,
+  type Kit,
   type ValidationIssue,
 } from '@metakit-app/core';
 
@@ -62,11 +62,11 @@ function safely<T>(read: () => T, fallback: T): T {
 export function describeTarget(
   id: ValidationIssue['id'],
   model: Model,
-  tool: ToolLibrary,
+  kit: Kit,
   language = 'en',
 ): TargetInfo {
   if (id === 'model') {
-    const type = tool.modelTypes[model.manifest.modelType];
+    const type = kit.modelTypes[model.manifest.modelType];
     return {
       kind: 'model',
       name: model.manifest.name,
@@ -75,9 +75,9 @@ export function describeTarget(
   }
   const element = model.elements[id as keyof Model['elements']];
   if (element) {
-    const cls = tool.classes[element.class];
+    const cls = kit.classes[element.class];
     const className = cls ? (cls.labels[language] ?? cls.key) : '';
-    const defs = safely(() => effectiveAttributes(tool, element.class), []);
+    const defs = safely(() => effectiveAttributes(kit, element.class), []);
     return {
       kind: 'element',
       name: firstText(element.attrs, defs) ?? (className || element.id),
@@ -86,10 +86,10 @@ export function describeTarget(
   }
   const connector = model.connectors[id as keyof Model['connectors']];
   if (connector) {
-    const rel = tool.relations[connector.relation];
+    const rel = kit.relations[connector.relation];
     const className = rel ? (rel.labels[language] ?? rel.key) : '';
     const defs = safely(
-      () => effectiveRelationAttributes(tool, connector.relation),
+      () => effectiveRelationAttributes(kit, connector.relation),
       [],
     );
     return {
@@ -104,13 +104,13 @@ export function describeTarget(
 export function rowsOf(
   issues: readonly ValidationIssue[],
   model: Model,
-  tool: ToolLibrary,
+  kit: Kit,
   language = 'en',
 ): IssueRow[] {
   return issues.map((issue, i) => ({
     key: `${i}:${issue.id}:${issue.code}:${issue.attr ?? ''}`,
     issue,
-    target: describeTarget(issue.id, model, tool, language),
+    target: describeTarget(issue.id, model, kit, language),
   }));
 }
 

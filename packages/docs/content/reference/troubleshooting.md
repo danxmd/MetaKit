@@ -43,10 +43,10 @@ Messages appear in four places: under the form you were using, as a note above t
 - **"... looks incomplete (it does not end with a new line) even after 5 more tries. If a sync program is still copying it, wait and try again."** A file is still arriving. Wait and reopen. If it stays, the file was cut short; restore it from your sync service.
 - **"Anna and Ben have read the same changes but see different models. Close and reopen the model; if this stays, tell whoever looks after MetaKit for you."** Two windows disagree although they have the same files. Reopen. If it stays, keep the folder and report it. See [[instances-and-presence]].
 - **"Anna changed Priority of "Review" at the same time as you. Anna's value was kept."** Not an error. Your change was replaced by a later one. Make it again if you want it. See [[conflicts-and-merging]].
-- **"The tool "x" has no saved content yet."** The folder holds the identity file but no state yet. The sync service has not delivered the `_state` files. Wait for sync.
-- **A model or tool library is missing from the list.** It may be in the trash, or its files are unreadable, or still arriving. Check the deleted list ([[trash-and-restore]]). After 30 days a deleted item is no longer offered.
+- **"The Kit "x" has no saved content yet."** The folder holds the identity file but no state yet. The sync service has not delivered the `_state` files. Wait for sync.
+- **A model or Kit is missing from the list.** It may be in the trash, or its files are unreadable, or still arriving. Check the deleted list ([[trash-and-restore]]). After 30 days a deleted item is no longer offered.
 - **""models/x/..." already exists. Files that other instances may have read are written once and never replaced."** Something tried to overwrite a shared file. Reload the page. Do not copy files into `_state` by hand.
-- **"This tool-document file was written by a newer version of MetaKit ...".** A teammate has a newer release. Reload the app to update. See [[format-versions]].
+- **"This Kit document file was written by a newer version of MetaKit ...".** A teammate has a newer release. Reload the app to update. See [[format-versions]].
 
 ### Formulas
 
@@ -74,7 +74,7 @@ Messages appear in four places: under the form you were using, as a note above t
 - **"The script used more memory than it is allowed and was stopped."** Keep fewer or smaller lists in memory.
 - **"Cannot find module "x". Scripts can only import from "metakit"."** Remove other imports. See [[script-api]].
 - **"on() can only be used at the top level of a script, not inside a handler."** Register handlers and commands at the top of the script.
-- **"This script tries to use files, but the tool does not say it needs to."** Tick the permission in the Scripts section. If it says you have not allowed it, accept the permission dialog. See [[script-permissions]].
+- **"This script tries to use files, but the Kit does not say it needs to."** Tick the permission in the Scripts section. If it says you have not allowed it, accept the permission dialog. See [[script-permissions]].
 - **""x" already exists. Scripts can create new files but cannot replace existing ones; choose another name."** Use a new file name, for example with the date.
 - **"This app cannot show a form." or "... cannot show a save-file dialog."** The web app does not provide these dialogs yet. Use messages, `ui.prompt`, or `files.write`.
 - **A web call fails.** Browsers only let pages read answers from services that allow it. Use a service that does, or ask its owner. See [[script-permissions]].
@@ -88,9 +88,9 @@ Messages appear in four places: under the form you were using, as a note above t
 - **"The branch has changed since you last pulled. Pull first, then commit again."** Press **Pull**, then commit. See [[git-commit]].
 - **"Could not reach GitHub. Check the address and your connection; the service may also refuse requests from a browser."** No connection, a wrong address for a self-managed service, or a block by the service.
 - **"There is no GitHub token for github.com in this browser. Add one in the Git settings."** Tokens are per browser. Add one. See [[git-mode]].
-- **"This folder does not hold a tool library: tool.json is missing."** Wrong folder in the repository. See [[git-layout]].
+- **"This folder does not hold a Kit: kit.json is missing."** Wrong folder in the repository. See [[git-layout]].
 - **"GitHub is limiting requests. Wait a minute and try again."** Rate limit. Wait.
-- **"The repository is too large for GitHub to list in one answer."** Use a smaller repository for the tool library.
+- **"The repository is too large for GitHub to list in one answer."** Use a smaller repository for the Kit.
 
 ### Assistant
 
@@ -102,10 +102,10 @@ Messages appear in four places: under the form you were using, as a note above t
 
 ### Import and export
 
-- **"This is not a valid zip file, or it is damaged, so it could not be opened."** The file is not a `.mkbundle` or `.mktool`, or was cut short. Download it again.
+- **"This is not a valid zip file, or it is damaged, so it could not be opened."** The file is not a `.mkbundle` or `.mkkit`, or was cut short. Download it again.
 - **"This zip file holds more than 2,000 files ..."** or **"... unsafe name ..."** The zip is refused for safety.
 - **"This is not a MetaKit bundle: there is no bundle.json in it."** Wrong file. See [[import-export]].
-- **"This bundle does not include its tool library ..."** Import the tool package first.
+- **"This bundle does not include its Kit ..."** Import the Kit package first.
 
 ## Examples
 

@@ -8,13 +8,13 @@ contexts: []
 order: 160
 ---
 
-Some object kinds in a tool library are *containers* or *swimlanes*. They can hold other objects, like a frame around a group.
+Some object kinds in a Kit are *containers* or *swimlanes*. They can hold other objects, like a frame around a group.
 
 ## What it is
 
 A container (or swimlane, which is a container drawn as a lane) is an ordinary object with a size and attributes. An object placed or dropped inside it becomes its *child*. The child stays attached: if the container moves, the child moves with it.
 
-The tool library decides which kinds a container accepts. In the Agent pipeline, the **Stage** swimlane accepts **Agent**, **Human**, **Task**, **Gate** and **Artifact**. Another **Stage** is not accepted inside a stage.
+The Kit decides which kinds a container accepts. In the Agent pipeline, the **Stage** swimlane accepts **Agent**, **Human**, **Task**, **Gate** and **Artifact**. Another **Stage** is not accepted inside a stage.
 
 ## Where to find it
 
@@ -48,7 +48,7 @@ Move the whole group:
 | Moving the container | Its children move by the same distance, in one undo step. |
 | Selecting a container and a child, then dragging | The child moves only once. |
 | Deleting a container | The container goes. Its children stay and move up to the container's own parent, or to the top level. |
-| Drawing order | A child is drawn above its container. |
+| Drawing order | Containers and swimlanes are drawn first, outer ones below inner ones. Connections come next, then every other object. So a connection between two objects in the same container shows on the container, and a child is always drawn above its container. |
 
 An object cannot be moved into itself or into something it contains.
 

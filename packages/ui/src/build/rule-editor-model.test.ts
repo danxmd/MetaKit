@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import {
   createModelStore,
-  validateToolLibrary,
+  validateKit,
   type ElementId,
   type Model,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 import {
   clone,
   emptySampleModel,
   SAMPLE,
-  sampleTool,
+  sampleKit,
 } from '@metakit-app/core/testing';
 import {
   attachRules,
@@ -28,8 +28,8 @@ import {
   RuleEditorModel,
 } from './rule-editor-model';
 
-function tool(): ToolLibrary {
-  const t = clone(sampleTool());
+function kit(): Kit {
+  const t = clone(sampleKit());
   t.classes[SAMPLE.task]!.attributes.push(
     { id: 'att_status', key: 'Status', type: 'text' },
     { id: 'att_owner', key: 'Owner', type: 'text' },
@@ -38,7 +38,7 @@ function tool(): ToolLibrary {
 }
 
 /** The plan's rule, built only through the model. */
-function buildPlanRule(t: ToolLibrary): RuleEditorModel {
+function buildPlanRule(t: Kit): RuleEditorModel {
   const m = new RuleEditorModel(t);
   m.setLabel('High-priority tasks need an owner');
   m.setEvent('attribute.changed');
@@ -99,7 +99,7 @@ describe('eventGroups', () => {
 
 describe('pickers', () => {
   it('lists classes and the attribute keys of a class with inherited ones', () => {
-    const t = tool();
+    const t = kit();
     expect(classesFor(t).map((c) => c.key)).toContain('Task');
     const keys = attributesFor(t, SAMPLE.task as never);
     expect(keys).toEqual(
@@ -121,7 +121,7 @@ describe('formulaProblem', () => {
 
 describe('RuleEditorModel', () => {
   it('starts as a valid rule that reacts to attribute changes', () => {
-    const m = new RuleEditorModel(tool());
+    const m = new RuleEditorModel(kit());
     expect(m.toRule()).toMatchObject({
       label: 'New rule',
       when: { event: 'attribute.changed' },
@@ -133,8 +133,8 @@ describe('RuleEditorModel', () => {
     expect(m.messages().map((x) => x.level)).toEqual(['hint']);
   });
 
-  it('builds the plan rule, valid for the tool library', () => {
-    const t = tool();
+  it('builds the plan rule, valid for the Kit', () => {
+    const t = kit();
     const m = buildPlanRule(t);
     expect(m.messages()).toEqual([]);
     expect(m.toRule()).toEqual({
@@ -156,21 +156,21 @@ describe('RuleEditorModel', () => {
       ],
     });
     t.rules[m.id] = m.toRule();
-    expect(validateToolLibrary(t)).toEqual([]);
+    expect(validateKit(t)).toEqual([]);
   });
 
   it('runs the rule it built in the engine', () => {
-    const t = tool();
+    const t = kit();
     const m = buildPlanRule(t);
     t.rules[m.id] = m.toRule();
-    const store = createModelStore(emptySampleModel(), { tool: t });
+    const store = createModelStore(emptySampleModel(), { kit: t });
     const seen: string[] = [];
     const b = createBehaviour({
       store,
-      tool: () => t,
+      kit: () => t,
       host: silentHost({ message: (k, x) => void seen.push(`${k}: ${x}`) }),
     });
-    attachRules(b, { store, tool: () => t });
+    attachRules(b, { store, kit: () => t });
     const id = (
       store.execute({
         type: 'createElement',
@@ -195,7 +195,7 @@ describe('RuleEditorModel', () => {
   });
 
   it('adds the = to a condition and removes an empty one', () => {
-    const m = new RuleEditorModel(tool());
+    const m = new RuleEditorModel(kit());
     m.setCondition('Priority == 1');
     expect(m.toRule().if).toBe('= Priority == 1');
     m.setCondition('   ');
@@ -203,7 +203,7 @@ describe('RuleEditorModel', () => {
   });
 
   it('drops filters that do not fit a new event, and the command entry', () => {
-    const m = new RuleEditorModel(tool());
+    const m = new RuleEditorModel(kit());
     m.setClass(SAMPLE.task as never);
     m.setAttribute('Priority');
     m.setEvent('object.created');
@@ -225,7 +225,7 @@ describe('RuleEditorModel', () => {
   });
 
   it('forgets an attribute the new class does not have', () => {
-    const m = new RuleEditorModel(tool());
+    const m = new RuleEditorModel(kit());
     m.setAttribute('Priority');
     m.setClass(SAMPLE.gateway as never);
     expect(m.toRule().when).not.toHaveProperty('attribute');
@@ -233,11 +233,11 @@ describe('RuleEditorModel', () => {
 
   it('adds every action type with a blank form', () => {
     for (const type of ACTION_TYPES) {
-      const m = new RuleEditorModel(tool());
+      const m = new RuleEditorModel(kit());
       expect(m.addAction(type)).toEqual([0]);
       expect(m.toRule().then[0]!.action).toBe(type);
     }
-    const m = new RuleEditorModel(tool());
+    const m = new RuleEditorModel(kit());
     m.addAction('setAttribute');
     expect(m.messages().find((x) => x.level === 'error')).toMatchObject({
       where: 'Action 1',
@@ -245,7 +245,7 @@ describe('RuleEditorModel', () => {
   });
 
   it('reorders, edits and removes actions', () => {
-    const m = new RuleEditorModel(tool());
+    const m = new RuleEditorModel(kit());
     m.addAction('delete');
     m.addAction('message');
     m.moveAction([1], -1);
@@ -265,7 +265,7 @@ describe('RuleEditorModel', () => {
   });
 
   it('edits nested branches of a question by path', () => {
-    const m = new RuleEditorModel(tool());
+    const m = new RuleEditorModel(kit());
     m.addAction('ask');
     m.updateAction([0], { text: 'Sure?' });
     expect(m.addAction('delete', [0, 'then'])).toEqual([0, 'then', 0]);
@@ -295,7 +295,7 @@ describe('RuleEditorModel', () => {
   });
 
   it('explains problems in the form instead of the file paths', () => {
-    const m = buildPlanRule(tool());
+    const m = buildPlanRule(kit());
     m.setCondition('Priority ==');
     m.updateAction([1], { text: '= 1 +' });
     m.setLabel('');
@@ -308,7 +308,7 @@ describe('RuleEditorModel', () => {
   });
 
   it('needs a command name for a command rule, and hints about useless cancel', () => {
-    const m = new RuleEditorModel(tool());
+    const m = new RuleEditorModel(kit());
     m.setEvent('command');
     m.setCommand('  ', 'model');
     expect(m.messages().filter((x) => x.level === 'error')).toEqual([
@@ -318,7 +318,7 @@ describe('RuleEditorModel', () => {
         text: 'The command label cannot be empty.',
       },
     ]);
-    const n = new RuleEditorModel(tool());
+    const n = new RuleEditorModel(kit());
     n.setEvent('object.created');
     n.addAction('cancel');
     expect(n.messages().some((x) => x.level === 'hint')).toBe(true);
@@ -327,7 +327,7 @@ describe('RuleEditorModel', () => {
   });
 
   it('turns typed text into the type of the attribute', () => {
-    const m = new RuleEditorModel(tool());
+    const m = new RuleEditorModel(kit());
     m.setClass(SAMPLE.task as never);
     expect(m.valueFromText('Effort', '5')).toBe(5);
     expect(m.valueFromText('Effort', 'abc')).toBe('abc');
@@ -336,7 +336,7 @@ describe('RuleEditorModel', () => {
   });
 
   it('does not change the rule it was given', () => {
-    const t = tool();
+    const t = kit();
     const rule = buildPlanRule(t).toRule();
     const again = new RuleEditorModel(t, rule);
     again.setLabel('Other');

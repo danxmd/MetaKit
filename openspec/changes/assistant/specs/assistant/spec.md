@@ -2,7 +2,7 @@
 
 ## Purpose
 
-An optional assistant that drafts tool parts from a description.
+An optional assistant that drafts Kit parts from a description.
 
 ## ADDED Requirements
 
@@ -14,7 +14,7 @@ The assistant SHALL be off until turned on, and the key SHALL be stored only in 
 - **THEN** it is present only while added and no workspace, repository or log holds it
 
 ### Requirement: No model content leaves the browser
-Requests SHALL contain tool definitions and the person's sentence, never model content.
+Requests SHALL contain the Kit definition and the person's sentence, never model content.
 
 #### Scenario: Marker test
 - **WHEN** a model with a marker value is open and a draft is requested
@@ -32,4 +32,4 @@ Accepting a draft SHALL apply it through commands in one undo step.
 
 #### Scenario: Accept and undo
 - **WHEN** a drafted rule is accepted and then undone
-- **THEN** the tool library is as before
+- **THEN** the Kit is as before

@@ -1,8 +1,8 @@
-/** Identifier of a script of a tool library (ADR 0006). */
+/** Identifier of a script of a Kit (ADR 0006). */
 export type ScriptId = `scr_${string}`;
 
-/** What a tool may ask the person for; the app asks once per tool in each browser. */
-export interface ToolPermissions {
+/** What a Kit may ask the person for; the app asks once per Kit in each browser. */
+export interface KitPermissions {
   /** Scripts may call web services (`http`). */
   network?: boolean;
   /** Scripts may open and save files outside the workspace, through dialogs (`files`). */

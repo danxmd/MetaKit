@@ -10,20 +10,20 @@ Each work package below becomes one OpenSpec change and one pull request.
 
 Deliver TypeScript types and runtime validation (JSON schema or hand-written guards) for:
 
-- **Tool library:** manifest (id, name, version, languages), settings (grid, layers, numbering).
+- **Kit:** manifest (id, name, version, languages), settings (grid, layers, numbering).
 - **Class:** id, key, labels per language, kind (`node`, `container`, `swimlane`), optional parent class, abstract flag, attributes, shape reference, panel layout reference, help text.
 - **Relation class:** allowed FROM and TO classes (abstract classes allowed, meaning any subclass), attributes, line shape reference, optional parent relation class.
 - **Model type:** allowed classes and relation classes, views (named subsets), cardinalities, model-level attributes, optional background shape.
 - **Attribute types:** text, integer, number, boolean, date, date-time, duration, choice, multi-choice, formula, table, reference, action, link, each with the options listed in the plan's attribute types table.
 - **Inheritance resolution:** effective attributes of a class, including inherited ones, and an "is a" check for FROM/TO lists.
 
-Done when: types compile, the guards reject invalid definitions with clear messages, and the hand-written sample tools from 1.5 validate.
+Done when: types compile, the guards reject invalid definitions with clear messages, and the hand-written sample Kits from 1.5 validate.
 
 ## 1.2 Model store and command API (`packages/core`)
 
 Deliver:
 
-- Documents of two kinds, tool library and model, sharing one store implementation.
+- Documents of two kinds, Kit and model, sharing one store implementation.
 - Model contents: elements (class, position, size, attributes, parent container), connectors (relation class, from, to, bend points, attributes), model attributes.
 - Commands: create, update attribute, move, resize, connect, reconnect, delete (cascade to dangling connectors), reorder, and `batch` for several commands as one step.
 - Undo and redo per document and per local user, covering batches.
@@ -56,14 +56,14 @@ Deliver:
 
 Done when: a workspace written by the app reads back identically, and the model file round-trips without loss.
 
-## 1.5 Sample tools and CLI (`tools/`, `apps/cli`)
+## 1.5 Sample Kits and CLI (`tools/`, `apps/cli`)
 
 Deliver:
 
-- Two hand-written tool libraries used as fixtures: `bpmn-lite` (Task, Gateway, Start event, End event, Sequence flow, Lane) and `er-lite` (Entity, Attribute, Relationship).
+- Two hand-written Kits used as fixtures: `bpmn-lite` (Task, Gateway, Start event, End event, Sequence flow, Lane) and `er-lite` (Entity, Attribute, Relationship).
 - CLI commands: `metakit validate <workspace>` and `metakit export <model> --format json`.
 
-Done when: the CLI validates both sample tools and a sample model in CI.
+Done when: the CLI validates both sample Kits and a sample model in CI.
 
 ## Out of scope
 

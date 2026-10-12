@@ -7,7 +7,7 @@ import { chooseFromMenu, openMenu } from './menus';
 
 const pipeline = (path: string) =>
   fileURLToPath(
-    new URL(`../../../tools/agent-pipeline/${path}`, import.meta.url),
+    new URL(`../../../kits/agent-pipeline/${path}`, import.meta.url),
   );
 
 /** Opens the sample code review pipeline, which has commands, help texts and several relations. */
@@ -17,7 +17,7 @@ async function openPipeline(page: Page) {
   await page.evaluate(
     (json) =>
       (window as unknown as { __seed(t: string): Promise<void> }).__seed(json),
-    readFileSync(pipeline('tool.json'), 'utf8'),
+    readFileSync(pipeline('kit.json'), 'utf8'),
   );
   await page.reload();
   await page.getByTestId('open-folder').click();
@@ -70,7 +70,7 @@ test.describe('the toolbar menus', () => {
     // The quick buttons stay on the bar, with names for screen readers.
     for (const name of ['Undo', 'Redo', 'Zoom in', 'Zoom out', 'Fit to window'])
       await expect(header.getByRole('button', { name })).toBeVisible();
-    await expect(page.getByTestId('back-to-explorer')).toBeVisible();
+    await expect(page.getByTestId('crumb-area')).toBeVisible();
     await expect(page.getByTestId('model-name')).toHaveText(
       'Code review pipeline',
     );
@@ -105,6 +105,58 @@ test.describe('the toolbar menus', () => {
     await expect(page.getByTestId('minimap')).toBeHidden();
     await chooseFromMenu(page, 'View', 'minimap-toggle');
     await expect(page.getByTestId('minimap')).toBeVisible();
+  });
+
+  test('Fit to window right after opening shows the whole model, left side included', async ({
+    page,
+  }) => {
+    // This sample model has objects at a negative x.
+    const portfolio = (path: string) =>
+      fileURLToPath(
+        new URL(`../../../kits/ai-use-case-portfolio/${path}`, import.meta.url),
+      );
+    await prepare(page, {
+      seed: true,
+      kit: readFileSync(portfolio('kit.json'), 'utf8'),
+    });
+    await page.getByTestId('open-folder').click();
+    await page
+      .locator('input[type="file"][aria-label="Files to import"]')
+      .setInputFiles(portfolio('customer-operations.mkmodel.json'));
+    await expect(page.getByTestId('import-note')).toBeVisible();
+    await page
+      .getByRole('tree')
+      .getByRole('button', { name: 'Customer operations AI portfolio' })
+      .click();
+    // No waiting for the canvas: the button is pressed as soon as it can be.
+    await page
+      .getByTestId('model-header')
+      .getByRole('button', { name: 'Fit to window' })
+      .click();
+    const placed = await page.evaluate(() => {
+      const { view, scene } = (
+        window as unknown as {
+          __metakit: {
+            view: {
+              view: { s: number; ox: number; oy: number };
+              width: number;
+            };
+            scene: { bounds(): { minX: number; maxX: number } };
+          };
+        }
+      ).__metakit;
+      const b = scene.bounds();
+      const { s, ox } = view.view;
+      return {
+        left: b.minX * s + ox,
+        right: b.maxX * s + ox,
+        width: view.width,
+      };
+    });
+    const host = (await page.getByTestId('canvas-host').boundingBox())!;
+    expect(placed.width).toBeCloseTo(host.width, 0);
+    expect(placed.left).toBeGreaterThanOrEqual(0);
+    expect(placed.right).toBeLessThanOrEqual(host.width);
   });
 });
 
@@ -166,7 +218,7 @@ test.describe('the palette preview', () => {
     await expect(page.getByTestId('palette-class-Gate')).toHaveClass(/\bon\b/);
   });
 
-  test('works with the BPMN lite tool and gives every entry a thumbnail', async ({
+  test('works with the BPMN lite Kit and gives every entry a thumbnail', async ({
     page,
   }) => {
     await prepare(page);

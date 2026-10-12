@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { SAMPLE, emptySampleModel, sampleTool } from '../testing/sample-tool';
+import { SAMPLE, emptySampleModel, sampleKit } from '../testing/sample-kit';
 import { createModelStore, type ModelStore } from './commands';
-import type { ToolLibrary } from '../meta/types';
+import type { Kit } from '../meta/types';
 import type { ElementId } from '../ids';
 
 const withDefaults = (formulas: {
   created?: string;
   label?: string;
 }): ModelStore => {
-  const base = sampleTool();
+  const base = sampleKit();
   const task = base.classes[SAMPLE.task]!;
-  const tool = {
+  const kit = {
     ...base,
     classes: {
       ...base.classes,
@@ -33,8 +33,8 @@ const withDefaults = (formulas: {
         ],
       },
     },
-  } as unknown as ToolLibrary;
-  return createModelStore(emptySampleModel(), { tool });
+  } as unknown as Kit;
+  return createModelStore(emptySampleModel(), { kit });
 };
 
 const make = (store: ModelStore, attrs?: Record<string, unknown>): string => {

@@ -1,6 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { canvasPoint, model, newModel, prepare, toolJson } from './app';
-import { openMenu } from './menus';
+import { canvasPoint, model, newModel, prepare, kitJson } from './app';
 
 test.describe('start and explorer', () => {
   test('opens a workspace and reaches an empty model in no more than five clicks', async ({
@@ -38,7 +37,7 @@ test.describe('start and explorer', () => {
     await expect(page.getByTestId('no-models')).toBeVisible();
   });
 
-  test('offers the built-in tool libraries when the workspace has none of its own', async ({
+  test('offers the built-in Kits when the workspace has none of its own', async ({
     page,
   }) => {
     await page.addInitScript(() => {
@@ -57,12 +56,12 @@ test.describe('start and explorer', () => {
     await page.getByRole('button', { name: 'Create workspace' }).click();
     await page.getByTestId('new-model').click();
     await expect(
-      page.getByTestId('new-model-tool').locator('optgroup'),
+      page.getByTestId('new-model-kit').locator('optgroup'),
     ).toHaveAttribute('label', /Built-in/);
-    await expect(page.getByTestId('new-model-tool')).toContainText('ER lite');
+    await expect(page.getByTestId('new-model-kit')).toContainText('ER lite');
   });
 
-  test('adds a tool library from a file, refuses a broken one, and then makes a model', async ({
+  test('adds a Kit from a file, refuses a broken one, and then makes a model', async ({
     page,
   }) => {
     await page.addInitScript(() => {
@@ -79,28 +78,28 @@ test.describe('start and explorer', () => {
     await page.goto('/MetaKit/');
     await page.getByTestId('open-folder').click();
     await page.getByRole('button', { name: 'Create workspace' }).click();
-    // The models page points to Build, where the tool library is added.
+    // The models page points to Build, where the Kit is added.
     await expect(page.getByTestId('no-models')).toContainText(
-      'no tool library of its own yet',
+      'no Kit of its own yet',
     );
     await page.getByTestId('go-build').click();
-    await expect(page.getByTestId('no-tools')).toBeVisible();
+    await expect(page.getByTestId('no-kits')).toBeVisible();
 
-    await page.getByTestId('tool-file').setInputFiles({
+    await page.getByTestId('kit-file').setInputFiles({
       name: 'broken.json',
       mimeType: 'application/json',
       buffer: Buffer.from('{ "nope": true }'),
     });
     await expect(page.getByTestId('explorer-error')).toContainText(
-      'not a valid tool library',
+      'not a valid Kit',
     );
 
-    await page.getByTestId('tool-file').setInputFiles({
+    await page.getByTestId('kit-file').setInputFiles({
       name: 'tool.json',
       mimeType: 'application/json',
-      buffer: Buffer.from(toolJson),
+      buffer: Buffer.from(kitJson),
     });
-    await expect(page.getByTestId('no-tools')).toHaveCount(0);
+    await expect(page.getByTestId('no-kits')).toHaveCount(0);
     await page.getByTestId('mode-model').click();
     await page.getByTestId('new-model').click();
     await page.getByTestId('new-model-name').fill('From a file');
@@ -113,7 +112,7 @@ test.describe('start and explorer', () => {
   }) => {
     await prepare(page);
     await newModel(page, 'Alpha', 'Sales/2026');
-    await page.getByTestId('back-to-explorer').click();
+    await page.getByTestId('crumb-area').click();
     await expect(page.getByTestId('folder-Sales')).toBeVisible();
     await expect(page.getByTestId('folder-Sales/2026')).toBeVisible();
 
@@ -191,11 +190,56 @@ test.describe('model view', () => {
     await newModel(page);
     const all = await page.locator('[data-testid^="palette-class-"]').count();
     expect(all).toBeGreaterThan(0);
-    await openMenu(page, 'View');
-    await page.getByTestId('view-switcher').selectOption({ index: 1 });
+    // The view switch sits at the top of the palette.
+    const switcher = page.getByTestId('palette').getByTestId('view-switcher');
+    await switcher.selectOption({ index: 1 });
     const filtered = await page
       .locator('[data-testid^="palette-class-"]')
       .count();
     expect(filtered).toBeLessThanOrEqual(all);
+  });
+
+  test('hides empty palette groups and says when a view offers nothing', async ({
+    page,
+  }) => {
+    const kit = JSON.parse(kitJson) as {
+      modelTypes: Record<string, { views: unknown[] }>;
+    };
+    const process = kit.modelTypes['mt_process']!;
+    process.views.push(
+      {
+        id: 'vw_objects',
+        key: 'ObjectsOnly',
+        labels: { en: 'Objects only' },
+        classes: ['cls_task'],
+        relations: [],
+      },
+      {
+        id: 'vw_nothing',
+        key: 'Nothing',
+        labels: { en: 'Nothing' },
+        classes: [],
+        relations: [],
+      },
+    );
+    await prepare(page, { kit: JSON.stringify(kit) });
+    await newModel(page);
+    const palette = page.getByTestId('palette');
+    const heading = (name: string) =>
+      palette.getByRole('heading', { name, exact: true });
+    await expect(heading('Relations')).toBeVisible();
+
+    await palette.getByTestId('view-switcher').selectOption('vw_objects');
+    await expect(heading('Objects')).toBeVisible();
+    await expect(heading('Relations')).toHaveCount(0);
+    await expect(palette.getByTestId('palette-empty')).toHaveCount(0);
+
+    await palette.getByTestId('view-switcher').selectOption('vw_nothing');
+    await expect(heading('Objects')).toHaveCount(0);
+    await expect(palette.getByTestId('palette-empty')).toHaveText(
+      'No objects in this view',
+    );
+    // Select stays, so the person can always leave a placing tool.
+    await expect(page.getByTestId('tool-select')).toBeVisible();
   });
 });

@@ -139,7 +139,7 @@ export class ClaudeProvider implements AssistantProvider {
   }
 
   async test(key: string): Promise<string> {
-    // No tool or model content: this request only proves that the key works.
+    // No Kit or model content: this request only proves that the key works.
     await this.complete(
       {
         system: 'You check that an API key works.',

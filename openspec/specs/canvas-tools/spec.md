@@ -27,7 +27,7 @@ Elements SHALL be movable and resizable with handles, with connectors following 
 - **THEN** connectors attached to it are drawn to its new position on every frame
 
 ### Requirement: Connect only what fits
-The editor SHALL create a connector only for a relation that the tool library allows between the two elements' classes in this model type.
+The editor SHALL create a connector only for a relation that the Kit allows between the two elements' classes in this model type.
 
 #### Scenario: Wrong target
 - **WHEN** the user drops a connector end on an element whose class no relation allows
@@ -44,7 +44,7 @@ The user SHALL be able to add, move and remove bend points and move either end o
 Delete SHALL remove the selection and its connectors; copy and paste SHALL work within and across models.
 
 #### Scenario: Paste into another model
-- **WHEN** elements are copied in one model and pasted into another of the same tool
+- **WHEN** elements are copied in one model and pasted into another of the same Kit
 - **THEN** new elements with new ids appear with their attribute values and the connectors between them
 
 ### Requirement: Align, distribute, grid and snap

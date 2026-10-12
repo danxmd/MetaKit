@@ -35,21 +35,21 @@ The "Renumber tasks" script of the plan SHALL run unchanged.
 - **THEN** their Number attributes follow their position and the registered command renumbers on demand
 
 ### Requirement: Generated types
-Declarations generated from a tool SHALL give attributes their real types.
+Declarations generated from a Kit SHALL give attributes their real types.
 
 #### Scenario: Choice values
 - **WHEN** a class has a choice attribute Priority with Low, Medium and High
 - **THEN** `task.attrs.Priority` has the type `"Low" | "Medium" | "High"`
 
 ### Requirement: Permissions
-A tool's network and outside-file access SHALL need a grant per tool in each browser, asked again when the tool asks for more.
+A Kit's network and outside-file access SHALL need a grant per Kit in each browser, asked again when the Kit asks for more.
 
 #### Scenario: Denied
 - **WHEN** a script calls `http.get` without the network permission
 - **THEN** it fails with a plain message and no request is made
 
 ### Requirement: Scripts load on demand
-The script engine SHALL load only when a tool has scripts or the editor opens.
+The script engine SHALL load only when a Kit has scripts or the editor opens.
 
 #### Scenario: Bundle
 - **WHEN** the app is built

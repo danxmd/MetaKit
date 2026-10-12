@@ -1,0 +1,2384 @@
+{
+  "formatVersion": 7,
+  "manifest": {
+    "id": "kit_airiskcompliance",
+    "name": "AI risk and compliance",
+    "version": "1.0.0",
+    "languages": ["en"]
+  },
+  "settings": {
+    "grid": {
+      "size": 10,
+      "snap": true,
+      "visible": true
+    },
+    "layers": [],
+    "numbering": {
+      "enabled": false,
+      "prefix": "",
+      "start": 1
+    }
+  },
+  "classes": {
+    "cls_risk": {
+      "id": "cls_risk",
+      "key": "Risk",
+      "kind": "node",
+      "labels": {
+        "en": "Risk"
+      },
+      "help": {
+        "en": "Something that may go wrong with an AI system. Score is likelihood times impact; each effective control lowers the likelihood, which gives the residual score."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Risk",
+          "id": "att_risk_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_risk_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "Likelihood",
+          "min": 1,
+          "max": 5,
+          "id": "att_risk_likelihood",
+          "labels": {
+            "en": "Likelihood (1 to 5)"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "Impact",
+          "min": 1,
+          "max": 5,
+          "id": "att_risk_impact",
+          "labels": {
+            "en": "Impact (1 to 5)"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_risk_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Status",
+          "options": ["Open", "Mitigated", "Accepted", "Closed"],
+          "id": "att_risk_status",
+          "labels": {
+            "en": "Status"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Score",
+          "formula": "Likelihood == null || Impact == null ? null : Likelihood * Impact",
+          "result": "number",
+          "id": "att_risk_score",
+          "labels": {
+            "en": "Score"
+          },
+          "help": {
+            "en": "Likelihood times impact, from 1 to 25."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Rating",
+          "formula": "Score == null ? null : (Score >= 15 ? 'High' : (Score >= 8 ? 'Medium' : 'Low'))",
+          "result": "text",
+          "id": "att_risk_rating",
+          "labels": {
+            "en": "Rating"
+          },
+          "help": {
+            "en": "High from 15, Medium from 8, otherwise Low."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Category",
+          "options": [
+            "Fairness",
+            "Privacy",
+            "Safety",
+            "Security",
+            "Transparency",
+            "Accuracy",
+            "Misuse"
+          ],
+          "id": "att_risk_category",
+          "labels": {
+            "en": "Category"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "ResidualLikelihood",
+          "formula": "Likelihood == null ? null : max(1, Likelihood - sum(incoming('Mitigates').Reduction))",
+          "result": "number",
+          "id": "att_risk_residuallikelihood",
+          "labels": {
+            "en": "Residual likelihood"
+          },
+          "help": {
+            "en": "The likelihood minus 2 for each effective control and 1 for each partly effective one, at least 1."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "ResidualScore",
+          "formula": "ResidualLikelihood == null || Impact == null ? null : ResidualLikelihood * Impact",
+          "result": "number",
+          "id": "att_risk_residualscore",
+          "labels": {
+            "en": "Residual score"
+          },
+          "help": {
+            "en": "Residual likelihood times impact, from 1 to 25."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "ResidualRating",
+          "formula": "ResidualScore == null ? null : (ResidualScore >= 15 ? 'High' : (ResidualScore >= 8 ? 'Medium' : 'Low'))",
+          "result": "text",
+          "id": "att_risk_residualrating",
+          "labels": {
+            "en": "Residual rating"
+          },
+          "help": {
+            "en": "High from 15, Medium from 8, otherwise Low. The fill shows it."
+          }
+        }
+      ],
+      "shape": "shp_risk",
+      "constraints": [
+        {
+          "id": "k_risk_control",
+          "formula": "Rating == null || Rating == 'Low' || count(incoming('Mitigates')) > 0",
+          "message": "= 'Risk \"' + Name + '\" is ' + Rating + ' and no control mitigates it.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_risk_residual",
+          "formula": "ResidualRating != 'High' || Status == 'Accepted'",
+          "message": "= 'Risk \"' + Name + '\" is still high after its controls; add controls or record that it is accepted.'",
+          "severity": "warning"
+        }
+      ]
+    },
+    "cls_control": {
+      "id": "cls_control",
+      "key": "Control",
+      "kind": "node",
+      "labels": {
+        "en": "Control"
+      },
+      "help": {
+        "en": "A measure that prevents or detects a problem, how well it works, and the evidence for that."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Control",
+          "id": "att_control_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_control_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Type",
+          "options": ["Preventive", "Detective"],
+          "id": "att_control_type",
+          "labels": {
+            "en": "Type"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Frequency",
+          "id": "att_control_frequency",
+          "labels": {
+            "en": "Frequency"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Effectiveness",
+          "options": [
+            "Not tested",
+            "Not effective",
+            "Partly effective",
+            "Effective"
+          ],
+          "default": "Not tested",
+          "id": "att_control_effectiveness",
+          "labels": {
+            "en": "Effectiveness"
+          }
+        },
+        {
+          "type": "date",
+          "key": "LastTested",
+          "id": "att_control_lasttested",
+          "labels": {
+            "en": "Last tested"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_control_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Reduction",
+          "formula": "Effectiveness == 'Effective' ? 2 : (Effectiveness == 'Partly effective' ? 1 : 0)",
+          "result": "number",
+          "id": "att_control_reduction",
+          "labels": {
+            "en": "Reduction"
+          },
+          "help": {
+            "en": "How much it lowers the likelihood of the risks it mitigates: 2 when effective, 1 when partly effective."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "EvidenceCount",
+          "formula": "count(incoming('Proves'))",
+          "result": "number",
+          "id": "att_control_evidencecount",
+          "labels": {
+            "en": "Evidence"
+          },
+          "help": {
+            "en": "How many pieces of evidence prove it."
+          }
+        }
+      ],
+      "shape": "shp_control",
+      "constraints": [
+        {
+          "id": "k_control_evidence",
+          "formula": "Effectiveness != 'Effective' || EvidenceCount > 0",
+          "message": "= 'Control \"' + Name + '\" is marked effective, but no evidence proves it.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_control_purpose",
+          "formula": "count(outgoing('Mitigates')) + count(outgoing('Satisfies')) > 0",
+          "message": "= 'Control \"' + Name + '\" mitigates no risk and meets no obligation.'",
+          "severity": "warning"
+        }
+      ]
+    },
+    "cls_person": {
+      "id": "cls_person",
+      "key": "Person",
+      "kind": "node",
+      "labels": {
+        "en": "Person"
+      },
+      "help": {
+        "en": "A named individual who takes part in the work."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Person",
+          "id": "att_person_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_person_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Role",
+          "id": "att_person_role",
+          "labels": {
+            "en": "Role"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Email",
+          "id": "att_person_email",
+          "labels": {
+            "en": "Email"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Team",
+          "id": "att_person_team",
+          "labels": {
+            "en": "Team"
+          }
+        }
+      ],
+      "shape": "shp_person"
+    },
+    "cls_aisystem": {
+      "id": "cls_aisystem",
+      "key": "AISystem",
+      "kind": "node",
+      "labels": {
+        "en": "AI system"
+      },
+      "help": {
+        "en": "A system that uses AI, with its intended purpose and its risk tier. The tiers are generic: map them to the rules that apply to you."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "AI system",
+          "id": "att_aisystem_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "IntendedPurpose",
+          "multiline": true,
+          "id": "att_aisystem_intendedpurpose",
+          "labels": {
+            "en": "Intended purpose"
+          },
+          "help": {
+            "en": "What the system is for, who uses it and on whom."
+          }
+        },
+        {
+          "type": "text",
+          "key": "ForeseeableMisuse",
+          "multiline": true,
+          "id": "att_aisystem_foreseeablemisuse",
+          "labels": {
+            "en": "Foreseeable misuse"
+          },
+          "help": {
+            "en": "How it could be used in a way it was not meant for."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "RiskTier",
+          "options": ["Minimal", "Limited", "High", "Unacceptable"],
+          "id": "att_aisystem_risktier",
+          "labels": {
+            "en": "Risk tier"
+          },
+          "help": {
+            "en": "Minimal: little risk. Limited: people must know they deal with AI. High: decisions that matter to people, under strict controls. Unacceptable: must not be built or used."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "LifecycleStage",
+          "options": ["Idea", "Development", "In use", "Retired"],
+          "id": "att_aisystem_lifecyclestage",
+          "labels": {
+            "en": "Lifecycle stage"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Sourcing",
+          "options": ["Built in-house", "Bought", "Built on a bought model"],
+          "id": "att_aisystem_sourcing",
+          "labels": {
+            "en": "Sourcing"
+          }
+        },
+        {
+          "type": "boolean",
+          "key": "AffectsPeople",
+          "id": "att_aisystem_affectspeople",
+          "labels": {
+            "en": "Makes or supports decisions about people"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Owner",
+          "formula": "join(incoming('Owns').Name, ', ')",
+          "result": "text",
+          "id": "att_aisystem_owner",
+          "labels": {
+            "en": "Owner"
+          },
+          "help": {
+            "en": "The people with an \"Owns\" connector to this system."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "InherentRisk",
+          "formula": "max(outgoing('HasRisk').Score)",
+          "result": "number",
+          "id": "att_aisystem_inherentrisk",
+          "labels": {
+            "en": "Highest risk before controls"
+          },
+          "help": {
+            "en": "The highest score of its risks before controls, from 1 to 25."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "ResidualRisk",
+          "formula": "max(outgoing('HasRisk').ResidualScore)",
+          "result": "number",
+          "id": "att_aisystem_residualrisk",
+          "labels": {
+            "en": "Highest risk after controls"
+          },
+          "help": {
+            "en": "The highest score of its risks after controls, from 1 to 25."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "OpenObligations",
+          "formula": "sum(outgoing('SubjectTo').Gap)",
+          "result": "number",
+          "id": "att_aisystem_openobligations",
+          "labels": {
+            "en": "Open obligations"
+          },
+          "help": {
+            "en": "How many of its obligations no control meets yet."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "AssessmentDone",
+          "formula": "contains(join(incoming('Assesses').Status, ','), 'Completed')",
+          "result": "boolean",
+          "id": "att_aisystem_assessmentdone",
+          "labels": {
+            "en": "Assessed"
+          },
+          "help": {
+            "en": "Yes when at least one assessment of this system is completed."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "OpenIncidents",
+          "formula": "sum(incoming('Concerns').OpenCount)",
+          "result": "number",
+          "id": "att_aisystem_openincidents",
+          "labels": {
+            "en": "Open incidents"
+          },
+          "help": {
+            "en": "How many incidents about this system are not closed."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_system_tier",
+          "formula": "RiskTier != null",
+          "message": "= 'AI system \"' + Name + '\" has no risk tier.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_system_unacceptable",
+          "formula": "RiskTier != 'Unacceptable' || LifecycleStage == 'Idea' || LifecycleStage == 'Retired'",
+          "message": "= 'AI system \"' + Name + '\" is in the unacceptable tier: it should not be developed or used.'",
+          "severity": "error"
+        },
+        {
+          "id": "k_system_assessment",
+          "formula": "RiskTier != 'High' || AssessmentDone",
+          "message": "= 'AI system \"' + Name + '\" is in the high tier, but no assessment of it is completed.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_system_risks",
+          "formula": "RiskTier == null || RiskTier == 'Minimal' || LifecycleStage == 'Idea' || LifecycleStage == 'Retired' || count(outgoing('HasRisk')) > 0",
+          "message": "= 'AI system \"' + Name + '\" is above the minimal tier, but no risk of it is recorded.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_system_owner",
+          "formula": "count(incoming('Owns')) > 0",
+          "message": "= 'AI system \"' + Name + '\" has no owner.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_aisystem"
+    },
+    "cls_obligation": {
+      "id": "cls_obligation",
+      "key": "Obligation",
+      "kind": "node",
+      "labels": {
+        "en": "Obligation"
+      },
+      "help": {
+        "en": "A requirement an AI system must meet, from a law, a standard, a contract or an internal policy. Controls meet it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Obligation",
+          "id": "att_obligation_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Requirement",
+          "multiline": true,
+          "id": "att_obligation_requirement",
+          "labels": {
+            "en": "Requirement"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Source",
+          "options": [
+            "Law or regulation",
+            "Industry standard",
+            "Contract",
+            "Internal policy"
+          ],
+          "id": "att_obligation_source",
+          "labels": {
+            "en": "Source"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Reference",
+          "id": "att_obligation_reference",
+          "labels": {
+            "en": "Reference"
+          },
+          "help": {
+            "en": "Where it is written, such as a clause or a section, as free text."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Controls",
+          "formula": "count(incoming('Satisfies'))",
+          "result": "number",
+          "id": "att_obligation_controls",
+          "labels": {
+            "en": "Controls"
+          },
+          "help": {
+            "en": "How many controls meet it."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Met",
+          "formula": "Controls > 0",
+          "result": "boolean",
+          "id": "att_obligation_met",
+          "labels": {
+            "en": "Covered"
+          },
+          "help": {
+            "en": "Yes when at least one control meets it. The fill turns green."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Gap",
+          "formula": "Controls > 0 ? 0 : 1",
+          "result": "number",
+          "id": "att_obligation_gap",
+          "labels": {
+            "en": "Not covered"
+          },
+          "help": {
+            "en": "1 while no control meets it, so a system can count its open obligations."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_obligation_control",
+          "formula": "count(incoming('SubjectTo')) == 0 || Controls > 0",
+          "message": "= 'No control meets obligation \"' + Name + '\": connect one with \"Satisfies\".'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_obligation"
+    },
+    "cls_assessment": {
+      "id": "cls_assessment",
+      "key": "Assessment",
+      "kind": "node",
+      "labels": {
+        "en": "Assessment"
+      },
+      "help": {
+        "en": "A review of an AI system, such as an impact assessment or a fairness test, with its outcome."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Assessment",
+          "id": "att_assessment_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Kind",
+          "options": [
+            "Impact assessment",
+            "Fairness test",
+            "Transparency review",
+            "Security review",
+            "Privacy review"
+          ],
+          "id": "att_assessment_kind",
+          "labels": {
+            "en": "Kind"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Status",
+          "options": ["Planned", "In progress", "Completed"],
+          "default": "Planned",
+          "id": "att_assessment_status",
+          "labels": {
+            "en": "Status"
+          }
+        },
+        {
+          "type": "date",
+          "key": "Date",
+          "id": "att_assessment_date",
+          "labels": {
+            "en": "Date"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Assessor",
+          "id": "att_assessment_assessor",
+          "labels": {
+            "en": "Assessor"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Outcome",
+          "options": ["Pass", "Pass with actions", "Fail"],
+          "id": "att_assessment_outcome",
+          "labels": {
+            "en": "Outcome"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Findings",
+          "multiline": true,
+          "id": "att_assessment_findings",
+          "labels": {
+            "en": "Findings"
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_assessment_system",
+          "formula": "count(outgoing('Assesses')) > 0",
+          "message": "= 'Assessment \"' + Name + '\" assesses no AI system: connect it with \"Assesses\".'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_assessment_outcome",
+          "formula": "Status != 'Completed' || Outcome != null",
+          "message": "= 'Assessment \"' + Name + '\" is completed but has no outcome.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_assessment"
+    },
+    "cls_incident": {
+      "id": "cls_incident",
+      "key": "Incident",
+      "kind": "node",
+      "labels": {
+        "en": "Incident"
+      },
+      "help": {
+        "en": "Something that went wrong with an AI system, such as an unfair result or a leak, and what caused it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Incident",
+          "id": "att_incident_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_incident_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Severity",
+          "options": ["Low", "Medium", "High", "Critical"],
+          "id": "att_incident_severity",
+          "labels": {
+            "en": "Severity"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Status",
+          "options": ["Open", "Investigating", "Resolved", "Closed"],
+          "default": "Open",
+          "id": "att_incident_status",
+          "labels": {
+            "en": "Status"
+          }
+        },
+        {
+          "type": "date",
+          "key": "Date",
+          "id": "att_incident_date",
+          "labels": {
+            "en": "Date"
+          }
+        },
+        {
+          "type": "text",
+          "key": "RootCause",
+          "multiline": true,
+          "id": "att_incident_rootcause",
+          "labels": {
+            "en": "Root cause"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "OpenCount",
+          "formula": "Status == 'Closed' ? 0 : 1",
+          "result": "number",
+          "id": "att_incident_opencount",
+          "labels": {
+            "en": "Counts as open"
+          },
+          "help": {
+            "en": "1 while the incident is not closed, so systems and the model can count open incidents."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_incident_system",
+          "formula": "count(outgoing('Concerns')) > 0",
+          "message": "= 'Incident \"' + Name + '\" concerns no AI system: connect it with \"Concerns\".'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_incident_cause",
+          "formula": "Status != 'Closed' || !isEmpty(RootCause)",
+          "message": "= 'Incident \"' + Name + '\" is closed without a root cause.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_incident"
+    },
+    "cls_evidence": {
+      "id": "cls_evidence",
+      "key": "Evidence",
+      "kind": "node",
+      "labels": {
+        "en": "Evidence"
+      },
+      "help": {
+        "en": "A record that shows a control works or an assessment was done, such as a test report or a sign-off."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Evidence",
+          "id": "att_evidence_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Kind",
+          "options": [
+            "Document",
+            "Test result",
+            "Log",
+            "Sign-off",
+            "Screenshot"
+          ],
+          "id": "att_evidence_kind",
+          "labels": {
+            "en": "Kind"
+          }
+        },
+        {
+          "type": "link",
+          "key": "Link",
+          "target": "any",
+          "id": "att_evidence_link",
+          "labels": {
+            "en": "Link"
+          }
+        },
+        {
+          "type": "date",
+          "key": "Date",
+          "id": "att_evidence_date",
+          "labels": {
+            "en": "Date"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_evidence_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_evidence_proves",
+          "formula": "count(outgoing('Proves')) > 0",
+          "message": "= 'Evidence \"' + Name + '\" proves nothing: connect it to a control or an assessment with \"Proves\".'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_evidence"
+    }
+  },
+  "relations": {
+    "rel_owns": {
+      "id": "rel_owns",
+      "key": "Owns",
+      "labels": {
+        "en": "Owns"
+      },
+      "help": {
+        "en": "A person or team is accountable for something."
+      },
+      "from": ["cls_person"],
+      "to": ["cls_aisystem", "cls_risk", "cls_control", "cls_obligation"],
+      "attributes": [],
+      "shape": "shp_rel_owns"
+    },
+    "rel_mitigates": {
+      "id": "rel_mitigates",
+      "key": "Mitigates",
+      "labels": {
+        "en": "Mitigates"
+      },
+      "help": {
+        "en": "A control or guardrail makes a risk less likely or less harmful."
+      },
+      "from": ["cls_control"],
+      "to": ["cls_risk"],
+      "attributes": [],
+      "shape": "shp_rel_mitigates"
+    },
+    "rel_hasrisk": {
+      "id": "rel_hasrisk",
+      "key": "HasRisk",
+      "labels": {
+        "en": "Has risk"
+      },
+      "help": {
+        "en": "The AI system is exposed to the risk."
+      },
+      "from": ["cls_aisystem"],
+      "to": ["cls_risk"],
+      "attributes": [],
+      "shape": "shp_rel_hasrisk"
+    },
+    "rel_subjectto": {
+      "id": "rel_subjectto",
+      "key": "SubjectTo",
+      "labels": {
+        "en": "Subject to"
+      },
+      "help": {
+        "en": "The AI system must meet the obligation."
+      },
+      "from": ["cls_aisystem"],
+      "to": ["cls_obligation"],
+      "attributes": [],
+      "shape": "shp_rel_subjectto"
+    },
+    "rel_satisfies": {
+      "id": "rel_satisfies",
+      "key": "Satisfies",
+      "labels": {
+        "en": "Satisfies"
+      },
+      "help": {
+        "en": "The control meets the obligation."
+      },
+      "from": ["cls_control"],
+      "to": ["cls_obligation"],
+      "attributes": [],
+      "shape": "shp_rel_satisfies"
+    },
+    "rel_proves": {
+      "id": "rel_proves",
+      "key": "Proves",
+      "labels": {
+        "en": "Proves"
+      },
+      "help": {
+        "en": "The evidence shows the control works or the assessment was done."
+      },
+      "from": ["cls_evidence"],
+      "to": ["cls_control", "cls_assessment"],
+      "attributes": [],
+      "shape": "shp_rel_proves"
+    },
+    "rel_assesses": {
+      "id": "rel_assesses",
+      "key": "Assesses",
+      "labels": {
+        "en": "Assesses"
+      },
+      "help": {
+        "en": "The assessment reviews the AI system."
+      },
+      "from": ["cls_assessment"],
+      "to": ["cls_aisystem"],
+      "attributes": [],
+      "shape": "shp_rel_assesses"
+    },
+    "rel_concerns": {
+      "id": "rel_concerns",
+      "key": "Concerns",
+      "labels": {
+        "en": "Concerns"
+      },
+      "help": {
+        "en": "The incident happened with the AI system."
+      },
+      "from": ["cls_incident"],
+      "to": ["cls_aisystem"],
+      "attributes": [],
+      "shape": "shp_rel_concerns"
+    }
+  },
+  "modelTypes": {
+    "mt_airegister": {
+      "id": "mt_airegister",
+      "key": "AIRegister",
+      "labels": {
+        "en": "AI risk register"
+      },
+      "classes": [
+        "cls_risk",
+        "cls_control",
+        "cls_person",
+        "cls_aisystem",
+        "cls_obligation",
+        "cls_assessment",
+        "cls_incident",
+        "cls_evidence"
+      ],
+      "relations": [
+        "rel_owns",
+        "rel_mitigates",
+        "rel_hasrisk",
+        "rel_subjectto",
+        "rel_satisfies",
+        "rel_proves",
+        "rel_assesses",
+        "rel_concerns"
+      ],
+      "views": [
+        {
+          "id": "vw_risks",
+          "key": "Risks",
+          "labels": {
+            "en": "Risks and controls"
+          },
+          "classes": ["cls_aisystem", "cls_risk", "cls_control", "cls_person"],
+          "relations": ["rel_hasrisk", "rel_mitigates", "rel_owns"]
+        },
+        {
+          "id": "vw_compliance",
+          "key": "Compliance",
+          "labels": {
+            "en": "Compliance"
+          },
+          "classes": [
+            "cls_aisystem",
+            "cls_obligation",
+            "cls_control",
+            "cls_evidence",
+            "cls_assessment"
+          ],
+          "relations": [
+            "rel_subjectto",
+            "rel_satisfies",
+            "rel_proves",
+            "rel_assesses"
+          ]
+        },
+        {
+          "id": "vw_incidents",
+          "key": "Incidents",
+          "labels": {
+            "en": "Incidents"
+          },
+          "classes": ["cls_aisystem", "cls_incident", "cls_person"],
+          "relations": ["rel_concerns", "rel_owns"]
+        }
+      ],
+      "cardinalities": [],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Title",
+          "required": true,
+          "maxLength": 100,
+          "id": "att_mtairegister_title",
+          "labels": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Organisation",
+          "id": "att_mtairegister_organisation",
+          "labels": {
+            "en": "Organisation"
+          }
+        },
+        {
+          "type": "date",
+          "key": "ReviewedOn",
+          "id": "att_mtairegister_reviewedon",
+          "labels": {
+            "en": "Reviewed on"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Systems",
+          "formula": "count(objects('AISystem'))",
+          "result": "number",
+          "id": "att_mtairegister_systems",
+          "labels": {
+            "en": "Systems"
+          },
+          "help": {
+            "en": "How many AI systems the register holds."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "OpenIncidents",
+          "formula": "sum(objects('Incident').OpenCount)",
+          "result": "number",
+          "id": "att_mtairegister_openincidents",
+          "labels": {
+            "en": "Open incidents"
+          },
+          "help": {
+            "en": "How many incidents are not closed."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "UncoveredObligations",
+          "formula": "sum(objects('Obligation').Gap)",
+          "result": "number",
+          "id": "att_mtairegister_uncoveredobligations",
+          "labels": {
+            "en": "Uncovered obligations"
+          },
+          "help": {
+            "en": "How many obligations no control meets."
+          }
+        }
+      ],
+      "help": {
+        "en": "AI systems with their risk tier, risks and controls, obligations and evidence, assessments, incidents and owners."
+      }
+    }
+  },
+  "shapes": {
+    "shp_risk": {
+      "id": "shp_risk",
+      "name": "Risk look",
+      "kind": "node",
+      "size": {
+        "width": 190,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 4,
+          "fill": "#ffffff",
+          "stroke": "#e03131",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": 28,
+          "radius": 4,
+          "fill": "= ResidualRating == 'Low' ? '#b2f2bb' : ResidualRating == 'Medium' ? '#ffec99' : ResidualRating == 'High' ? '#ffc9c9' : '#e9ecef'",
+          "stroke": "#e03131"
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 2,
+          "width": "100% - 36",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 34,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Category: ' + Category",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 50,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Score: ' + Score",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 66,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'ResidualScore: ' + ResidualScore",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 3L2 20h20z M12 10v5 M12 18h.01",
+          "viewBox": [0, 0, 24, 24],
+          "x": "100% - 26",
+          "y": 4,
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "header-box",
+        "fill": {
+          "by": "ResidualRating",
+          "values": {
+            "Low": "#b2f2bb",
+            "Medium": "#ffec99",
+            "High": "#ffc9c9"
+          },
+          "fallback": "#e9ecef"
+        },
+        "border": "#e03131",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 190,
+          "height": 110,
+          "resizable": true
+        },
+        "icon": {
+          "name": "warning"
+        },
+        "fields": ["Category", "Score", "ResidualScore"]
+      }
+    },
+    "shp_control": {
+      "id": "shp_control",
+      "name": "Control look",
+      "kind": "node",
+      "size": {
+        "width": 180,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "= Effectiveness == 'Not tested' ? '#e9ecef' : Effectiveness == 'Not effective' ? '#ffc9c9' : Effectiveness == 'Partly effective' ? '#fff3bf' : Effectiveness == 'Effective' ? '#d3f9d8' : '#e9ecef'",
+          "stroke": "#e03131",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= Effectiveness",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M4 12.5l5 5L20 6.5",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": {
+          "by": "Effectiveness",
+          "values": {
+            "Not tested": "#e9ecef",
+            "Not effective": "#ffc9c9",
+            "Partly effective": "#fff3bf",
+            "Effective": "#d3f9d8"
+          },
+          "fallback": "#e9ecef"
+        },
+        "border": "#e03131",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 180,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Effectiveness"
+        },
+        "icon": {
+          "name": "check"
+        }
+      }
+    },
+    "shp_person": {
+      "id": "shp_person",
+      "name": "Person look",
+      "kind": "node",
+      "size": {
+        "width": 90,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "ellipse",
+          "x": "50% - 16",
+          "y": 4,
+          "width": 32,
+          "height": 32,
+          "fill": "#e9ecef",
+          "stroke": "#495057",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 6,
+          "y": 42,
+          "width": "100% - 12",
+          "height": "100% - 46",
+          "radius": 18,
+          "fill": "#e9ecef",
+          "stroke": "#495057",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 10,
+          "y": 46,
+          "width": "100% - 20",
+          "height": "100% - 72",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 10,
+          "y": "100% - 24",
+          "width": "100% - 20",
+          "height": 18,
+          "text": "= Role",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "person",
+        "fill": "#e9ecef",
+        "border": "#495057",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 90,
+          "height": 110,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Role"
+        }
+      }
+    },
+    "shp_rel_owns": {
+      "id": "shp_rel_owns",
+      "name": "Owns look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#6b7a90",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "startMarker": {
+        "type": "diamond"
+      },
+      "look": {
+        "colour": "#6b7a90",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "diamond",
+        "end": "none",
+        "label": null
+      }
+    },
+    "shp_rel_mitigates": {
+      "id": "shp_rel_mitigates",
+      "name": "Mitigates look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#e03131",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "bar"
+      },
+      "look": {
+        "colour": "#e03131",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "bar",
+        "label": null
+      }
+    },
+    "shp_aisystem": {
+      "id": "shp_aisystem",
+      "name": "AISystem look",
+      "kind": "node",
+      "size": {
+        "width": 210,
+        "height": 126,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 4,
+          "fill": "#ffffff",
+          "stroke": "#495057",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": 28,
+          "radius": 4,
+          "fill": "= RiskTier == 'Minimal' ? '#d3f9d8' : RiskTier == 'Limited' ? '#fff3bf' : RiskTier == 'High' ? '#ffd8a8' : RiskTier == 'Unacceptable' ? '#ffc9c9' : '#e9ecef'",
+          "stroke": "#495057"
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 2,
+          "width": "100% - 36",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 34,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'RiskTier: ' + RiskTier",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 50,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'LifecycleStage: ' + LifecycleStage",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 66,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'ResidualRisk: ' + ResidualRisk",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 82,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'OpenObligations: ' + OpenObligations",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 2v3 M5 7h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z M8.5 12.5h.01 M15.5 12.5h.01 M9 16h6",
+          "viewBox": [0, 0, 24, 24],
+          "x": "100% - 26",
+          "y": 4,
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "header-box",
+        "fill": {
+          "by": "RiskTier",
+          "values": {
+            "Minimal": "#d3f9d8",
+            "Limited": "#fff3bf",
+            "High": "#ffd8a8",
+            "Unacceptable": "#ffc9c9"
+          },
+          "fallback": "#e9ecef"
+        },
+        "border": "#495057",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 210,
+          "height": 126,
+          "resizable": true
+        },
+        "icon": {
+          "name": "bot"
+        },
+        "fields": [
+          "RiskTier",
+          "LifecycleStage",
+          "ResidualRisk",
+          "OpenObligations"
+        ]
+      }
+    },
+    "shp_obligation": {
+      "id": "shp_obligation",
+      "name": "Obligation look",
+      "kind": "node",
+      "size": {
+        "width": 190,
+        "height": 80,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          [0, 0],
+          ["100% - 18", 0],
+          ["100%", 18],
+          ["100%", "100%"],
+          [0, "100%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            [0, 0],
+            ["100% - 18", 0],
+            ["100%", 18],
+            ["100%", "100%"],
+            [0, "100%"]
+          ],
+          "fill": "= Met == true ? '#d3f9d8' : Met == false ? '#ffc9c9' : '#e9ecef'",
+          "stroke": "#495057",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "polygon",
+          "points": [
+            ["100% - 18", 0],
+            ["100% - 18", 18],
+            ["100%", 18]
+          ],
+          "fill": "#00000022",
+          "stroke": "#495057",
+          "strokeWidth": 1
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 20,
+          "width": "100% - 16",
+          "height": "100% - 46",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 24",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= Source",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "document",
+        "fill": {
+          "by": "Met",
+          "values": {
+            "true": "#d3f9d8",
+            "false": "#ffc9c9"
+          },
+          "fallback": "#e9ecef"
+        },
+        "border": "#495057",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 190,
+          "height": 80,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Source"
+        }
+      }
+    },
+    "shp_assessment": {
+      "id": "shp_assessment",
+      "name": "Assessment look",
+      "kind": "node",
+      "size": {
+        "width": 180,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "= Status == 'Planned' ? '#e9ecef' : Status == 'In progress' ? '#fff3bf' : Status == 'Completed' ? '#d3f9d8' : '#e9ecef'",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= Kind",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M4 12.5l5 5L20 6.5",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": {
+          "by": "Status",
+          "values": {
+            "Planned": "#e9ecef",
+            "In progress": "#fff3bf",
+            "Completed": "#d3f9d8"
+          },
+          "fallback": "#e9ecef"
+        },
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 180,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Kind"
+        },
+        "icon": {
+          "name": "check"
+        }
+      }
+    },
+    "shp_incident": {
+      "id": "shp_incident",
+      "name": "Incident look",
+      "kind": "node",
+      "size": {
+        "width": 180,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "= Status == 'Open' ? '#ffc9c9' : Status == 'Investigating' ? '#ffec99' : Status == 'Resolved' ? '#d3f9d8' : Status == 'Closed' ? '#e9ecef' : '#ffc9c9'",
+          "stroke": "#e03131",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= Severity",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 3L2 20h20z M12 10v5 M12 18h.01",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": {
+          "by": "Status",
+          "values": {
+            "Open": "#ffc9c9",
+            "Investigating": "#ffec99",
+            "Resolved": "#d3f9d8",
+            "Closed": "#e9ecef"
+          },
+          "fallback": "#ffc9c9"
+        },
+        "border": "#e03131",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 180,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Severity"
+        },
+        "icon": {
+          "name": "warning"
+        }
+      }
+    },
+    "shp_evidence": {
+      "id": "shp_evidence",
+      "name": "Evidence look",
+      "kind": "node",
+      "size": {
+        "width": 110,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          [0, 0],
+          ["100% - 18", 0],
+          ["100%", 18],
+          ["100%", "100%"],
+          [0, "100%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            [0, 0],
+            ["100% - 18", 0],
+            ["100%", 18],
+            ["100%", "100%"],
+            [0, "100%"]
+          ],
+          "fill": "#e9ecef",
+          "stroke": "#495057",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "polygon",
+          "points": [
+            ["100% - 18", 0],
+            ["100% - 18", 18],
+            ["100%", 18]
+          ],
+          "fill": "#00000022",
+          "stroke": "#495057",
+          "strokeWidth": 1
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 20,
+          "width": "100% - 16",
+          "height": "100% - 46",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 24",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= Kind",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "document",
+        "fill": "#e9ecef",
+        "border": "#495057",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 110,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Kind"
+        }
+      }
+    },
+    "shp_rel_hasrisk": {
+      "id": "shp_rel_hasrisk",
+      "name": "HasRisk look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#e03131",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [2, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#e03131",
+        "width": 1.5,
+        "style": "dotted",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_subjectto": {
+      "id": "shp_rel_subjectto",
+      "name": "SubjectTo look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#495057",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "open-arrow"
+      },
+      "look": {
+        "colour": "#495057",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "open-arrow",
+        "label": null
+      }
+    },
+    "shp_rel_satisfies": {
+      "id": "shp_rel_satisfies",
+      "name": "Satisfies look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#2f9e44",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#2f9e44",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_proves": {
+      "id": "shp_rel_proves",
+      "name": "Proves look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#495057",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [2, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#495057",
+        "width": 1.5,
+        "style": "dotted",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_assesses": {
+      "id": "shp_rel_assesses",
+      "name": "Assesses look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#1c7ed6",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#1c7ed6",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_concerns": {
+      "id": "shp_rel_concerns",
+      "name": "Concerns look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#e03131",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#e03131",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    }
+  },
+  "panels": {
+    "cls_aisystem": {
+      "class": "cls_aisystem",
+      "tabs": [
+        {
+          "label": "System",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "IntendedPurpose",
+              "control": "textarea"
+            },
+            {
+              "attribute": "ForeseeableMisuse",
+              "control": "textarea"
+            },
+            {
+              "attribute": "LifecycleStage",
+              "control": "segmented"
+            },
+            {
+              "attribute": "Sourcing",
+              "control": "select"
+            },
+            {
+              "attribute": "AffectsPeople"
+            },
+            {
+              "attribute": "Owner"
+            }
+          ]
+        },
+        {
+          "label": "Risk and compliance",
+          "items": [
+            {
+              "attribute": "RiskTier",
+              "control": "segmented"
+            },
+            {
+              "attribute": "InherentRisk"
+            },
+            {
+              "attribute": "ResidualRisk"
+            },
+            {
+              "attribute": "OpenObligations"
+            },
+            {
+              "attribute": "AssessmentDone"
+            },
+            {
+              "attribute": "OpenIncidents"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_risk": {
+      "class": "cls_risk",
+      "tabs": [
+        {
+          "label": "Risk",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Category",
+              "control": "select"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            },
+            {
+              "attribute": "Owner"
+            },
+            {
+              "attribute": "Status",
+              "control": "segmented"
+            }
+          ]
+        },
+        {
+          "label": "Score",
+          "items": [
+            {
+              "attribute": "Likelihood"
+            },
+            {
+              "attribute": "Impact"
+            },
+            {
+              "attribute": "Score"
+            },
+            {
+              "attribute": "Rating"
+            },
+            {
+              "attribute": "ResidualLikelihood"
+            },
+            {
+              "attribute": "ResidualScore"
+            },
+            {
+              "attribute": "ResidualRating"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    }
+  },
+  "rules": {},
+  "scripts": {}
+}

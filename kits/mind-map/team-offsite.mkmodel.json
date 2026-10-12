@@ -1,0 +1,300 @@
+{
+  "attributes": {
+    "Author": "Office manager",
+    "Title": "Team offsite"
+  },
+  "connectors": [
+    {
+      "from": "el_central",
+      "id": "cn_001",
+      "relation": "BranchesTo",
+      "to": "el_venue"
+    },
+    {
+      "from": "el_venue",
+      "id": "cn_002",
+      "relation": "BranchesTo",
+      "to": "el_venue_1"
+    },
+    {
+      "from": "el_venue",
+      "id": "cn_003",
+      "relation": "BranchesTo",
+      "to": "el_venue_2"
+    },
+    {
+      "from": "el_venue",
+      "id": "cn_004",
+      "relation": "BranchesTo",
+      "to": "el_venue_3"
+    },
+    {
+      "from": "el_central",
+      "id": "cn_005",
+      "relation": "BranchesTo",
+      "to": "el_agenda"
+    },
+    {
+      "from": "el_agenda",
+      "id": "cn_006",
+      "relation": "BranchesTo",
+      "to": "el_agenda_1"
+    },
+    {
+      "from": "el_agenda",
+      "id": "cn_007",
+      "relation": "BranchesTo",
+      "to": "el_agenda_2"
+    },
+    {
+      "from": "el_agenda",
+      "id": "cn_008",
+      "relation": "BranchesTo",
+      "to": "el_agenda_3"
+    },
+    {
+      "from": "el_central",
+      "id": "cn_009",
+      "relation": "BranchesTo",
+      "to": "el_travel"
+    },
+    {
+      "from": "el_travel",
+      "id": "cn_010",
+      "relation": "BranchesTo",
+      "to": "el_travel_1"
+    },
+    {
+      "from": "el_travel",
+      "id": "cn_011",
+      "relation": "BranchesTo",
+      "to": "el_travel_2"
+    },
+    {
+      "from": "el_central",
+      "id": "cn_012",
+      "relation": "BranchesTo",
+      "to": "el_budget"
+    },
+    {
+      "from": "el_budget",
+      "id": "cn_013",
+      "relation": "BranchesTo",
+      "to": "el_budget_1"
+    },
+    {
+      "from": "el_budget",
+      "id": "cn_014",
+      "relation": "BranchesTo",
+      "to": "el_budget_2"
+    },
+    {
+      "attributes": {
+        "Label": "also pays for"
+      },
+      "from": "el_budget",
+      "id": "cn_015",
+      "relation": "LinksTo",
+      "to": "el_travel"
+    },
+    {
+      "from": "el_note_dates",
+      "id": "cn_016",
+      "relation": "Annotates",
+      "to": "el_central"
+    }
+  ],
+  "elements": [
+    {
+      "attributes": {
+        "Name": "Team offsite in June"
+      },
+      "class": "CentralTopic",
+      "h": 110,
+      "id": "el_central",
+      "w": 220,
+      "x": 560,
+      "y": 285
+    },
+    {
+      "attributes": {
+        "Colour": "Blue",
+        "Name": "Venue"
+      },
+      "class": "Topic",
+      "h": 50,
+      "id": "el_venue",
+      "w": 160,
+      "x": 320,
+      "y": 140
+    },
+    {
+      "attributes": {
+        "Name": "Country house"
+      },
+      "class": "Idea",
+      "h": 44,
+      "id": "el_venue_1",
+      "w": 170,
+      "x": 40,
+      "y": 70
+    },
+    {
+      "attributes": {
+        "Name": "City hotel"
+      },
+      "class": "Idea",
+      "h": 44,
+      "id": "el_venue_2",
+      "w": 170,
+      "x": 40,
+      "y": 140
+    },
+    {
+      "attributes": {
+        "Name": "Room for 40 people"
+      },
+      "class": "Idea",
+      "h": 44,
+      "id": "el_venue_3",
+      "w": 170,
+      "x": 40,
+      "y": 210
+    },
+    {
+      "attributes": {
+        "Colour": "Green",
+        "Name": "Agenda"
+      },
+      "class": "Topic",
+      "h": 50,
+      "id": "el_agenda",
+      "w": 160,
+      "x": 860,
+      "y": 140
+    },
+    {
+      "attributes": {
+        "Name": "Plans for next year"
+      },
+      "class": "Idea",
+      "h": 44,
+      "id": "el_agenda_1",
+      "w": 170,
+      "x": 1120,
+      "y": 70
+    },
+    {
+      "attributes": {
+        "Name": "Team games"
+      },
+      "class": "Idea",
+      "h": 44,
+      "id": "el_agenda_2",
+      "w": 170,
+      "x": 1120,
+      "y": 140
+    },
+    {
+      "attributes": {
+        "Name": "Awards dinner"
+      },
+      "class": "Idea",
+      "h": 44,
+      "id": "el_agenda_3",
+      "w": 170,
+      "x": 1120,
+      "y": 210
+    },
+    {
+      "attributes": {
+        "Colour": "Orange",
+        "Name": "Travel"
+      },
+      "class": "Topic",
+      "h": 50,
+      "id": "el_travel",
+      "w": 160,
+      "x": 320,
+      "y": 480
+    },
+    {
+      "attributes": {
+        "Name": "Shared coaches"
+      },
+      "class": "Idea",
+      "h": 44,
+      "id": "el_travel_1",
+      "w": 170,
+      "x": 40,
+      "y": 410
+    },
+    {
+      "attributes": {
+        "Name": "Car sharing"
+      },
+      "class": "Idea",
+      "h": 44,
+      "id": "el_travel_2",
+      "w": 170,
+      "x": 40,
+      "y": 480
+    },
+    {
+      "attributes": {
+        "Colour": "Purple",
+        "Name": "Budget"
+      },
+      "class": "Topic",
+      "h": 50,
+      "id": "el_budget",
+      "w": 160,
+      "x": 860,
+      "y": 480
+    },
+    {
+      "attributes": {
+        "Name": "Up to 400 per person"
+      },
+      "class": "Idea",
+      "h": 44,
+      "id": "el_budget_1",
+      "w": 170,
+      "x": 1120,
+      "y": 410
+    },
+    {
+      "attributes": {
+        "Name": "Ask for a group rate"
+      },
+      "class": "Idea",
+      "h": 44,
+      "id": "el_budget_2",
+      "w": 170,
+      "x": 1120,
+      "y": 480
+    },
+    {
+      "attributes": {
+        "Name": "Dates",
+        "Text": "First or second week of June; ask the teams before booking."
+      },
+      "class": "Note",
+      "h": 90,
+      "id": "el_note_dates",
+      "w": 190,
+      "x": 575,
+      "y": 60
+    }
+  ],
+  "formatVersion": 2,
+  "id": "mdl_teamoffsite",
+  "kind": "mkmodel",
+  "kit": {
+    "id": "kit_mindmap",
+    "name": "Mind map and concept map",
+    "version": "1.0.0"
+  },
+  "modelType": "MindMap",
+  "name": "Team offsite"
+}

@@ -27,7 +27,7 @@
       return;
     }
     problem = onRename(next);
-    // A refused key goes back to what the tool has.
+    // A refused key goes back to what the kit has.
     if (problem) input.value = value;
   }
 </script>

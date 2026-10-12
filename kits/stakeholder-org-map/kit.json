@@ -1,0 +1,1781 @@
+{
+  "formatVersion": 7,
+  "manifest": {
+    "id": "kit_stakeholdermap",
+    "name": "Stakeholder and organisation map",
+    "version": "1.0.0",
+    "languages": ["en"]
+  },
+  "settings": {
+    "grid": {
+      "size": 10,
+      "snap": true,
+      "visible": true
+    },
+    "layers": [],
+    "numbering": {
+      "enabled": false,
+      "prefix": "",
+      "start": 1
+    }
+  },
+  "classes": {
+    "cls_organisationunit": {
+      "id": "cls_organisationunit",
+      "key": "OrganisationUnit",
+      "kind": "container",
+      "labels": {
+        "en": "Organisation unit"
+      },
+      "help": {
+        "en": "A department, division or other part of the organisation."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Organisation unit",
+          "id": "att_organisationunit_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_organisationunit_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Code",
+          "id": "att_organisationunit_code",
+          "labels": {
+            "en": "Code"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Head",
+          "id": "att_organisationunit_head",
+          "labels": {
+            "en": "Head"
+          }
+        }
+      ],
+      "shape": "shp_organisationunit"
+    },
+    "cls_role": {
+      "id": "cls_role",
+      "key": "Role",
+      "kind": "node",
+      "labels": {
+        "en": "Role"
+      },
+      "help": {
+        "en": "A part that people play, such as reviewer or approver, independent of who fills it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Role",
+          "id": "att_role_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_role_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Responsibilities",
+          "multiline": true,
+          "id": "att_role_responsibilities",
+          "labels": {
+            "en": "Responsibilities"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "FilledBy",
+          "formula": "join(incoming('Fills').Name, ', ')",
+          "result": "text",
+          "id": "att_role_filledby",
+          "labels": {
+            "en": "Filled by"
+          },
+          "help": {
+            "en": "The people who fill this role."
+          }
+        }
+      ],
+      "shape": "shp_role",
+      "constraints": [
+        {
+          "id": "k_role_filled",
+          "formula": "count(incoming('Fills')) > 0",
+          "message": "= 'Nobody fills the role \"' + Name + '\".'",
+          "severity": "warning"
+        }
+      ]
+    },
+    "cls_person": {
+      "id": "cls_person",
+      "key": "Person",
+      "kind": "node",
+      "labels": {
+        "en": "Person"
+      },
+      "help": {
+        "en": "A named individual who takes part in the work."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Person",
+          "id": "att_person_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_person_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Role",
+          "id": "att_person_role",
+          "labels": {
+            "en": "Job title"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Email",
+          "id": "att_person_email",
+          "labels": {
+            "en": "Email"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Team",
+          "id": "att_person_team",
+          "labels": {
+            "en": "Team"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Manager",
+          "formula": "join(outgoing('ReportsTo').Name, ', ')",
+          "result": "text",
+          "id": "att_person_manager",
+          "labels": {
+            "en": "Manager"
+          },
+          "help": {
+            "en": "The person this person reports to."
+          }
+        }
+      ],
+      "shape": "shp_person",
+      "constraints": [
+        {
+          "id": "k_person_manager",
+          "formula": "count(outgoing('ReportsTo')) <= 1",
+          "message": "= '\"' + Name + '\" reports to more than one person.'",
+          "severity": "warning"
+        }
+      ]
+    },
+    "cls_stakeholder": {
+      "id": "cls_stakeholder",
+      "key": "Stakeholder",
+      "kind": "node",
+      "labels": {
+        "en": "Stakeholder"
+      },
+      "help": {
+        "en": "A person, group or organisation with an interest in the change, scored on interest and influence, with their attitude now and the attitude needed."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Stakeholder",
+          "id": "att_stakeholder_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_stakeholder_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "Interest",
+          "min": 1,
+          "max": 5,
+          "id": "att_stakeholder_interest",
+          "labels": {
+            "en": "Interest (1 to 5)"
+          },
+          "help": {
+            "en": "How much the change matters to them."
+          }
+        },
+        {
+          "type": "integer",
+          "key": "Influence",
+          "min": 1,
+          "max": 5,
+          "id": "att_stakeholder_influence",
+          "labels": {
+            "en": "Influence (1 to 5)"
+          },
+          "help": {
+            "en": "How much they can affect the change."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Attitude",
+          "options": [
+            "Champion",
+            "Supportive",
+            "Neutral",
+            "Sceptical",
+            "Resistant"
+          ],
+          "id": "att_stakeholder_attitude",
+          "labels": {
+            "en": "Attitude"
+          },
+          "help": {
+            "en": "How they see the change now."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Kind",
+          "options": ["Person", "Group", "Organisation"],
+          "id": "att_stakeholder_kind",
+          "labels": {
+            "en": "Kind"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "DesiredAttitude",
+          "options": [
+            "Champion",
+            "Supportive",
+            "Neutral",
+            "Sceptical",
+            "Resistant"
+          ],
+          "id": "att_stakeholder_desiredattitude",
+          "labels": {
+            "en": "Desired attitude"
+          },
+          "help": {
+            "en": "The attitude the change needs from them."
+          }
+        },
+        {
+          "type": "text",
+          "key": "EngagementPlan",
+          "multiline": true,
+          "id": "att_stakeholder_engagementplan",
+          "labels": {
+            "en": "Engagement plan"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Quadrant",
+          "formula": "Influence == null || Interest == null ? null : (Influence >= 3 ? (Interest >= 3 ? 'Manage closely' : 'Keep satisfied') : (Interest >= 3 ? 'Keep informed' : 'Monitor'))",
+          "result": "text",
+          "id": "att_stakeholder_quadrant",
+          "labels": {
+            "en": "Quadrant"
+          },
+          "help": {
+            "en": "Manage closely (influence and interest 3 or more), Keep satisfied (influence 3 or more), Keep informed (interest 3 or more) or Monitor. The fill shows it."
+          }
+        }
+      ],
+      "shape": "shp_stakeholder",
+      "constraints": [
+        {
+          "id": "k_stakeholder_quadrant",
+          "formula": "parent == null || parent.Quadrant == null || Quadrant == null || parent.Quadrant == Quadrant",
+          "message": "= 'Stakeholder \"' + Name + '\" sits in \"' + parent.Quadrant + '\", but its scores put it in \"' + Quadrant + '\".'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_stakeholder_plan",
+          "formula": "Quadrant != 'Manage closely' || (Attitude != 'Sceptical' && Attitude != 'Resistant') || !isEmpty(EngagementPlan)",
+          "message": "= 'Stakeholder \"' + Name + '\" is a key player and ' + lower(Attitude) + ', but has no engagement plan.'",
+          "severity": "warning"
+        }
+      ]
+    },
+    "cls_deliverable": {
+      "id": "cls_deliverable",
+      "key": "Deliverable",
+      "kind": "node",
+      "labels": {
+        "en": "Deliverable"
+      },
+      "help": {
+        "en": "Something a project hands over, with a due date and how it will be accepted."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Deliverable",
+          "id": "att_deliverable_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_deliverable_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "date",
+          "key": "Due",
+          "id": "att_deliverable_due",
+          "labels": {
+            "en": "Due"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Status",
+          "options": ["Not started", "In progress", "Done", "Blocked"],
+          "id": "att_deliverable_status",
+          "labels": {
+            "en": "Status"
+          }
+        },
+        {
+          "type": "text",
+          "key": "AcceptanceCriteria",
+          "multiline": true,
+          "id": "att_deliverable_acceptancecriteria",
+          "labels": {
+            "en": "Acceptance criteria"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Responsible",
+          "formula": "join(incoming('Responsible').Name, ', ')",
+          "result": "text",
+          "id": "att_deliverable_responsible",
+          "labels": {
+            "en": "Responsible"
+          },
+          "help": {
+            "en": "Who is responsible: the people, roles and units with a \"Responsible\" connector to it."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Accountable",
+          "formula": "join(incoming('Accountable').Name, ', ')",
+          "result": "text",
+          "id": "att_deliverable_accountable",
+          "labels": {
+            "en": "Accountable"
+          },
+          "help": {
+            "en": "Who is accountable: the people, roles and units with a \"Accountable\" connector to it."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Consulted",
+          "formula": "join(incoming('Consulted').Name, ', ')",
+          "result": "text",
+          "id": "att_deliverable_consulted",
+          "labels": {
+            "en": "Consulted"
+          },
+          "help": {
+            "en": "Who is consulted: the people, roles and units with a \"Consulted\" connector to it."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Informed",
+          "formula": "join(incoming('Informed').Name, ', ')",
+          "result": "text",
+          "id": "att_deliverable_informed",
+          "labels": {
+            "en": "Informed"
+          },
+          "help": {
+            "en": "Who is informed: the people, roles and units with a \"Informed\" connector to it."
+          }
+        }
+      ],
+      "shape": "shp_deliverable",
+      "constraints": [
+        {
+          "id": "k_deliverable_accountable",
+          "formula": "count(incoming('Accountable')) == 1",
+          "message": "= 'Deliverable \"' + Name + '\" should have exactly one accountable person, role or unit.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_deliverable_responsible",
+          "formula": "count(incoming('Responsible')) > 0",
+          "message": "= 'Nobody is responsible for deliverable \"' + Name + '\".'",
+          "severity": "warning"
+        }
+      ]
+    },
+    "cls_gridquadrant": {
+      "id": "cls_gridquadrant",
+      "key": "GridQuadrant",
+      "kind": "container",
+      "labels": {
+        "en": "Grid quadrant"
+      },
+      "help": {
+        "en": "One quarter of the interest and influence grid. Place the stakeholders whose scores fall in it inside it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Grid quadrant",
+          "id": "att_gridquadrant_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Quadrant",
+          "options": [
+            "Manage closely",
+            "Keep satisfied",
+            "Keep informed",
+            "Monitor"
+          ],
+          "required": true,
+          "id": "att_gridquadrant_quadrant",
+          "labels": {
+            "en": "Quadrant"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Advice",
+          "formula": "Quadrant == 'Manage closely' ? 'High influence and high interest: involve them in decisions.' : (Quadrant == 'Keep satisfied' ? 'High influence, less interest: consult them on what matters to them.' : (Quadrant == 'Keep informed' ? 'High interest, less influence: inform them often.' : (Quadrant == 'Monitor' ? 'Less influence and less interest: watch for changes.' : (null))))",
+          "result": "text",
+          "id": "att_gridquadrant_advice",
+          "labels": {
+            "en": "Advice"
+          },
+          "help": {
+            "en": "How to engage the stakeholders in this quadrant."
+          }
+        }
+      ],
+      "shape": "shp_gridquadrant"
+    },
+    "cls_activity": {
+      "id": "cls_activity",
+      "key": "Activity",
+      "kind": "node",
+      "labels": {
+        "en": "Activity"
+      },
+      "help": {
+        "en": "A piece of work in the change, with RACI: who is responsible, accountable, consulted and informed."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Activity",
+          "id": "att_activity_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_activity_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "date",
+          "key": "Due",
+          "id": "att_activity_due",
+          "labels": {
+            "en": "Due"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Status",
+          "options": ["Not started", "In progress", "Done"],
+          "id": "att_activity_status",
+          "labels": {
+            "en": "Status"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Responsible",
+          "formula": "join(incoming('Responsible').Name, ', ')",
+          "result": "text",
+          "id": "att_activity_responsible",
+          "labels": {
+            "en": "Responsible"
+          },
+          "help": {
+            "en": "Who is responsible: the people, roles and units with a \"Responsible\" connector to it."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Accountable",
+          "formula": "join(incoming('Accountable').Name, ', ')",
+          "result": "text",
+          "id": "att_activity_accountable",
+          "labels": {
+            "en": "Accountable"
+          },
+          "help": {
+            "en": "Who is accountable: the people, roles and units with a \"Accountable\" connector to it."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Consulted",
+          "formula": "join(incoming('Consulted').Name, ', ')",
+          "result": "text",
+          "id": "att_activity_consulted",
+          "labels": {
+            "en": "Consulted"
+          },
+          "help": {
+            "en": "Who is consulted: the people, roles and units with a \"Consulted\" connector to it."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Informed",
+          "formula": "join(incoming('Informed').Name, ', ')",
+          "result": "text",
+          "id": "att_activity_informed",
+          "labels": {
+            "en": "Informed"
+          },
+          "help": {
+            "en": "Who is informed: the people, roles and units with a \"Informed\" connector to it."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_activity_accountable",
+          "formula": "count(incoming('Accountable')) == 1",
+          "message": "= 'Activity \"' + Name + '\" should have exactly one accountable person, role or unit.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_activity_responsible",
+          "formula": "count(incoming('Responsible')) > 0",
+          "message": "= 'Nobody is responsible for activity \"' + Name + '\".'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_activity"
+    }
+  },
+  "relations": {
+    "rel_reportsto": {
+      "id": "rel_reportsto",
+      "key": "ReportsTo",
+      "labels": {
+        "en": "Reports to"
+      },
+      "help": {
+        "en": "The person reports to their manager."
+      },
+      "from": ["cls_person"],
+      "to": ["cls_person"],
+      "attributes": [],
+      "shape": "shp_rel_reportsto"
+    },
+    "rel_fills": {
+      "id": "rel_fills",
+      "key": "Fills",
+      "labels": {
+        "en": "Fills"
+      },
+      "help": {
+        "en": "The person fills the role."
+      },
+      "from": ["cls_person"],
+      "to": ["cls_role"],
+      "attributes": [],
+      "shape": "shp_rel_fills"
+    },
+    "rel_influences": {
+      "id": "rel_influences",
+      "key": "Influences",
+      "labels": {
+        "en": "Influences"
+      },
+      "help": {
+        "en": "One stakeholder sways the opinion of another."
+      },
+      "from": ["cls_stakeholder"],
+      "to": ["cls_stakeholder"],
+      "attributes": [],
+      "shape": "shp_rel_influences"
+    },
+    "rel_responsible": {
+      "id": "rel_responsible",
+      "key": "Responsible",
+      "labels": {
+        "en": "Responsible"
+      },
+      "help": {
+        "en": "Does the work."
+      },
+      "from": ["cls_person", "cls_role", "cls_organisationunit"],
+      "to": ["cls_activity", "cls_deliverable"],
+      "attributes": [],
+      "shape": "shp_rel_responsible"
+    },
+    "rel_accountable": {
+      "id": "rel_accountable",
+      "key": "Accountable",
+      "labels": {
+        "en": "Accountable"
+      },
+      "help": {
+        "en": "Answers for the result and signs it off. One per activity or deliverable."
+      },
+      "from": ["cls_person", "cls_role", "cls_organisationunit"],
+      "to": ["cls_activity", "cls_deliverable"],
+      "attributes": [],
+      "shape": "shp_rel_accountable"
+    },
+    "rel_consulted": {
+      "id": "rel_consulted",
+      "key": "Consulted",
+      "labels": {
+        "en": "Consulted"
+      },
+      "help": {
+        "en": "Gives input before the work is done."
+      },
+      "from": ["cls_person", "cls_role", "cls_organisationunit"],
+      "to": ["cls_activity", "cls_deliverable"],
+      "attributes": [],
+      "shape": "shp_rel_consulted"
+    },
+    "rel_informed": {
+      "id": "rel_informed",
+      "key": "Informed",
+      "labels": {
+        "en": "Informed"
+      },
+      "help": {
+        "en": "Is told about the result."
+      },
+      "from": ["cls_person", "cls_role", "cls_organisationunit"],
+      "to": ["cls_activity", "cls_deliverable"],
+      "attributes": [],
+      "shape": "shp_rel_informed"
+    }
+  },
+  "modelTypes": {
+    "mt_stakeholdermap": {
+      "id": "mt_stakeholdermap",
+      "key": "StakeholderMap",
+      "labels": {
+        "en": "Stakeholder and organisation map"
+      },
+      "classes": [
+        "cls_organisationunit",
+        "cls_role",
+        "cls_person",
+        "cls_stakeholder",
+        "cls_deliverable",
+        "cls_gridquadrant",
+        "cls_activity"
+      ],
+      "relations": [
+        "rel_reportsto",
+        "rel_fills",
+        "rel_influences",
+        "rel_responsible",
+        "rel_accountable",
+        "rel_consulted",
+        "rel_informed"
+      ],
+      "views": [
+        {
+          "id": "vw_organisation",
+          "key": "Organisation",
+          "labels": {
+            "en": "Organisation"
+          },
+          "classes": ["cls_organisationunit", "cls_role", "cls_person"],
+          "relations": ["rel_reportsto", "rel_fills"]
+        },
+        {
+          "id": "vw_stakeholders",
+          "key": "Stakeholders",
+          "labels": {
+            "en": "Stakeholders"
+          },
+          "classes": ["cls_gridquadrant", "cls_stakeholder"],
+          "relations": ["rel_influences"]
+        },
+        {
+          "id": "vw_raci",
+          "key": "RACI",
+          "labels": {
+            "en": "RACI"
+          },
+          "classes": [
+            "cls_organisationunit",
+            "cls_role",
+            "cls_person",
+            "cls_activity",
+            "cls_deliverable"
+          ],
+          "relations": [
+            "rel_responsible",
+            "rel_accountable",
+            "rel_consulted",
+            "rel_informed"
+          ]
+        }
+      ],
+      "cardinalities": [
+        {
+          "kind": "count",
+          "class": "cls_gridquadrant",
+          "max": 4
+        }
+      ],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Title",
+          "required": true,
+          "maxLength": 100,
+          "id": "att_mtstakeholdermap_title",
+          "labels": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Organisation",
+          "id": "att_mtstakeholdermap_organisation",
+          "labels": {
+            "en": "Organisation"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Change",
+          "id": "att_mtstakeholdermap_change",
+          "labels": {
+            "en": "Change"
+          },
+          "help": {
+            "en": "The programme or change the map is for."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "People",
+          "formula": "count(objects('Person'))",
+          "result": "number",
+          "id": "att_mtstakeholdermap_people",
+          "labels": {
+            "en": "People"
+          },
+          "help": {
+            "en": "How many people the map shows."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Stakeholders",
+          "formula": "count(objects('Stakeholder'))",
+          "result": "number",
+          "id": "att_mtstakeholdermap_stakeholders",
+          "labels": {
+            "en": "Stakeholders"
+          },
+          "help": {
+            "en": "How many stakeholders the map shows."
+          }
+        }
+      ],
+      "help": {
+        "en": "Organisation units with roles and people, stakeholders on an interest and influence grid, and RACI for activities and deliverables."
+      },
+      "containers": {
+        "cls_organisationunit": [
+          "cls_organisationunit",
+          "cls_role",
+          "cls_person"
+        ],
+        "cls_gridquadrant": ["cls_stakeholder"]
+      }
+    }
+  },
+  "shapes": {
+    "shp_organisationunit": {
+      "id": "shp_organisationunit",
+      "name": "OrganisationUnit look",
+      "kind": "node",
+      "size": {
+        "width": 420,
+        "height": 300,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 6,
+          "fill": "#f1f3f566",
+          "stroke": "#495057",
+          "strokeWidth": 1.5,
+          "dash": [7, 4]
+        },
+        {
+          "type": "text",
+          "x": 12,
+          "y": 4,
+          "width": "100% - 48",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "container",
+        "fill": "#f1f3f566",
+        "border": "#495057",
+        "borderWidth": 1.5,
+        "borderStyle": "dashed",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 420,
+          "height": 300,
+          "resizable": true
+        }
+      }
+    },
+    "shp_role": {
+      "id": "shp_role",
+      "name": "Role look",
+      "kind": "node",
+      "size": {
+        "width": 140,
+        "height": 44,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 999,
+          "fill": "#e9ecef",
+          "stroke": "#495057",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 16,
+          "y": 4,
+          "width": "100% - 32",
+          "height": "100% - 8",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "pill",
+        "fill": "#e9ecef",
+        "border": "#495057",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 140,
+          "height": 44,
+          "resizable": true
+        }
+      }
+    },
+    "shp_person": {
+      "id": "shp_person",
+      "name": "Person look",
+      "kind": "node",
+      "size": {
+        "width": 90,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "ellipse",
+          "x": "50% - 16",
+          "y": 4,
+          "width": 32,
+          "height": 32,
+          "fill": "#e9ecef",
+          "stroke": "#495057",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 6,
+          "y": 42,
+          "width": "100% - 12",
+          "height": "100% - 46",
+          "radius": 18,
+          "fill": "#e9ecef",
+          "stroke": "#495057",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 10,
+          "y": 46,
+          "width": "100% - 20",
+          "height": "100% - 72",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 10,
+          "y": "100% - 24",
+          "width": "100% - 20",
+          "height": 18,
+          "text": "= Role",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "person",
+        "fill": "#e9ecef",
+        "border": "#495057",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 90,
+          "height": 110,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Role"
+        }
+      }
+    },
+    "shp_stakeholder": {
+      "id": "shp_stakeholder",
+      "name": "Stakeholder look",
+      "kind": "node",
+      "size": {
+        "width": 110,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "ellipse",
+          "x": "50% - 16",
+          "y": 4,
+          "width": 32,
+          "height": 32,
+          "fill": "= Quadrant == 'Manage closely' ? '#ffc9c9' : Quadrant == 'Keep satisfied' ? '#ffd8a8' : Quadrant == 'Keep informed' ? '#d0ebff' : Quadrant == 'Monitor' ? '#e9ecef' : '#e9ecef'",
+          "stroke": "= Attitude == 'Champion' ? '#2f9e44' : Attitude == 'Supportive' ? '#2f9e44' : Attitude == 'Neutral' ? '#868e96' : Attitude == 'Sceptical' ? '#f08c00' : Attitude == 'Resistant' ? '#e03131' : '#868e96'",
+          "strokeWidth": 2.5
+        },
+        {
+          "type": "rect",
+          "x": 6,
+          "y": 42,
+          "width": "100% - 12",
+          "height": "100% - 46",
+          "radius": 18,
+          "fill": "= Quadrant == 'Manage closely' ? '#ffc9c9' : Quadrant == 'Keep satisfied' ? '#ffd8a8' : Quadrant == 'Keep informed' ? '#d0ebff' : Quadrant == 'Monitor' ? '#e9ecef' : '#e9ecef'",
+          "stroke": "= Attitude == 'Champion' ? '#2f9e44' : Attitude == 'Supportive' ? '#2f9e44' : Attitude == 'Neutral' ? '#868e96' : Attitude == 'Sceptical' ? '#f08c00' : Attitude == 'Resistant' ? '#e03131' : '#868e96'",
+          "strokeWidth": 2.5
+        },
+        {
+          "type": "text",
+          "x": 10,
+          "y": 46,
+          "width": "100% - 20",
+          "height": "100% - 72",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 10,
+          "y": "100% - 24",
+          "width": "100% - 20",
+          "height": 18,
+          "text": "= Attitude",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "person",
+        "fill": {
+          "by": "Quadrant",
+          "values": {
+            "Manage closely": "#ffc9c9",
+            "Keep satisfied": "#ffd8a8",
+            "Keep informed": "#d0ebff",
+            "Monitor": "#e9ecef"
+          },
+          "fallback": "#e9ecef"
+        },
+        "border": {
+          "by": "Attitude",
+          "values": {
+            "Champion": "#2f9e44",
+            "Supportive": "#2f9e44",
+            "Neutral": "#868e96",
+            "Sceptical": "#f08c00",
+            "Resistant": "#e03131"
+          },
+          "fallback": "#868e96"
+        },
+        "borderWidth": 2.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 110,
+          "height": 110,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Attitude"
+        }
+      }
+    },
+    "shp_deliverable": {
+      "id": "shp_deliverable",
+      "name": "Deliverable look",
+      "kind": "node",
+      "size": {
+        "width": 220,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 4,
+          "fill": "#ffffff",
+          "stroke": "#f08c00",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": 28,
+          "radius": 4,
+          "fill": "#fff3bf",
+          "stroke": "#f08c00"
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 2,
+          "width": "100% - 36",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 34,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Responsible: ' + Responsible",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 50,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Accountable: ' + Accountable",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 66,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Due: ' + Due",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M6 2h8l5 5v15H6z M14 2v5h5 M9 13h7 M9 17h7",
+          "viewBox": [0, 0, 24, 24],
+          "x": "100% - 26",
+          "y": 4,
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "header-box",
+        "fill": "#fff3bf",
+        "border": "#f08c00",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 220,
+          "height": 110,
+          "resizable": true
+        },
+        "icon": {
+          "name": "document"
+        },
+        "fields": ["Responsible", "Accountable", "Due"]
+      }
+    },
+    "shp_gridquadrant": {
+      "id": "shp_gridquadrant",
+      "name": "GridQuadrant look",
+      "kind": "node",
+      "size": {
+        "width": 270,
+        "height": 260,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 6,
+          "fill": "= Quadrant == 'Manage closely' ? '#ffc9c955' : Quadrant == 'Keep satisfied' ? '#ffd8a855' : Quadrant == 'Keep informed' ? '#d0ebff55' : Quadrant == 'Monitor' ? '#e9ecef55' : '#f1f3f555'",
+          "stroke": "#495057",
+          "strokeWidth": 1.5,
+          "dash": [7, 4]
+        },
+        {
+          "type": "text",
+          "x": 12,
+          "y": 4,
+          "width": "100% - 48",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "container",
+        "fill": {
+          "by": "Quadrant",
+          "values": {
+            "Manage closely": "#ffc9c955",
+            "Keep satisfied": "#ffd8a855",
+            "Keep informed": "#d0ebff55",
+            "Monitor": "#e9ecef55"
+          },
+          "fallback": "#f1f3f555"
+        },
+        "border": "#495057",
+        "borderWidth": 1.5,
+        "borderStyle": "dashed",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 270,
+          "height": 260,
+          "resizable": true
+        }
+      }
+    },
+    "shp_activity": {
+      "id": "shp_activity",
+      "name": "Activity look",
+      "kind": "node",
+      "size": {
+        "width": 220,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 4,
+          "fill": "#ffffff",
+          "stroke": "#f08c00",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": 28,
+          "radius": 4,
+          "fill": "#ffd8a8",
+          "stroke": "#f08c00"
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 2,
+          "width": "100% - 36",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 34,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Responsible: ' + Responsible",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 50,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Accountable: ' + Accountable",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 66,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Due: ' + Due",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M19 12l2-1-1-3-2 .5-1.5-1.5.5-2-3-1-1 2h-2l-1-2-3 1 .5 2L6 8.5 4 8l-1 3 2 1v2l-2 1 1 3 2-.5L7.5 19l-.5 2 3 1 1-2h2l1 2 3-1-.5-2 1.5-1.5 2 .5 1-3-2-1z",
+          "viewBox": [0, 0, 24, 24],
+          "x": "100% - 26",
+          "y": 4,
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "header-box",
+        "fill": "#ffd8a8",
+        "border": "#f08c00",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 220,
+          "height": 110,
+          "resizable": true
+        },
+        "icon": {
+          "name": "gear"
+        },
+        "fields": ["Responsible", "Accountable", "Due"]
+      }
+    },
+    "shp_rel_reportsto": {
+      "id": "shp_rel_reportsto",
+      "name": "ReportsTo look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#495057",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "triangle"
+      },
+      "look": {
+        "colour": "#495057",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "triangle",
+        "label": null
+      }
+    },
+    "shp_rel_fills": {
+      "id": "shp_rel_fills",
+      "name": "Fills look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#495057",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [2, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#495057",
+        "width": 1.5,
+        "style": "dotted",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_influences": {
+      "id": "shp_rel_influences",
+      "name": "Influences look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#6741d9",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#6741d9",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_responsible": {
+      "id": "shp_rel_responsible",
+      "name": "Responsible look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#1c7ed6",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#1c7ed6",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_accountable": {
+      "id": "shp_rel_accountable",
+      "name": "Accountable look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#e03131",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "triangle"
+      },
+      "look": {
+        "colour": "#e03131",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "triangle",
+        "label": null
+      }
+    },
+    "shp_rel_consulted": {
+      "id": "shp_rel_consulted",
+      "name": "Consulted look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#f08c00",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#f08c00",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_informed": {
+      "id": "shp_rel_informed",
+      "name": "Informed look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#868e96",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [2, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#868e96",
+        "width": 1.5,
+        "style": "dotted",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    }
+  },
+  "panels": {
+    "cls_stakeholder": {
+      "class": "cls_stakeholder",
+      "tabs": [
+        {
+          "label": "Stakeholder",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Kind",
+              "control": "segmented"
+            },
+            {
+              "attribute": "Interest"
+            },
+            {
+              "attribute": "Influence"
+            },
+            {
+              "attribute": "Quadrant"
+            }
+          ]
+        },
+        {
+          "label": "Engagement",
+          "items": [
+            {
+              "attribute": "Attitude",
+              "control": "select"
+            },
+            {
+              "attribute": "DesiredAttitude",
+              "control": "select"
+            },
+            {
+              "attribute": "EngagementPlan",
+              "control": "textarea"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_activity": {
+      "class": "cls_activity",
+      "tabs": [
+        {
+          "label": "Activity",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            },
+            {
+              "attribute": "Due"
+            },
+            {
+              "attribute": "Status",
+              "control": "segmented"
+            }
+          ]
+        },
+        {
+          "label": "RACI",
+          "items": [
+            {
+              "attribute": "Responsible"
+            },
+            {
+              "attribute": "Accountable"
+            },
+            {
+              "attribute": "Consulted"
+            },
+            {
+              "attribute": "Informed"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    }
+  },
+  "rules": {},
+  "scripts": {}
+}

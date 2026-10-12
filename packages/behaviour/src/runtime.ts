@@ -5,15 +5,15 @@ import {
   ModelCalculator,
   type Model,
   type ModelStore,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 import { CommandRegistry } from './commands';
 import type { BehaviourHost } from './host';
 
 export interface BehaviourOptions {
   store: ModelStore;
-  /** The tool library as it is now; read again on every use so that Build mode edits are seen. */
-  tool: () => ToolLibrary;
+  /** The Kit as it is now; read again on every use so that Build mode edits are seen. */
+  kit: () => Kit;
   host: BehaviourHost;
 }
 
@@ -27,20 +27,20 @@ export interface Behaviour {
   bus: EventBus;
   commands: CommandRegistry;
   host: BehaviourHost;
-  /** Called with a new tool library after Build mode changed it. */
-  setTool(tool: ToolLibrary): void;
+  /** Called with a new Kit after Build mode changed it. */
+  setKit(kit: Kit): void;
   dispose(): void;
 }
 
 export function createBehaviour(options: BehaviourOptions): Behaviour {
   const { store } = options;
   const getModel = () => store.state as Model;
-  const calculator = new ModelCalculator(options.tool(), getModel);
+  const calculator = new ModelCalculator(options.kit(), getModel);
   const stopCalc = calculator.attach(store);
   const bus = new EventBus({
-    isA: (cls, ancestor) => isA(options.tool(), cls, ancestor),
+    isA: (cls, ancestor) => isA(options.kit(), cls, ancestor),
   });
-  const stopEvents = attachEvents(store, bus, { tool: options.tool });
+  const stopEvents = attachEvents(store, bus, { kit: options.kit });
   const commands = new CommandRegistry();
   const disposers: (() => void)[] = [stopCalc, stopEvents];
   return {
@@ -48,7 +48,7 @@ export function createBehaviour(options: BehaviourOptions): Behaviour {
     bus,
     commands,
     host: options.host,
-    setTool: (tool) => calculator.setTool(tool),
+    setKit: (kit) => calculator.setKit(kit),
     dispose: () => disposers.splice(0).forEach((d) => d()),
   };
 }

@@ -53,7 +53,7 @@ function clone<T>(value: T): T {
 
 /**
  * The layout being edited in Build mode: a draft with undo and redo. It is plain data and
- * operations, so the editor component only draws it; saving goes through the tool commands.
+ * operations, so the editor component only draws it; saving goes through the Kit commands.
  */
 export class PanelLayoutModel {
   private draft: PanelLayout;

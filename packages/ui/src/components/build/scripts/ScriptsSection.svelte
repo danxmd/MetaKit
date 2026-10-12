@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { generateDeclarations } from '@metakit-app/behaviour';
-  import type { Script, ScriptId, ToolLibrary } from '@metakit-app/core';
+  import type { Script, ScriptId, Kit } from '@metakit-app/core';
   import type { CommandResult } from '../../../shell/controller';
   import {
     createScript,
@@ -27,14 +27,14 @@
   import type { LanguageClient } from './script-language-client';
 
   let {
-    tool,
+    kit,
     run,
     api = null,
     target = () => null,
     createClient,
     assistant,
   }: {
-    tool: ToolLibrary;
+    kit: Kit;
     run: (command: never) => CommandResult;
     /** The running scripts of the open model; null when none are running (no model is open). */
     api?: ScriptsApi | null;
@@ -59,13 +59,13 @@
     return r.ok;
   };
 
-  const scripts = $derived(sortedScripts(tool));
+  const scripts = $derived(sortedScripts(kit));
   const selected = $derived(
     scripts.find((s) => s.id === selectedId) ?? scripts[0] ?? null,
   );
   // The same text when only a script changed, so the editor is not told again on every keystroke.
   const declarations = $derived(
-    generateDeclarations({ ...tool, scripts: {}, rules: {} }),
+    generateDeclarations({ ...kit, scripts: {}, rules: {} }),
   );
   const lines = $derived.by(() => {
     void version;
@@ -79,7 +79,7 @@
   });
 
   function add() {
-    const script = createScript(tool);
+    const script = createScript(kit);
     if (exec(putScript(script))) selectedId = script.id;
   }
 
@@ -88,7 +88,7 @@
     renameText = script.name;
   }
   function finishRename(script: Script) {
-    const problem = nameProblem(tool, renameText, script.id);
+    const problem = nameProblem(kit, renameText, script.id);
     if (problem) {
       error = problem;
       return;
@@ -113,7 +113,7 @@
     if (!pending) return;
     const { id, source } = pending;
     pending = null;
-    const script = tool.scripts[id];
+    const script = kit.scripts[id];
     if (script && script.source !== source) exec(setSource(script, source));
   }
   function edited(id: ScriptId, source: string) {
@@ -128,7 +128,7 @@
   }
   onDestroy(flush);
 
-  const permissions = $derived(tool.manifest.permissions ?? {});
+  const permissions = $derived(kit.manifest.permissions ?? {});
 </script>
 
 <div class="section" data-testid="scripts-section">
@@ -140,7 +140,7 @@
   </p>
 
   <div class="layout">
-    <ul class="list" aria-label="Scripts">
+    <ul class="list" aria-label="Scripts" data-tour="scripts-list">
       {#each scripts as s (s.id)}
         {@const note = api ? statusNote(api.status(s.id)) : null}
         <li class:current={selected?.id === s.id}>
@@ -192,10 +192,7 @@
           {#if note}<p class="problem" role="status">{note}</p>{/if}
         </li>
       {:else}
-        <li class="muted">
-          No scripts yet. A script is TypeScript for what formulas and rules
-          cannot do, such as a check across the whole model.
-        </li>
+        <li class="muted" data-testid="scripts-empty">No scripts yet.</li>
       {/each}
       <li>
         <button
@@ -206,7 +203,7 @@
         >
         <DraftWithAssistant
           kind="script"
-          {tool}
+          {kit}
           {assistant}
           onAccept={(commands) => {
             const first = commands[0];
@@ -220,8 +217,8 @@
       </li>
     </ul>
 
-    <div class="work">
-      {#if selected}
+    {#if selected}
+      <div class="work" data-tour="scripts-editor">
         <div class="bar">
           <strong>{selected.name}</strong>
           <span class="spacer"></span>
@@ -244,15 +241,13 @@
             {createClient}
           />
         {/key}
-      {:else}
-        <p class="muted">Add a script on the left to start writing.</p>
-      {/if}
-      <ScriptConsole {lines} onClear={() => api?.clearLog()} />
-    </div>
+        <ScriptConsole {lines} onClear={() => api?.clearLog()} />
+      </div>
+    {/if}
   </div>
 
-  <fieldset>
-    <legend>What the scripts of this tool may do</legend>
+  <fieldset data-tour="scripts-permissions">
+    <legend>What the scripts of this Kit may do</legend>
     <p class="muted">
       Scripts can always change models and show dialogs. Say here what else they
       need. Each person is asked once, in their own browser, and again if you
@@ -265,7 +260,7 @@
         onchange={(e) =>
           exec(
             setPermission(
-              tool,
+              kit,
               'network',
               (e.currentTarget as HTMLInputElement).checked,
             ),
@@ -281,7 +276,7 @@
         onchange={(e) =>
           exec(
             setPermission(
-              tool,
+              kit,
               'files',
               (e.currentTarget as HTMLInputElement).checked,
             ),
@@ -300,7 +295,7 @@
 <style>
   .section {
     display: grid;
-    gap: 0.7rem;
+    gap: var(--gap-3);
   }
   h2 {
     margin: 0;
@@ -309,7 +304,7 @@
   .layout {
     display: grid;
     grid-template-columns: minmax(16rem, 20rem) 1fr;
-    gap: 1rem;
+    gap: var(--gap-4);
     align-items: start;
   }
   @media (max-width: 800px) {
@@ -322,10 +317,10 @@
     margin: 0;
     padding: 0;
     display: grid;
-    gap: 0.3rem;
+    gap: var(--gap-1);
   }
   .list li {
-    padding: 0.3rem 0.4rem;
+    padding: var(--gap-1) var(--gap-2);
     border-radius: 6px;
   }
   .list li.current {
@@ -333,7 +328,7 @@
   }
   .line {
     display: flex;
-    gap: 0.4rem;
+    gap: var(--gap-2);
     align-items: center;
   }
   .name {
@@ -355,12 +350,12 @@
   }
   .work {
     display: grid;
-    gap: 0.7rem;
+    gap: var(--gap-3);
     min-width: 0;
   }
   .bar {
     display: flex;
-    gap: 0.5rem;
+    gap: var(--gap-2);
     align-items: center;
   }
   .spacer {
@@ -376,11 +371,11 @@
   }
   .check {
     display: flex;
-    gap: 0.4rem;
+    gap: var(--gap-2);
     align-items: center;
   }
   .muted {
-    color: var(--muted);
+    color: var(--text-muted);
     font-size: 0.85rem;
     margin: 0;
   }

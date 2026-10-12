@@ -1,0 +1,727 @@
+{
+  "formatVersion": 7,
+  "manifest": {
+    "id": "kit_orgchart",
+    "name": "Org chart",
+    "version": "1.0.0",
+    "languages": ["en"]
+  },
+  "settings": {
+    "grid": {
+      "size": 10,
+      "snap": true,
+      "visible": true
+    },
+    "layers": [],
+    "numbering": {
+      "enabled": false,
+      "prefix": "",
+      "start": 1
+    }
+  },
+  "classes": {
+    "cls_unit": {
+      "id": "cls_unit",
+      "key": "Unit",
+      "kind": "swimlane",
+      "labels": {
+        "en": "Organisation unit"
+      },
+      "help": {
+        "en": "A department, team or other part of the organisation. A lane for its positions and for the units inside it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Organisation unit",
+          "id": "att_unit_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_unit_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Code",
+          "id": "att_unit_code",
+          "labels": {
+            "en": "Code"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Location",
+          "id": "att_unit_location",
+          "labels": {
+            "en": "Location"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "HeadCount",
+          "formula": "sum(children().HeadCount)",
+          "result": "number",
+          "id": "att_unit_headcount",
+          "labels": {
+            "en": "Head count"
+          },
+          "help": {
+            "en": "The people in its positions and in the units inside it."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Vacancies",
+          "formula": "sum(children().Vacancies)",
+          "result": "number",
+          "id": "att_unit_vacancies",
+          "labels": {
+            "en": "Vacancies"
+          },
+          "help": {
+            "en": "The empty seats of its positions and of the units inside it."
+          }
+        }
+      ],
+      "shape": "shp_unit"
+    },
+    "cls_position": {
+      "id": "cls_position",
+      "key": "Position",
+      "kind": "container",
+      "labels": {
+        "en": "Position"
+      },
+      "help": {
+        "en": "A job in a unit, such as head of sales, with the number of people it is for. Place the people who fill it inside it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Position",
+          "id": "att_position_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_position_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Grade",
+          "id": "att_position_grade",
+          "labels": {
+            "en": "Grade"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "Seats",
+          "min": 1,
+          "default": 1,
+          "id": "att_position_seats",
+          "labels": {
+            "en": "Seats"
+          },
+          "help": {
+            "en": "How many people the position is for, such as 2 for two developers."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "HeadCount",
+          "formula": "count(children())",
+          "result": "number",
+          "id": "att_position_headcount",
+          "labels": {
+            "en": "Head count"
+          },
+          "help": {
+            "en": "How many people fill it."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Vacancies",
+          "formula": "max(0, (Seats ?? 1) - HeadCount)",
+          "result": "number",
+          "id": "att_position_vacancies",
+          "labels": {
+            "en": "Vacancies"
+          },
+          "help": {
+            "en": "Seats that nobody fills yet."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Vacant",
+          "formula": "HeadCount == 0",
+          "result": "boolean",
+          "id": "att_position_vacant",
+          "labels": {
+            "en": "Vacant"
+          },
+          "help": {
+            "en": "Yes when nobody fills it. It colours the position red."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Heading",
+          "formula": "Name + (Vacancies > 0 ? ' · ' + Vacancies + ' vacant' : '')",
+          "result": "text",
+          "id": "att_position_heading",
+          "labels": {
+            "en": "Heading"
+          },
+          "help": {
+            "en": "The name and the number of empty seats, shown as the title."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Unit",
+          "formula": "parent ? parent.Name : null",
+          "result": "text",
+          "id": "att_position_unit",
+          "labels": {
+            "en": "Unit"
+          },
+          "help": {
+            "en": "The unit it belongs to."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_position_seats",
+          "formula": "HeadCount <= (Seats ?? 1)",
+          "message": "= 'Position \"' + Name + '\" has ' + HeadCount + ' people for ' + (Seats ?? 1) + ' seats.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_position_reports",
+          "formula": "count(outgoing('ReportsTo')) <= 1",
+          "message": "= 'Position \"' + Name + '\" reports to more than one position: keep one \"Reports to\" and make the others \"Dotted line to\".'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_position"
+    },
+    "cls_person": {
+      "id": "cls_person",
+      "key": "Person",
+      "kind": "node",
+      "labels": {
+        "en": "Person"
+      },
+      "help": {
+        "en": "Someone who works in the organisation. Place them inside the position they fill."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Person",
+          "id": "att_person_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Email",
+          "id": "att_person_email",
+          "labels": {
+            "en": "Email"
+          }
+        },
+        {
+          "type": "date",
+          "key": "StartDate",
+          "id": "att_person_startdate",
+          "labels": {
+            "en": "Start date"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Employment",
+          "options": ["Permanent", "Fixed term", "Contractor"],
+          "id": "att_person_employment",
+          "labels": {
+            "en": "Employment"
+          }
+        },
+        {
+          "type": "number",
+          "key": "FTE",
+          "min": 0,
+          "max": 1,
+          "id": "att_person_fte",
+          "labels": {
+            "en": "Working time (FTE)"
+          },
+          "help": {
+            "en": "1 for full time, 0.5 for half time."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_person_position",
+          "formula": "parent != null",
+          "message": "= 'Person \"' + Name + '\" fills no position: place them inside one.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_person"
+    }
+  },
+  "relations": {
+    "rel_reportsto": {
+      "id": "rel_reportsto",
+      "key": "ReportsTo",
+      "labels": {
+        "en": "Reports to"
+      },
+      "help": {
+        "en": "The position reports to its manager’s position."
+      },
+      "from": ["cls_position"],
+      "to": ["cls_position"],
+      "attributes": [],
+      "shape": "shp_rel_reportsto"
+    },
+    "rel_dottedlineto": {
+      "id": "rel_dottedlineto",
+      "key": "DottedLineTo",
+      "labels": {
+        "en": "Dotted line to"
+      },
+      "help": {
+        "en": "A second, weaker reporting line, such as to a project lead."
+      },
+      "from": ["cls_position"],
+      "to": ["cls_position"],
+      "attributes": [],
+      "shape": "shp_rel_dottedlineto"
+    }
+  },
+  "modelTypes": {
+    "mt_orgchart": {
+      "id": "mt_orgchart",
+      "key": "OrgChart",
+      "labels": {
+        "en": "Org chart"
+      },
+      "classes": ["cls_unit", "cls_position", "cls_person"],
+      "relations": ["rel_reportsto", "rel_dottedlineto"],
+      "views": [],
+      "cardinalities": [],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Title",
+          "required": true,
+          "maxLength": 100,
+          "id": "att_mtorgchart_title",
+          "labels": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Organisation",
+          "id": "att_mtorgchart_organisation",
+          "labels": {
+            "en": "Organisation"
+          }
+        },
+        {
+          "type": "date",
+          "key": "AsOf",
+          "id": "att_mtorgchart_asof",
+          "labels": {
+            "en": "As of"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "HeadCount",
+          "formula": "count(objects('Person'))",
+          "result": "number",
+          "id": "att_mtorgchart_headcount",
+          "labels": {
+            "en": "Head count"
+          },
+          "help": {
+            "en": "How many people the chart shows."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Vacancies",
+          "formula": "sum(objects('Position').Vacancies)",
+          "result": "number",
+          "id": "att_mtorgchart_vacancies",
+          "labels": {
+            "en": "Vacancies"
+          },
+          "help": {
+            "en": "The empty seats of all positions."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Positions",
+          "formula": "count(objects('Position'))",
+          "result": "number",
+          "id": "att_mtorgchart_positions",
+          "labels": {
+            "en": "Positions"
+          },
+          "help": {
+            "en": "How many positions the chart shows."
+          }
+        }
+      ],
+      "help": {
+        "en": "Organisation units with their positions and the people in them, joined by reporting lines."
+      },
+      "containers": {
+        "cls_unit": ["cls_unit", "cls_position"],
+        "cls_position": ["cls_person"]
+      }
+    }
+  },
+  "shapes": {
+    "shp_unit": {
+      "id": "shp_unit",
+      "name": "Unit look",
+      "kind": "node",
+      "size": {
+        "width": 400,
+        "height": 360,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "fill": "#ffffff00",
+          "stroke": "#868e96",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": 28,
+          "height": "100%",
+          "fill": "#e9ecef",
+          "stroke": "#868e96",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": -66,
+          "y": "50% - 14",
+          "width": 160,
+          "height": 28,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          },
+          "transform": {
+            "rotate": -90
+          }
+        }
+      ],
+      "look": {
+        "base": "swimlane",
+        "fill": "#e9ecef",
+        "border": "#868e96",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 400,
+          "height": 360,
+          "resizable": true
+        }
+      }
+    },
+    "shp_position": {
+      "id": "shp_position",
+      "name": "Position look",
+      "kind": "node",
+      "size": {
+        "width": 200,
+        "height": 100,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 6,
+          "fill": "= Vacant == true ? '#fff5f5' : Vacant == false ? '#e7f5ff' : '#e7f5ff'",
+          "stroke": "= Vacant == true ? '#e03131' : Vacant == false ? '#1c7ed6' : '#1c7ed6'",
+          "strokeWidth": 1.5,
+          "dash": [7, 4]
+        },
+        {
+          "type": "text",
+          "x": 12,
+          "y": 4,
+          "width": "100% - 48",
+          "height": 24,
+          "text": "= Heading",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "container",
+        "fill": {
+          "by": "Vacant",
+          "values": {
+            "true": "#fff5f5",
+            "false": "#e7f5ff"
+          },
+          "fallback": "#e7f5ff"
+        },
+        "border": {
+          "by": "Vacant",
+          "values": {
+            "true": "#e03131",
+            "false": "#1c7ed6"
+          },
+          "fallback": "#1c7ed6"
+        },
+        "borderWidth": 1.5,
+        "borderStyle": "dashed",
+        "title": {
+          "attribute": "Heading",
+          "bold": true
+        },
+        "size": {
+          "width": 200,
+          "height": 100,
+          "resizable": true
+        }
+      }
+    },
+    "shp_person": {
+      "id": "shp_person",
+      "name": "Person look",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 36,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 999,
+          "fill": "#ffffff",
+          "stroke": "#495057",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 42,
+          "y": 4,
+          "width": "100% - 58",
+          "height": "100% - 8",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7",
+          "viewBox": [0, 0, 24, 24],
+          "x": 14,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "pill",
+        "fill": "#ffffff",
+        "border": "#495057",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 170,
+          "height": 36,
+          "resizable": true
+        },
+        "icon": {
+          "name": "person"
+        }
+      }
+    },
+    "shp_rel_reportsto": {
+      "id": "shp_rel_reportsto",
+      "name": "ReportsTo look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#495057",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#495057",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_dottedlineto": {
+      "id": "shp_rel_dottedlineto",
+      "name": "DottedLineTo look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#868e96",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#868e96",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    }
+  },
+  "panels": {
+    "cls_position": {
+      "class": "cls_position",
+      "tabs": [
+        {
+          "label": "Position",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            },
+            {
+              "attribute": "Grade"
+            },
+            {
+              "attribute": "Unit"
+            }
+          ]
+        },
+        {
+          "label": "Seats",
+          "items": [
+            {
+              "attribute": "Seats"
+            },
+            {
+              "attribute": "HeadCount"
+            },
+            {
+              "attribute": "Vacancies"
+            },
+            {
+              "attribute": "Vacant"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    }
+  },
+  "rules": {},
+  "scripts": {}
+}

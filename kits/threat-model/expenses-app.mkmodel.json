@@ -1,0 +1,365 @@
+{
+  "attributes": {
+    "ReviewDate": "2027-04-08",
+    "Reviewer": "Security architect",
+    "System": "Expenses app of a mid-sized retailer",
+    "Title": "Staff expenses app"
+  },
+  "connectors": [
+    {
+      "attributes": {
+        "Authenticated": true,
+        "Data": "Expense claims",
+        "Encrypted": true,
+        "Protocol": "HTTPS"
+      },
+      "from": "el_ee_employee",
+      "id": "cn_001",
+      "relation": "DataFlow",
+      "to": "el_p_web"
+    },
+    {
+      "attributes": {
+        "Authenticated": true,
+        "Data": "Claims",
+        "Encrypted": true,
+        "Protocol": "SQL"
+      },
+      "from": "el_p_web",
+      "id": "cn_002",
+      "relation": "DataFlow",
+      "to": "el_ds_claims"
+    },
+    {
+      "attributes": {
+        "Authenticated": true,
+        "Data": "Receipt images",
+        "Encrypted": true,
+        "Protocol": "HTTPS"
+      },
+      "from": "el_p_web",
+      "id": "cn_003",
+      "relation": "DataFlow",
+      "to": "el_ds_receipts"
+    },
+    {
+      "attributes": {
+        "Authenticated": true,
+        "Data": "Approvals",
+        "Encrypted": true,
+        "Protocol": "HTTPS"
+      },
+      "from": "el_ee_manager",
+      "id": "cn_004",
+      "relation": "DataFlow",
+      "to": "el_p_approval"
+    },
+    {
+      "attributes": {
+        "Authenticated": true,
+        "Data": "Claims to approve",
+        "Encrypted": true,
+        "Protocol": "HTTPS"
+      },
+      "from": "el_p_web",
+      "id": "cn_005",
+      "relation": "DataFlow",
+      "to": "el_p_approval"
+    },
+    {
+      "attributes": {
+        "Authenticated": false,
+        "Data": "Payment file",
+        "Encrypted": true,
+        "Protocol": "SFTP"
+      },
+      "from": "el_p_approval",
+      "id": "cn_006",
+      "relation": "DataFlow",
+      "to": "el_ee_bank"
+    },
+    {
+      "from": "el_ds_claims",
+      "id": "cn_007",
+      "relation": "Holds",
+      "to": "el_as_bank"
+    },
+    {
+      "from": "el_th_password",
+      "id": "cn_008",
+      "relation": "Threatens",
+      "to": "el_ee_manager"
+    },
+    {
+      "from": "el_th_receipts",
+      "id": "cn_009",
+      "relation": "Threatens",
+      "to": "el_ds_receipts"
+    },
+    {
+      "from": "el_th_deny",
+      "id": "cn_010",
+      "relation": "Threatens",
+      "to": "el_p_approval"
+    },
+    {
+      "from": "el_th_payment",
+      "id": "cn_011",
+      "relation": "Threatens",
+      "to": "el_ee_bank"
+    },
+    {
+      "from": "el_mi_sso",
+      "id": "cn_012",
+      "relation": "Mitigates",
+      "to": "el_th_password"
+    },
+    {
+      "from": "el_mi_encrypt",
+      "id": "cn_013",
+      "relation": "Mitigates",
+      "to": "el_th_receipts"
+    },
+    {
+      "from": "el_mi_audit",
+      "id": "cn_014",
+      "relation": "Mitigates",
+      "to": "el_th_deny"
+    }
+  ],
+  "elements": [
+    {
+      "attributes": {
+        "Kind": "Person",
+        "Name": "Employee"
+      },
+      "class": "ExternalEntity",
+      "h": 70,
+      "id": "el_ee_employee",
+      "w": 160,
+      "x": 20,
+      "y": 110
+    },
+    {
+      "attributes": {
+        "Kind": "Person",
+        "Name": "Line manager"
+      },
+      "class": "ExternalEntity",
+      "h": 70,
+      "id": "el_ee_manager",
+      "w": 160,
+      "x": 20,
+      "y": 315
+    },
+    {
+      "attributes": {
+        "Description": "The cloud account of the company, reached only through its single sign-on.",
+        "Name": "Company cloud",
+        "TrustLevel": "Trusted"
+      },
+      "class": "TrustBoundary",
+      "h": 400,
+      "id": "el_tb_cloud",
+      "w": 820,
+      "x": 220,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "Name": "Expenses web app",
+        "Technology": "Web application"
+      },
+      "class": "Process",
+      "h": 100,
+      "id": "el_p_web",
+      "parent": "el_tb_cloud",
+      "w": 160,
+      "x": 470,
+      "y": 95
+    },
+    {
+      "attributes": {
+        "Name": "Approval service",
+        "Technology": "Background service"
+      },
+      "class": "Process",
+      "h": 100,
+      "id": "el_p_approval",
+      "parent": "el_tb_cloud",
+      "w": 160,
+      "x": 470,
+      "y": 300
+    },
+    {
+      "attributes": {
+        "Classification": "Restricted",
+        "Name": "Expenses database",
+        "Technology": "Relational database"
+      },
+      "class": "DataStore",
+      "h": 70,
+      "id": "el_ds_claims",
+      "parent": "el_tb_cloud",
+      "w": 160,
+      "x": 820,
+      "y": 100
+    },
+    {
+      "attributes": {
+        "Classification": "Confidential",
+        "Name": "Receipt store",
+        "Technology": "File storage"
+      },
+      "class": "DataStore",
+      "h": 70,
+      "id": "el_ds_receipts",
+      "parent": "el_tb_cloud",
+      "w": 160,
+      "x": 820,
+      "y": 210
+    },
+    {
+      "attributes": {
+        "Kind": "System",
+        "Name": "Bank payment system"
+      },
+      "class": "ExternalEntity",
+      "h": 70,
+      "id": "el_ee_bank",
+      "w": 160,
+      "x": 1120,
+      "y": 315
+    },
+    {
+      "attributes": {
+        "Classification": "Restricted",
+        "Name": "Employee bank details",
+        "Owner": "Head of payroll"
+      },
+      "class": "Asset",
+      "h": 80,
+      "id": "el_as_bank",
+      "w": 190,
+      "x": 1110,
+      "y": 90
+    },
+    {
+      "attributes": {
+        "Category": "Spoofing",
+        "Impact": 3,
+        "Likelihood": 4,
+        "Name": "Stolen manager password",
+        "Owner": "Security architect",
+        "Status": "Mitigated"
+      },
+      "class": "Threat",
+      "h": 126,
+      "id": "el_th_password",
+      "w": 220,
+      "x": 20,
+      "y": 500
+    },
+    {
+      "attributes": {
+        "Category": "Information disclosure",
+        "Impact": 4,
+        "Likelihood": 3,
+        "Name": "Receipts read by other staff",
+        "Owner": "Product owner",
+        "Status": "Open"
+      },
+      "class": "Threat",
+      "h": 126,
+      "id": "el_th_receipts",
+      "w": 220,
+      "x": 790,
+      "y": 500
+    },
+    {
+      "attributes": {
+        "Category": "Repudiation",
+        "Impact": 3,
+        "Likelihood": 2,
+        "Name": "Manager denies an approval",
+        "Owner": "Product owner",
+        "Status": "Mitigated"
+      },
+      "class": "Threat",
+      "h": 126,
+      "id": "el_th_deny",
+      "w": 220,
+      "x": 440,
+      "y": 500
+    },
+    {
+      "attributes": {
+        "Category": "Tampering",
+        "Impact": 5,
+        "Likelihood": 3,
+        "Name": "Payment file changed",
+        "Owner": "Head of payroll",
+        "Status": "Open"
+      },
+      "class": "Threat",
+      "h": 126,
+      "id": "el_th_payment",
+      "w": 220,
+      "x": 1100,
+      "y": 500
+    },
+    {
+      "attributes": {
+        "Kind": "Prevent",
+        "Name": "Single sign-on with a second factor",
+        "Owner": "IT security",
+        "Status": "In place"
+      },
+      "class": "Mitigation",
+      "h": 70,
+      "id": "el_mi_sso",
+      "w": 200,
+      "x": 30,
+      "y": 700
+    },
+    {
+      "attributes": {
+        "Due": "2027-06-30",
+        "Kind": "Prevent",
+        "Name": "Encrypt the receipt store",
+        "Owner": "Platform team",
+        "Status": "Planned"
+      },
+      "class": "Mitigation",
+      "h": 70,
+      "id": "el_mi_encrypt",
+      "w": 200,
+      "x": 800,
+      "y": 700
+    },
+    {
+      "attributes": {
+        "Kind": "Detect",
+        "Name": "Audit log of approvals",
+        "Owner": "Platform team",
+        "Status": "In place"
+      },
+      "class": "Mitigation",
+      "h": 70,
+      "id": "el_mi_audit",
+      "w": 200,
+      "x": 450,
+      "y": 700
+    }
+  ],
+  "formatVersion": 2,
+  "id": "mdl_expensesapp",
+  "kind": "mkmodel",
+  "kit": {
+    "id": "kit_threatmodel",
+    "name": "Security threat model",
+    "version": "1.0.0"
+  },
+  "modelType": "ThreatModel",
+  "name": "Staff expenses app"
+}

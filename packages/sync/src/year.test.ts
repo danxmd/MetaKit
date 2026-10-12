@@ -6,11 +6,7 @@ import {
   type Model,
   type Patch,
 } from '@metakit-app/core';
-import {
-  sampleTool,
-  SAMPLE,
-  emptySampleModel,
-} from '@metakit-app/core/testing';
+import { sampleKit, SAMPLE, emptySampleModel } from '@metakit-app/core/testing';
 import { encode } from './adapter';
 import { HybridClock } from './clock';
 import {
@@ -243,8 +239,7 @@ describe('a simulated year', () => {
         kind: 'model',
         now,
       },
-      (doc) =>
-        createModelStore(doc as unknown as Model, { tool: sampleTool() }),
+      (doc) => createModelStore(doc as unknown as Model, { kit: sampleKit() }),
     );
     const openMs = performance.now() - started;
     console.log(

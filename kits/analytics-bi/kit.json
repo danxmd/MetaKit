@@ -1,0 +1,1640 @@
+{
+  "formatVersion": 7,
+  "manifest": {
+    "id": "kit_analyticsbi",
+    "name": "Analytics and BI landscape",
+    "version": "1.0.0",
+    "languages": ["en"]
+  },
+  "settings": {
+    "grid": {
+      "size": 10,
+      "snap": true,
+      "visible": true
+    },
+    "layers": [],
+    "numbering": {
+      "enabled": false,
+      "prefix": "",
+      "start": 1
+    }
+  },
+  "classes": {
+    "cls_dataset": {
+      "id": "cls_dataset",
+      "key": "Dataset",
+      "kind": "node",
+      "labels": {
+        "en": "Dataset"
+      },
+      "help": {
+        "en": "A table or a set of files that semantic models, reports or dashboards read."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Dataset",
+          "id": "att_dataset_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_dataset_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Format",
+          "id": "att_dataset_format",
+          "labels": {
+            "en": "Format"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Refresh",
+          "options": [
+            "Real time",
+            "Hourly",
+            "Daily",
+            "Weekly",
+            "Monthly",
+            "On demand"
+          ],
+          "id": "att_dataset_refresh",
+          "labels": {
+            "en": "Refresh"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Classification",
+          "options": ["Public", "Internal", "Confidential", "Restricted"],
+          "id": "att_dataset_classification",
+          "labels": {
+            "en": "Classification"
+          }
+        },
+        {
+          "type": "boolean",
+          "key": "ContainsPersonalData",
+          "id": "att_dataset_containspersonaldata",
+          "labels": {
+            "en": "Contains personal data"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "RowCount",
+          "min": 0,
+          "id": "att_dataset_rowcount",
+          "labels": {
+            "en": "Row count"
+          }
+        }
+      ],
+      "shape": "shp_dataset"
+    },
+    "cls_semanticmodel": {
+      "id": "cls_semanticmodel",
+      "key": "SemanticModel",
+      "kind": "node",
+      "labels": {
+        "en": "Semantic model"
+      },
+      "help": {
+        "en": "A shared, business-friendly layer over the data, with the agreed definitions of metrics, that reports and dashboards are built on."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Semantic model",
+          "id": "att_semanticmodel_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_semanticmodel_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_semanticmodel_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Tool",
+          "id": "att_semanticmodel_tool",
+          "labels": {
+            "en": "Tool"
+          },
+          "help": {
+            "en": "The BI tool it lives in, as free text."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "StorageMode",
+          "options": ["Import", "Direct query", "Mixed"],
+          "id": "att_semanticmodel_storagemode",
+          "labels": {
+            "en": "Storage mode"
+          },
+          "help": {
+            "en": "Import copies the data into the model; direct query reads it from the source each time."
+          }
+        },
+        {
+          "type": "text",
+          "key": "RefreshSchedule",
+          "id": "att_semanticmodel_refreshschedule",
+          "labels": {
+            "en": "Refresh"
+          },
+          "help": {
+            "en": "When imported data is refreshed, such as \"every day at 06:00\"."
+          }
+        },
+        {
+          "type": "boolean",
+          "key": "Certified",
+          "id": "att_semanticmodel_certified",
+          "labels": {
+            "en": "Certified"
+          },
+          "help": {
+            "en": "Yes when the data team has checked it and vouches for it."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Metrics",
+          "formula": "count(incoming('DefinedIn'))",
+          "result": "number",
+          "id": "att_semanticmodel_metrics",
+          "labels": {
+            "en": "Metrics"
+          },
+          "help": {
+            "en": "How many metrics are defined in it."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Datasets",
+          "formula": "count(incoming('FlowsTo'))",
+          "result": "number",
+          "id": "att_semanticmodel_datasets",
+          "labels": {
+            "en": "Datasets"
+          },
+          "help": {
+            "en": "How many datasets flow into it."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "UsedBy",
+          "formula": "count(outgoing('FlowsTo'))",
+          "result": "number",
+          "id": "att_semanticmodel_usedby",
+          "labels": {
+            "en": "Used by"
+          },
+          "help": {
+            "en": "How many reports and dashboards are built on it."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_semantic_data",
+          "formula": "Datasets > 0",
+          "message": "= 'Semantic model \"' + Name + '\" has no dataset flowing into it.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_semanticmodel"
+    },
+    "cls_metric": {
+      "id": "cls_metric",
+      "key": "Metric",
+      "kind": "node",
+      "labels": {
+        "en": "Metric"
+      },
+      "help": {
+        "en": "A measure with one agreed definition, such as net revenue, defined once in a semantic model and shown on reports and dashboards."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Metric",
+          "id": "att_metric_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Definition",
+          "multiline": true,
+          "id": "att_metric_definition",
+          "labels": {
+            "en": "Definition"
+          },
+          "help": {
+            "en": "What the number means, in words the business agrees on."
+          }
+        },
+        {
+          "type": "text",
+          "key": "Calculation",
+          "id": "att_metric_calculation",
+          "labels": {
+            "en": "Calculation"
+          },
+          "help": {
+            "en": "How it is calculated, such as \"sum of net amount minus returns\"."
+          }
+        },
+        {
+          "type": "text",
+          "key": "Unit",
+          "id": "att_metric_unit",
+          "labels": {
+            "en": "Unit"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_metric_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "boolean",
+          "key": "Certified",
+          "id": "att_metric_certified",
+          "labels": {
+            "en": "Certified"
+          },
+          "help": {
+            "en": "Yes when the owner has approved the definition."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Definitions",
+          "formula": "count(outgoing('DefinedIn'))",
+          "result": "number",
+          "id": "att_metric_definitions",
+          "labels": {
+            "en": "Definitions"
+          },
+          "help": {
+            "en": "In how many semantic models it is defined."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "DefinedInText",
+          "formula": "join(outgoing('DefinedIn').Name, ', ')",
+          "result": "text",
+          "id": "att_metric_definedintext",
+          "labels": {
+            "en": "Defined in"
+          },
+          "help": {
+            "en": "The semantic models that define it."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "ShownOn",
+          "formula": "count(incoming('Shows'))",
+          "result": "number",
+          "id": "att_metric_shownon",
+          "labels": {
+            "en": "Shown on"
+          },
+          "help": {
+            "en": "How many reports and dashboards show it."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_metric_twice",
+          "formula": "Definitions <= 1",
+          "message": "= 'Metric \"' + Name + '\" is defined in ' + text(Definitions) + ' semantic models (' + DefinedInText + '): keep one definition and reuse it.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_metric_defined",
+          "formula": "Definitions > 0",
+          "message": "= 'Metric \"' + Name + '\" is defined in no semantic model.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_metric"
+    },
+    "cls_content": {
+      "id": "cls_content",
+      "key": "Content",
+      "kind": "node",
+      "labels": {
+        "en": "Report or dashboard"
+      },
+      "help": {
+        "en": "What people open to read data: a report or a dashboard. Use one of the two."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Report or dashboard",
+          "id": "att_content_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_content_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_content_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Tool",
+          "id": "att_content_tool",
+          "labels": {
+            "en": "Tool"
+          },
+          "help": {
+            "en": "The BI tool it is built with, as free text."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Refresh",
+          "options": ["Real time", "Hourly", "Daily", "Weekly", "Monthly"],
+          "id": "att_content_refresh",
+          "labels": {
+            "en": "Refresh"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "MonthlyViews",
+          "min": 0,
+          "id": "att_content_monthlyviews",
+          "labels": {
+            "en": "Monthly views"
+          },
+          "help": {
+            "en": "How often it was opened last month."
+          }
+        },
+        {
+          "type": "boolean",
+          "key": "Certified",
+          "id": "att_content_certified",
+          "labels": {
+            "en": "Certified"
+          },
+          "help": {
+            "en": "Yes when the data team vouches for it."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "UsageLevel",
+          "formula": "MonthlyViews == null ? null : MonthlyViews == 0 ? 'Unused' : MonthlyViews < 50 ? 'Low' : MonthlyViews < 500 ? 'Medium' : 'High'",
+          "result": "text",
+          "id": "att_content_usagelevel",
+          "labels": {
+            "en": "Usage level"
+          },
+          "help": {
+            "en": "Unused, Low (under 50 views a month), Medium (under 500) or High. The fill shows it."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Metrics",
+          "formula": "count(outgoing('Shows'))",
+          "result": "number",
+          "id": "att_content_metrics",
+          "labels": {
+            "en": "Metrics"
+          },
+          "help": {
+            "en": "How many metrics it shows."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Audiences",
+          "formula": "join(outgoing('Serves').Name, ', ')",
+          "result": "text",
+          "id": "att_content_audiences",
+          "labels": {
+            "en": "Audiences"
+          },
+          "help": {
+            "en": "The audiences it serves."
+          }
+        }
+      ],
+      "abstract": true,
+      "constraints": [
+        {
+          "id": "k_content_owner",
+          "formula": "!isEmpty(Owner)",
+          "message": "= '\"' + Name + '\" has no owner: name the person or team who answers for it.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_content_source",
+          "formula": "count(incoming('FlowsTo')) > 0",
+          "message": "= '\"' + Name + '\" is built on no semantic model or dataset: connect one to it with \"Flows to\".'",
+          "severity": "warning"
+        }
+      ]
+    },
+    "cls_report": {
+      "id": "cls_report",
+      "key": "Report",
+      "kind": "node",
+      "labels": {
+        "en": "Report"
+      },
+      "help": {
+        "en": "A report with a fixed layout, often printed or exported, such as a monthly profit and loss report."
+      },
+      "attributes": [
+        {
+          "type": "choice",
+          "key": "Format",
+          "options": ["Paginated", "Spreadsheet", "Export file"],
+          "id": "att_report_format",
+          "labels": {
+            "en": "Format"
+          }
+        }
+      ],
+      "extends": "cls_content",
+      "shape": "shp_report"
+    },
+    "cls_dashboard": {
+      "id": "cls_dashboard",
+      "key": "Dashboard",
+      "kind": "node",
+      "labels": {
+        "en": "Dashboard"
+      },
+      "help": {
+        "en": "An interactive page of charts and figures that people explore."
+      },
+      "attributes": [
+        {
+          "type": "integer",
+          "key": "Pages",
+          "min": 1,
+          "id": "att_dashboard_pages",
+          "labels": {
+            "en": "Pages"
+          }
+        }
+      ],
+      "extends": "cls_content",
+      "shape": "shp_dashboard"
+    },
+    "cls_audience": {
+      "id": "cls_audience",
+      "key": "Audience",
+      "kind": "node",
+      "labels": {
+        "en": "Audience"
+      },
+      "help": {
+        "en": "A group of people who use reports and dashboards, such as store managers."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Audience",
+          "id": "att_audience_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Department",
+          "id": "att_audience_department",
+          "labels": {
+            "en": "Department"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "People",
+          "min": 0,
+          "id": "att_audience_people",
+          "labels": {
+            "en": "People"
+          },
+          "help": {
+            "en": "About how many people it has."
+          }
+        },
+        {
+          "type": "text",
+          "key": "Needs",
+          "multiline": true,
+          "id": "att_audience_needs",
+          "labels": {
+            "en": "Needs"
+          },
+          "help": {
+            "en": "What they want to know from the data."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Content",
+          "formula": "count(incoming('Serves'))",
+          "result": "number",
+          "id": "att_audience_content",
+          "labels": {
+            "en": "Content"
+          },
+          "help": {
+            "en": "How many reports and dashboards serve it."
+          }
+        }
+      ],
+      "shape": "shp_audience"
+    }
+  },
+  "relations": {
+    "rel_flowsto": {
+      "id": "rel_flowsto",
+      "key": "FlowsTo",
+      "labels": {
+        "en": "Flows to"
+      },
+      "help": {
+        "en": "Data moves from one place to the next."
+      },
+      "from": ["cls_dataset", "cls_semanticmodel"],
+      "to": ["cls_dataset", "cls_semanticmodel", "cls_content"],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Frequency",
+          "id": "att_flowsto_frequency",
+          "labels": {
+            "en": "Frequency"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Format",
+          "id": "att_flowsto_format",
+          "labels": {
+            "en": "Format"
+          }
+        },
+        {
+          "type": "boolean",
+          "key": "ContainsPersonalData",
+          "id": "att_flowsto_containspersonaldata",
+          "labels": {
+            "en": "Contains personal data"
+          }
+        }
+      ],
+      "shape": "shp_rel_flowsto"
+    },
+    "rel_definedin": {
+      "id": "rel_definedin",
+      "key": "DefinedIn",
+      "labels": {
+        "en": "Defined in"
+      },
+      "help": {
+        "en": "The semantic model holds the definition of the metric."
+      },
+      "from": ["cls_metric"],
+      "to": ["cls_semanticmodel"],
+      "attributes": [],
+      "shape": "shp_rel_definedin"
+    },
+    "rel_shows": {
+      "id": "rel_shows",
+      "key": "Shows",
+      "labels": {
+        "en": "Shows"
+      },
+      "help": {
+        "en": "The report or dashboard shows the metric."
+      },
+      "from": ["cls_content"],
+      "to": ["cls_metric"],
+      "attributes": [],
+      "shape": "shp_rel_shows"
+    },
+    "rel_serves": {
+      "id": "rel_serves",
+      "key": "Serves",
+      "labels": {
+        "en": "Serves"
+      },
+      "help": {
+        "en": "The report or dashboard is made for the audience."
+      },
+      "from": ["cls_content"],
+      "to": ["cls_audience"],
+      "attributes": [],
+      "shape": "shp_rel_serves"
+    }
+  },
+  "modelTypes": {
+    "mt_bilandscape": {
+      "id": "mt_bilandscape",
+      "key": "BILandscape",
+      "labels": {
+        "en": "Analytics and BI landscape"
+      },
+      "classes": [
+        "cls_dataset",
+        "cls_semanticmodel",
+        "cls_metric",
+        "cls_report",
+        "cls_dashboard",
+        "cls_audience"
+      ],
+      "relations": ["rel_flowsto", "rel_definedin", "rel_shows", "rel_serves"],
+      "views": [
+        {
+          "id": "vw_models",
+          "key": "Models",
+          "labels": {
+            "en": "Data and semantic models"
+          },
+          "classes": ["cls_dataset", "cls_semanticmodel", "cls_metric"],
+          "relations": ["rel_flowsto", "rel_definedin"]
+        },
+        {
+          "id": "vw_content",
+          "key": "Content",
+          "labels": {
+            "en": "Content and audiences"
+          },
+          "classes": [
+            "cls_report",
+            "cls_dashboard",
+            "cls_audience",
+            "cls_metric"
+          ],
+          "relations": ["rel_shows", "rel_serves"]
+        }
+      ],
+      "cardinalities": [],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Title",
+          "required": true,
+          "maxLength": 100,
+          "id": "att_mtbilandscape_title",
+          "labels": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Organisation",
+          "id": "att_mtbilandscape_organisation",
+          "labels": {
+            "en": "Organisation"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "ContentCount",
+          "formula": "count(objects('Content'))",
+          "result": "number",
+          "id": "att_mtbilandscape_contentcount",
+          "labels": {
+            "en": "Reports and dashboards"
+          },
+          "help": {
+            "en": "How many reports and dashboards the model holds."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "MonthlyViews",
+          "formula": "sum(objects('Content').MonthlyViews)",
+          "result": "number",
+          "id": "att_mtbilandscape_monthlyviews",
+          "labels": {
+            "en": "Monthly views"
+          },
+          "help": {
+            "en": "The views of all reports and dashboards last month."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "MetricCount",
+          "formula": "count(objects('Metric'))",
+          "result": "number",
+          "id": "att_mtbilandscape_metriccount",
+          "labels": {
+            "en": "Metrics"
+          },
+          "help": {
+            "en": "How many metrics the model holds."
+          }
+        }
+      ],
+      "help": {
+        "en": "Datasets, semantic models, metrics, reports and dashboards, and the audiences they serve."
+      }
+    }
+  },
+  "shapes": {
+    "shp_dataset": {
+      "id": "shp_dataset",
+      "name": "Dataset look",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 90,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 4,
+          "fill": "#ffffff",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": 28,
+          "radius": 4,
+          "fill": "#a5d8ff",
+          "stroke": "#1c7ed6"
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 2,
+          "width": "100% - 36",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 34,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Format: ' + Format",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 50,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Refresh: ' + Refresh",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6 M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3",
+          "viewBox": [0, 0, 24, 24],
+          "x": "100% - 26",
+          "y": 4,
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "header-box",
+        "fill": "#a5d8ff",
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 170,
+          "height": 90,
+          "resizable": true
+        },
+        "icon": {
+          "name": "database"
+        },
+        "fields": ["Format", "Refresh"]
+      }
+    },
+    "shp_rel_flowsto": {
+      "id": "shp_rel_flowsto",
+      "name": "FlowsTo look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#1c7ed6",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "labels": [
+        {
+          "at": "middle",
+          "text": "= Frequency",
+          "font": {
+            "size": 11
+          },
+          "background": "#ffffff",
+          "visible": "= Frequency != null"
+        }
+      ],
+      "look": {
+        "colour": "#1c7ed6",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": {
+          "attribute": "Frequency"
+        }
+      }
+    },
+    "shp_semanticmodel": {
+      "id": "shp_semanticmodel",
+      "name": "SemanticModel look",
+      "kind": "node",
+      "size": {
+        "width": 180,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 0,
+          "fill": "#e5dbff",
+          "stroke": "#6741d9",
+          "strokeWidth": 2
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= RefreshSchedule",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6 M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "box",
+        "fill": "#e5dbff",
+        "border": "#6741d9",
+        "borderWidth": 2,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 180,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "RefreshSchedule"
+        },
+        "icon": {
+          "name": "database"
+        }
+      }
+    },
+    "shp_metric": {
+      "id": "shp_metric",
+      "name": "Metric look",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 50,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 999,
+          "fill": "#fff3bf",
+          "stroke": "#f08c00",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 16,
+          "y": 4,
+          "width": "100% - 32",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 16,
+          "y": "100% - 22",
+          "width": "100% - 32",
+          "height": 18,
+          "text": "= Calculation",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "pill",
+        "fill": "#fff3bf",
+        "border": "#f08c00",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 170,
+          "height": 50,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Calculation"
+        }
+      }
+    },
+    "shp_report": {
+      "id": "shp_report",
+      "name": "Report look",
+      "kind": "node",
+      "size": {
+        "width": 160,
+        "height": 90,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          [0, 0],
+          ["100% - 18", 0],
+          ["100%", 18],
+          ["100%", "100%"],
+          [0, "100%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            [0, 0],
+            ["100% - 18", 0],
+            ["100%", 18],
+            ["100%", "100%"],
+            [0, "100%"]
+          ],
+          "fill": "= UsageLevel == 'High' ? '#b2f2bb' : UsageLevel == 'Medium' ? '#d3f9d8' : UsageLevel == 'Low' ? '#fff3bf' : UsageLevel == 'Unused' ? '#dee2e6' : '#f8f9fa'",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "polygon",
+          "points": [
+            ["100% - 18", 0],
+            ["100% - 18", 18],
+            ["100%", 18]
+          ],
+          "fill": "#00000022",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 20,
+          "width": "100% - 16",
+          "height": "100% - 46",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 24",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= Owner",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "document",
+        "fill": {
+          "by": "UsageLevel",
+          "values": {
+            "High": "#b2f2bb",
+            "Medium": "#d3f9d8",
+            "Low": "#fff3bf",
+            "Unused": "#dee2e6"
+          },
+          "fallback": "#f8f9fa"
+        },
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 160,
+          "height": 90,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Owner"
+        }
+      }
+    },
+    "shp_dashboard": {
+      "id": "shp_dashboard",
+      "name": "Dashboard look",
+      "kind": "node",
+      "size": {
+        "width": 190,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 4,
+          "fill": "#ffffff",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": 28,
+          "radius": 4,
+          "fill": "= UsageLevel == 'High' ? '#b2f2bb' : UsageLevel == 'Medium' ? '#d3f9d8' : UsageLevel == 'Low' ? '#fff3bf' : UsageLevel == 'Unused' ? '#dee2e6' : '#f8f9fa'",
+          "stroke": "#1c7ed6"
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 2,
+          "width": "100% - 36",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 34,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Owner: ' + Owner",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 50,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'MonthlyViews: ' + MonthlyViews",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 66,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Refresh: ' + Refresh",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z",
+          "viewBox": [0, 0, 24, 24],
+          "x": "100% - 26",
+          "y": 4,
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "header-box",
+        "fill": {
+          "by": "UsageLevel",
+          "values": {
+            "High": "#b2f2bb",
+            "Medium": "#d3f9d8",
+            "Low": "#fff3bf",
+            "Unused": "#dee2e6"
+          },
+          "fallback": "#f8f9fa"
+        },
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 190,
+          "height": 110,
+          "resizable": true
+        },
+        "icon": {
+          "name": "star"
+        },
+        "fields": ["Owner", "MonthlyViews", "Refresh"]
+      }
+    },
+    "shp_audience": {
+      "id": "shp_audience",
+      "name": "Audience look",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 64,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "#f3f0ff",
+          "stroke": "#7048e8",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= Department",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": "#f3f0ff",
+        "border": "#7048e8",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 170,
+          "height": 64,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Department"
+        },
+        "icon": {
+          "name": "person"
+        }
+      }
+    },
+    "shp_rel_definedin": {
+      "id": "shp_rel_definedin",
+      "name": "DefinedIn look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#f08c00",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "open-arrow"
+      },
+      "look": {
+        "colour": "#f08c00",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "open-arrow",
+        "label": null
+      }
+    },
+    "shp_rel_shows": {
+      "id": "shp_rel_shows",
+      "name": "Shows look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#f08c00",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [2, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#f08c00",
+        "width": 1.5,
+        "style": "dotted",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_serves": {
+      "id": "shp_rel_serves",
+      "name": "Serves look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#7048e8",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#7048e8",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    }
+  },
+  "panels": {
+    "cls_dashboard": {
+      "class": "cls_dashboard",
+      "tabs": [
+        {
+          "label": "Dashboard",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Owner"
+            },
+            {
+              "attribute": "Tool"
+            },
+            {
+              "attribute": "Pages"
+            },
+            {
+              "attribute": "Certified"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            }
+          ]
+        },
+        {
+          "label": "Use",
+          "items": [
+            {
+              "attribute": "Refresh",
+              "control": "select"
+            },
+            {
+              "attribute": "MonthlyViews"
+            },
+            {
+              "attribute": "UsageLevel"
+            },
+            {
+              "attribute": "Metrics"
+            },
+            {
+              "attribute": "Audiences"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_metric": {
+      "class": "cls_metric",
+      "tabs": [
+        {
+          "label": "Metric",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Definition",
+              "control": "textarea"
+            },
+            {
+              "attribute": "Calculation"
+            },
+            {
+              "attribute": "Unit"
+            },
+            {
+              "attribute": "Owner"
+            },
+            {
+              "attribute": "Certified"
+            }
+          ]
+        },
+        {
+          "label": "Use",
+          "items": [
+            {
+              "attribute": "DefinedInText"
+            },
+            {
+              "attribute": "Definitions"
+            },
+            {
+              "attribute": "ShownOn"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    }
+  },
+  "rules": {},
+  "scripts": {}
+}

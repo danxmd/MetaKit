@@ -5,7 +5,7 @@ import {
   effectiveAttributes,
   effectiveRelationAttributes,
   newId,
-  validateToolLibrary,
+  validateKit,
   type AttributeDef,
   type ClassId,
   type CommandPlace,
@@ -16,7 +16,7 @@ import {
   type RuleAction,
   type RuleActionType,
   type RuleId,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 import { parse } from '@metakit-app/formula';
 
@@ -130,29 +130,27 @@ export const ACTION_LABELS: Record<RuleActionType, string> = {
 
 export const ACTION_TYPES = RULE_ACTION_TYPES;
 
-export function classesFor(tool: ToolLibrary): { id: ClassId; key: string }[] {
-  return Object.values(tool.classes)
+export function classesFor(kit: Kit): { id: ClassId; key: string }[] {
+  return Object.values(kit.classes)
     .map((c) => ({ id: c.id, key: c.key }))
     .sort((a, b) => a.key.localeCompare(b.key));
 }
 
-export function relationsFor(
-  tool: ToolLibrary,
-): { id: RelationId; key: string }[] {
-  return Object.values(tool.relations)
+export function relationsFor(kit: Kit): { id: RelationId; key: string }[] {
+  return Object.values(kit.relations)
     .map((r) => ({ id: r.id, key: r.key }))
     .sort((a, b) => a.key.localeCompare(b.key));
 }
 
 function defsOf(
-  tool: ToolLibrary,
+  kit: Kit,
   owner: ClassId | RelationId | undefined,
 ): AttributeDef[] {
   try {
     if (!owner) return [];
     if (owner.startsWith('rel_'))
-      return effectiveRelationAttributes(tool, owner as RelationId);
-    return effectiveAttributes(tool, owner as ClassId);
+      return effectiveRelationAttributes(kit, owner as RelationId);
+    return effectiveAttributes(kit, owner as ClassId);
   } catch {
     return [];
   }
@@ -163,13 +161,13 @@ function defsOf(
  * given. `settable` leaves out calculated attributes and buttons, which a rule cannot write.
  */
 export function attributesFor(
-  tool: ToolLibrary,
+  kit: Kit,
   classId: ClassId | undefined,
   settable = false,
 ): string[] {
   const defs = classId
-    ? defsOf(tool, classId)
-    : Object.keys(tool.classes).flatMap((c) => defsOf(tool, c as ClassId));
+    ? defsOf(kit, classId)
+    : Object.keys(kit.classes).flatMap((c) => defsOf(kit, c as ClassId));
   const keys = defs
     .filter((d) => !settable || (d.type !== 'formula' && d.type !== 'action'))
     .map((d) => d.key);
@@ -186,16 +184,16 @@ export function formulaProblem(text: string): string | null {
   return p.ok ? null : `${p.error} (at character ${p.at + 1} of the formula)`;
 }
 
-function blankAction(type: RuleActionType, tool: ToolLibrary): RuleAction {
+function blankAction(type: RuleActionType, kit: Kit): RuleAction {
   switch (type) {
     case 'setAttribute':
       return { action: type, attribute: '', value: '' };
     case 'createObject':
-      return { action: type, class: classesFor(tool)[0]?.id ?? ('' as never) };
+      return { action: type, class: classesFor(kit)[0]?.id ?? ('' as never) };
     case 'createConnector':
       return {
         action: type,
-        relation: relationsFor(tool)[0]?.id ?? ('' as never),
+        relation: relationsFor(kit)[0]?.id ?? ('' as never),
       };
     case 'delete':
       return { action: type };
@@ -231,7 +229,7 @@ function tidyAny(v: unknown): unknown {
     : v;
 }
 
-/** Plain-English place for the path of an issue from the tool library check. */
+/** Plain-English place for the path of an issue from the Kit check. */
 function whereOf(path: string, id: string): string {
   const rest = path.slice(`rules.${id}`.length);
   const then = /^\.then\[(\d+)\]/.exec(rest);
@@ -251,7 +249,7 @@ export class RuleEditorModel {
   private draft: Rule;
 
   constructor(
-    private tool: ToolLibrary,
+    private kit: Kit,
     rule?: Rule,
   ) {
     this.draft = rule
@@ -268,9 +266,9 @@ export class RuleEditorModel {
     return newId('rule') as RuleId;
   }
 
-  /** Takes the tool library after it changed, so that the pickers list what exists now. */
-  setTool(tool: ToolLibrary): void {
-    this.tool = tool;
+  /** Takes the Kit after it changed, so that the pickers list what exists now. */
+  setKit(kit: Kit): void {
+    this.kit = kit;
   }
 
   get id(): RuleId {
@@ -315,7 +313,7 @@ export class RuleEditorModel {
     this.draft.when = tidy({ ...this.draft.when, class: id || undefined });
     // An attribute of another class would never match.
     const key = this.draft.when.attribute;
-    if (key && id && !attributesFor(this.tool, id).includes(key))
+    if (key && id && !attributesFor(this.kit, id).includes(key))
       delete this.draft.when.attribute;
   }
 
@@ -379,7 +377,7 @@ export class RuleEditorModel {
   addAction(type: RuleActionType, branch: ActionPath = []): ActionPath | null {
     const list = this.list(branch);
     if (!list) return null;
-    list.push(blankAction(type, this.tool));
+    list.push(blankAction(type, this.kit));
     return [...branch, list.length - 1];
   }
 
@@ -396,7 +394,7 @@ export class RuleEditorModel {
   /** Swaps an action for a blank one of another type, keeping nothing of the old one. */
   changeActionType(path: ActionPath, type: RuleActionType): void {
     const at = this.locate(path);
-    if (at) at.list[at.index] = blankAction(type, this.tool);
+    if (at) at.list[at.index] = blankAction(type, this.kit);
   }
 
   /** Moves an action up (-1) or down (1) inside its list. */
@@ -420,9 +418,9 @@ export class RuleEditorModel {
   attributeType(key: string): AttributeDef['type'] | undefined {
     const owner = this.draft.when.class;
     const defs = owner
-      ? defsOf(this.tool, owner)
-      : Object.keys(this.tool.classes).flatMap((c) =>
-          defsOf(this.tool, c as ClassId),
+      ? defsOf(this.kit, owner)
+      : Object.keys(this.kit.classes).flatMap((c) =>
+          defsOf(this.kit, c as ClassId),
         );
     return defs.find((d) => d.key === key)?.type;
   }
@@ -442,15 +440,15 @@ export class RuleEditorModel {
     return text;
   }
 
-  /** Everything that is wrong with the draft, then advice. Errors are what the tool library check says. */
+  /** Everything that is wrong with the draft, then advice. Errors are what the Kit check says. */
   messages(): RuleMessage[] {
     const rule = this.toRule();
     const out: RuleMessage[] = [];
     const probe = {
-      ...this.tool,
-      rules: { ...this.tool.rules, [rule.id]: rule },
+      ...this.kit,
+      rules: { ...this.kit.rules, [rule.id]: rule },
     };
-    for (const issue of validateToolLibrary(probe))
+    for (const issue of validateKit(probe))
       if (issue.path.startsWith(`rules.${rule.id}`))
         out.push({
           level: 'error',

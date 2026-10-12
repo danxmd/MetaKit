@@ -2,7 +2,7 @@
   import type {
     Model,
     Severity,
-    ToolLibrary,
+    Kit,
     ValidationIssue,
   } from '@metakit-app/core';
   import {
@@ -17,14 +17,14 @@
   let {
     issues,
     model,
-    tool,
+    kit,
     onSelect,
     filter = '',
     language = 'en',
   }: {
     issues: ValidationIssue[];
     model: Model;
-    tool: ToolLibrary;
+    kit: Kit;
     /** The id of the element or connector to show, or `'model'` for a problem of the whole model. */
     onSelect: (target: string) => void;
     /** Text the filter box starts with. */
@@ -42,7 +42,7 @@
   let list: HTMLElement | undefined = $state();
 
   const counts = $derived(countBySeverity(issues));
-  const rows = $derived(rowsOf(issues, model, tool, language));
+  const rows = $derived(rowsOf(issues, model, kit, language));
   const visible = $derived(
     filterIssues(rows, query, new Set(SEVERITIES.filter((s) => shown[s]))),
   );

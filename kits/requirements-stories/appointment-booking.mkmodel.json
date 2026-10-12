@@ -1,0 +1,463 @@
+{
+  "attributes": {
+    "Product": "Patient web app",
+    "ProductOwner": "Head of patient services",
+    "Title": "Online appointment booking"
+  },
+  "connectors": [
+    {
+      "from": "el_epic_book",
+      "id": "cn_001",
+      "relation": "ContributesTo",
+      "to": "el_goal_calls"
+    },
+    {
+      "from": "el_epic_manage",
+      "id": "cn_002",
+      "relation": "ContributesTo",
+      "to": "el_goal_noshow"
+    },
+    {
+      "from": "el_req_speed",
+      "id": "cn_003",
+      "relation": "Constrains",
+      "to": "el_epic_book"
+    },
+    {
+      "from": "el_t_slots",
+      "id": "cn_004",
+      "relation": "Verifies",
+      "to": "el_s_search"
+    },
+    {
+      "from": "el_t_dentist",
+      "id": "cn_005",
+      "relation": "Verifies",
+      "to": "el_s_filter"
+    },
+    {
+      "from": "el_t_confirm",
+      "id": "cn_006",
+      "relation": "Verifies",
+      "to": "el_s_confirm"
+    },
+    {
+      "from": "el_t_speed",
+      "id": "cn_007",
+      "relation": "Verifies",
+      "to": "el_req_speed"
+    },
+    {
+      "from": "el_t_cancel",
+      "id": "cn_008",
+      "relation": "Verifies",
+      "to": "el_s_cancel"
+    }
+  ],
+  "elements": [
+    {
+      "attributes": {
+        "Horizon": "Short term",
+        "Measure": "Calls per week",
+        "Name": "Fewer phone calls to reception"
+      },
+      "class": "Goal",
+      "h": 90,
+      "id": "el_goal_calls",
+      "w": 200,
+      "x": 200,
+      "y": 20
+    },
+    {
+      "attributes": {
+        "Horizon": "Medium term",
+        "Measure": "Share of appointments missed",
+        "Name": "Fewer missed appointments"
+      },
+      "class": "Goal",
+      "h": 90,
+      "id": "el_goal_noshow",
+      "w": 200,
+      "x": 1280,
+      "y": 20
+    },
+    {
+      "attributes": {
+        "AcceptanceCriteria": "Measured on a mobile connection at busy times.",
+        "Name": "Pages load within two seconds",
+        "Priority": "Must have",
+        "Type": "Non-functional"
+      },
+      "class": "Requirement",
+      "h": 70,
+      "id": "el_req_speed",
+      "w": 150,
+      "x": 760,
+      "y": 30
+    },
+    {
+      "attributes": {
+        "Name": "Book an appointment",
+        "Owner": "Head of patient services",
+        "Priority": "Must have"
+      },
+      "class": "Epic",
+      "h": 260,
+      "id": "el_epic_book",
+      "w": 880,
+      "x": 20,
+      "y": 150
+    },
+    {
+      "attributes": {
+        "Name": "Find a free slot",
+        "Priority": "Must have",
+        "Release": "1.0"
+      },
+      "class": "Feature",
+      "h": 190,
+      "id": "el_f_slot",
+      "parent": "el_epic_book",
+      "w": 410,
+      "x": 40,
+      "y": 200
+    },
+    {
+      "attributes": {
+        "Name": "Confirm the booking",
+        "Priority": "Must have",
+        "Release": "1.0"
+      },
+      "class": "Feature",
+      "h": 190,
+      "id": "el_f_confirm",
+      "parent": "el_epic_book",
+      "w": 410,
+      "x": 470,
+      "y": 200
+    },
+    {
+      "attributes": {
+        "AcceptanceCriteria": [
+          {
+            "given": "I am signed in",
+            "then": "I see the free slots of the next seven days",
+            "when": "I open \"Book\""
+          },
+          {
+            "given": "no slot is free this week",
+            "then": "I am offered the first free slot after it",
+            "when": "I open \"Book\""
+          }
+        ],
+        "AsA": "patient",
+        "Estimate": 5,
+        "IWant": "to see the free slots of my practice for the coming week",
+        "Name": "See free slots this week",
+        "Priority": "Must have",
+        "SoThat": "I can pick a time without calling",
+        "Sprint": "Sprint 1",
+        "Status": "Done"
+      },
+      "class": "UserStory",
+      "h": 110,
+      "id": "el_s_search",
+      "parent": "el_f_slot",
+      "w": 185,
+      "x": 55,
+      "y": 250
+    },
+    {
+      "attributes": {
+        "AcceptanceCriteria": [
+          {
+            "given": "I chose a dentist",
+            "then": "only that dentist’s slots are listed",
+            "when": "the slots are shown"
+          }
+        ],
+        "AsA": "patient",
+        "Estimate": 3,
+        "IWant": "to see only the slots of the dentist I know",
+        "Name": "Choose a dentist",
+        "Priority": "Should have",
+        "SoThat": "I keep seeing the same person",
+        "Sprint": "Sprint 2",
+        "Status": "In progress"
+      },
+      "class": "UserStory",
+      "h": 110,
+      "id": "el_s_filter",
+      "parent": "el_f_slot",
+      "w": 185,
+      "x": 250,
+      "y": 250
+    },
+    {
+      "attributes": {
+        "AcceptanceCriteria": [
+          {
+            "given": "I booked a slot",
+            "then": "I receive an email and a text message within one minute",
+            "when": "the booking is saved"
+          }
+        ],
+        "AsA": "patient",
+        "Estimate": 3,
+        "IWant": "a confirmation by email and text message",
+        "Name": "Get a confirmation",
+        "Priority": "Must have",
+        "SoThat": "I know the booking worked",
+        "Status": "Ready"
+      },
+      "class": "UserStory",
+      "h": 110,
+      "id": "el_s_confirm",
+      "parent": "el_f_confirm",
+      "w": 185,
+      "x": 485,
+      "y": 250
+    },
+    {
+      "attributes": {
+        "AcceptanceCriteria": [
+          {
+            "given": "I am a new patient",
+            "then": "I am asked to pay the deposit",
+            "when": "I confirm a booking"
+          }
+        ],
+        "AsA": "new patient",
+        "Estimate": 8,
+        "IWant": "to pay a small deposit when I book",
+        "Name": "Pay a deposit",
+        "Priority": "Could have",
+        "SoThat": "my first appointment is held for me",
+        "Status": "Backlog"
+      },
+      "class": "UserStory",
+      "h": 110,
+      "id": "el_s_deposit",
+      "parent": "el_f_confirm",
+      "w": 185,
+      "x": 685,
+      "y": 250
+    },
+    {
+      "attributes": {
+        "Name": "Manage my appointments",
+        "Owner": "Head of patient services",
+        "Priority": "Should have"
+      },
+      "class": "Epic",
+      "h": 260,
+      "id": "el_epic_manage",
+      "w": 880,
+      "x": 940,
+      "y": 150
+    },
+    {
+      "attributes": {
+        "Name": "Reminders",
+        "Priority": "Must have",
+        "Release": "1.1"
+      },
+      "class": "Feature",
+      "h": 190,
+      "id": "el_f_remind",
+      "parent": "el_epic_manage",
+      "w": 410,
+      "x": 960,
+      "y": 200
+    },
+    {
+      "attributes": {
+        "Name": "Change or cancel",
+        "Priority": "Should have",
+        "Release": "1.1"
+      },
+      "class": "Feature",
+      "h": 190,
+      "id": "el_f_change",
+      "parent": "el_epic_manage",
+      "w": 410,
+      "x": 1390,
+      "y": 200
+    },
+    {
+      "attributes": {
+        "AcceptanceCriteria": [
+          {
+            "given": "I have an appointment tomorrow",
+            "then": "I receive a text message reminder",
+            "when": "it is 10 o’clock today"
+          }
+        ],
+        "AsA": "patient",
+        "Estimate": 3,
+        "IWant": "a reminder the day before my appointment",
+        "Name": "Reminder the day before",
+        "Priority": "Must have",
+        "SoThat": "I do not forget it",
+        "Status": "Ready"
+      },
+      "class": "UserStory",
+      "h": 110,
+      "id": "el_s_remind",
+      "parent": "el_f_remind",
+      "w": 185,
+      "x": 975,
+      "y": 250
+    },
+    {
+      "attributes": {
+        "AcceptanceCriteria": [
+          {
+            "given": "I have a booking",
+            "then": "a calendar file with the time and place is downloaded",
+            "when": "I choose \"Add to calendar\""
+          }
+        ],
+        "AsA": "patient",
+        "Estimate": 2,
+        "IWant": "to add the appointment to my calendar",
+        "Name": "Add to my calendar",
+        "Priority": "Could have",
+        "SoThat": "it shows next to my other plans",
+        "Status": "Backlog"
+      },
+      "class": "UserStory",
+      "h": 110,
+      "id": "el_s_calendar",
+      "parent": "el_f_remind",
+      "w": 185,
+      "x": 1175,
+      "y": 250
+    },
+    {
+      "attributes": {
+        "AsA": "patient",
+        "Estimate": 5,
+        "IWant": "to move my appointment to another free slot",
+        "Name": "Change an appointment",
+        "Priority": "Should have",
+        "SoThat": "I do not have to cancel and book again",
+        "Status": "Backlog"
+      },
+      "class": "UserStory",
+      "h": 110,
+      "id": "el_s_change",
+      "parent": "el_f_change",
+      "w": 185,
+      "x": 1405,
+      "y": 250
+    },
+    {
+      "attributes": {
+        "AcceptanceCriteria": [
+          {
+            "given": "my appointment is more than 24 hours away",
+            "then": "the slot is free again at once",
+            "when": "I cancel it"
+          },
+          {
+            "given": "my appointment is less than 24 hours away",
+            "then": "I am asked to call the practice",
+            "when": "I try to cancel it"
+          }
+        ],
+        "AsA": "patient",
+        "Estimate": 3,
+        "IWant": "to cancel up to 24 hours before",
+        "Name": "Cancel an appointment",
+        "Priority": "Must have",
+        "SoThat": "the slot goes to someone else",
+        "Status": "Backlog"
+      },
+      "class": "UserStory",
+      "h": 110,
+      "id": "el_s_cancel",
+      "parent": "el_f_change",
+      "w": 185,
+      "x": 1605,
+      "y": 250
+    },
+    {
+      "attributes": {
+        "LastRun": "2027-03-12",
+        "Name": "Free slots are listed",
+        "Status": "Passed",
+        "Type": "Automated"
+      },
+      "class": "TestCase",
+      "h": 70,
+      "id": "el_t_slots",
+      "w": 170,
+      "x": 55,
+      "y": 470
+    },
+    {
+      "attributes": {
+        "LastRun": "2027-03-12",
+        "Name": "Filter by dentist",
+        "Status": "Failed",
+        "Type": "Automated"
+      },
+      "class": "TestCase",
+      "h": 70,
+      "id": "el_t_dentist",
+      "w": 170,
+      "x": 250,
+      "y": 470
+    },
+    {
+      "attributes": {
+        "Name": "Confirmation arrives",
+        "Status": "Not run",
+        "Type": "Manual"
+      },
+      "class": "TestCase",
+      "h": 70,
+      "id": "el_t_confirm",
+      "w": 170,
+      "x": 485,
+      "y": 470
+    },
+    {
+      "attributes": {
+        "Name": "Load test at peak",
+        "Status": "Not run",
+        "Type": "Automated"
+      },
+      "class": "TestCase",
+      "h": 70,
+      "id": "el_t_speed",
+      "w": 170,
+      "x": 700,
+      "y": 470
+    },
+    {
+      "attributes": {
+        "Name": "Late cancel is refused",
+        "Status": "Not run",
+        "Type": "Manual"
+      },
+      "class": "TestCase",
+      "h": 70,
+      "id": "el_t_cancel",
+      "w": 170,
+      "x": 1605,
+      "y": 470
+    }
+  ],
+  "formatVersion": 2,
+  "id": "mdl_appointmentbooking",
+  "kind": "mkmodel",
+  "kit": {
+    "id": "kit_requirements",
+    "name": "Requirements and user stories",
+    "version": "1.0.0"
+  },
+  "modelType": "Backlog",
+  "name": "Online appointment booking"
+}

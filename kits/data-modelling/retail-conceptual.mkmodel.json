@@ -1,0 +1,262 @@
+{
+  "attributes": {
+    "ModelVersion": "1.0",
+    "Organisation": "A home and garden retailer",
+    "Title": "Retail sales: conceptual model"
+  },
+  "connectors": [
+    {
+      "attributes": {
+        "FromCardinality": "1",
+        "ToCardinality": "0..*",
+        "Verb": "places"
+      },
+      "from": "el_customer",
+      "id": "cn_001",
+      "relation": "RelatesTo",
+      "to": "el_order"
+    },
+    {
+      "attributes": {
+        "FromCardinality": "0..1",
+        "ToCardinality": "0..*",
+        "Verb": "takes"
+      },
+      "from": "el_store",
+      "id": "cn_002",
+      "relation": "RelatesTo",
+      "to": "el_order"
+    },
+    {
+      "attributes": {
+        "FromCardinality": "1",
+        "ToCardinality": "1..*",
+        "Verb": "is paid by"
+      },
+      "from": "el_order",
+      "id": "cn_003",
+      "relation": "RelatesTo",
+      "to": "el_payment"
+    },
+    {
+      "attributes": {
+        "FromCardinality": "1",
+        "ToCardinality": "0..*",
+        "Verb": "is sent as"
+      },
+      "from": "el_order",
+      "id": "cn_004",
+      "relation": "RelatesTo",
+      "to": "el_delivery"
+    },
+    {
+      "attributes": {
+        "FromCardinality": "0..*",
+        "ToCardinality": "1..*",
+        "Verb": "includes"
+      },
+      "from": "el_order",
+      "id": "cn_005",
+      "relation": "RelatesTo",
+      "to": "el_product"
+    },
+    {
+      "attributes": {
+        "FromCardinality": "1",
+        "ToCardinality": "0..*",
+        "Verb": "groups"
+      },
+      "from": "el_category",
+      "id": "cn_006",
+      "relation": "RelatesTo",
+      "to": "el_product"
+    },
+    {
+      "attributes": {
+        "FromCardinality": "1..*",
+        "ToCardinality": "0..*",
+        "Verb": "supplies"
+      },
+      "from": "el_supplier",
+      "id": "cn_007",
+      "relation": "RelatesTo",
+      "to": "el_product"
+    },
+    {
+      "attributes": {
+        "FromCardinality": "0..*",
+        "ToCardinality": "1..*",
+        "Verb": "applies to"
+      },
+      "from": "el_promotion",
+      "id": "cn_008",
+      "relation": "RelatesTo",
+      "to": "el_product"
+    }
+  ],
+  "elements": [
+    {
+      "attributes": {
+        "Name": "Customers and stores",
+        "Owner": "Head of customer"
+      },
+      "class": "SubjectArea",
+      "h": 480,
+      "id": "el_sa_party",
+      "w": 250,
+      "x": 40,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "Description": "A person or business that buys from us.",
+        "Name": "Customer"
+      },
+      "class": "BusinessEntity",
+      "h": 70,
+      "id": "el_customer",
+      "parent": "el_sa_party",
+      "w": 150,
+      "x": 90,
+      "y": 250
+    },
+    {
+      "attributes": {
+        "Description": "A shop where customers buy in person.",
+        "Name": "Store"
+      },
+      "class": "BusinessEntity",
+      "h": 70,
+      "id": "el_store",
+      "parent": "el_sa_party",
+      "w": 150,
+      "x": 90,
+      "y": 420
+    },
+    {
+      "attributes": {
+        "Name": "Sales",
+        "Owner": "Head of sales operations"
+      },
+      "class": "SubjectArea",
+      "h": 480,
+      "id": "el_sa_sales",
+      "w": 250,
+      "x": 455,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "Description": "A request by a customer to buy products.",
+        "Name": "Sales order"
+      },
+      "class": "BusinessEntity",
+      "h": 70,
+      "id": "el_order",
+      "parent": "el_sa_sales",
+      "w": 150,
+      "x": 505,
+      "y": 250
+    },
+    {
+      "attributes": {
+        "Description": "Money received for an order.",
+        "Name": "Payment"
+      },
+      "class": "BusinessEntity",
+      "h": 70,
+      "id": "el_payment",
+      "parent": "el_sa_sales",
+      "w": 150,
+      "x": 505,
+      "y": 80
+    },
+    {
+      "attributes": {
+        "Description": "Products sent to a customer for an order.",
+        "Name": "Delivery"
+      },
+      "class": "BusinessEntity",
+      "h": 70,
+      "id": "el_delivery",
+      "parent": "el_sa_sales",
+      "w": 150,
+      "x": 505,
+      "y": 420
+    },
+    {
+      "attributes": {
+        "Name": "Products and suppliers",
+        "Owner": "Head of buying"
+      },
+      "class": "SubjectArea",
+      "h": 480,
+      "id": "el_sa_product",
+      "w": 500,
+      "x": 860,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "Description": "Something we sell.",
+        "Name": "Product"
+      },
+      "class": "BusinessEntity",
+      "h": 70,
+      "id": "el_product",
+      "parent": "el_sa_product",
+      "w": 150,
+      "x": 900,
+      "y": 250
+    },
+    {
+      "attributes": {
+        "Description": "A group of similar products, such as garden furniture.",
+        "Name": "Product category"
+      },
+      "class": "BusinessEntity",
+      "h": 70,
+      "id": "el_category",
+      "parent": "el_sa_product",
+      "w": 150,
+      "x": 900,
+      "y": 80
+    },
+    {
+      "attributes": {
+        "Description": "A time-limited offer on some products.",
+        "Name": "Promotion"
+      },
+      "class": "BusinessEntity",
+      "h": 70,
+      "id": "el_promotion",
+      "parent": "el_sa_product",
+      "w": 150,
+      "x": 900,
+      "y": 420
+    },
+    {
+      "attributes": {
+        "Description": "A business we buy products from.",
+        "Name": "Supplier"
+      },
+      "class": "BusinessEntity",
+      "h": 70,
+      "id": "el_supplier",
+      "parent": "el_sa_product",
+      "w": 150,
+      "x": 1180,
+      "y": 250
+    }
+  ],
+  "formatVersion": 2,
+  "id": "mdl_retailconceptual",
+  "kind": "mkmodel",
+  "kit": {
+    "id": "kit_datamodelling",
+    "name": "Data modelling",
+    "version": "1.0.0"
+  },
+  "modelType": "Conceptual",
+  "name": "Retail sales: conceptual model"
+}

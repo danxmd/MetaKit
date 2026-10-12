@@ -44,9 +44,9 @@ Leave without placing:
 | **Escape** | Leaves the place tool without placing anything. |
 | Right-click | Also leaves the place tool, without opening a menu. |
 | Click in a swimlane or container | Puts the new object inside it, if the container accepts that kind of object. See [[containers-swimlanes]]. |
-| Grid | If **snap to grid** is on in the tool, the position is rounded to the grid. See [[grid-and-snapping]]. |
+| Grid | If **snap to grid** is on in the Kit, the position is rounded to the grid. See [[grid-and-snapping]]. |
 
-A new object is 120 wide and 60 high at first. Its attributes start with the defaults the tool builder set. A new **Task** in the Agent pipeline starts with **Name** "New task", **Status** "Planned" and **Priority** "Medium".
+A new object is 120 wide and 60 high at first. Its attributes start with the defaults the method engineer set. A new **Task** in the Agent pipeline starts with **Name** "New task", **Status** "Planned" and **Priority** "Medium".
 
 ## Examples
 
@@ -56,7 +56,7 @@ Click **Artifact** and then click inside the **Build** stage of the Code review 
 
 - With **Interaction hints** on, the line under the canvas says "Click on the canvas to place a Task. Press Escape to stop." See [[interaction-hints]].
 - A required attribute without a default starts empty. The [[problems-panel]] then lists it as a warning until you fill it in.
-- The palette view can hide objects you need. Switch the view to **All** in the **View** menu.
+- The palette view can hide objects you need. Switch the view to **All** at the top of the palette ([[palette#palette-view]]).
 - To place a copy of existing objects, use [[clipboard]].
 - To rename the new object right away, double-click it. See [[editing-labels]].
 

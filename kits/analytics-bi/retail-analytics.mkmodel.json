@@ -1,0 +1,436 @@
+{
+  "attributes": {
+    "Organisation": "A chain of hardware stores",
+    "Title": "Sales and finance analytics"
+  },
+  "connectors": [
+    {
+      "attributes": {
+        "Frequency": "Daily"
+      },
+      "from": "el_ds_sales",
+      "id": "cn_001",
+      "relation": "FlowsTo",
+      "to": "el_sm_sales"
+    },
+    {
+      "from": "el_ds_stores",
+      "id": "cn_002",
+      "relation": "FlowsTo",
+      "to": "el_sm_sales"
+    },
+    {
+      "attributes": {
+        "Frequency": "Hourly"
+      },
+      "from": "el_ds_footfall",
+      "id": "cn_003",
+      "relation": "FlowsTo",
+      "to": "el_sm_sales"
+    },
+    {
+      "attributes": {
+        "Frequency": "Monthly"
+      },
+      "from": "el_ds_sales",
+      "id": "cn_004",
+      "relation": "FlowsTo",
+      "to": "el_sm_finance"
+    },
+    {
+      "from": "el_ds_budget",
+      "id": "cn_005",
+      "relation": "FlowsTo",
+      "to": "el_sm_finance"
+    },
+    {
+      "from": "el_sm_sales",
+      "id": "cn_006",
+      "relation": "FlowsTo",
+      "to": "el_db_exec"
+    },
+    {
+      "from": "el_sm_sales",
+      "id": "cn_007",
+      "relation": "FlowsTo",
+      "to": "el_db_stores"
+    },
+    {
+      "from": "el_sm_sales",
+      "id": "cn_008",
+      "relation": "FlowsTo",
+      "to": "el_rp_regional"
+    },
+    {
+      "from": "el_sm_finance",
+      "id": "cn_009",
+      "relation": "FlowsTo",
+      "to": "el_rp_pnl"
+    },
+    {
+      "from": "el_m_revenue",
+      "id": "cn_010",
+      "relation": "DefinedIn",
+      "to": "el_sm_sales"
+    },
+    {
+      "from": "el_m_revenue",
+      "id": "cn_011",
+      "relation": "DefinedIn",
+      "to": "el_sm_finance"
+    },
+    {
+      "from": "el_m_basket",
+      "id": "cn_012",
+      "relation": "DefinedIn",
+      "to": "el_sm_sales"
+    },
+    {
+      "from": "el_m_conversion",
+      "id": "cn_013",
+      "relation": "DefinedIn",
+      "to": "el_sm_sales"
+    },
+    {
+      "from": "el_m_margin",
+      "id": "cn_014",
+      "relation": "DefinedIn",
+      "to": "el_sm_finance"
+    },
+    {
+      "from": "el_m_variance",
+      "id": "cn_015",
+      "relation": "DefinedIn",
+      "to": "el_sm_finance"
+    },
+    {
+      "from": "el_db_exec",
+      "id": "cn_016",
+      "relation": "Shows",
+      "to": "el_m_revenue"
+    },
+    {
+      "from": "el_db_exec",
+      "id": "cn_017",
+      "relation": "Shows",
+      "to": "el_m_margin"
+    },
+    {
+      "from": "el_db_stores",
+      "id": "cn_018",
+      "relation": "Shows",
+      "to": "el_m_basket"
+    },
+    {
+      "from": "el_db_stores",
+      "id": "cn_019",
+      "relation": "Shows",
+      "to": "el_m_conversion"
+    },
+    {
+      "from": "el_rp_regional",
+      "id": "cn_020",
+      "relation": "Shows",
+      "to": "el_m_revenue"
+    },
+    {
+      "from": "el_rp_pnl",
+      "id": "cn_021",
+      "relation": "Shows",
+      "to": "el_m_variance"
+    },
+    {
+      "from": "el_db_exec",
+      "id": "cn_022",
+      "relation": "Serves",
+      "to": "el_aud_exec"
+    },
+    {
+      "from": "el_db_stores",
+      "id": "cn_023",
+      "relation": "Serves",
+      "to": "el_aud_stores"
+    },
+    {
+      "from": "el_rp_regional",
+      "id": "cn_024",
+      "relation": "Serves",
+      "to": "el_aud_stores"
+    },
+    {
+      "from": "el_rp_pnl",
+      "id": "cn_025",
+      "relation": "Serves",
+      "to": "el_aud_finance"
+    },
+    {
+      "from": "el_rp_pnl",
+      "id": "cn_026",
+      "relation": "Serves",
+      "to": "el_aud_exec"
+    }
+  ],
+  "elements": [
+    {
+      "attributes": {
+        "Format": "Table",
+        "Name": "Sales",
+        "Refresh": "Daily"
+      },
+      "class": "Dataset",
+      "h": 90,
+      "id": "el_ds_sales",
+      "w": 170,
+      "x": 40,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "Format": "Table",
+        "Name": "Stores",
+        "Refresh": "Weekly"
+      },
+      "class": "Dataset",
+      "h": 90,
+      "id": "el_ds_stores",
+      "w": 170,
+      "x": 40,
+      "y": 190
+    },
+    {
+      "attributes": {
+        "Format": "Files",
+        "Name": "Footfall counts",
+        "Refresh": "Hourly"
+      },
+      "class": "Dataset",
+      "h": 90,
+      "id": "el_ds_footfall",
+      "w": 170,
+      "x": 40,
+      "y": 340
+    },
+    {
+      "attributes": {
+        "Format": "Spreadsheet",
+        "Name": "Budget",
+        "Refresh": "Monthly"
+      },
+      "class": "Dataset",
+      "h": 90,
+      "id": "el_ds_budget",
+      "w": 170,
+      "x": 40,
+      "y": 490
+    },
+    {
+      "attributes": {
+        "Certified": true,
+        "Name": "Sales model",
+        "Owner": "Sales analytics team",
+        "RefreshSchedule": "Daily at 06:00",
+        "StorageMode": "Import"
+      },
+      "class": "SemanticModel",
+      "h": 70,
+      "id": "el_sm_sales",
+      "w": 180,
+      "x": 300,
+      "y": 150
+    },
+    {
+      "attributes": {
+        "Name": "Finance model",
+        "Owner": "Finance controlling",
+        "RefreshSchedule": "Monthly",
+        "StorageMode": "Import"
+      },
+      "class": "SemanticModel",
+      "h": 70,
+      "id": "el_sm_finance",
+      "w": 180,
+      "x": 300,
+      "y": 450
+    },
+    {
+      "attributes": {
+        "Certified": true,
+        "MonthlyViews": 820,
+        "Name": "Executive sales",
+        "Owner": "Head of sales analytics",
+        "Refresh": "Daily",
+        "Tool": "Company BI tool"
+      },
+      "class": "Dashboard",
+      "h": 110,
+      "id": "el_db_exec",
+      "w": 190,
+      "x": 840,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "MonthlyViews": 1450,
+        "Name": "Store performance",
+        "Refresh": "Daily",
+        "Tool": "Company BI tool"
+      },
+      "class": "Dashboard",
+      "h": 110,
+      "id": "el_db_stores",
+      "w": 190,
+      "x": 840,
+      "y": 190
+    },
+    {
+      "attributes": {
+        "Format": "Paginated",
+        "MonthlyViews": 0,
+        "Name": "Regional sales report",
+        "Owner": "Sales analytics team",
+        "Refresh": "Weekly"
+      },
+      "class": "Report",
+      "h": 90,
+      "id": "el_rp_regional",
+      "w": 160,
+      "x": 855,
+      "y": 340
+    },
+    {
+      "attributes": {
+        "Format": "Spreadsheet",
+        "MonthlyViews": 120,
+        "Name": "Monthly profit and loss",
+        "Owner": "Finance controlling",
+        "Refresh": "Monthly"
+      },
+      "class": "Report",
+      "h": 90,
+      "id": "el_rp_pnl",
+      "w": 160,
+      "x": 855,
+      "y": 470
+    },
+    {
+      "attributes": {
+        "Department": "Management",
+        "Name": "Executive team",
+        "People": 12
+      },
+      "class": "Audience",
+      "h": 64,
+      "id": "el_aud_exec",
+      "w": 170,
+      "x": 1120,
+      "y": 60
+    },
+    {
+      "attributes": {
+        "Department": "Retail operations",
+        "Name": "Store managers",
+        "People": 140
+      },
+      "class": "Audience",
+      "h": 64,
+      "id": "el_aud_stores",
+      "w": 170,
+      "x": 1120,
+      "y": 240
+    },
+    {
+      "attributes": {
+        "Department": "Finance",
+        "Name": "Finance team",
+        "People": 25
+      },
+      "class": "Audience",
+      "h": 64,
+      "id": "el_aud_finance",
+      "w": 170,
+      "x": 1120,
+      "y": 490
+    },
+    {
+      "attributes": {
+        "Calculation": "Sales minus returns and discounts",
+        "Certified": true,
+        "Name": "Net revenue",
+        "Owner": "Head of finance",
+        "Unit": "currency"
+      },
+      "class": "Metric",
+      "h": 50,
+      "id": "el_m_revenue",
+      "w": 170,
+      "x": 560,
+      "y": 300
+    },
+    {
+      "attributes": {
+        "Calculation": "Net revenue minus cost of goods",
+        "Name": "Gross margin",
+        "Owner": "Head of finance",
+        "Unit": "%"
+      },
+      "class": "Metric",
+      "h": 50,
+      "id": "el_m_margin",
+      "w": 170,
+      "x": 560,
+      "y": 460
+    },
+    {
+      "attributes": {
+        "Calculation": "Net revenue per receipt",
+        "Name": "Basket size",
+        "Owner": "Head of sales",
+        "Unit": "currency"
+      },
+      "class": "Metric",
+      "h": 50,
+      "id": "el_m_basket",
+      "w": 170,
+      "x": 560,
+      "y": 60
+    },
+    {
+      "attributes": {
+        "Calculation": "Receipts per hundred visitors",
+        "Name": "Footfall conversion",
+        "Owner": "Head of sales",
+        "Unit": "%"
+      },
+      "class": "Metric",
+      "h": 50,
+      "id": "el_m_conversion",
+      "w": 170,
+      "x": 560,
+      "y": 140
+    },
+    {
+      "attributes": {
+        "Calculation": "Net revenue minus budget",
+        "Name": "Budget variance",
+        "Owner": "Head of finance",
+        "Unit": "currency"
+      },
+      "class": "Metric",
+      "h": 50,
+      "id": "el_m_variance",
+      "w": 170,
+      "x": 560,
+      "y": 540
+    }
+  ],
+  "formatVersion": 2,
+  "id": "mdl_retailanalytics",
+  "kind": "mkmodel",
+  "kit": {
+    "id": "kit_analyticsbi",
+    "name": "Analytics and BI landscape",
+    "version": "1.0.0"
+  },
+  "modelType": "BILandscape",
+  "name": "Sales and finance analytics"
+}

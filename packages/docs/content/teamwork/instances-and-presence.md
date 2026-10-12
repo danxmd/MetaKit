@@ -24,7 +24,7 @@ A window of MetaKit is called an instance. Each instance shows itself to the oth
 | `instance` | The tab's id |
 | `name`, `colour` | From your profile |
 | `at` | When the file was written |
-| `document` | `{kind, slug}` of the model or tool open, or empty |
+| `document` | `{kind, slug}` of the model or Kit open, or empty |
 | `selection` | Ids of the objects selected |
 | `editing` | The id of the object whose text you are editing, or empty |
 | `hash` | A short fingerprint of the state of the open document |
@@ -32,9 +32,11 @@ A window of MetaKit is called an instance. Each instance shows itself to the oth
 
 > **Note:** The presence file is the one file an instance rewrites. That is allowed because it is in the instance's own area. Change files are never rewritten.
 
+A tab never counts its own presence file as someone else, even when a sync service has copied it under another name. If two files name the same instance, the newer one counts.
+
 ## Where to find it
 
-In Model mode, to the right of the save word in the toolbar there is a row of round avatars. The first one is you, with your colour and the tooltip "Name (you)". Others who have the same model open follow. The tooltip is their name. The letters inside are the initials of the first two words of the name, or "?" if there is no name.
+In Model mode, to the right of the save word in the top bar there is a row of round avatars. The first one is you, with your colour and the tooltip "Name (you)". Others who have the same model open follow. The tooltip is their name. The letters inside are the initials of the first two words of the name, or "?" if there is no name.
 
 On the canvas, objects selected by other people get an outline in their colour, with their initials.
 

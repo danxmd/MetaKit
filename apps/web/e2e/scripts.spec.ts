@@ -121,18 +121,18 @@ test.describe('the script editor', () => {
   });
 });
 
-/** The bpmn-lite tool with one script that adds a command, and a request to use the network. */
-function scriptedTool(): string {
-  const tool = JSON.parse(
+/** The bpmn-lite Kit with one script that adds a command, and a request to use the network. */
+function scriptedKit(): string {
+  const kit = JSON.parse(
     readFileSync(
       fileURLToPath(
-        new URL('../../../tools/bpmn-lite/tool.json', import.meta.url),
+        new URL('../../../kits/bpmn-lite/kit.json', import.meta.url),
       ),
       'utf8',
     ),
   ) as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any -- test-only edit of a JSON document
-  tool.manifest.permissions = { network: true };
-  tool.scripts = {
+  kit.manifest.permissions = { network: true };
+  kit.scripts = {
     scr_hello: {
       id: 'scr_hello',
       name: 'Hello',
@@ -147,7 +147,7 @@ commands.register({
 `,
     },
   };
-  return JSON.stringify(tool);
+  return JSON.stringify(kit);
 }
 
 test.describe('scripts in the app', () => {
@@ -161,7 +161,7 @@ test.describe('scripts in the app', () => {
         (window as unknown as { __seed(t: string): Promise<void> }).__seed(
           json,
         ),
-      scriptedTool(),
+      scriptedKit(),
     );
     await page.reload();
     await newModel(page, 'Scripted');

@@ -117,7 +117,7 @@ export type TextPart = PartBase & {
 };
 export type ImagePart = PartBase & {
   type: 'image';
-  /** A `data:` URI or a path under the tool library's `assets/` folder. */
+  /** A `data:` URI or a path under the Kit's `assets/` folder. */
   src: Prop<string>;
   fit?: 'contain' | 'cover' | 'stretch';
 };

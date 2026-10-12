@@ -12,19 +12,19 @@ When you ask the assistant for a draft, your browser sends one request to the se
 
 ## What it is
 
-**Tool definitions, never models.** A request holds three things:
+**Kit definitions, never models.** A request holds three things:
 
 1. Your sentence.
-2. A summary of the tool library you are editing.
+2. A summary of the Kit you are editing.
 3. The format the draft must follow.
 
 It never holds the objects, attribute values, names or any other content of a model, even while a model is open elsewhere in the workspace.
 
-### The summary of the tool library
+### The summary of the Kit
 
 | Included | Detail |
 | --- | --- |
-| Tool name and languages | For example `Tool: "BPMN lite". Languages: en.` |
+| Kit name and languages | For example `Kit: "BPMN lite". Languages: en.` |
 | Classes | Id, key, kind, abstract, parent class, and every attribute with its type. Choice attributes list their options. Formula attributes list their formula. Required is marked. |
 | Relation classes | Id, key, which classes they join, and their attributes. |
 | Model types | Key and the classes they hold. |
@@ -39,7 +39,7 @@ At most 80 entries of each list are included. A line `... and N more` closes a l
 Depends on what you draft:
 
 - **Rule:** the rule format with the 24 events, the action types and the formula language (see [[rule-triggers]], [[rule-actions]], [[formula-reference]]), plus an example.
-- **Script:** the TypeScript declarations of the `metakit` module for your tool library (see [[script-api]]).
+- **Script:** the TypeScript declarations of the `metakit` module for your Kit (see [[script-api]]).
 - **Shape:** the shape format and an example.
 - **Class:** the class format.
 
@@ -51,17 +51,17 @@ Depends on what you draft:
 - Anything from other documents in the workspace.
 - Your Git tokens, your profile name, the contents of the workspace folder.
 
-> **Note:** Tool definitions can still hold business words. A class called "Merger target" or a choice list of project code names is part of the summary. If the names themselves are confidential, do not use the assistant on that tool.
+> **Note:** Kit definitions can still hold business words. A class called "Merger target" or a choice list of project code names is part of the summary. If the names themselves are confidential, do not use the assistant on that Kit.
 
 ## Where to find it
 
-On the **Assistant (optional)** page, the box **What is sent** has three short paragraphs and the button **Show a sample request**. The sample is the exact text that a request for a rule would send for your open tool library, or for a small example tool when none is open. In the draft dialog, a line says "Only the tool definition and your description are sent, never a model." See [[assistant-overview]].
+On the **Assistant (optional)** page, the box **What is sent** has three short paragraphs and the button **Show a sample request**. The sample is the exact text that a request for a rule would send for your open Kit, or for a small example Kit when none is open. In the draft dialog, a line says "Only the Kit definition and your description are sent, never a model." See [[assistant-overview]].
 
 ## How to use it
 
 1. Open the Assistant page and press **Show a sample request**.
 2. Read it from top to bottom. The part called SYSTEM holds the instructions, the summary and the format. The part called USER holds your sentence.
-3. If anything in it should not leave your computer, do not turn the assistant on for this tool.
+3. If anything in it should not leave your computer, do not turn the assistant on for this Kit.
 
 ## Every option explained
 
@@ -78,14 +78,14 @@ Before any request is sent, a check looks at it. If anything is wrong, nothing i
 | it has the wrong shape / a message has the wrong shape | Messages must be text from the user or the assistant. |
 | it contains the id of a model object | An id starting `el_`, `cn_` or `mdl_` was found. These exist only in models. |
 | it looks like a model file | Both `"elements":` and `"connectors":` appear. |
-| it contains the id X, which is not in the tool library | Any other id must belong to the tool library. |
+| it contains the id X, which is not in the Kit | Any other id must belong to the Kit. |
 
-The guard is a second line of defence. The code that builds requests takes only a tool library and cannot be given a model.
+The guard is a second line of defence. The code that builds requests takes only a Kit and cannot be given a model.
 
 ### The key
 
 - Kept in your browser profile only (IndexedDB), under `assistantKeys`. Settings (on or off, provider, model) are kept apart, under `assistantSettings`.
-- Never in the shared folder, a tool library, a model, a repository, a log, a test file or a package.
+- Never in the shared folder, a Kit, a model, a repository, a log, a test file or a package.
 - Sent only in the header of the request to the service.
 - Removed from any text that comes back: the key, anything shaped like `sk-...`, and header lines such as `x-api-key:` become `[key removed]`.
 
@@ -99,7 +99,7 @@ A request is as large as the sample plus your sentence. Two requests are sent wh
 
 ## Examples
 
-- Your tool has a class `Task` with choice `Priority` (Low, Medium, High). The sample lists `Priority (choice: Low | Medium | High)`. It does not contain any real task.
+- Your Kit has a class `Task` with choice `Priority` (Low, Medium, High). The sample lists `Priority (choice: Low | Medium | High)`. It does not contain any real task.
 - You draft a script. The request contains the declarations that describe `Task` and `Priority`, so that the answer uses the right names. Your existing scripts are not in it.
 
 ## Good to know

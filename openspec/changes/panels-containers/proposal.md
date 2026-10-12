@@ -23,4 +23,4 @@ Work package 4.4 in `docs/phase-4.md`: method engineers shape the attribute pane
 
 ## Impact
 
-- `ClassDef.panel` is no longer used; layouts live in the tool's `panels` table (format 2). A usability test by Danial closes the phase; a protocol is prepared.
+- `ClassDef.panel` is no longer used; layouts live in the Kit's `panels` table (format 2). A usability test by Danial closes the phase; a protocol is prepared.

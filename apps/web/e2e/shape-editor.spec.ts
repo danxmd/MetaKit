@@ -1,7 +1,7 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
-/** A bare workspace and a new tool library in Build mode. */
-async function newTool(page: Page, name: string) {
+/** A bare workspace and a new Kit in Build mode. */
+async function newKit(page: Page, name: string) {
   const folder = `bare-${Math.random().toString(36).slice(2)}`;
   await page.addInitScript(
     ([wanted]) => {
@@ -23,9 +23,9 @@ async function newTool(page: Page, name: string) {
   await page.getByTestId('open-folder').click();
   await page.getByRole('button', { name: 'Create workspace' }).click();
   await page.getByTestId('mode-build').click();
-  await page.getByTestId('new-tool').click();
-  await page.getByTestId('new-tool-name').fill(name);
-  await page.getByTestId('new-tool-create').click();
+  await page.getByTestId('new-kit').click();
+  await page.getByTestId('new-kit-name').fill(name);
+  await page.getByTestId('new-kit-create').click();
   await expect(page.getByTestId('build-view')).toBeVisible();
 }
 
@@ -60,7 +60,7 @@ const pixel = (canvas: Locator, x: number, y: number) =>
 test('the task shape of the plan can be built with editor actions only', async ({
   page,
 }) => {
-  await newTool(page, 'Shapes');
+  await newKit(page, 'Shapes');
   await addClass(page, 'Task');
   await addAttribute(page, 'text', 'Name');
   await addAttribute(page, 'choice', 'Priority');
@@ -127,4 +127,43 @@ test('the task shape of the plan can be built with editor actions only', async (
 
   await page.getByTestId('shape-close').click();
   await expect(page.getByTestId('class-shape')).not.toHaveValue('');
+});
+
+test('the layer list keeps its rows in view with wide fonts on a 1280 x 720 screen', async ({
+  page,
+}) => {
+  // Linux machines without the app's fonts fall back to wide ones such as DejaVu Sans; Verdana is
+  // as wide where it exists. With them the layer list used to be squeezed to nothing under the
+  // gallery, so its buttons could not be clicked.
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.addInitScript(() => {
+    document.addEventListener('DOMContentLoaded', () => {
+      const style = document.createElement('style');
+      style.textContent = `:root { --font: Verdana, 'DejaVu Sans', sans-serif; }`;
+      document.head.append(style);
+    });
+  });
+  await newKit(page, 'Shapes');
+  await addClass(page, 'Task');
+  await page.getByTestId('appearance-more').locator('summary').click();
+  await page.getByTestId('class-new-shape').click();
+  await expect(page.getByTestId('shape-editor')).toBeVisible();
+
+  const list = page.getByTestId('shape-layers').locator('ul');
+  // Every row is shown: the list is as tall as what it holds.
+  expect(
+    await list.evaluate((el) => el.clientHeight >= el.scrollHeight - 1),
+  ).toBe(true);
+  // Nothing lies over the first row.
+  const layer = page.getByTestId('shape-layer-0');
+  expect(
+    await layer.evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      return el.contains(
+        document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2),
+      );
+    }),
+  ).toBe(true);
+  await layer.click();
+  await expect(layer).toHaveAttribute('aria-pressed', 'true');
 });

@@ -4,8 +4,8 @@ import { expect, test, type Page } from '@playwright/test';
 import { loadHarness } from './bundle';
 import type { CanvasHarness } from './canvas-harness';
 
-const toolJson = readFileSync(
-  fileURLToPath(new URL('../../../tools/bpmn-lite/tool.json', import.meta.url)),
+const kitJson = readFileSync(
+  fileURLToPath(new URL('../../../kits/bpmn-lite/kit.json', import.meta.url)),
   'utf8',
 );
 
@@ -50,7 +50,7 @@ async function setup(page: Page) {
     (
       window as unknown as { __canvas: { mount(t: unknown): void } }
     ).__canvas.mount(JSON.parse(json));
-  }, toolJson);
+  }, kitJson);
   const create = async (cls: string, x: number, y: number, w = 120, h = 60) =>
     (await call(page, 'exec', {
       type: 'createElement',
@@ -119,6 +119,33 @@ test.describe('canvas engine', () => {
     expect((await call(page, 'stats')).labels).toBe(0);
     await call(page, 'setView', { s: 1, ox: 0, oy: 0 });
     expect((await call(page, 'stats')).labels).toBeGreaterThan(0);
+  });
+
+  test('fit to window waits for a canvas that has no size yet', async ({
+    page,
+  }) => {
+    const t = await setup(page);
+    // The leftmost object is at a negative x, as in some sample models.
+    await t.create(TASK, -200, 40);
+    await t.create(TASK, 1400, 600);
+    const fitted = await call(page, 'fitBeforeLayout');
+    expect(fitted.width).toBe(600);
+    // The whole model is inside the canvas, not centred on its top-left corner.
+    expect(fitted.left).toBeGreaterThanOrEqual(0);
+    expect(fitted.top).toBeGreaterThanOrEqual(0);
+    expect(fitted.right).toBeLessThanOrEqual(600);
+    expect(fitted.bottom).toBeLessThanOrEqual(400);
+  });
+
+  test('fit to window uses the canvas size of the moment, not the last one reported', async ({
+    page,
+  }) => {
+    const t = await setup(page);
+    await t.create(TASK, -200, 40);
+    await t.create(TASK, 1400, 600);
+    const fitted = await call(page, 'fitRightAfterResize', 500);
+    expect(fitted.left).toBeGreaterThanOrEqual(0);
+    expect(fitted.right).toBeLessThanOrEqual(500);
   });
 
   test('moves the cached bitmap while zooming and draws sharp after the gesture', async ({
@@ -494,12 +521,12 @@ test.describe('copy and paste', () => {
     await t.click({ x: 150, y: 130 });
     await page.keyboard.press('Control+x');
     expect(Object.keys((await t.model()).elements)).toHaveLength(0);
-    // A second model of the same tool library.
+    // A second model of the same Kit.
     await page.evaluate((json) => {
       (
         window as unknown as { __canvas: { mount(t: unknown): void } }
       ).__canvas.mount(JSON.parse(json));
-    }, toolJson);
+    }, kitJson);
     await t.click({ x: 600, y: 500 });
     await page.keyboard.press('Control+v');
     const elements = Object.values((await t.model()).elements);

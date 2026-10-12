@@ -5,7 +5,7 @@
     newId,
     type Constraint,
     type KeyOwner,
-    type ToolLibrary,
+    type Kit,
   } from '@metakit-app/core';
   import { formulaProblem, messageProblem } from '../../build/formula-check';
   import type { CommandResult } from '../../shell/controller';
@@ -13,16 +13,16 @@
   let {
     owner,
     constraints,
-    tool,
+    kit,
     run,
   }: {
     owner: KeyOwner;
     constraints: Constraint[];
-    tool: ToolLibrary;
+    kit: Kit;
     run: (command: never) => CommandResult;
   } = $props();
 
-  // A new constraint stays here until it has a formula and a message, so the tool library never
+  // A new constraint stays here until it has a formula and a message, so the Kit never
   // holds a half-written one.
   let drafts = $state<Constraint[]>([]);
   let error = $state<string | null>(null);
@@ -30,14 +30,14 @@
   const names = $derived.by(() => {
     try {
       if (owner.kind === 'class')
-        return effectiveAttributes(tool, owner.id).map((a) => a.key);
+        return effectiveAttributes(kit, owner.id).map((a) => a.key);
       if (owner.kind === 'relation')
         return [
           'from',
           'to',
-          ...effectiveRelationAttributes(tool, owner.id).map((a) => a.key),
+          ...effectiveRelationAttributes(kit, owner.id).map((a) => a.key),
         ];
-      return (tool.modelTypes[owner.id]?.attributes ?? []).map((a) => a.key);
+      return (kit.modelTypes[owner.id]?.attributes ?? []).map((a) => a.key);
     } catch {
       return [];
     }

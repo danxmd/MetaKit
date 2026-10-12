@@ -1,0 +1,488 @@
+{
+  "attributes": {
+    "Organisation": "A regional bank",
+    "Title": "Data platform migration"
+  },
+  "connectors": [
+    {
+      "from": "el_wl_files",
+      "id": "cn_001",
+      "relation": "MovesFrom",
+      "to": "el_src_files"
+    },
+    {
+      "from": "el_wl_reference",
+      "id": "cn_002",
+      "relation": "MovesFrom",
+      "to": "el_src_dwh"
+    },
+    {
+      "from": "el_wl_dwh",
+      "id": "cn_003",
+      "relation": "MovesFrom",
+      "to": "el_src_dwh"
+    },
+    {
+      "from": "el_wl_jobs",
+      "id": "cn_004",
+      "relation": "MovesFrom",
+      "to": "el_src_dwh"
+    },
+    {
+      "from": "el_wl_regulatory",
+      "id": "cn_005",
+      "relation": "MovesFrom",
+      "to": "el_src_risk"
+    },
+    {
+      "from": "el_wl_riskmart",
+      "id": "cn_006",
+      "relation": "MovesFrom",
+      "to": "el_src_risk"
+    },
+    {
+      "from": "el_wl_core",
+      "id": "cn_007",
+      "relation": "MovesFrom",
+      "to": "el_src_core"
+    },
+    {
+      "from": "el_wl_files",
+      "id": "cn_008",
+      "relation": "MovesTo",
+      "to": "el_tgt_storage"
+    },
+    {
+      "from": "el_wl_reference",
+      "id": "cn_009",
+      "relation": "MovesTo",
+      "to": "el_tgt_database"
+    },
+    {
+      "from": "el_wl_dwh",
+      "id": "cn_010",
+      "relation": "MovesTo",
+      "to": "el_tgt_warehouse"
+    },
+    {
+      "from": "el_wl_jobs",
+      "id": "cn_011",
+      "relation": "MovesTo",
+      "to": "el_tgt_integration"
+    },
+    {
+      "from": "el_wl_regulatory",
+      "id": "cn_012",
+      "relation": "MovesTo",
+      "to": "el_tgt_warehouse"
+    },
+    {
+      "from": "el_wl_riskmart",
+      "id": "cn_013",
+      "relation": "MovesTo",
+      "to": "el_tgt_warehouse"
+    },
+    {
+      "from": "el_wl_core",
+      "id": "cn_014",
+      "relation": "MovesTo",
+      "to": "el_tgt_storage"
+    },
+    {
+      "from": "el_wl_jobs",
+      "id": "cn_015",
+      "relation": "DependsOn",
+      "to": "el_wl_dwh"
+    },
+    {
+      "from": "el_wl_regulatory",
+      "id": "cn_016",
+      "relation": "DependsOn",
+      "to": "el_wl_riskmart"
+    },
+    {
+      "from": "el_wl_riskmart",
+      "id": "cn_017",
+      "relation": "DependsOn",
+      "to": "el_wl_dwh"
+    },
+    {
+      "from": "el_wave2",
+      "id": "cn_018",
+      "relation": "HasRisk",
+      "to": "el_risk_window"
+    },
+    {
+      "from": "el_wl_core",
+      "id": "cn_019",
+      "relation": "HasRisk",
+      "to": "el_risk_format"
+    }
+  ],
+  "elements": [
+    {
+      "attributes": {
+        "Hosting": "On-premises",
+        "Name": "Core banking database",
+        "Technology": "Relational database"
+      },
+      "class": "SourceSystem",
+      "h": 70,
+      "id": "el_src_core",
+      "w": 150,
+      "x": 1020,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "Decommission": "2028-06-30",
+        "Hosting": "On-premises",
+        "Name": "Customer data warehouse",
+        "Technology": "Data warehouse appliance"
+      },
+      "class": "SourceSystem",
+      "h": 70,
+      "id": "el_src_dwh",
+      "w": 150,
+      "x": 420,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "Hosting": "On-premises",
+        "Name": "Risk data mart",
+        "Technology": "Relational database"
+      },
+      "class": "SourceSystem",
+      "h": 70,
+      "id": "el_src_risk",
+      "w": 150,
+      "x": 720,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "Decommission": "2027-12-31",
+        "Hosting": "On-premises",
+        "Name": "Reporting file share",
+        "Technology": "File server"
+      },
+      "class": "SourceSystem",
+      "h": 70,
+      "id": "el_src_files",
+      "w": 150,
+      "x": 120,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "End": "2027-11-13",
+        "Name": "Wave 1: Foundations",
+        "Sequence": 1,
+        "Start": "2027-09-01"
+      },
+      "class": "MigrationWave",
+      "h": 300,
+      "id": "el_wave1",
+      "w": 400,
+      "x": 40,
+      "y": 170
+    },
+    {
+      "attributes": {
+        "Approach": "Rehost",
+        "Complexity": "Low",
+        "Name": "Report archive",
+        "SizeGB": 4200,
+        "Status": "Validated",
+        "WorkloadType": "Files"
+      },
+      "class": "Workload",
+      "h": 60,
+      "id": "el_wl_files",
+      "parent": "el_wave1",
+      "w": 200,
+      "x": 60,
+      "y": 230
+    },
+    {
+      "attributes": {
+        "Approach": "Replatform",
+        "Complexity": "Low",
+        "Name": "Reference data",
+        "SizeGB": 60,
+        "Status": "Migrated",
+        "WorkloadType": "Database"
+      },
+      "class": "Workload",
+      "h": 60,
+      "id": "el_wl_reference",
+      "parent": "el_wave1",
+      "w": 200,
+      "x": 60,
+      "y": 310
+    },
+    {
+      "attributes": {
+        "Decision": "Go",
+        "Name": "Cut-over wave 1",
+        "RollbackPlan": "Point the reports back at the file share.",
+        "Window": "Sat 13 Nov, 22:00 to 06:00"
+      },
+      "class": "CutoverPlan",
+      "h": 90,
+      "id": "el_cut1",
+      "parent": "el_wave1",
+      "w": 140,
+      "x": 280,
+      "y": 230
+    },
+    {
+      "attributes": {
+        "End": "2028-03-18",
+        "Name": "Wave 2: Warehouse",
+        "Sequence": 2,
+        "Start": "2027-11-15"
+      },
+      "class": "MigrationWave",
+      "h": 300,
+      "id": "el_wave2",
+      "w": 400,
+      "x": 460,
+      "y": 170
+    },
+    {
+      "attributes": {
+        "Approach": "Replatform",
+        "Complexity": "High",
+        "Name": "Customer warehouse",
+        "Owner": "Head of data platform",
+        "SizeGB": 18000,
+        "Status": "Ready",
+        "WorkloadType": "Data warehouse"
+      },
+      "class": "Workload",
+      "h": 60,
+      "id": "el_wl_dwh",
+      "parent": "el_wave2",
+      "w": 200,
+      "x": 480,
+      "y": 230
+    },
+    {
+      "attributes": {
+        "Approach": "Refactor",
+        "Complexity": "High",
+        "Name": "Nightly loading jobs",
+        "Status": "Assessed",
+        "WorkloadType": "Loading jobs"
+      },
+      "class": "Workload",
+      "h": 60,
+      "id": "el_wl_jobs",
+      "parent": "el_wave2",
+      "w": 200,
+      "x": 480,
+      "y": 310
+    },
+    {
+      "attributes": {
+        "Approach": "Replatform",
+        "Complexity": "Medium",
+        "Name": "Regulatory reports",
+        "SizeGB": 40,
+        "Status": "Ready",
+        "WorkloadType": "Reports"
+      },
+      "class": "Workload",
+      "h": 60,
+      "id": "el_wl_regulatory",
+      "parent": "el_wave2",
+      "w": 200,
+      "x": 480,
+      "y": 390
+    },
+    {
+      "attributes": {
+        "Decision": "Not decided",
+        "Name": "Cut-over wave 2",
+        "RollbackPlan": "Keep the old warehouse loading in parallel for four weeks.",
+        "Window": "Easter weekend"
+      },
+      "class": "CutoverPlan",
+      "h": 90,
+      "id": "el_cut2",
+      "parent": "el_wave2",
+      "w": 140,
+      "x": 700,
+      "y": 230
+    },
+    {
+      "attributes": {
+        "End": "2028-09-30",
+        "Name": "Wave 3: Risk and core",
+        "Sequence": 3,
+        "Start": "2028-04-03"
+      },
+      "class": "MigrationWave",
+      "h": 300,
+      "id": "el_wave3",
+      "w": 400,
+      "x": 880,
+      "y": 170
+    },
+    {
+      "attributes": {
+        "Approach": "Replatform",
+        "Complexity": "Medium",
+        "Name": "Risk data mart",
+        "SizeGB": 2600,
+        "Status": "Assessed",
+        "WorkloadType": "Database"
+      },
+      "class": "Workload",
+      "h": 60,
+      "id": "el_wl_riskmart",
+      "parent": "el_wave3",
+      "w": 200,
+      "x": 900,
+      "y": 230
+    },
+    {
+      "attributes": {
+        "Approach": "Refactor",
+        "Complexity": "High",
+        "Name": "Core banking extracts",
+        "SizeGB": 9500,
+        "Status": "Not started",
+        "WorkloadType": "Application data"
+      },
+      "class": "Workload",
+      "h": 60,
+      "id": "el_wl_core",
+      "parent": "el_wave3",
+      "w": 200,
+      "x": 900,
+      "y": 310
+    },
+    {
+      "attributes": {
+        "Name": "Cut-over wave 3",
+        "RollbackPlan": "Switch the extracts back to the old servers.",
+        "Window": "Last weekend of September"
+      },
+      "class": "CutoverPlan",
+      "h": 90,
+      "id": "el_cut3",
+      "parent": "el_wave3",
+      "w": 140,
+      "x": 1120,
+      "y": 230
+    },
+    {
+      "attributes": {
+        "Name": "Cloud data platform",
+        "Provider": "Public cloud provider",
+        "Region": "Home region"
+      },
+      "class": "CloudPlatform",
+      "h": 150,
+      "id": "el_cloud",
+      "w": 1240,
+      "x": 40,
+      "y": 540
+    },
+    {
+      "attributes": {
+        "Name": "Object storage",
+        "ServiceType": "Object storage"
+      },
+      "class": "TargetService",
+      "h": 70,
+      "id": "el_tgt_storage",
+      "parent": "el_cloud",
+      "w": 180,
+      "x": 80,
+      "y": 590
+    },
+    {
+      "attributes": {
+        "Name": "Managed database",
+        "ServiceType": "Managed database"
+      },
+      "class": "TargetService",
+      "h": 70,
+      "id": "el_tgt_database",
+      "parent": "el_cloud",
+      "w": 180,
+      "x": 380,
+      "y": 590
+    },
+    {
+      "attributes": {
+        "Name": "Cloud warehouse",
+        "ServiceType": "Data warehouse"
+      },
+      "class": "TargetService",
+      "h": 70,
+      "id": "el_tgt_warehouse",
+      "parent": "el_cloud",
+      "w": 180,
+      "x": 680,
+      "y": 590
+    },
+    {
+      "attributes": {
+        "Name": "Integration service",
+        "ServiceType": "Integration service"
+      },
+      "class": "TargetService",
+      "h": 70,
+      "id": "el_tgt_integration",
+      "parent": "el_cloud",
+      "w": 180,
+      "x": 980,
+      "y": 590
+    },
+    {
+      "attributes": {
+        "Impact": 4,
+        "Likelihood": 3,
+        "Name": "Warehouse cut-over overruns the weekend",
+        "Owner": "Head of data platform",
+        "Status": "Open"
+      },
+      "class": "Risk",
+      "h": 120,
+      "id": "el_risk_window",
+      "w": 160,
+      "x": 1340,
+      "y": 200
+    },
+    {
+      "attributes": {
+        "Impact": 3,
+        "Likelihood": 2,
+        "Name": "Core extracts change format",
+        "Owner": "Core banking team",
+        "Status": "Open"
+      },
+      "class": "Risk",
+      "h": 120,
+      "id": "el_risk_format",
+      "w": 160,
+      "x": 1340,
+      "y": 360
+    }
+  ],
+  "formatVersion": 2,
+  "id": "mdl_bankmigration",
+  "kind": "mkmodel",
+  "kit": {
+    "id": "kit_clouddatamigration",
+    "name": "Cloud data migration",
+    "version": "1.0.0"
+  },
+  "modelType": "Migration",
+  "name": "Data platform migration"
+}

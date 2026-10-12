@@ -2,7 +2,7 @@
 
 ## Why
 
-Git mode for tool libraries (phase 8) assumes that a static page in a browser can read a repository tree and write a multi-file commit through the GitHub and GitLab REST APIs with no proxy, and detect conflicts. Whether each service allows this from a browser is unverified, and GitLab's browser access with tokens is unverified in the plan. Work package 0.5 in `docs/phase-0.md` tests it before anything depends on it.
+Git mode for Kits (phase 8) assumes that a static page in a browser can read a repository tree and write a multi-file commit through the GitHub and GitLab REST APIs with no proxy, and detect conflicts. Whether each service allows this from a browser is unverified, and GitLab's browser access with tokens is unverified in the plan. Work package 0.5 in `docs/phase-0.md` tests it before anything depends on it.
 
 ## What Changes
 

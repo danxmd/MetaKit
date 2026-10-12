@@ -21,13 +21,13 @@ The assistant can draft four kinds of things.
 | Shape | "A rounded blue task box showing its name" | A shape you can pick for a class. See [[shapes-section]]. |
 | Class | "A Task with a name, a priority and an owner" | A class with its attributes. See [[classes]]. |
 
-It is a helper, not an author. A draft is a suggestion. MetaKit checks it before you see it, and nothing changes in your tool library until you press **Accept**. Accepting is one undo step. The assistant never runs a script and never touches a model.
+It is a helper, not an author. A draft is a suggestion. MetaKit checks it before you see it, and nothing changes in your Kit until you press **Accept**. Accepting is one undo step. The assistant never runs a script and never touches a model.
 
 Four promises hold:
 
 - **Off by default.** Nothing is sent until you turn it on and add a key.
 - **Your key, your bill.** The service charges your own account. MetaKit does not.
-- **Tool definitions only.** Models are never sent. See [[assistant-privacy]].
+- **Kit definitions only.** Models are never sent. See [[assistant-privacy]].
 - **You decide.** Drafts are checked, then shown. You accept or discard. See [[assistant-drafts]].
 
 ## Where to find it
@@ -63,10 +63,10 @@ Four promises hold:
 | --- | --- |
 | **Turn on the assistant** | The master switch. Off at first. |
 | **API key** and **Save key** | Stores your key in this browser. The box is a password field. After saving, the key is not shown again. |
-| **Test the key** | Sends a tiny request that holds no tool and no model content, to check that the key works. |
+| **Test the key** | Sends a tiny request that holds no Kit and no model content, to check that the key works. |
 | **Remove the key** | Deletes the key from this browser. |
 | **Model** | The name of the model to ask. Default `claude-sonnet-5-5`. Change it only if you know another model name that your account may use. |
-| **Show a sample request** | Shows the exact text a request for a rule would send, built from your open tool library or from a small example tool. |
+| **Show a sample request** | Shows the exact text a request for a rule would send, built from your open Kit or from a small example Kit. |
 | **Draft with assistant** | Opens the draft dialog. Disabled, with the tip "Turn on the assistant and add a key in the settings first", until the assistant is on. |
 
 ### Messages you may see
@@ -91,13 +91,13 @@ Four promises hold:
 
 ## Good to know
 
-- **Key safety.** The key lives in your browser profile (IndexedDB) only. It is not in the shared folder, a tool library, a model, a repository or a log. It does not follow you to another browser or reach your teammates. Requests go from the page straight to the service. Because the page makes the request, the key is available to the page while it is open. Do not turn the assistant on in a browser you do not trust.
+- **Key safety.** The key lives in your browser profile (IndexedDB) only. It is not in the shared folder, a Kit, a model, a repository or a log. It does not follow you to another browser or reach your teammates. Requests go from the page straight to the service. Because the page makes the request, the key is available to the page while it is open. Do not turn the assistant on in a browser you do not trust.
 - **Use a limited key.** Make a key just for this, with a spending limit, and remove it when you no longer need it.
 - **Cost.** A draft is one request, or two if the first needs a correction. A request is about as long as the sample.
 - **One provider.** Only Claude is offered now. Others could be added later.
 - **Build mode only.** The drafting buttons exist in Build mode. The assistant cannot draft inside a model, and it cannot read one.
-- **Language.** Labels and messages in a draft use the first language of the tool library.
-- **Large tools.** A request lists at most 80 classes, 80 relation classes and so on. A tool with more is summarised with a line "... and N more".
+- **Language.** Labels and messages in a draft use the first language of the Kit.
+- **Large Kits.** A request lists at most 80 classes, 80 relation classes and so on. A Kit with more is summarised with a line "... and N more".
 - **Not a reviewer.** The checks find wrong names and broken formulas. They cannot tell whether a rule does what you meant. Use **Try on the selected object** for rules (see [[rules]]).
 - **Script checks.** Scripts are compiled and type-checked with the same checker as the script editor. If the checker is not available, only syntax errors are found.
 - **Browsers.** The assistant needs the same browser as the rest of MetaKit (see [[browser-support]]).

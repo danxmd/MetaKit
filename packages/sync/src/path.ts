@@ -1,7 +1,45 @@
 /** A path into a document, as the sync layer sees it (same as the store's patch paths). */
 export type Path = readonly string[];
 
-export type DocKind = 'tool' | 'model';
+export type DocKind = 'kit' | 'model';
+
+/**
+ * The kind a file names, as this release calls it. Releases before the Kit rename wrote `tool`
+ * for a Kit (ADR 0011); it is read as `kit`. Anything else is null.
+ */
+export function docKindOf(value: unknown): DocKind | null {
+  if (value === 'kit' || value === 'tool') return 'kit';
+  if (value === 'model') return 'model';
+  return null;
+}
+
+/**
+ * Registers that earlier releases wrote under another name, by parent and old name (ADR 0011). A
+ * path is read as its new name wherever it comes from (change files, snapshots, plain documents),
+ * so an old snapshot and new change files meet in one register, and the last write wins as usual.
+ * New ops are always written with the new names.
+ */
+export const PATH_ALIASES: Readonly<
+  Record<DocKind, ReadonlyMap<string, ReadonlyMap<string, string>>>
+> = {
+  model: new Map([
+    [
+      'manifest',
+      new Map([
+        ['tool', 'kit'],
+        ['toolVersion', 'kitVersion'],
+      ]),
+    ],
+  ]),
+  kit: new Map(),
+};
+
+/** The path as this release names it: `manifest/tool` of a model becomes `manifest/kit`. */
+export function currentPath(kind: DocKind, path: string[]): string[] {
+  if (path.length !== 2) return path;
+  const renamed = PATH_ALIASES[kind].get(path[0]!)?.get(path[1]!);
+  return renamed === undefined ? path : [path[0]!, renamed];
+}
 
 /**
  * The collections whose records are entities: each record is created, deleted and edited as one
@@ -9,7 +47,7 @@ export type DocKind = 'tool' | 'model';
  */
 export const COLLECTIONS: Readonly<Record<DocKind, readonly string[]>> = {
   model: ['elements', 'connectors'],
-  tool: [
+  kit: [
     'classes',
     'relations',
     'modelTypes',

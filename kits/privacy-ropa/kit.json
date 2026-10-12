@@ -1,0 +1,1909 @@
+{
+  "formatVersion": 7,
+  "manifest": {
+    "id": "kit_privacyropa",
+    "name": "Privacy and records of processing",
+    "version": "1.0.0",
+    "languages": ["en"]
+  },
+  "settings": {
+    "grid": {
+      "size": 10,
+      "snap": true,
+      "visible": true
+    },
+    "layers": [],
+    "numbering": {
+      "enabled": false,
+      "prefix": "",
+      "start": 1
+    }
+  },
+  "classes": {
+    "cls_application": {
+      "id": "cls_application",
+      "key": "Application",
+      "kind": "node",
+      "labels": {
+        "en": "System"
+      },
+      "help": {
+        "en": "A system in which the personal data is kept or used."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Application",
+          "id": "att_application_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_application_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_application_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Lifecycle",
+          "options": ["Invest", "Tolerate", "Migrate", "Eliminate"],
+          "id": "att_application_lifecycle",
+          "labels": {
+            "en": "Lifecycle"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "Users",
+          "min": 0,
+          "id": "att_application_users",
+          "labels": {
+            "en": "Users"
+          }
+        },
+        {
+          "type": "text",
+          "key": "HostingCountry",
+          "id": "att_application_hostingcountry",
+          "labels": {
+            "en": "Hosting country"
+          }
+        }
+      ],
+      "shape": "shp_application"
+    },
+    "cls_processingactivity": {
+      "id": "cls_processingactivity",
+      "key": "ProcessingActivity",
+      "kind": "node",
+      "labels": {
+        "en": "Processing activity"
+      },
+      "help": {
+        "en": "Something the organisation does with personal data, such as paying staff or keeping patient records: one entry of the records of processing. The fill shows whether an impact assessment is likely needed."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Processing activity",
+          "id": "att_processingactivity_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_processingactivity_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_processingactivity_owner",
+          "labels": {
+            "en": "Owner"
+          },
+          "help": {
+            "en": "The person or team that answers for it."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Role",
+          "options": ["Controller", "Joint controller", "Processor"],
+          "id": "att_processingactivity_role",
+          "labels": {
+            "en": "Role"
+          },
+          "help": {
+            "en": "Whether the organisation decides why and how the data is used (controller), decides it together with others, or only acts for someone else (processor)."
+          }
+        },
+        {
+          "type": "boolean",
+          "key": "LargeScale",
+          "id": "att_processingactivity_largescale",
+          "labels": {
+            "en": "Large scale"
+          },
+          "help": {
+            "en": "Many people, much data, a long time or a wide area."
+          }
+        },
+        {
+          "type": "boolean",
+          "key": "AutomatedDecisions",
+          "id": "att_processingactivity_automateddecisions",
+          "labels": {
+            "en": "Automated decisions"
+          },
+          "help": {
+            "en": "Decisions with legal or similarly important effects on people are made without a person."
+          }
+        },
+        {
+          "type": "boolean",
+          "key": "SystematicMonitoring",
+          "id": "att_processingactivity_systematicmonitoring",
+          "labels": {
+            "en": "Systematic monitoring"
+          },
+          "help": {
+            "en": "People are observed or tracked in a regular, planned way."
+          }
+        },
+        {
+          "type": "boolean",
+          "key": "NewTechnology",
+          "id": "att_processingactivity_newtechnology",
+          "labels": {
+            "en": "New technology"
+          },
+          "help": {
+            "en": "New or innovative technology is used, such as biometrics or AI."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "DPIAStatus",
+          "options": ["Not started", "In progress", "Done", "Not needed"],
+          "id": "att_processingactivity_dpiastatus",
+          "labels": {
+            "en": "Impact assessment"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Purposes",
+          "formula": "join(outgoing('ForPurpose').Name, ', ')",
+          "result": "text",
+          "id": "att_processingactivity_purposes",
+          "labels": {
+            "en": "Purposes"
+          },
+          "help": {
+            "en": "The purposes it serves."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "LegalBases",
+          "formula": "join(outgoing('ForPurpose').LegalBasisText, ', ')",
+          "result": "text",
+          "id": "att_processingactivity_legalbases",
+          "labels": {
+            "en": "Legal bases"
+          },
+          "help": {
+            "en": "The legal bases of its purposes."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Retention",
+          "formula": "join(outgoing('KeptFor').Period, ', ')",
+          "result": "text",
+          "id": "att_processingactivity_retention",
+          "labels": {
+            "en": "Retention"
+          },
+          "help": {
+            "en": "How long the data is kept."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "SpecialData",
+          "formula": "contains(join(outgoing('Processes').Sensitivity, '|'), 'Special') || contains(join(outgoing('Processes').Sensitivity, '|'), 'Criminal')",
+          "result": "boolean",
+          "id": "att_processingactivity_specialdata",
+          "labels": {
+            "en": "Sensitive data"
+          },
+          "help": {
+            "en": "Yes when one of its data categories is a special category or criminal offence data."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "VulnerableSubjects",
+          "formula": "contains(join(outgoing('About').Vulnerable, '|'), 'true')",
+          "result": "boolean",
+          "id": "att_processingactivity_vulnerablesubjects",
+          "labels": {
+            "en": "Vulnerable subjects"
+          },
+          "help": {
+            "en": "Yes when one of the groups of people it is about is vulnerable."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "OutsideTransfers",
+          "formula": "contains(join(outgoing('DisclosesTo').OtherCountry, '|'), 'true')",
+          "result": "boolean",
+          "id": "att_processingactivity_outsidetransfers",
+          "labels": {
+            "en": "Transfers to other countries"
+          },
+          "help": {
+            "en": "Yes when a recipient receives the data in another country."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "DPIACriteria",
+          "formula": "(SpecialData ? 1 : 0) + (VulnerableSubjects ? 1 : 0) + (LargeScale ? 1 : 0) + (AutomatedDecisions ? 1 : 0) + (SystematicMonitoring ? 1 : 0) + (NewTechnology ? 1 : 0)",
+          "result": "number",
+          "id": "att_processingactivity_dpiacriteria",
+          "labels": {
+            "en": "Impact criteria met"
+          },
+          "help": {
+            "en": "How many of these apply: sensitive data, vulnerable people, large scale, automated decisions, systematic monitoring and new technology."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "DPIAIndication",
+          "formula": "DPIACriteria >= 2 ? 'Likely needed' : DPIACriteria == 1 ? 'Consider' : 'Unlikely'",
+          "result": "text",
+          "id": "att_processingactivity_dpiaindication",
+          "labels": {
+            "en": "Impact assessment indication"
+          },
+          "help": {
+            "en": "Likely needed from two criteria, Consider with one. An indication for the privacy team, not legal advice."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_activity_purpose",
+          "formula": "count(outgoing('ForPurpose')) > 0",
+          "message": "= 'Processing activity \"' + Name + '\" has no purpose: connect one with \"For purpose\".'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_activity_data",
+          "formula": "count(outgoing('Processes')) > 0",
+          "message": "= 'Processing activity \"' + Name + '\" names no category of personal data.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_activity_retention",
+          "formula": "count(outgoing('KeptFor')) > 0",
+          "message": "= 'Processing activity \"' + Name + '\" has no retention rule: say how long the data is kept.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_activity_dpia",
+          "formula": "DPIAIndication != 'Likely needed' || DPIAStatus == 'In progress' || DPIAStatus == 'Done'",
+          "message": "= 'Processing activity \"' + Name + '\" meets ' + text(DPIACriteria) + ' impact criteria, but no impact assessment is under way.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_processingactivity"
+    },
+    "cls_purpose": {
+      "id": "cls_purpose",
+      "key": "Purpose",
+      "kind": "node",
+      "labels": {
+        "en": "Purpose"
+      },
+      "help": {
+        "en": "Why personal data is used, such as \"paying salaries\". Each purpose needs a legal basis."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Purpose",
+          "id": "att_purpose_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_purpose_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "LegalBasisText",
+          "formula": "join(outgoing('ReliesOn').Basis, ', ')",
+          "result": "text",
+          "id": "att_purpose_legalbasistext",
+          "labels": {
+            "en": "Legal basis"
+          },
+          "help": {
+            "en": "The legal basis it relies on."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_purpose_basis",
+          "formula": "count(outgoing('ReliesOn')) > 0",
+          "message": "= 'Purpose \"' + Name + '\" has no legal basis: connect one with \"Relies on\".'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_purpose"
+    },
+    "cls_legalbasis": {
+      "id": "cls_legalbasis",
+      "key": "LegalBasis",
+      "kind": "node",
+      "labels": {
+        "en": "Legal basis"
+      },
+      "help": {
+        "en": "The ground that allows a use of personal data, such as a contract or a legal obligation, with the rule it rests on."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Legal basis",
+          "id": "att_legalbasis_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Basis",
+          "options": [
+            "Consent",
+            "Contract",
+            "Legal obligation",
+            "Vital interests",
+            "Public task",
+            "Legitimate interests"
+          ],
+          "id": "att_legalbasis_basis",
+          "labels": {
+            "en": "Basis"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Reference",
+          "id": "att_legalbasis_reference",
+          "labels": {
+            "en": "Reference"
+          },
+          "help": {
+            "en": "The law, article or agreement it rests on."
+          }
+        },
+        {
+          "type": "text",
+          "key": "Notes",
+          "multiline": true,
+          "id": "att_legalbasis_notes",
+          "labels": {
+            "en": "Notes"
+          },
+          "help": {
+            "en": "For legitimate interests: the balance between the interests of the organisation and those of the people concerned."
+          }
+        }
+      ],
+      "shape": "shp_legalbasis"
+    },
+    "cls_datacategory": {
+      "id": "cls_datacategory",
+      "key": "DataCategory",
+      "kind": "node",
+      "labels": {
+        "en": "Data category"
+      },
+      "help": {
+        "en": "A kind of personal data, such as contact details or health data. Special categories, such as health or religion, need extra care."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Data category",
+          "id": "att_datacategory_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Sensitivity",
+          "options": ["Ordinary", "Special category", "Criminal offence data"],
+          "default": "Ordinary",
+          "id": "att_datacategory_sensitivity",
+          "labels": {
+            "en": "Sensitivity"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Examples",
+          "id": "att_datacategory_examples",
+          "labels": {
+            "en": "Examples"
+          },
+          "help": {
+            "en": "Such as \"name, address and phone\"."
+          }
+        },
+        {
+          "type": "text",
+          "key": "Source",
+          "id": "att_datacategory_source",
+          "labels": {
+            "en": "Source"
+          },
+          "help": {
+            "en": "Where the data comes from, such as \"from the person\" or \"from a referring doctor\"."
+          }
+        }
+      ],
+      "shape": "shp_datacategory"
+    },
+    "cls_datasubject": {
+      "id": "cls_datasubject",
+      "key": "DataSubject",
+      "kind": "node",
+      "labels": {
+        "en": "Data subject"
+      },
+      "help": {
+        "en": "A group of people the personal data is about, such as employees or patients."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Data subject",
+          "id": "att_datasubject_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "boolean",
+          "key": "Vulnerable",
+          "id": "att_datasubject_vulnerable",
+          "labels": {
+            "en": "Vulnerable"
+          },
+          "help": {
+            "en": "Children, patients, employees towards their employer or others who cannot easily object."
+          }
+        },
+        {
+          "type": "text",
+          "key": "Number",
+          "id": "att_datasubject_number",
+          "labels": {
+            "en": "Number"
+          },
+          "help": {
+            "en": "About how many people, such as \"40,000\"."
+          }
+        }
+      ],
+      "shape": "shp_datasubject"
+    },
+    "cls_recipient": {
+      "id": "cls_recipient",
+      "key": "Recipient",
+      "kind": "node",
+      "labels": {
+        "en": "Recipient"
+      },
+      "help": {
+        "en": "Who receives the personal data: a department, a processor, another organisation or an authority. Data received in another country needs a safeguard."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Recipient",
+          "id": "att_recipient_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "RecipientType",
+          "options": [
+            "Internal",
+            "Processor",
+            "Other controller",
+            "Public authority"
+          ],
+          "id": "att_recipient_recipienttype",
+          "labels": {
+            "en": "Type"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Country",
+          "id": "att_recipient_country",
+          "labels": {
+            "en": "Country"
+          }
+        },
+        {
+          "type": "boolean",
+          "key": "OtherCountry",
+          "id": "att_recipient_othercountry",
+          "labels": {
+            "en": "Transfer to another country"
+          },
+          "help": {
+            "en": "Yes when the data is received in a country outside the area whose privacy law applies."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Safeguard",
+          "options": [
+            "Adequacy decision",
+            "Standard contractual clauses",
+            "Binding corporate rules",
+            "Specific exemption",
+            "None yet"
+          ],
+          "id": "att_recipient_safeguard",
+          "labels": {
+            "en": "Safeguard"
+          },
+          "help": {
+            "en": "What protects the data abroad."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "TransferText",
+          "formula": "OtherCountry ? (Country ?? 'Abroad') + ': ' + (Safeguard ?? 'no safeguard') : RecipientType",
+          "result": "text",
+          "id": "att_recipient_transfertext",
+          "labels": {
+            "en": "Transfer text"
+          },
+          "help": {
+            "en": "The country and the safeguard of a transfer, or the type of recipient. Shown under the name."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_recipient_safeguard",
+          "formula": "!OtherCountry || (!isEmpty(Safeguard) && Safeguard != 'None yet')",
+          "message": "= 'Recipient \"' + Name + '\" receives data in another country without a safeguard.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_recipient"
+    },
+    "cls_retentionrule": {
+      "id": "cls_retentionrule",
+      "key": "RetentionRule",
+      "kind": "node",
+      "labels": {
+        "en": "Retention rule"
+      },
+      "help": {
+        "en": "How long data is kept, from when, and what happens after that."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Retention rule",
+          "id": "att_retentionrule_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Period",
+          "id": "att_retentionrule_period",
+          "labels": {
+            "en": "Period"
+          },
+          "help": {
+            "en": "Such as \"7 years\"."
+          }
+        },
+        {
+          "type": "integer",
+          "key": "Months",
+          "min": 0,
+          "id": "att_retentionrule_months",
+          "labels": {
+            "en": "Months"
+          },
+          "help": {
+            "en": "The same period in months."
+          }
+        },
+        {
+          "type": "text",
+          "key": "StartsAt",
+          "id": "att_retentionrule_startsat",
+          "labels": {
+            "en": "Counted from"
+          },
+          "help": {
+            "en": "Such as \"the end of the contract\"."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Then",
+          "options": ["Delete", "Anonymise", "Archive"],
+          "id": "att_retentionrule_then",
+          "labels": {
+            "en": "Then"
+          }
+        }
+      ],
+      "shape": "shp_retentionrule"
+    }
+  },
+  "relations": {
+    "rel_forpurpose": {
+      "id": "rel_forpurpose",
+      "key": "ForPurpose",
+      "labels": {
+        "en": "For purpose"
+      },
+      "help": {
+        "en": "The processing activity serves the purpose."
+      },
+      "from": ["cls_processingactivity"],
+      "to": ["cls_purpose"],
+      "attributes": [],
+      "shape": "shp_rel_forpurpose"
+    },
+    "rel_relieson": {
+      "id": "rel_relieson",
+      "key": "ReliesOn",
+      "labels": {
+        "en": "Relies on"
+      },
+      "help": {
+        "en": "The purpose rests on the legal basis."
+      },
+      "from": ["cls_purpose"],
+      "to": ["cls_legalbasis"],
+      "attributes": [],
+      "shape": "shp_rel_relieson"
+    },
+    "rel_processes": {
+      "id": "rel_processes",
+      "key": "Processes",
+      "labels": {
+        "en": "Processes"
+      },
+      "help": {
+        "en": "The processing activity uses data of this category."
+      },
+      "from": ["cls_processingactivity"],
+      "to": ["cls_datacategory"],
+      "attributes": [],
+      "shape": "shp_rel_processes"
+    },
+    "rel_about": {
+      "id": "rel_about",
+      "key": "About",
+      "labels": {
+        "en": "About"
+      },
+      "help": {
+        "en": "The personal data is about this group of people."
+      },
+      "from": ["cls_processingactivity"],
+      "to": ["cls_datasubject"],
+      "attributes": [],
+      "shape": "shp_rel_about"
+    },
+    "rel_disclosesto": {
+      "id": "rel_disclosesto",
+      "key": "DisclosesTo",
+      "labels": {
+        "en": "Discloses to"
+      },
+      "help": {
+        "en": "The processing activity passes personal data to the recipient."
+      },
+      "from": ["cls_processingactivity"],
+      "to": ["cls_recipient"],
+      "attributes": [],
+      "shape": "shp_rel_disclosesto"
+    },
+    "rel_keptfor": {
+      "id": "rel_keptfor",
+      "key": "KeptFor",
+      "labels": {
+        "en": "Kept for"
+      },
+      "help": {
+        "en": "The data of the processing activity is kept as the retention rule says."
+      },
+      "from": ["cls_processingactivity"],
+      "to": ["cls_retentionrule"],
+      "attributes": [],
+      "shape": "shp_rel_keptfor"
+    },
+    "rel_usessystem": {
+      "id": "rel_usessystem",
+      "key": "UsesSystem",
+      "labels": {
+        "en": "Uses system"
+      },
+      "help": {
+        "en": "The processing activity keeps or uses the data in the system."
+      },
+      "from": ["cls_processingactivity"],
+      "to": ["cls_application"],
+      "attributes": [],
+      "shape": "shp_rel_usessystem"
+    }
+  },
+  "modelTypes": {
+    "mt_records": {
+      "id": "mt_records",
+      "key": "Records",
+      "labels": {
+        "en": "Records of processing"
+      },
+      "classes": [
+        "cls_application",
+        "cls_processingactivity",
+        "cls_purpose",
+        "cls_legalbasis",
+        "cls_datacategory",
+        "cls_datasubject",
+        "cls_recipient",
+        "cls_retentionrule"
+      ],
+      "relations": [
+        "rel_forpurpose",
+        "rel_relieson",
+        "rel_processes",
+        "rel_about",
+        "rel_disclosesto",
+        "rel_keptfor",
+        "rel_usessystem"
+      ],
+      "views": [
+        {
+          "id": "vw_lawfulness",
+          "key": "Lawfulness",
+          "labels": {
+            "en": "Purposes and legal bases"
+          },
+          "classes": [
+            "cls_processingactivity",
+            "cls_purpose",
+            "cls_legalbasis"
+          ],
+          "relations": ["rel_forpurpose", "rel_relieson"]
+        },
+        {
+          "id": "vw_data",
+          "key": "Data",
+          "labels": {
+            "en": "Data, people and recipients"
+          },
+          "classes": [
+            "cls_processingactivity",
+            "cls_datacategory",
+            "cls_datasubject",
+            "cls_recipient",
+            "cls_retentionrule",
+            "cls_application"
+          ],
+          "relations": [
+            "rel_processes",
+            "rel_about",
+            "rel_disclosesto",
+            "rel_keptfor",
+            "rel_usessystem"
+          ]
+        }
+      ],
+      "cardinalities": [],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Title",
+          "required": true,
+          "maxLength": 100,
+          "id": "att_mtrecords_title",
+          "labels": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Organisation",
+          "id": "att_mtrecords_organisation",
+          "labels": {
+            "en": "Organisation"
+          }
+        },
+        {
+          "type": "text",
+          "key": "PrivacyContact",
+          "id": "att_mtrecords_privacycontact",
+          "labels": {
+            "en": "Privacy contact"
+          },
+          "help": {
+            "en": "Who people can contact about their data, such as the data protection officer."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Activities",
+          "formula": "count(objects('ProcessingActivity'))",
+          "result": "number",
+          "id": "att_mtrecords_activities",
+          "labels": {
+            "en": "Activities"
+          },
+          "help": {
+            "en": "How many processing activities are recorded."
+          }
+        }
+      ],
+      "help": {
+        "en": "Processing activities with their purposes and legal bases, data categories, data subjects, recipients and transfers, retention and systems."
+      }
+    }
+  },
+  "shapes": {
+    "shp_application": {
+      "id": "shp_application",
+      "name": "Application look",
+      "kind": "node",
+      "size": {
+        "width": 150,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 0,
+          "fill": "#96f2d7",
+          "stroke": "#0c8599",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 4,
+          "width": "100% - 16",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 22",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= Lifecycle",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "box",
+        "fill": "#96f2d7",
+        "border": "#0c8599",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 150,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Lifecycle"
+        }
+      }
+    },
+    "shp_processingactivity": {
+      "id": "shp_processingactivity",
+      "name": "ProcessingActivity look",
+      "kind": "node",
+      "size": {
+        "width": 220,
+        "height": 126,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 4,
+          "fill": "#ffffff",
+          "stroke": "#c92a2a",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": 28,
+          "radius": 4,
+          "fill": "= DPIAIndication == 'Likely needed' ? '#ffc9c9' : DPIAIndication == 'Consider' ? '#fff3bf' : DPIAIndication == 'Unlikely' ? '#d3f9d8' : '#e9ecef'",
+          "stroke": "#c92a2a"
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 2,
+          "width": "100% - 36",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 34,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Role: ' + Role",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 50,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'DPIAIndication: ' + DPIAIndication",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 66,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'DPIAStatus: ' + DPIAStatus",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 82,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Retention: ' + Retention",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M6 2h8l5 5v15H6z M14 2v5h5 M9 13h7 M9 17h7",
+          "viewBox": [0, 0, 24, 24],
+          "x": "100% - 26",
+          "y": 4,
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "header-box",
+        "fill": {
+          "by": "DPIAIndication",
+          "values": {
+            "Likely needed": "#ffc9c9",
+            "Consider": "#fff3bf",
+            "Unlikely": "#d3f9d8"
+          },
+          "fallback": "#e9ecef"
+        },
+        "border": "#c92a2a",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 220,
+          "height": 126,
+          "resizable": true
+        },
+        "icon": {
+          "name": "document"
+        },
+        "fields": ["Role", "DPIAIndication", "DPIAStatus", "Retention"]
+      }
+    },
+    "shp_purpose": {
+      "id": "shp_purpose",
+      "name": "Purpose look",
+      "kind": "node",
+      "size": {
+        "width": 190,
+        "height": 50,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 999,
+          "fill": "#d3f9d8",
+          "stroke": "#2f9e44",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 16,
+          "y": 4,
+          "width": "100% - 32",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 16,
+          "y": "100% - 22",
+          "width": "100% - 32",
+          "height": 18,
+          "text": "= LegalBasisText",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "pill",
+        "fill": "#d3f9d8",
+        "border": "#2f9e44",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 190,
+          "height": 50,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "LegalBasisText"
+        }
+      }
+    },
+    "shp_legalbasis": {
+      "id": "shp_legalbasis",
+      "name": "LegalBasis look",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          ["15%", 0],
+          ["85%", 0],
+          ["100%", "50%"],
+          ["85%", "100%"],
+          ["15%", "100%"],
+          [0, "50%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            ["15%", 0],
+            ["85%", 0],
+            ["100%", "50%"],
+            ["85%", "100%"],
+            ["15%", "100%"],
+            [0, "50%"]
+          ],
+          "fill": "#b2f2bb",
+          "stroke": "#2b8a3e",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": "18%",
+          "y": 4,
+          "width": "64%",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": "18%",
+          "y": "100% - 22",
+          "width": "64%",
+          "height": 18,
+          "text": "= Basis",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "hexagon",
+        "fill": "#b2f2bb",
+        "border": "#2b8a3e",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 170,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Basis"
+        }
+      }
+    },
+    "shp_datacategory": {
+      "id": "shp_datacategory",
+      "name": "DataCategory look",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 60,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "= Sensitivity == 'Ordinary' ? '#e7f5ff' : Sensitivity == 'Special category' ? '#ffc9c9' : Sensitivity == 'Criminal offence data' ? '#ffa8a8' : '#e7f5ff'",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 4,
+          "width": "100% - 16",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 22",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= Sensitivity",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": {
+          "by": "Sensitivity",
+          "values": {
+            "Ordinary": "#e7f5ff",
+            "Special category": "#ffc9c9",
+            "Criminal offence data": "#ffa8a8"
+          },
+          "fallback": "#e7f5ff"
+        },
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 170,
+          "height": 60,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Sensitivity"
+        }
+      }
+    },
+    "shp_datasubject": {
+      "id": "shp_datasubject",
+      "name": "DataSubject look",
+      "kind": "node",
+      "size": {
+        "width": 100,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "ellipse",
+          "x": "50% - 16",
+          "y": 4,
+          "width": 32,
+          "height": 32,
+          "fill": "= Vulnerable == true ? '#ffe3e3' : Vulnerable == false ? '#f3f0ff' : '#f3f0ff'",
+          "stroke": "#7048e8",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 6,
+          "y": 42,
+          "width": "100% - 12",
+          "height": "100% - 46",
+          "radius": 18,
+          "fill": "= Vulnerable == true ? '#ffe3e3' : Vulnerable == false ? '#f3f0ff' : '#f3f0ff'",
+          "stroke": "#7048e8",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 10,
+          "y": 46,
+          "width": "100% - 20",
+          "height": "100% - 52",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "person",
+        "fill": {
+          "by": "Vulnerable",
+          "values": {
+            "true": "#ffe3e3",
+            "false": "#f3f0ff"
+          },
+          "fallback": "#f3f0ff"
+        },
+        "border": "#7048e8",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 100,
+          "height": 110,
+          "resizable": true
+        }
+      }
+    },
+    "shp_recipient": {
+      "id": "shp_recipient",
+      "name": "Recipient look",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 64,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 0,
+          "fill": "#fff9db",
+          "stroke": "= OtherCountry == true ? '#e03131' : OtherCountry == false ? '#f08c00' : '#f08c00'",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= TransferText",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M3 5h18v14H3z M3 6l9 7 9-7",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "box",
+        "fill": "#fff9db",
+        "border": {
+          "by": "OtherCountry",
+          "values": {
+            "true": "#e03131",
+            "false": "#f08c00"
+          },
+          "fallback": "#f08c00"
+        },
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 170,
+          "height": 64,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "TransferText"
+        },
+        "icon": {
+          "name": "mail"
+        }
+      }
+    },
+    "shp_retentionrule": {
+      "id": "shp_retentionrule",
+      "name": "RetentionRule look",
+      "kind": "node",
+      "size": {
+        "width": 190,
+        "height": 50,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 999,
+          "fill": "#e9ecef",
+          "stroke": "#495057",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 42,
+          "y": 4,
+          "width": "100% - 58",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 42,
+          "y": "100% - 22",
+          "width": "100% - 58",
+          "height": 18,
+          "text": "= Period",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z M12 7v5l3 2",
+          "viewBox": [0, 0, 24, 24],
+          "x": 14,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "pill",
+        "fill": "#e9ecef",
+        "border": "#495057",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 190,
+          "height": 50,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Period"
+        },
+        "icon": {
+          "name": "clock"
+        }
+      }
+    },
+    "shp_rel_forpurpose": {
+      "id": "shp_rel_forpurpose",
+      "name": "ForPurpose look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#2f9e44",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#2f9e44",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_relieson": {
+      "id": "shp_rel_relieson",
+      "name": "ReliesOn look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#2b8a3e",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "triangle"
+      },
+      "look": {
+        "colour": "#2b8a3e",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "triangle",
+        "label": null
+      }
+    },
+    "shp_rel_processes": {
+      "id": "shp_rel_processes",
+      "name": "Processes look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#1c7ed6",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#1c7ed6",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_about": {
+      "id": "shp_rel_about",
+      "name": "About look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#7048e8",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#7048e8",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_disclosesto": {
+      "id": "shp_rel_disclosesto",
+      "name": "DisclosesTo look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#f08c00",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#f08c00",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_keptfor": {
+      "id": "shp_rel_keptfor",
+      "name": "KeptFor look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#495057",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [2, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#495057",
+        "width": 1.5,
+        "style": "dotted",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_usessystem": {
+      "id": "shp_rel_usessystem",
+      "name": "UsesSystem look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#0c8599",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#0c8599",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    }
+  },
+  "panels": {
+    "cls_processingactivity": {
+      "class": "cls_processingactivity",
+      "tabs": [
+        {
+          "label": "Activity",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Owner"
+            },
+            {
+              "attribute": "Role",
+              "control": "segmented"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            },
+            {
+              "attribute": "Purposes"
+            },
+            {
+              "attribute": "LegalBases"
+            },
+            {
+              "attribute": "Retention"
+            }
+          ]
+        },
+        {
+          "label": "Impact assessment",
+          "items": [
+            {
+              "attribute": "LargeScale"
+            },
+            {
+              "attribute": "AutomatedDecisions"
+            },
+            {
+              "attribute": "SystematicMonitoring"
+            },
+            {
+              "attribute": "NewTechnology"
+            },
+            {
+              "attribute": "SpecialData"
+            },
+            {
+              "attribute": "VulnerableSubjects"
+            },
+            {
+              "attribute": "OutsideTransfers"
+            },
+            {
+              "attribute": "DPIACriteria"
+            },
+            {
+              "attribute": "DPIAIndication"
+            },
+            {
+              "attribute": "DPIAStatus",
+              "control": "select"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    }
+  },
+  "rules": {},
+  "scripts": {}
+}

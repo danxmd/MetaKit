@@ -2,11 +2,11 @@
 
 ## Purpose
 
-Three ready-to-use tool libraries for data and AI project work, shipped as built-in tool libraries.
+Three ready-to-use Kits for data and AI project work, shipped as built-in Kits.
 
 ## ADDED Requirements
 
-### Requirement: Data and AI architecture tool
+### Requirement: Data and AI architecture Kit
 The sample `data-ai-architecture` SHALL model sources, ingestion, pipelines, stores, datasets, ML models, AI services and consumers in zones, connected by data flows. It SHALL warn when personal data flows into a store that is not approved for it, and offer a command that lists the lineage of the selected object.
 
 #### Scenario: Personal data into an unapproved store
@@ -17,14 +17,14 @@ The sample `data-ai-architecture` SHALL model sources, ingestion, pipelines, sto
 - **WHEN** a dataset is selected and **Show lineage** is run
 - **THEN** a message lists the objects upstream and downstream of it, in flow order
 
-### Requirement: AI use-case portfolio tool
+### Requirement: AI use-case portfolio Kit
 The sample `ai-use-case-portfolio` SHALL score use cases on value, feasibility, data readiness and risk, compute a priority score and a quadrant with formulas, colour use cases by quadrant, and offer a command that ranks them.
 
 #### Scenario: Quadrant
 - **WHEN** a use case has Value 5 and Feasibility 4
 - **THEN** its Quadrant is "Quick win" and it is drawn in the quick-win colour
 
-### Requirement: Data governance tool
+### Requirement: Data governance Kit
 The sample `data-governance` SHALL model domains, data products, assets, people and roles, glossary terms, policies, classifications and quality rules, and SHALL report data products without an owner and restricted assets without a policy.
 
 #### Scenario: Product without owner

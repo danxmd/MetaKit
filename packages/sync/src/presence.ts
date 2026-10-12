@@ -1,6 +1,6 @@
 import { decode, encode, type SyncAdapter } from './adapter';
 import { NewerFormatError, SyncFormatError } from './errors';
-import type { DocKind } from './path';
+import { docKindOf, type DocKind } from './path';
 import type { Timers } from './session';
 
 export const PRESENCE_FORMAT = 1;
@@ -69,12 +69,20 @@ export function parsePresence(text: string): PresenceFile {
     name: p.name,
     colour: typeof p.colour === 'string' ? p.colour : '#868e96',
     at: p.at,
-    document: p.document ?? null,
+    document: presenceDocument(p.document),
     selection: Array.isArray(p.selection) ? p.selection.map(String) : [],
     editing: typeof p.editing === 'string' ? p.editing : null,
     hash: typeof p.hash === 'string' ? p.hash : '',
     seen: p.seen ?? {},
   };
+}
+
+/** The open document, with a Kit called `kit` even when an earlier release wrote `tool` (ADR 0011). */
+function presenceDocument(value: unknown): PresenceDocument | null {
+  const d = value as Partial<PresenceDocument> | null | undefined;
+  if (!d || typeof d !== 'object' || typeof d.slug !== 'string') return null;
+  const kind = docKindOf(d.kind);
+  return kind === null ? null : { kind, slug: d.slug };
 }
 
 /** A presence file counts for 30 seconds after it was written. */
@@ -320,7 +328,9 @@ export class PresenceService {
 
   private async read(): Promise<PresenceFile[]> {
     const staleMs = this.options.staleMs ?? 30_000;
-    const out: PresenceFile[] = [];
+    // By the instance inside the file, not the file name: a sync service can copy a file under
+    // another name, and this instance must never show up as someone else.
+    const byInstance = new Map<string, PresenceFile>();
     for (const entry of await this.options.adapter.list('_presence')) {
       if (entry.kind !== 'file' || !entry.name.endsWith('.json')) continue;
       if (entry.name === `${this.me}.json`) continue;
@@ -328,12 +338,18 @@ export class PresenceService {
         const p = parsePresence(
           decode(await this.options.adapter.read(`_presence/${entry.name}`)),
         );
-        if (isFresh(p, this.now(), staleMs)) out.push(p);
+        if (p.instance === this.me || !isFresh(p, this.now(), staleMs))
+          continue;
+        const known = byInstance.get(p.instance);
+        if (!known || Date.parse(p.at) > Date.parse(known.at))
+          byInstance.set(p.instance, p);
       } catch {
         // Half written or from a newer version: it is read again at the next refresh.
       }
     }
-    return out.sort((a, b) => (a.instance < b.instance ? -1 : 1));
+    return [...byInstance.values()].sort((a, b) =>
+      a.instance < b.instance ? -1 : 1,
+    );
   }
 
   /** Stops, and removes this instance's presence file so that others see it leave at once. */

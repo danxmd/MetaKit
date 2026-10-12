@@ -1,0 +1,381 @@
+{
+  "attributes": {
+    "AsOf": "2027-01-04",
+    "Organisation": "A small software company",
+    "Title": "Organisation 2027"
+  },
+  "connectors": [
+    {
+      "from": "el_pos_hprod",
+      "id": "cn_001",
+      "relation": "ReportsTo",
+      "to": "el_pos_md"
+    },
+    {
+      "from": "el_pos_hops",
+      "id": "cn_002",
+      "relation": "ReportsTo",
+      "to": "el_pos_md"
+    },
+    {
+      "from": "el_pos_hsales",
+      "id": "cn_003",
+      "relation": "ReportsTo",
+      "to": "el_pos_md"
+    },
+    {
+      "from": "el_pos_dev",
+      "id": "cn_004",
+      "relation": "ReportsTo",
+      "to": "el_pos_hprod"
+    },
+    {
+      "from": "el_pos_designer",
+      "id": "cn_005",
+      "relation": "ReportsTo",
+      "to": "el_pos_hprod"
+    },
+    {
+      "from": "el_pos_office",
+      "id": "cn_006",
+      "relation": "ReportsTo",
+      "to": "el_pos_hops"
+    },
+    {
+      "from": "el_pos_finance",
+      "id": "cn_007",
+      "relation": "ReportsTo",
+      "to": "el_pos_hops"
+    },
+    {
+      "from": "el_pos_account",
+      "id": "cn_008",
+      "relation": "ReportsTo",
+      "to": "el_pos_hsales"
+    },
+    {
+      "from": "el_pos_assistant",
+      "id": "cn_009",
+      "relation": "ReportsTo",
+      "to": "el_pos_hsales"
+    }
+  ],
+  "elements": [
+    {
+      "attributes": {
+        "Code": "M",
+        "Name": "Management"
+      },
+      "class": "Unit",
+      "h": 160,
+      "id": "el_u_mgmt",
+      "w": 410,
+      "x": 450,
+      "y": 20
+    },
+    {
+      "attributes": {
+        "Grade": "Director",
+        "Name": "Managing director"
+      },
+      "class": "Position",
+      "h": 100,
+      "id": "el_pos_md",
+      "parent": "el_u_mgmt",
+      "w": 200,
+      "x": 555,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "Employment": "Permanent",
+        "FTE": 1,
+        "Name": "Alex Morgan"
+      },
+      "class": "Person",
+      "h": 36,
+      "id": "el_p_alex",
+      "parent": "el_pos_md",
+      "w": 170,
+      "x": 570,
+      "y": 84
+    },
+    {
+      "attributes": {
+        "Code": "P",
+        "Name": "Product"
+      },
+      "class": "Unit",
+      "h": 340,
+      "id": "el_u_product",
+      "w": 410,
+      "x": 20,
+      "y": 240
+    },
+    {
+      "attributes": {
+        "Grade": "Head",
+        "Name": "Head of product"
+      },
+      "class": "Position",
+      "h": 100,
+      "id": "el_pos_hprod",
+      "parent": "el_u_product",
+      "w": 200,
+      "x": 145,
+      "y": 260
+    },
+    {
+      "attributes": {
+        "Employment": "Permanent",
+        "FTE": 1,
+        "Name": "Priya Shah"
+      },
+      "class": "Person",
+      "h": 36,
+      "id": "el_p_priya",
+      "parent": "el_pos_hprod",
+      "w": 170,
+      "x": 160,
+      "y": 304
+    },
+    {
+      "attributes": {
+        "Grade": "Senior",
+        "Name": "Developer",
+        "Seats": 2
+      },
+      "class": "Position",
+      "h": 144,
+      "id": "el_pos_dev",
+      "parent": "el_u_product",
+      "w": 180,
+      "x": 60,
+      "y": 410
+    },
+    {
+      "attributes": {
+        "Employment": "Permanent",
+        "FTE": 1,
+        "Name": "Jonas Berg"
+      },
+      "class": "Person",
+      "h": 36,
+      "id": "el_p_jonas",
+      "parent": "el_pos_dev",
+      "w": 150,
+      "x": 75,
+      "y": 454
+    },
+    {
+      "attributes": {
+        "Employment": "Contractor",
+        "FTE": 1,
+        "Name": "Mei Lin"
+      },
+      "class": "Person",
+      "h": 36,
+      "id": "el_p_mei",
+      "parent": "el_pos_dev",
+      "w": 150,
+      "x": 75,
+      "y": 498
+    },
+    {
+      "attributes": {
+        "Grade": "Mid",
+        "Name": "Designer"
+      },
+      "class": "Position",
+      "h": 100,
+      "id": "el_pos_designer",
+      "parent": "el_u_product",
+      "w": 180,
+      "x": 245,
+      "y": 410
+    },
+    {
+      "attributes": {
+        "Code": "O",
+        "Name": "Operations"
+      },
+      "class": "Unit",
+      "h": 340,
+      "id": "el_u_ops",
+      "w": 410,
+      "x": 450,
+      "y": 240
+    },
+    {
+      "attributes": {
+        "Grade": "Head",
+        "Name": "Head of operations"
+      },
+      "class": "Position",
+      "h": 100,
+      "id": "el_pos_hops",
+      "parent": "el_u_ops",
+      "w": 200,
+      "x": 575,
+      "y": 260
+    },
+    {
+      "attributes": {
+        "Employment": "Permanent",
+        "FTE": 1,
+        "Name": "Omar Haddad"
+      },
+      "class": "Person",
+      "h": 36,
+      "id": "el_p_omar",
+      "parent": "el_pos_hops",
+      "w": 170,
+      "x": 590,
+      "y": 304
+    },
+    {
+      "attributes": {
+        "Grade": "Mid",
+        "Name": "Office manager"
+      },
+      "class": "Position",
+      "h": 100,
+      "id": "el_pos_office",
+      "parent": "el_u_ops",
+      "w": 180,
+      "x": 490,
+      "y": 410
+    },
+    {
+      "attributes": {
+        "Employment": "Permanent",
+        "FTE": 0.8,
+        "Name": "Lena Novak"
+      },
+      "class": "Person",
+      "h": 36,
+      "id": "el_p_lena",
+      "parent": "el_pos_office",
+      "w": 150,
+      "x": 505,
+      "y": 454
+    },
+    {
+      "attributes": {
+        "Grade": "Mid",
+        "Name": "Finance officer"
+      },
+      "class": "Position",
+      "h": 100,
+      "id": "el_pos_finance",
+      "parent": "el_u_ops",
+      "w": 180,
+      "x": 675,
+      "y": 410
+    },
+    {
+      "attributes": {
+        "Employment": "Fixed term",
+        "FTE": 1,
+        "Name": "Chris Doyle"
+      },
+      "class": "Person",
+      "h": 36,
+      "id": "el_p_chris",
+      "parent": "el_pos_finance",
+      "w": 150,
+      "x": 690,
+      "y": 454
+    },
+    {
+      "attributes": {
+        "Code": "S",
+        "Name": "Sales"
+      },
+      "class": "Unit",
+      "h": 340,
+      "id": "el_u_sales",
+      "w": 410,
+      "x": 880,
+      "y": 240
+    },
+    {
+      "attributes": {
+        "Grade": "Head",
+        "Name": "Head of sales"
+      },
+      "class": "Position",
+      "h": 100,
+      "id": "el_pos_hsales",
+      "parent": "el_u_sales",
+      "w": 200,
+      "x": 1005,
+      "y": 260
+    },
+    {
+      "attributes": {
+        "Grade": "Mid",
+        "Name": "Account manager",
+        "Seats": 2
+      },
+      "class": "Position",
+      "h": 144,
+      "id": "el_pos_account",
+      "parent": "el_u_sales",
+      "w": 180,
+      "x": 920,
+      "y": 410
+    },
+    {
+      "attributes": {
+        "Employment": "Permanent",
+        "FTE": 1,
+        "Name": "Ana Silva"
+      },
+      "class": "Person",
+      "h": 36,
+      "id": "el_p_ana",
+      "parent": "el_pos_account",
+      "w": 150,
+      "x": 935,
+      "y": 454
+    },
+    {
+      "attributes": {
+        "Grade": "Junior",
+        "Name": "Sales assistant"
+      },
+      "class": "Position",
+      "h": 100,
+      "id": "el_pos_assistant",
+      "parent": "el_u_sales",
+      "w": 180,
+      "x": 1105,
+      "y": 410
+    },
+    {
+      "attributes": {
+        "Employment": "Permanent",
+        "FTE": 0.5,
+        "Name": "Sam Taylor"
+      },
+      "class": "Person",
+      "h": 36,
+      "id": "el_p_sam",
+      "parent": "el_pos_assistant",
+      "w": 150,
+      "x": 1120,
+      "y": 454
+    }
+  ],
+  "formatVersion": 2,
+  "id": "mdl_softwarecompany",
+  "kind": "mkmodel",
+  "kit": {
+    "id": "kit_orgchart",
+    "name": "Org chart",
+    "version": "1.0.0"
+  },
+  "modelType": "OrgChart",
+  "name": "Organisation 2027"
+}

@@ -67,7 +67,7 @@ Under the large preview there is a row of tiles. Each tile shows the look for on
 
 ## Examples
 
-The shipped **Task** shape of the Agent pipeline tool colours a narrow stripe by Status. You can colour the whole fill with a data rule using the same colours:
+The **Task** of the shipped Agent pipeline Kit is coloured this way. To build the same look yourself, colour the fill with a data rule:
 
 | Status | Colour |
 | --- | --- |
@@ -81,13 +81,13 @@ The shipped **Task** shape of the Agent pipeline tool colours a narrow stripe by
 
 Add a mark: **Show a mark on the corner**, when **Priority** is **High**, **Mark text** `!`, colour red. The preview then shows two groups of tiles, one titled Status with six tiles and one titled Priority with three (Low, Medium, High).
 
-The shipped shape ("Task (status stripe)") is hand-drawn and gets its stripe colour from a long `if(...)` formula. A data rule does the same job without writing a formula.
+Open the class Task of the Agent pipeline Kit and press **Edit appearance** to compare: its look ("Task (colour by status)") uses these colours and this mark, without a formula.
 
 ## Good to know
 
 - A colour rule needs the attribute key. If you rename the key, the rule follows ([[keys-and-renaming]]).
 - If a modeller picks a value you have not given a colour, the **Anything else** colour is used.
-- If you delete the attribute a rule depends on, check the look afterwards and the problems banner ([[tool-validation]]).
+- If you delete the attribute a rule depends on, check the look afterwards and the problems banner ([[kit-validation]]).
 - The hand-drawn [[shape-editor]] has a similar helper, the [[shape-colour-helper]].
 - For relation classes, the line colour can depend on data too ([[appearance-relations]]).
 

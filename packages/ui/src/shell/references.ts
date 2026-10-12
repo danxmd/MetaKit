@@ -4,7 +4,7 @@ import type {
   Model,
   ModelId,
   ReferenceAttribute,
-  ToolLibrary,
+  Kit,
 } from '@metakit-app/core';
 import { effectiveAttributes, isA } from '@metakit-app/core';
 import type { ModelEntry } from '@metakit-app/storage';
@@ -34,7 +34,7 @@ export interface ReferenceServices {
 interface Loaded {
   entry: ModelEntry;
   model: Model;
-  tool: ToolLibrary;
+  kit: Kit;
 }
 
 /**
@@ -71,7 +71,7 @@ export class ReferenceIndex {
   ): Promise<ReferenceHit[]> {
     await this.ready();
     const hits: ReferenceHit[] = [];
-    for (const { entry, model, tool } of this.loaded) {
+    for (const { entry, model, kit } of this.loaded) {
       const types = attr.target.modelTypes;
       if (
         types &&
@@ -86,9 +86,9 @@ export class ReferenceIndex {
               .sort((a, b) => (a.pos < b.pos ? -1 : 1))
               .map((e) => ({
                 id: e.id,
-                title: this.titleOf(tool, model, e.id, language),
+                title: this.titleOf(kit, model, e.id, language),
               }))
-          : findInModel(tool, model, query, language, 500)
+          : findInModel(kit, model, query, language, 500)
               .filter((h) => h.kind === 'element')
               .map((h) => ({ id: h.id as ElementId, title: h.title }));
       for (const f of found) {
@@ -97,7 +97,7 @@ export class ReferenceIndex {
         if (
           classes &&
           classes.length > 0 &&
-          !classes.some((c) => isA(tool, cls, c))
+          !classes.some((c) => isA(kit, cls, c))
         )
           continue;
         hits.push({
@@ -117,11 +117,11 @@ export class ReferenceIndex {
     ref: ReferenceValue,
     language = 'en',
   ): { title: string; modelName: string; slug: string } | undefined {
-    for (const { entry, model, tool } of this.loaded) {
+    for (const { entry, model, kit } of this.loaded) {
       if (ref.model !== undefined && model.manifest.id !== ref.model) continue;
       if (ref.element in model.elements)
         return {
-          title: this.titleOf(tool, model, ref.element, language),
+          title: this.titleOf(kit, model, ref.element, language),
           modelName: entry.name,
           slug: entry.slug,
         };
@@ -130,15 +130,15 @@ export class ReferenceIndex {
   }
 
   private titleOf(
-    tool: ToolLibrary,
+    kit: Kit,
     model: Model,
     id: ElementId,
     language: string,
   ): string {
     const e = model.elements[id];
-    const cls = e && tool.classes[e.class];
+    const cls = e && kit.classes[e.class];
     if (!e || !cls) return id;
-    for (const attr of effectiveAttributes(tool, e.class)) {
+    for (const attr of effectiveAttributes(kit, e.class)) {
       const v = e.attrs[attr.id];
       if (attr.type === 'text' && typeof v === 'string' && v !== '') return v;
     }

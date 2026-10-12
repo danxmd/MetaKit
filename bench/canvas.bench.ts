@@ -15,7 +15,7 @@ const here = (file: string) => fileURLToPath(new URL(file, import.meta.url));
 const budget = JSON.parse(
   readFileSync(here('./budget.json'), 'utf8'),
 ) as Budget;
-const toolJson = readFileSync(here('../tools/bpmn-lite/tool.json'), 'utf8');
+const kitJson = readFileSync(here('../kits/bpmn-lite/kit.json'), 'utf8');
 const frames = Number(process.env.BENCH_FRAMES ?? 240);
 
 function format(report: Report): string {
@@ -54,10 +54,10 @@ test('the canvas keeps the performance budget on 5,000 elements and 7,000 connec
     ([json, n]) =>
       (
         window as unknown as {
-          __bench: { run(tool: string, frames: number): Promise<Report> };
+          __bench: { run(kit: string, frames: number): Promise<Report> };
         }
       ).__bench.run(json as string, n as number),
-    [toolJson, frames] as const,
+    [kitJson, frames] as const,
   );
 
   const text = format(report);

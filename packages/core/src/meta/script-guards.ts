@@ -1,6 +1,6 @@
 import type { Checker } from './guards';
 
-/** Longest script the tool library accepts, so that a damaged file cannot fill memory. */
+/** Longest script the Kit accepts, so that a damaged file cannot fill memory. */
 export const MAX_SCRIPT_CHARS = 200_000;
 
 /** Checks the structure of `scripts`. */

@@ -49,7 +49,7 @@ export interface ScriptEditorHandle {
   readonly view: EditorView;
   /** The text now in the editor. */
   text(): string;
-  /** Replaces the whole text, for a change that came from outside (an undo of the tool library). */
+  /** Replaces the whole text, for a change that came from outside (an undo of the Kit). */
   setText(text: string): void;
   /** Asks the language service to look at the text again, for example after the declarations changed. */
   recheck(): void;
@@ -153,6 +153,7 @@ export function createScriptEditor(
               severity: d.severity,
               message: d.message,
               source: `TS${d.code}`,
+              ...(d.deprecated ? { markClass: 'cm-deprecated' } : {}),
             }));
           },
           { delay: 300 },
@@ -221,6 +222,7 @@ export function createScriptEditor(
             whiteSpace: 'pre-wrap',
           },
           '.cm-ts-info-docs': { marginTop: '0.25rem', opacity: '0.8' },
+          '.cm-deprecated': { textDecoration: 'line-through' },
         }),
       ],
     }),

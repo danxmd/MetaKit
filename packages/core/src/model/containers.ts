@@ -1,19 +1,19 @@
 import type { ClassId, ElementId, ModelTypeId } from '../ids';
 import { classChain, isA } from '../meta/inherit';
-import type { ToolLibrary } from '../meta/types';
+import type { Kit } from '../meta/types';
 import type { ElementData, Model, Point } from './types';
 
 /** How far a swimlane keeps its children from its edges when it grows to fit them. */
 export const FIT_PADDING = 10;
 
 /** True when elements of this class can hold other elements (`container` or `swimlane`). */
-export function isContainerClass(tool: ToolLibrary, classId: ClassId): boolean {
-  const kind = tool.classes[classId]?.kind;
+export function isContainerClass(kit: Kit, classId: ClassId): boolean {
+  const kind = kit.classes[classId]?.kind;
   return kind === 'container' || kind === 'swimlane';
 }
 
-export function isSwimlaneClass(tool: ToolLibrary, classId: ClassId): boolean {
-  return tool.classes[classId]?.kind === 'swimlane';
+export function isSwimlaneClass(kit: Kit, classId: ClassId): boolean {
+  return kit.classes[classId]?.kind === 'swimlane';
 }
 
 /**
@@ -22,25 +22,25 @@ export function isSwimlaneClass(tool: ToolLibrary, classId: ClassId): boolean {
  * class with no rule accepts anything. A listed class also accepts its subclasses.
  */
 export function containerAccepts(
-  tool: ToolLibrary,
+  kit: Kit,
   modelTypeId: ModelTypeId,
   containerClass: ClassId,
   childClass: ClassId,
 ): boolean {
-  const rules = tool.modelTypes[modelTypeId]?.containers;
+  const rules = kit.modelTypes[modelTypeId]?.containers;
   if (!rules) return true;
   let chain: ClassId[];
   try {
-    chain = classChain(tool, containerClass)
+    chain = classChain(kit, containerClass)
       .map((c) => c.id)
       .reverse();
   } catch {
-    // A broken inheritance chain is a tool library problem; use the class alone.
+    // A broken inheritance chain is a Kit problem; use the class alone.
     chain = [containerClass];
   }
   for (const id of chain) {
     const accepted = rules[id];
-    if (accepted) return accepted.some((a) => isA(tool, childClass, a));
+    if (accepted) return accepted.some((a) => isA(kit, childClass, a));
   }
   return true;
 }
@@ -131,7 +131,7 @@ const contains = (el: ElementData, p: Point): boolean =>
  */
 export function containerAt(
   model: Model,
-  tool: ToolLibrary,
+  kit: Kit,
   modelTypeId: ModelTypeId,
   centre: Point,
   ignoreIds: Iterable<ElementId>,
@@ -140,8 +140,8 @@ export function containerAt(
   const ignore = new Set(ignoreIds);
   let best: { el: ElementData; depth: number } | null = null;
   for (const el of Object.values(model.elements)) {
-    if (!contains(el, centre) || !isContainerClass(tool, el.class)) continue;
-    if (!containerAccepts(tool, modelTypeId, el.class, classId)) continue;
+    if (!contains(el, centre) || !isContainerClass(kit, el.class)) continue;
+    if (!containerAccepts(kit, modelTypeId, el.class, classId)) continue;
     const chain = ancestorsOf(model, el.id);
     if (ignore.has(el.id) || chain.some((a) => ignore.has(a))) continue;
     const depth = chain.length;

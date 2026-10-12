@@ -2,13 +2,13 @@ import type { ElementId } from '../ids';
 import { describe, expect, it } from 'vitest';
 import { createModelStore } from '../model/commands';
 import type { Model } from '../model/types';
-import type { AttributeDef, ToolLibrary } from '../meta/types';
-import { SAMPLE, emptySampleModel, sampleTool } from '../testing/sample-tool';
+import type { AttributeDef, Kit } from '../meta/types';
+import { SAMPLE, emptySampleModel, sampleKit } from '../testing/sample-kit';
 import { ModelCalculator } from './calculator';
 
 function setup(extraTask: AttributeDef[] = [], extraLane: AttributeDef[] = []) {
-  const base = sampleTool();
-  const tool: ToolLibrary = {
+  const base = sampleKit();
+  const kit: Kit = {
     ...base,
     classes: {
       ...base.classes,
@@ -22,8 +22,8 @@ function setup(extraTask: AttributeDef[] = [], extraLane: AttributeDef[] = []) {
       },
     },
   };
-  const store = createModelStore(emptySampleModel(), { tool });
-  const calc = new ModelCalculator(tool, () => store.state as Model);
+  const store = createModelStore(emptySampleModel(), { kit });
+  const calc = new ModelCalculator(kit, () => store.state as Model);
   calc.attach(store);
   const task = (attrs: Record<string, unknown> = {}, parent?: string) =>
     (
@@ -36,7 +36,7 @@ function setup(extraTask: AttributeDef[] = [], extraLane: AttributeDef[] = []) {
         ...(parent ? { parent } : {}),
       } as never) as unknown as { value: string }
     ).value as ElementId;
-  return { tool, store, calc, task };
+  return { kit, store, calc, task };
 }
 
 const formula = (id: string, key: string, text: string): AttributeDef =>
@@ -202,17 +202,17 @@ describe('ModelCalculator', () => {
     expect(calc.evaluate(t, 'Nope').error).toMatch(/not known/);
   });
 
-  it('takes a changed tool library', () => {
-    const { tool, calc, task } = setup();
+  it('takes a changed Kit', () => {
+    const { kit, calc, task } = setup();
     const t = task({ [SAMPLE.attEffort]: 2 });
     expect(calc.get(t, 'Cost')).toBe(170);
-    const changed: ToolLibrary = {
-      ...tool,
+    const changed: Kit = {
+      ...kit,
       classes: {
-        ...tool.classes,
+        ...kit.classes,
         [SAMPLE.task]: {
-          ...tool.classes[SAMPLE.task]!,
-          attributes: tool.classes[SAMPLE.task]!.attributes.map((a) =>
+          ...kit.classes[SAMPLE.task]!,
+          attributes: kit.classes[SAMPLE.task]!.attributes.map((a) =>
             a.key === 'Cost'
               ? ({ ...a, formula: 'Effort * 100' } as AttributeDef)
               : a,
@@ -220,12 +220,12 @@ describe('ModelCalculator', () => {
         },
       },
     };
-    calc.setTool(changed);
+    calc.setKit(changed);
     expect(calc.get(t, 'Cost')).toBe(200);
   });
 
   it('recalculates one changed input among 5,000 formula attributes in under 50 ms', () => {
-    const { tool } = setup();
+    const { kit } = setup();
     // Built directly: making 5,000 elements through commands would measure the store, not this.
     const elements: Record<string, unknown> = {};
     const ids: string[] = [];
@@ -244,8 +244,8 @@ describe('ModelCalculator', () => {
       };
     }
     const model = { ...emptySampleModel(), elements } as unknown as Model;
-    const store = createModelStore(model, { tool });
-    const calc = new ModelCalculator(tool, () => store.state as Model);
+    const store = createModelStore(model, { kit });
+    const calc = new ModelCalculator(kit, () => store.state as Model);
     calc.attach(store);
     for (const id of ids) calc.get(id, 'Cost');
     const before = calc.evaluations;

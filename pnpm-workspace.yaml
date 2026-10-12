@@ -3,6 +3,7 @@ packages:
   - apps/*
   - spikes/*
   - bench
+  - kits/build
 # esbuild needs its install script to fetch the platform binary.
 onlyBuiltDependencies:
   - esbuild

@@ -1,19 +1,36 @@
 <script lang="ts">
-  import type { ToolLibrary } from '@metakit-app/core';
+  import type { Kit } from '@metakit-app/core';
   import type { CommandResult } from '../../shell/controller';
   import Section from './Section.svelte';
 
-  let {
-    tool,
-    run,
-  }: { tool: ToolLibrary; run: (command: never) => CommandResult } = $props();
+  let { kit, run }: { kit: Kit; run: (command: never) => CommandResult } =
+    $props();
 
   let error = $state<string | null>(null);
   const exec = (command: Record<string, unknown>) => {
     const r = run(command as never);
     error = r.ok ? null : r.error;
   };
-  const grid = $derived(tool.settings.grid);
+  const grid = $derived(kit.settings.grid);
+
+  function rename(input: HTMLInputElement) {
+    const name = input.value.trim();
+    if (name === '') {
+      error = 'A Kit needs a name.';
+      input.value = kit.manifest.name;
+      return;
+    }
+    if (name !== kit.manifest.name) exec({ type: 'updateManifest', name });
+  }
+  function setVersion(input: HTMLInputElement) {
+    const version = input.value.trim();
+    if (version === kit.manifest.version) return;
+    if (!/^\d+\.\d+\.\d+([-+][0-9A-Za-z.-]+)?$/.test(version)) {
+      error = 'A version looks like 1.0.0.';
+      return;
+    }
+    exec({ type: 'updateManifest', version });
+  }
   let newLanguage = $state('');
   const LANGUAGE = /^[a-z]{2,3}(-[A-Za-z0-9]+)*$/;
   function addLanguage() {
@@ -22,24 +39,24 @@
       error = `"${code}" is not a language code such as en or de.`;
       return;
     }
-    if (tool.manifest.languages.includes(code)) {
+    if (kit.manifest.languages.includes(code)) {
       error = `${code} is already listed.`;
       return;
     }
     exec({
       type: 'updateManifest',
-      languages: [...tool.manifest.languages, code],
+      languages: [...kit.manifest.languages, code],
     });
     newLanguage = '';
   }
   function removeLanguage(code: string) {
-    if (tool.manifest.languages.length === 1) {
-      error = 'A tool library needs at least one language.';
+    if (kit.manifest.languages.length === 1) {
+      error = 'A Kit needs at least one language.';
       return;
     }
     exec({
       type: 'updateManifest',
-      languages: tool.manifest.languages.filter((l) => l !== code),
+      languages: kit.manifest.languages.filter((l) => l !== code),
     });
   }
 </script>
@@ -48,11 +65,33 @@
   <h2>Settings</h2>
   {#if error}<p class="notice error" role="alert">{error}</p>{/if}
   <Section
+    title="Name and version"
+    help="The name modellers see when they choose a Kit. Raise the version when you share a new release."
+  >
+    <div class="row">
+      <label class="name"
+        >Name <input
+          value={kit.manifest.name}
+          onchange={(e) => rename(e.currentTarget)}
+          data-testid="build-name"
+        /></label
+      >
+      <label
+        >Version <input
+          class="version"
+          value={kit.manifest.version}
+          onchange={(e) => setVersion(e.currentTarget)}
+          data-testid="build-version"
+        /></label
+      >
+    </div>
+  </Section>
+  <Section
     title="Languages"
     help="Labels can be given in each language. The first one is used for options and previews."
   >
     <ul>
-      {#each tool.manifest.languages as code (code)}
+      {#each kit.manifest.languages as code (code)}
         <li>
           <span class="code">{code}</span>
           <button
@@ -156,6 +195,13 @@
   label {
     display: grid;
     gap: var(--gap-1);
+  }
+  .name {
+    flex: 1;
+    min-width: 12rem;
+  }
+  .version {
+    width: 7rem;
   }
   label.inline {
     display: inline-flex;

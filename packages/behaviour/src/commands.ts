@@ -5,7 +5,7 @@ export interface CommandEntry {
   id: string;
   label: string;
   place: CommandPlace;
-  /** Where it comes from, for the menu: a rule of the tool library or a script. */
+  /** Where it comes from, for the menu: a rule of the Kit or a script. */
   source: 'rule' | 'script';
   /** Runs the command on the selected object, or on nothing. */
   run(target: string | null): void;

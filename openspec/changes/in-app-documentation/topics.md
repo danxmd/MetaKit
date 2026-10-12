@@ -24,7 +24,7 @@ Categories: `start` Getting started · `pages` Pages and dialogs · `model` Mode
 | --- | --- | --- |
 | welcome | Welcome to MetaKit | |
 | concepts-workspace | Workspace folder | |
-| concepts-tool-library | Tool library | |
+| concepts-kit | Kit | |
 | concepts-model | Model | |
 | concepts-modes | Model mode and Build mode | |
 | concepts-no-server | No server, your files stay yours | |
@@ -32,15 +32,15 @@ Categories: `start` Getting started · `pages` Pages and dialogs · `model` Mode
 | quick-tour | Quick tour | |
 | page-start | Start page | start |
 | page-models | Models page | models |
-| page-tool-libraries | Tool libraries page | tool-libraries |
+| page-kits | Kits page | kits |
 | top-bar | Top bar | |
 | settings-menu | Settings menu | |
 | theme | Light and dark appearance | |
 | profile | Your name and colour | settings.profile |
 | dialog-new-model | New model | dialog.new-model |
-| dialog-tool-import | Add a tool library | dialog.tool-import |
+| dialog-kit-import | Add a Kit | dialog.kit-import |
 | folders-and-search | Folders, rename, move and search across models | |
-| import-export | Import and export of models, bundles, CSV and tool packages | |
+| import-export | Import and export of models, bundles, CSV and Kit packages | |
 | trash-and-restore | Deleted items and restore | |
 | docs-help | Using the documentation and the Help side bar | docs |
 
@@ -106,9 +106,9 @@ Categories: `start` Getting started · `pages` Pages and dialogs · `model` Mode
 | shape-properties | Shape properties | |
 | shape-svg-import | Import SVG | |
 | shape-colour-helper | Colour helper | |
-| tool-settings | Tool library settings | build.settings |
+| kit-settings | Kit settings | build.settings |
 | try-it-preview | Try it preview | |
-| tool-validation | Checking a tool library | |
+| kit-validation | Checking a Kit | |
 
 ## D. Behaviour, teamwork, assistant, reference (categories `behaviour`, `teamwork`, `assistant`, `reference`, `tutorials`)
 

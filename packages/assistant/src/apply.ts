@@ -3,9 +3,9 @@ import {
   type BatchCommand,
   type RandomSource,
   type RuleAction,
-  type ToolCommand,
-  type ToolCommandOrBatch,
-  type ToolLibrary,
+  type KitCommand,
+  type KitCommandOrBatch,
+  type Kit,
 } from '@metakit-app/core';
 import { classDefFromDraft, uniqueClassKey } from './check';
 import type { DraftKind } from './prompts';
@@ -17,10 +17,10 @@ import type {
   ShapeDraft,
 } from './types';
 
-/** A script name that no other script of the tool has: `Renumber tasks`, then `Renumber tasks 2`. */
-function uniqueScriptName(tool: ToolLibrary, wanted: string): string {
+/** A script name that no other script of the Kit has: `Renumber tasks`, then `Renumber tasks 2`. */
+function uniqueScriptName(kit: Kit, wanted: string): string {
   const used = new Set(
-    Object.values(tool.scripts ?? {}).map((s) => s.name.toLowerCase()),
+    Object.values(kit.scripts ?? {}).map((s) => s.name.toLowerCase()),
   );
   const base = wanted.trim() || 'Drafted script';
   if (!used.has(base.toLowerCase())) return base;
@@ -29,16 +29,16 @@ function uniqueScriptName(tool: ToolLibrary, wanted: string): string {
 }
 
 /**
- * The tool commands that apply a draft, with new ids and a key (or name) that nothing else uses.
- * The commands are validated by the tool store like any other, so a draft that slipped through
+ * The Kit commands that apply a draft, with new ids and a key (or name) that nothing else uses.
+ * The commands are validated by the Kit store like any other, so a draft that slipped through
  * the checks is refused there and changes nothing.
  */
 export function draftToCommands<K extends DraftKind>(
   kind: K,
   draft: DraftMap[K],
-  tool: ToolLibrary,
+  kit: Kit,
   random?: RandomSource,
-): ToolCommand[] {
+): KitCommand[] {
   switch (kind) {
     case 'rule':
       return [
@@ -54,7 +54,7 @@ export function draftToCommands<K extends DraftKind>(
           type: 'putScript',
           script: {
             id: newId('script', random),
-            name: uniqueScriptName(tool, d.name),
+            name: uniqueScriptName(kit, d.name),
             source: d.source,
           },
         },
@@ -74,7 +74,7 @@ export function draftToCommands<K extends DraftKind>(
       return [
         {
           type: 'putClass',
-          def: classDefFromDraft(tool, draft as ClassDraft, {
+          def: classDefFromDraft(kit, draft as ClassDraft, {
             class: newId('class', random),
             attribute: () => newId('attribute', random),
           }) as never,
@@ -86,9 +86,9 @@ export function draftToCommands<K extends DraftKind>(
 }
 
 /** One command, or a batch when there are several, so that accepting is a single undo step. */
-export function asOneStep(commands: ToolCommand[]): ToolCommandOrBatch {
+export function asOneStep(commands: KitCommand[]): KitCommandOrBatch {
   if (commands.length === 1) return commands[0]!;
-  const batch: BatchCommand<ToolCommand> = { type: 'batch', commands };
+  const batch: BatchCommand<KitCommand> = { type: 'batch', commands };
   return batch;
 }
 
@@ -116,20 +116,20 @@ const show = (v: unknown): string =>
     ? `the result of ${v.trim()}`
     : JSON.stringify(v);
 
-function actionPhrase(a: RuleAction, tool: ToolLibrary): string {
+function actionPhrase(a: RuleAction, kit: Kit): string {
   switch (a.action) {
     case 'setAttribute':
       return `Set ${a.attribute} to ${show(a.value)}`;
     case 'createObject':
-      return `Create a ${tool.classes[a.class]?.key ?? 'new'} object`;
+      return `Create a ${kit.classes[a.class]?.key ?? 'new'} object`;
     case 'createConnector':
-      return `Create a ${tool.relations[a.relation]?.key ?? 'new'} connector`;
+      return `Create a ${kit.relations[a.relation]?.key ?? 'new'} connector`;
     case 'delete':
       return 'Delete the object';
     case 'message':
       return `Show ${a.kind === 'info' ? 'a message' : `a ${a.kind}`}: ${show(a.text)}`;
     case 'ask':
-      return `Ask "${a.text}" and, on yes, ${a.then.map((x) => actionPhrase(x, tool).toLowerCase()).join(', ') || 'do nothing'}`;
+      return `Ask "${a.text}" and, on yes, ${a.then.map((x) => actionPhrase(x, kit).toLowerCase()).join(', ') || 'do nothing'}`;
     case 'choose':
       return `Ask "${a.text}" with the choices ${a.options.join(', ')} and keep the answer in ${a.attribute}`;
     case 'cancel':
@@ -160,21 +160,21 @@ function partWord(p: { type?: unknown }): string {
 export function describeDraftChange<K extends DraftKind>(
   kind: K,
   draft: DraftMap[K],
-  tool: ToolLibrary,
+  kit: Kit,
 ): string[] {
   switch (kind) {
     case 'rule': {
       const r = draft as RuleDraft;
-      const cls = r.when.class ? tool.classes[r.when.class]?.key : undefined;
+      const cls = r.when.class ? kit.classes[r.when.class]?.key : undefined;
       const rel = r.when.relation
-        ? tool.relations[r.when.relation]?.key
+        ? kit.relations[r.when.relation]?.key
         : undefined;
       const lines = [
         `Add the rule "${r.label}".`,
         `When ${eventPhrase(r.when.event)}${cls ? ` for ${cls}` : ''}${rel ? ` for ${rel}` : ''}${r.when.attribute ? ` (attribute ${r.when.attribute})` : ''}.`,
       ];
       if (r.if) lines.push(`If ${r.if.trim().replace(/^=\s*/, '')}.`);
-      for (const a of r.then) lines.push(`Then: ${actionPhrase(a, tool)}.`);
+      for (const a of r.then) lines.push(`Then: ${actionPhrase(a, kit)}.`);
       if (r.command)
         lines.push(
           `It also adds the command "${r.command.label}" (${r.command.place}).`,
@@ -185,7 +185,7 @@ export function describeDraftChange<K extends DraftKind>(
       const s = draft as ScriptDraft;
       const rows = s.source.split('\n').filter((l) => l.trim() !== '').length;
       const lines = [
-        `Add the script "${uniqueScriptName(tool, s.name)}" (${rows} lines).`,
+        `Add the script "${uniqueScriptName(kit, s.name)}" (${rows} lines).`,
       ];
       const events = [
         ...s.source.matchAll(/\bon\(\s*["']([a-z]+\.[A-Za-z]+)["']/g),
@@ -199,11 +199,11 @@ export function describeDraftChange<K extends DraftKind>(
         lines.push(`It adds the commands: ${commands.join(', ')}.`);
       if (/\bhttp\b/.test(s.source.replace(/["'`][^"'`]*["'`]/g, '')))
         lines.push(
-          'It contacts web services: turn on that permission for the tool in the Scripts section.',
+          'It contacts web services: turn on that permission for the Kit in the Scripts section.',
         );
       if (/\bfiles\b/.test(s.source.replace(/["'`][^"'`]*["'`]/g, '')))
         lines.push(
-          'It reads or writes files: turn on that permission for the tool in the Scripts section.',
+          'It reads or writes files: turn on that permission for the Kit in the Scripts section.',
         );
       lines.push(
         'Scripts change models only through commands, so each can be undone.',
@@ -234,10 +234,10 @@ export function describeDraftChange<K extends DraftKind>(
     case 'class': {
       const c = draft as ClassDraft;
       const parent = c.extends
-        ? (tool.classes[c.extends as never]?.key ??
-          Object.values(tool.classes).find((x) => x.key === c.extends)?.key)
+        ? (kit.classes[c.extends as never]?.key ??
+          Object.values(kit.classes).find((x) => x.key === c.extends)?.key)
         : undefined;
-      const key = uniqueClassKey(tool, c.key);
+      const key = uniqueClassKey(kit, c.key);
       return [
         `Add the class "${key}"${key !== c.key ? ` (the key ${c.key} is taken)` : ''}${parent ? `, which extends ${parent}` : ''}.`,
         c.attributes.length > 0

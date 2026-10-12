@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Help while modelling: hints and suggestions that follow from the tool library.
+Help while modelling: hints and suggestions that follow from the Kit.
 
 ## ADDED Requirements
 
@@ -21,10 +21,10 @@ With interaction hints on, the hint line SHALL say which concepts a relation con
 - **THEN** the hint says that it connects an Actor to a Task
 
 ### Requirement: Hover suggestions
-With smart modelling on, hovering a concept SHALL show the concepts it can be connected to, grouped by relation, taken from the tool library and the model type.
+With smart modelling on, hovering a concept SHALL show the concepts it can be connected to, grouped by relation, taken from the Kit and the model type.
 
 #### Scenario: Hover a task
-- **WHEN** a Task is hovered in the agent pipeline tool
+- **WHEN** a Task is hovered in the agent pipeline Kit
 - **THEN** the card lists Performs (from Agent and Human), Hands over to (to Task and Gate), Produces (to Artifact) and the other relations that allow a Task at one end
 
 ### Requirement: Suggestions act through commands

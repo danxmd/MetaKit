@@ -41,7 +41,7 @@ export interface BehaviourHost {
   openModel(model: string): void;
   /** Runs a command (a rule with the event "command", or a script command) on the object, if any. */
   runCommand(command: string, target: string | null): void;
-  /** Runs a script of the tool library (by id), on the object if there is one. */
+  /** Runs a script of the Kit (by id), on the object if there is one. */
   runScript(script: string, target: string | null): void;
   /** Asks for a line of text; null when the user cancels. Scripts only (`ui.prompt`). */
   prompt?(text: string, initial?: string): string | null;

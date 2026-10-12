@@ -1,4 +1,4 @@
-import type { ToolLibrary } from '@metakit-app/core';
+import type { Kit } from '@metakit-app/core';
 import { parseDraftReply, validateDraft } from './check';
 import { assertNoModelContent } from './outgoing';
 import {
@@ -19,11 +19,11 @@ export interface DraftOptions<K extends DraftKind> {
   provider: AssistantProvider;
   /** The person's key, from `KeyStore.reveal`. It is passed to the provider and nowhere else. */
   key: string;
-  tool: ToolLibrary;
+  kit: Kit;
   kind: K;
   /** What the person wants, in their own words. */
   sentence: string;
-  /** The language code for labels and messages; the tool's first language by default. */
+  /** The language code for labels and messages; the Kit's first language by default. */
   language?: string;
   /**
    * Type check for scripts (the TypeScript language service of the UI package). Without it a
@@ -35,13 +35,13 @@ export interface DraftOptions<K extends DraftKind> {
 /**
  * Asks the provider for a draft and checks it. An invalid reply is sent back once with the list
  * of problems; whatever comes back after that is returned, with its errors if it still has any.
- * The request holds the tool definition and the sentence only (`assertNoModelContent` checks
+ * The request holds the Kit definition and the sentence only (`assertNoModelContent` checks
  * every request before it goes out).
  */
 export async function draft<K extends DraftKind>(
   options: DraftOptions<K>,
 ): Promise<DraftOutcome<K>> {
-  const { provider, key, tool, kind } = options;
+  const { provider, key, kit, kind } = options;
   const sentence = options.sentence.trim();
   if (sentence === '')
     throw new AssistantError('Describe what you want first.');
@@ -51,7 +51,7 @@ export async function draft<K extends DraftKind>(
     );
 
   const send = async (request: CompletionRequest): Promise<string> => {
-    assertNoModelContent(request, tool);
+    assertNoModelContent(request, kit);
     try {
       return await provider.complete(request, key);
     } catch (error) {
@@ -63,17 +63,17 @@ export async function draft<K extends DraftKind>(
   const check = async (
     reply: string,
   ): Promise<{ draft: DraftMap[K] | null; errors: string[] }> => {
-    const parsed = parseDraftReply(kind, reply, tool, sentence);
+    const parsed = parseDraftReply(kind, reply, kit, sentence);
     if (parsed.draft === null) return parsed;
     return {
       draft: parsed.draft,
-      errors: await validateDraft(kind, parsed.draft, tool, {
+      errors: await validateDraft(kind, parsed.draft, kit, {
         typeCheck: options.typeCheck,
       }),
     };
   };
 
-  const first = buildRequest(tool, kind, sentence, options.language);
+  const first = buildRequest(kit, kind, sentence, options.language);
   const reply = await send(first);
   const one = await check(reply);
   if (one.errors.length === 0)

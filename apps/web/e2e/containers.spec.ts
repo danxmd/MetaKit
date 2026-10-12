@@ -5,23 +5,21 @@ import { loadHarness } from './bundle';
 import type { ElementId } from '@metakit-app/core';
 import type { CanvasHarness } from './canvas-harness';
 
-const baseTool = JSON.parse(
+const baseKit = JSON.parse(
   readFileSync(
-    fileURLToPath(
-      new URL('../../../tools/bpmn-lite/tool.json', import.meta.url),
-    ),
+    fileURLToPath(new URL('../../../kits/bpmn-lite/kit.json', import.meta.url)),
     'utf8',
   ),
 ) as {
   modelTypes: Record<string, { containers?: Record<string, string[]> }>;
 };
 // The sample lane takes tasks, gateways and end events; a start event is not accepted.
-const toolJson = JSON.stringify({
-  ...baseTool,
+const kitJson = JSON.stringify({
+  ...baseKit,
   modelTypes: {
-    ...baseTool.modelTypes,
+    ...baseKit.modelTypes,
     mt_process: {
-      ...baseTool.modelTypes.mt_process,
+      ...baseKit.modelTypes.mt_process,
       containers: { cls_lane: ['cls_task', 'cls_gateway', 'cls_end'] },
     },
   },
@@ -65,7 +63,7 @@ async function setup(page: Page) {
     (
       window as unknown as { __canvas: { mount(t: unknown): void } }
     ).__canvas.mount(JSON.parse(json));
-  }, toolJson);
+  }, kitJson);
   const create = async (
     cls: string,
     x: number,

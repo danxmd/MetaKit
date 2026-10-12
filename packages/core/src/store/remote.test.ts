@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { createModelStore } from '../model/commands';
 import type { Model } from '../model/types';
-import { SAMPLE, emptySampleModel, sampleTool } from '../testing/sample-tool';
+import { SAMPLE, emptySampleModel, sampleKit } from '../testing/sample-kit';
 import { setAt, type Patch } from './tx';
 import type { ChangeEvent } from './store';
 
-const tool = sampleTool();
+const kit = sampleKit();
 
 function setup() {
-  const store = createModelStore(emptySampleModel(), { tool });
+  const store = createModelStore(emptySampleModel(), { kit });
   const id = (
     store.execute({
       type: 'createElement',
@@ -98,7 +98,7 @@ describe('undo among people', () => {
   });
 
   it('does not bring back an element that someone else edited after the user created it', () => {
-    const store = createModelStore(emptySampleModel(), { tool });
+    const store = createModelStore(emptySampleModel(), { kit });
     const id = (
       store.execute({
         type: 'createElement',

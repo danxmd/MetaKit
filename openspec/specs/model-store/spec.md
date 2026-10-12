@@ -1,15 +1,15 @@
 # model-store Specification
 
 ## Purpose
-Describes the document store through which every change to a tool library or a model passes: commands, exact undo and redo, event hooks, ordering and identifiers.
+Describes the document store through which every change to a Kit or a model passes: commands, exact undo and redo, event hooks, ordering and identifiers.
 
 ## Requirements
 
 ### Requirement: One store for both document kinds
-Tool libraries and models SHALL be held, changed, undone and observed through the same store implementation.
+Kits and models SHALL be held, changed, undone and observed through the same store implementation.
 
 #### Scenario: Same behaviour for both kinds
-- **WHEN** a command is executed on a tool library and another on a model
+- **WHEN** a command is executed on a Kit and another on a model
 - **THEN** both are recorded in their document's history, can be undone and redone, and notify subscribers
 
 ### Requirement: Commands are the only way to change state
@@ -31,7 +31,7 @@ A model SHALL be changed through the commands create element, set attribute (on 
 - **THEN** the element exists with Name set to the default and inherited defaults included
 
 #### Scenario: Abstract classes cannot be instantiated
-- **WHEN** an element of an abstract class is created and the tool is known
+- **WHEN** an element of an abstract class is created and the Kit is known
 - **THEN** the command fails with an error naming the class and nothing changes
 
 #### Scenario: Unknown references fail
@@ -113,8 +113,8 @@ The store SHALL call `before` handlers before and `after` handlers after each co
 - **WHEN** a `before` handler tries to execute a command
 - **THEN** an error is thrown
 
-### Requirement: Tool library commands
-A tool library SHALL be changed through commands to set the manifest and settings and to add, replace and remove classes, relation classes and model types, and removing something that is still referenced SHALL fail.
+### Requirement: Kit commands
+A Kit SHALL be changed through commands to set the manifest and settings and to add, replace and remove classes, relation classes and model types, and removing something that is still referenced SHALL fail.
 
 #### Scenario: Remove a class in use
 - **WHEN** a class that another class extends is removed

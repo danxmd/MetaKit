@@ -6,11 +6,7 @@ import {
   type Model,
   type ValidationIssue,
 } from '@metakit-app/core';
-import {
-  SAMPLE,
-  emptySampleModel,
-  sampleTool,
-} from '@metakit-app/core/testing';
+import { SAMPLE, emptySampleModel, sampleKit } from '@metakit-app/core/testing';
 import {
   countBySeverity,
   describeTarget,
@@ -20,10 +16,10 @@ import {
   summarise,
 } from './validation-list';
 
-const tool = sampleTool();
+const kit = sampleKit();
 
 function fixture() {
-  const store = createModelStore(emptySampleModel(), { tool });
+  const store = createModelStore(emptySampleModel(), { kit });
   const make = (name: string) => {
     const r = store.execute({
       type: 'createElement',
@@ -51,24 +47,24 @@ describe('describeTarget', () => {
   it('uses the first text value and the class label', () => {
     const f = fixture();
     const id = f.make('Review order');
-    expect(describeTarget(id, f.model(), tool)).toEqual({
+    expect(describeTarget(id, f.model(), kit)).toEqual({
       kind: 'element',
       name: 'Review order',
-      className: tool.classes[SAMPLE.task]!.labels.en ?? 'Task',
+      className: kit.classes[SAMPLE.task]!.labels.en ?? 'Task',
     });
   });
 
   it('falls back to the class name when there is no text', () => {
     const f = fixture();
     const id = f.make('');
-    const t = describeTarget(id, f.model(), tool);
+    const t = describeTarget(id, f.model(), kit);
     expect(t.name).toBe(t.className);
   });
 
   it('names the model and survives a deleted object', () => {
     const f = fixture();
-    expect(describeTarget('model', f.model(), tool).kind).toBe('model');
-    expect(describeTarget('el_gone' as ElementId, f.model(), tool)).toEqual({
+    expect(describeTarget('model', f.model(), kit).kind).toBe('model');
+    expect(describeTarget('el_gone' as ElementId, f.model(), kit)).toEqual({
       kind: 'missing',
       name: 'el_gone',
       className: '',
@@ -91,7 +87,7 @@ describe('grouping and filtering', () => {
     issue({ id: b, severity: 'info', code: 'future-code', message: 'FYI.' }),
     issue({ id: 'model', severity: 'warning', code: 'cardinality' }),
   ];
-  const rows = rowsOf(issues, f.model(), tool);
+  const rows = rowsOf(issues, f.model(), kit);
 
   it('groups worst first and leaves empty groups out', () => {
     const groups = groupIssues(rows);
@@ -130,8 +126,8 @@ describe('grouping and filtering', () => {
   });
 
   it('works on real validation output', () => {
-    const real = validateModel(tool, f.model());
-    const out = rowsOf(real, f.model(), tool);
+    const real = validateModel(kit, f.model());
+    const out = rowsOf(real, f.model(), kit);
     expect(out).toHaveLength(real.length);
   });
 });

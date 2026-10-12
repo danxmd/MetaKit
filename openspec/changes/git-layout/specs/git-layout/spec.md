@@ -2,15 +2,15 @@
 
 ## Purpose
 
-A readable one-file-per-part form of a tool library.
+A readable one-file-per-part form of a Kit.
 
 ## ADDED Requirements
 
 ### Requirement: Round trip without a diff
-Converting a tool library to the layout and back SHALL give an equal tool library, and converting that again SHALL give byte-identical files.
+Converting a Kit to the layout and back SHALL give an equal Kit, and converting that again SHALL give byte-identical files.
 
-#### Scenario: Sample tools
-- **WHEN** each sample tool and the behaviour examples are converted to the layout and back
+#### Scenario: Sample Kits
+- **WHEN** each sample Kit and the behaviour examples are converted to the layout and back
 - **THEN** the result equals the original and a second conversion gives the same files
 
 ### Requirement: Small diffs
@@ -25,4 +25,4 @@ A file that is not valid JSON or does not match its schema SHALL be reported wit
 
 #### Scenario: Broken class file
 - **WHEN** one class file is damaged
-- **THEN** the issues name that file and the rest of the tool library loads
+- **THEN** the issues name that file and the rest of the Kit loads

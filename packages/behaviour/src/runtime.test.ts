@@ -9,9 +9,9 @@ import { createBehaviour, silentHost } from './index';
 
 describe('createBehaviour', () => {
   it('calculates, announces events and detaches', () => {
-    const { tool, model, ids } = SAMPLE_FOR_TESTS();
-    const store = createModelStore(model, { tool });
-    const b = createBehaviour({ store, tool: () => tool, host: silentHost() });
+    const { kit, model, ids } = SAMPLE_FOR_TESTS();
+    const store = createModelStore(model, { kit });
+    const b = createBehaviour({ store, kit: () => kit, host: silentHost() });
     const seen: EventPayload[] = [];
     b.bus.on('object.*', (p) => void seen.push(p));
     const id = (

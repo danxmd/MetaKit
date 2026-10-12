@@ -1,0 +1,2013 @@
+{
+  "formatVersion": 7,
+  "manifest": {
+    "id": "tool_aiportfolio",
+    "name": "AI use-case portfolio",
+    "version": "1.0.0",
+    "languages": ["en"]
+  },
+  "settings": {
+    "grid": {
+      "size": 10,
+      "snap": true,
+      "visible": true
+    },
+    "layers": [
+      {
+        "key": "main",
+        "labels": {
+          "en": "Main"
+        },
+        "visible": true
+      }
+    ],
+    "numbering": {
+      "enabled": false,
+      "prefix": "",
+      "start": 1
+    }
+  },
+  "classes": {
+    "cls_usecase": {
+      "id": "cls_usecase",
+      "key": "UseCase",
+      "kind": "node",
+      "labels": {
+        "en": "Use case"
+      },
+      "attributes": [
+        {
+          "id": "att_ucname",
+          "key": "Name",
+          "type": "text",
+          "labels": {
+            "en": "Name"
+          },
+          "required": true,
+          "maxLength": 100,
+          "default": "New use case"
+        },
+        {
+          "id": "att_ucdesc",
+          "key": "Description",
+          "type": "text",
+          "labels": {
+            "en": "Description"
+          },
+          "multiline": true
+        },
+        {
+          "id": "att_ucproblem",
+          "key": "Problem",
+          "type": "text",
+          "labels": {
+            "en": "Problem it solves"
+          },
+          "multiline": true
+        },
+        {
+          "id": "att_ucstatus",
+          "key": "Status",
+          "type": "choice",
+          "labels": {
+            "en": "Status"
+          },
+          "options": [
+            "Idea",
+            "Assessed",
+            "Approved",
+            "In delivery",
+            "Live",
+            "Stopped"
+          ],
+          "default": "Idea"
+        },
+        {
+          "id": "att_ucvalue",
+          "key": "Value",
+          "type": "integer",
+          "labels": {
+            "en": "Value"
+          },
+          "help": {
+            "en": "Business value if it works, from 1 (little) to 5 (very high)."
+          },
+          "min": 1,
+          "max": 5,
+          "default": 3,
+          "group": "Scoring"
+        },
+        {
+          "id": "att_ucfeas",
+          "key": "Feasibility",
+          "type": "integer",
+          "labels": {
+            "en": "Feasibility"
+          },
+          "help": {
+            "en": "How easy it is to build and run, from 1 (very hard) to 5 (easy)."
+          },
+          "min": 1,
+          "max": 5,
+          "default": 3,
+          "group": "Scoring"
+        },
+        {
+          "id": "att_ucdata",
+          "key": "DataReadiness",
+          "type": "integer",
+          "labels": {
+            "en": "Data readiness"
+          },
+          "help": {
+            "en": "Whether the data it needs exists, is good enough and may be used, from 1 (not at all) to 5 (ready)."
+          },
+          "min": 1,
+          "max": 5,
+          "default": 3,
+          "group": "Scoring"
+        },
+        {
+          "id": "att_ucrisk",
+          "key": "RiskLevel",
+          "type": "choice",
+          "labels": {
+            "en": "Risk level"
+          },
+          "options": ["Low", "Medium", "High"],
+          "default": "Medium",
+          "group": "Scoring"
+        },
+        {
+          "id": "att_ucscore",
+          "key": "PriorityScore",
+          "type": "formula",
+          "labels": {
+            "en": "Priority score"
+          },
+          "help": {
+            "en": "From 20 to 100: value counts 40%, feasibility and data readiness 30% each."
+          },
+          "group": "Scoring",
+          "formula": "IF(Value == null || Feasibility == null || DataReadiness == null, null, round(round(Value * 0.4 + Feasibility * 0.3 + DataReadiness * 0.3, 1) * 20))",
+          "result": "number"
+        },
+        {
+          "id": "att_ucquadrant",
+          "key": "Quadrant",
+          "type": "formula",
+          "labels": {
+            "en": "Quadrant"
+          },
+          "help": {
+            "en": "Quick win: value and feasibility 3 or more. Strategic bet: high value, hard to do. Fill-in: easy, lower value. Deprioritise: neither."
+          },
+          "group": "Scoring",
+          "formula": "IF(Value == null || Feasibility == null, null, Value >= 3 ? (Feasibility >= 3 ? 'Quick win' : 'Strategic bet') : (Feasibility >= 3 ? 'Fill-in' : 'Deprioritise'))",
+          "result": "text"
+        },
+        {
+          "id": "att_uceffort",
+          "key": "Effort",
+          "type": "number",
+          "labels": {
+            "en": "Effort"
+          },
+          "min": 0,
+          "decimals": 1,
+          "unit": "person-weeks",
+          "group": "Delivery"
+        },
+        {
+          "id": "att_ucannual",
+          "key": "EstimatedAnnualValue",
+          "type": "number",
+          "labels": {
+            "en": "Estimated annual value"
+          },
+          "min": 0,
+          "decimals": 0,
+          "unit": "$",
+          "group": "Delivery"
+        },
+        {
+          "id": "att_ucmitig",
+          "key": "Mitigation",
+          "type": "text",
+          "labels": {
+            "en": "Mitigation"
+          },
+          "multiline": true,
+          "group": "Delivery",
+          "help": {
+            "en": "How the risks of this use case are kept under control."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_high_risk_mitigation",
+          "formula": "RiskLevel != 'High' || trim(Mitigation ?? '') != ''",
+          "message": "A high-risk use case needs a mitigation.",
+          "severity": "warning"
+        },
+        {
+          "id": "k_approved_sponsor",
+          "formula": "(Status != 'Approved' && Status != 'In delivery' && Status != 'Live') || count(incoming('Sponsors')) > 0",
+          "message": "An approved, delivered or live use case needs a stakeholder who sponsors it.",
+          "severity": "warning"
+        }
+      ],
+      "help": {
+        "en": "A way to use AI that the organisation considers, scored on value, feasibility, data readiness and risk."
+      },
+      "shape": "shp_usecase"
+    },
+    "cls_objective": {
+      "id": "cls_objective",
+      "key": "Objective",
+      "kind": "node",
+      "labels": {
+        "en": "Objective"
+      },
+      "attributes": [
+        {
+          "id": "att_objname",
+          "key": "Name",
+          "type": "text",
+          "labels": {
+            "en": "Name"
+          },
+          "required": true,
+          "maxLength": 100,
+          "default": "New objective"
+        },
+        {
+          "id": "att_objdesc",
+          "key": "Description",
+          "type": "text",
+          "labels": {
+            "en": "Description"
+          },
+          "multiline": true
+        },
+        {
+          "id": "att_objhorizon",
+          "key": "Horizon",
+          "type": "choice",
+          "labels": {
+            "en": "Horizon"
+          },
+          "options": ["This year", "Next year", "Later"],
+          "default": "This year"
+        }
+      ],
+      "help": {
+        "en": "A business goal that use cases contribute to."
+      },
+      "shape": "shp_objective"
+    },
+    "cls_kpi": {
+      "id": "cls_kpi",
+      "key": "KPI",
+      "kind": "node",
+      "labels": {
+        "en": "KPI"
+      },
+      "attributes": [
+        {
+          "id": "att_kpiname",
+          "key": "Name",
+          "type": "text",
+          "labels": {
+            "en": "Name"
+          },
+          "required": true,
+          "maxLength": 100,
+          "default": "New KPI"
+        },
+        {
+          "id": "att_kpiunit",
+          "key": "Unit",
+          "type": "text",
+          "labels": {
+            "en": "Unit"
+          },
+          "maxLength": 30
+        },
+        {
+          "id": "att_kpitarget",
+          "key": "Target",
+          "type": "number",
+          "labels": {
+            "en": "Target"
+          }
+        },
+        {
+          "id": "att_kpicurrent",
+          "key": "Current",
+          "type": "number",
+          "labels": {
+            "en": "Current"
+          }
+        },
+        {
+          "id": "att_kpidir",
+          "key": "Direction",
+          "type": "choice",
+          "labels": {
+            "en": "Direction"
+          },
+          "options": ["Higher is better", "Lower is better"],
+          "default": "Higher is better"
+        },
+        {
+          "id": "att_kpiontrack",
+          "key": "OnTrack",
+          "type": "formula",
+          "labels": {
+            "en": "On track"
+          },
+          "help": {
+            "en": "Whether the current value has reached the target, in the direction that counts. Empty while either is missing."
+          },
+          "formula": "IF(Target == null || Current == null, null, Direction == 'Lower is better' ? Current <= Target : Current >= Target)",
+          "result": "boolean"
+        }
+      ],
+      "help": {
+        "en": "A measure that shows whether an objective or a use case works."
+      },
+      "shape": "shp_kpi"
+    },
+    "cls_stakeholder": {
+      "id": "cls_stakeholder",
+      "key": "Stakeholder",
+      "kind": "node",
+      "labels": {
+        "en": "Stakeholder"
+      },
+      "attributes": [
+        {
+          "id": "att_shname",
+          "key": "Name",
+          "type": "text",
+          "labels": {
+            "en": "Name"
+          },
+          "required": true,
+          "maxLength": 80,
+          "default": "New stakeholder"
+        },
+        {
+          "id": "att_shrole",
+          "key": "Role",
+          "type": "text",
+          "labels": {
+            "en": "Role"
+          },
+          "maxLength": 80
+        },
+        {
+          "id": "att_shinterest",
+          "key": "Interest",
+          "type": "choice",
+          "labels": {
+            "en": "Interest"
+          },
+          "options": ["Low", "Medium", "High"],
+          "default": "Medium"
+        },
+        {
+          "id": "att_shinfluence",
+          "key": "Influence",
+          "type": "choice",
+          "labels": {
+            "en": "Influence"
+          },
+          "options": ["Low", "Medium", "High"],
+          "default": "Medium"
+        }
+      ],
+      "help": {
+        "en": "A person or group with a stake in the portfolio."
+      },
+      "shape": "shp_stakeholder"
+    },
+    "cls_dataasset": {
+      "id": "cls_dataasset",
+      "key": "DataAsset",
+      "kind": "node",
+      "labels": {
+        "en": "Data asset"
+      },
+      "attributes": [
+        {
+          "id": "att_daname",
+          "key": "Name",
+          "type": "text",
+          "labels": {
+            "en": "Name"
+          },
+          "required": true,
+          "maxLength": 100,
+          "default": "New data asset"
+        },
+        {
+          "id": "att_daclass",
+          "key": "Classification",
+          "type": "choice",
+          "labels": {
+            "en": "Classification"
+          },
+          "options": ["Public", "Internal", "Confidential", "Restricted"],
+          "default": "Internal"
+        },
+        {
+          "id": "att_daready",
+          "key": "Readiness",
+          "type": "integer",
+          "labels": {
+            "en": "Readiness"
+          },
+          "help": {
+            "en": "How ready the data is for AI use, from 1 (not available) to 5 (clean, documented and allowed)."
+          },
+          "min": 1,
+          "max": 5,
+          "default": 3
+        },
+        {
+          "id": "att_daowner",
+          "key": "Owner",
+          "type": "text",
+          "labels": {
+            "en": "Owner"
+          },
+          "maxLength": 80
+        }
+      ],
+      "help": {
+        "en": "Data that a use case needs: a system, a dataset or a document collection."
+      },
+      "shape": "shp_dataasset"
+    },
+    "cls_technique": {
+      "id": "cls_technique",
+      "key": "AITechnique",
+      "kind": "node",
+      "labels": {
+        "en": "AI technique"
+      },
+      "attributes": [
+        {
+          "id": "att_tqname",
+          "key": "Name",
+          "type": "text",
+          "labels": {
+            "en": "Name"
+          },
+          "required": true,
+          "maxLength": 100,
+          "default": "New technique"
+        },
+        {
+          "id": "att_tqkind",
+          "key": "Kind",
+          "type": "choice",
+          "labels": {
+            "en": "Kind"
+          },
+          "options": [
+            "Classification",
+            "Forecasting",
+            "Recommendation",
+            "Generative text",
+            "Document understanding",
+            "Agentic workflow",
+            "Optimisation",
+            "Other"
+          ],
+          "default": "Classification"
+        },
+        {
+          "id": "att_tqnotes",
+          "key": "Notes",
+          "type": "text",
+          "labels": {
+            "en": "Notes"
+          },
+          "multiline": true
+        }
+      ],
+      "help": {
+        "en": "The kind of AI a use case relies on."
+      },
+      "shape": "shp_technique"
+    },
+    "cls_risk": {
+      "id": "cls_risk",
+      "key": "Risk",
+      "kind": "node",
+      "labels": {
+        "en": "Risk"
+      },
+      "attributes": [
+        {
+          "id": "att_rkname",
+          "key": "Name",
+          "type": "text",
+          "labels": {
+            "en": "Name"
+          },
+          "required": true,
+          "maxLength": 100,
+          "default": "New risk"
+        },
+        {
+          "id": "att_rkkind",
+          "key": "Kind",
+          "type": "choice",
+          "labels": {
+            "en": "Kind"
+          },
+          "options": [
+            "Bias",
+            "Privacy",
+            "Security",
+            "Regulatory",
+            "Accuracy",
+            "Adoption"
+          ],
+          "default": "Accuracy"
+        },
+        {
+          "id": "att_rklike",
+          "key": "Likelihood",
+          "type": "integer",
+          "labels": {
+            "en": "Likelihood"
+          },
+          "min": 1,
+          "max": 5,
+          "default": 3
+        },
+        {
+          "id": "att_rkimpact",
+          "key": "Impact",
+          "type": "integer",
+          "labels": {
+            "en": "Impact"
+          },
+          "min": 1,
+          "max": 5,
+          "default": 3
+        },
+        {
+          "id": "att_rkscore",
+          "key": "Score",
+          "type": "formula",
+          "labels": {
+            "en": "Score"
+          },
+          "help": {
+            "en": "Likelihood times impact, from 1 to 25."
+          },
+          "formula": "IF(Likelihood == null || Impact == null, null, Likelihood * Impact)",
+          "result": "number"
+        },
+        {
+          "id": "att_rkrating",
+          "key": "Rating",
+          "type": "formula",
+          "labels": {
+            "en": "Rating"
+          },
+          "help": {
+            "en": "Low up to 6, Medium up to 14, High from 15."
+          },
+          "formula": "IF(Score == null, null, Score >= 15 ? 'High' : Score >= 7 ? 'Medium' : 'Low')",
+          "result": "text"
+        },
+        {
+          "id": "att_rkdesc",
+          "key": "Description",
+          "type": "text",
+          "labels": {
+            "en": "Description"
+          },
+          "multiline": true
+        }
+      ],
+      "help": {
+        "en": "Something that could go wrong with a use case."
+      },
+      "shape": "shp_risk"
+    }
+  },
+  "relations": {
+    "rel_contributes": {
+      "id": "rel_contributes",
+      "key": "ContributesTo",
+      "labels": {
+        "en": "Contributes to"
+      },
+      "from": ["cls_usecase"],
+      "to": ["cls_objective"],
+      "attributes": [],
+      "shape": "shp_contributes"
+    },
+    "rel_measured": {
+      "id": "rel_measured",
+      "key": "MeasuredBy",
+      "labels": {
+        "en": "Measured by"
+      },
+      "from": ["cls_usecase", "cls_objective"],
+      "to": ["cls_kpi"],
+      "attributes": [],
+      "shape": "shp_measured"
+    },
+    "rel_sponsors": {
+      "id": "rel_sponsors",
+      "key": "Sponsors",
+      "labels": {
+        "en": "Sponsors"
+      },
+      "from": ["cls_stakeholder"],
+      "to": ["cls_usecase"],
+      "attributes": [],
+      "shape": "shp_sponsors"
+    },
+    "rel_needsdata": {
+      "id": "rel_needsdata",
+      "key": "NeedsData",
+      "labels": {
+        "en": "Needs data"
+      },
+      "from": ["cls_usecase"],
+      "to": ["cls_dataasset"],
+      "attributes": [
+        {
+          "id": "att_ndcrit",
+          "key": "Criticality",
+          "type": "choice",
+          "labels": {
+            "en": "Criticality"
+          },
+          "options": ["Low", "Medium", "High"],
+          "default": "Medium"
+        }
+      ],
+      "shape": "shp_needsdata"
+    },
+    "rel_usestech": {
+      "id": "rel_usestech",
+      "key": "UsesTechnique",
+      "labels": {
+        "en": "Uses technique"
+      },
+      "from": ["cls_usecase"],
+      "to": ["cls_technique"],
+      "attributes": [],
+      "shape": "shp_usestech"
+    },
+    "rel_hasrisk": {
+      "id": "rel_hasrisk",
+      "key": "HasRisk",
+      "labels": {
+        "en": "Has risk"
+      },
+      "from": ["cls_usecase"],
+      "to": ["cls_risk"],
+      "attributes": [],
+      "shape": "shp_hasrisk"
+    }
+  },
+  "modelTypes": {
+    "mt_portfolio": {
+      "id": "mt_portfolio",
+      "key": "Portfolio",
+      "labels": {
+        "en": "Portfolio"
+      },
+      "classes": [
+        "cls_usecase",
+        "cls_objective",
+        "cls_kpi",
+        "cls_stakeholder",
+        "cls_dataasset",
+        "cls_technique",
+        "cls_risk"
+      ],
+      "relations": [
+        "rel_contributes",
+        "rel_measured",
+        "rel_sponsors",
+        "rel_needsdata",
+        "rel_usestech",
+        "rel_hasrisk"
+      ],
+      "views": [
+        {
+          "id": "vw_value",
+          "key": "Value",
+          "labels": {
+            "en": "Value"
+          },
+          "classes": [
+            "cls_usecase",
+            "cls_objective",
+            "cls_kpi",
+            "cls_stakeholder"
+          ],
+          "relations": ["rel_contributes", "rel_measured", "rel_sponsors"]
+        },
+        {
+          "id": "vw_delivery",
+          "key": "Delivery",
+          "labels": {
+            "en": "Delivery"
+          },
+          "classes": [
+            "cls_usecase",
+            "cls_dataasset",
+            "cls_technique",
+            "cls_risk"
+          ],
+          "relations": ["rel_needsdata", "rel_usestech", "rel_hasrisk"]
+        }
+      ],
+      "cardinalities": [],
+      "attributes": [
+        {
+          "id": "att_pftitle",
+          "key": "Title",
+          "type": "text",
+          "labels": {
+            "en": "Title"
+          },
+          "maxLength": 100
+        },
+        {
+          "id": "att_pfowner",
+          "key": "PortfolioOwner",
+          "type": "text",
+          "labels": {
+            "en": "Portfolio owner"
+          },
+          "maxLength": 80
+        },
+        {
+          "id": "att_pfperiod",
+          "key": "Period",
+          "type": "text",
+          "labels": {
+            "en": "Period"
+          },
+          "maxLength": 40
+        }
+      ],
+      "help": {
+        "en": "All use cases of a team or an area, with what they serve and need."
+      }
+    },
+    "mt_canvas": {
+      "id": "mt_canvas",
+      "key": "UseCaseCanvas",
+      "labels": {
+        "en": "Use case canvas"
+      },
+      "classes": [
+        "cls_usecase",
+        "cls_objective",
+        "cls_kpi",
+        "cls_stakeholder",
+        "cls_dataasset",
+        "cls_technique",
+        "cls_risk"
+      ],
+      "relations": [
+        "rel_contributes",
+        "rel_measured",
+        "rel_sponsors",
+        "rel_needsdata",
+        "rel_usestech",
+        "rel_hasrisk"
+      ],
+      "views": [],
+      "cardinalities": [
+        {
+          "kind": "count",
+          "class": "cls_usecase",
+          "min": 1,
+          "max": 1
+        }
+      ],
+      "attributes": [
+        {
+          "id": "att_cvtitle",
+          "key": "Title",
+          "type": "text",
+          "labels": {
+            "en": "Title"
+          },
+          "maxLength": 100
+        }
+      ],
+      "help": {
+        "en": "One use case worked out in detail, with everything it links to."
+      }
+    }
+  },
+  "shapes": {
+    "shp_usecase": {
+      "id": "shp_usecase",
+      "name": "Use case (coloured by quadrant)",
+      "kind": "node",
+      "size": {
+        "width": 200,
+        "height": 76,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 4,
+          "fill": "#ffffff",
+          "stroke": "#495057",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": 28,
+          "radius": 4,
+          "fill": "= Quadrant == 'Quick win' ? '#b2f2bb' : Quadrant == 'Strategic bet' ? '#a5d8ff' : Quadrant == 'Fill-in' ? '#ffec99' : Quadrant == 'Deprioritise' ? '#dee2e6' : '#f1f3f5'",
+          "stroke": "#495057"
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 2,
+          "width": "100% - 36",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 34,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'PriorityScore: ' + PriorityScore",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 50,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Status: ' + Status",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z",
+          "viewBox": [0, 0, 24, 24],
+          "x": "100% - 26",
+          "y": 4,
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#495057",
+          "strokeWidth": 1.8
+        },
+        {
+          "type": "rect",
+          "x": "100% - 34",
+          "y": -6,
+          "width": 30,
+          "height": 16,
+          "radius": 8,
+          "fill": "#e03131",
+          "visible": "= RiskLevel == 'High'"
+        },
+        {
+          "type": "text",
+          "x": "100% - 34",
+          "y": -6,
+          "width": 30,
+          "height": 16,
+          "text": "Risk",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#ffffff",
+          "font": {
+            "size": 10,
+            "weight": 600
+          },
+          "visible": "= RiskLevel == 'High'"
+        }
+      ],
+      "look": {
+        "base": "header-box",
+        "fill": {
+          "by": "Quadrant",
+          "values": {
+            "Quick win": "#b2f2bb",
+            "Strategic bet": "#a5d8ff",
+            "Fill-in": "#ffec99",
+            "Deprioritise": "#dee2e6"
+          },
+          "fallback": "#f1f3f5"
+        },
+        "border": "#495057",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 200,
+          "height": 76,
+          "resizable": true
+        },
+        "icon": {
+          "name": "star",
+          "colour": "#495057"
+        },
+        "fields": ["PriorityScore", "Status"],
+        "badge": {
+          "attribute": "RiskLevel",
+          "equals": "High",
+          "text": "Risk",
+          "colour": "#e03131"
+        }
+      }
+    },
+    "shp_objective": {
+      "id": "shp_objective",
+      "name": "Objective (hexagon)",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          ["15%", 0],
+          ["85%", 0],
+          ["100%", "50%"],
+          ["85%", "100%"],
+          ["15%", "100%"],
+          [0, "50%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            ["15%", 0],
+            ["85%", 0],
+            ["100%", "50%"],
+            ["85%", "100%"],
+            ["15%", "100%"],
+            [0, "50%"]
+          ],
+          "fill": "#e5dbff",
+          "stroke": "#7048e8",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": "18% + 26",
+          "y": 4,
+          "width": "64% - 26",
+          "height": "100% - 8",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "path",
+          "d": "M4 12.5l5 5L20 6.5",
+          "viewBox": [0, 0, 24, 24],
+          "x": "18% + 4",
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#7048e8",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "hexagon",
+        "fill": "#e5dbff",
+        "border": "#7048e8",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 170,
+          "height": 70,
+          "resizable": true
+        },
+        "icon": {
+          "name": "check",
+          "colour": "#7048e8"
+        }
+      }
+    },
+    "shp_kpi": {
+      "id": "shp_kpi",
+      "name": "KPI (coloured by on track)",
+      "kind": "node",
+      "size": {
+        "width": 110,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "ellipse",
+      "parts": [
+        {
+          "type": "ellipse",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "fill": "= OnTrack == true ? '#b2f2bb' : OnTrack == false ? '#ffc9c9' : '#f1f3f5'",
+          "stroke": "#495057",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": "15%",
+          "y": "15% + 20",
+          "width": "70%",
+          "height": "70% - 40",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": "15%",
+          "y": "85% - 18",
+          "width": "70%",
+          "height": 18,
+          "text": "= Current",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M5 21V3 M5 4h12l-2 4 2 4H5",
+          "viewBox": [0, 0, 24, 24],
+          "x": "50% - 10",
+          "y": "8%",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#495057",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "circle",
+        "fill": {
+          "by": "OnTrack",
+          "values": {
+            "true": "#b2f2bb",
+            "false": "#ffc9c9"
+          },
+          "fallback": "#f1f3f5"
+        },
+        "border": "#495057",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 110,
+          "height": 110,
+          "resizable": true
+        },
+        "icon": {
+          "name": "flag",
+          "colour": "#495057"
+        },
+        "subtitle": {
+          "attribute": "Current"
+        }
+      }
+    },
+    "shp_stakeholder": {
+      "id": "shp_stakeholder",
+      "name": "Stakeholder (person)",
+      "kind": "node",
+      "size": {
+        "width": 110,
+        "height": 120,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "ellipse",
+          "x": "50% - 16",
+          "y": 4,
+          "width": 32,
+          "height": 32,
+          "fill": "#ffe8cc",
+          "stroke": "#e8590c",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 6,
+          "y": 42,
+          "width": "100% - 12",
+          "height": "100% - 46",
+          "radius": 18,
+          "fill": "#ffe8cc",
+          "stroke": "#e8590c",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 10,
+          "y": 46,
+          "width": "100% - 20",
+          "height": "100% - 72",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 10,
+          "y": "100% - 24",
+          "width": "100% - 20",
+          "height": 18,
+          "text": "= Role",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "person",
+        "fill": "#ffe8cc",
+        "border": "#e8590c",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 110,
+          "height": 120,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Role"
+        }
+      }
+    },
+    "shp_dataasset": {
+      "id": "shp_dataasset",
+      "name": "Data asset (coloured by classification)",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 0,
+          "fill": "= Classification == 'Public' ? '#d3f9d8' : Classification == 'Internal' ? '#e7f5ff' : Classification == 'Confidential' ? '#fff3bf' : Classification == 'Restricted' ? '#ffe3e3' : '#f8f9fa'",
+          "stroke": "#1971c2",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= Classification",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6 M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1971c2",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "box",
+        "fill": {
+          "by": "Classification",
+          "values": {
+            "Public": "#d3f9d8",
+            "Internal": "#e7f5ff",
+            "Confidential": "#fff3bf",
+            "Restricted": "#ffe3e3"
+          },
+          "fallback": "#f8f9fa"
+        },
+        "border": "#1971c2",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 170,
+          "height": 70,
+          "resizable": true
+        },
+        "icon": {
+          "name": "database",
+          "colour": "#1971c2"
+        },
+        "subtitle": {
+          "attribute": "Classification"
+        }
+      }
+    },
+    "shp_technique": {
+      "id": "shp_technique",
+      "name": "AI technique (pill)",
+      "kind": "node",
+      "size": {
+        "width": 190,
+        "height": 50,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 999,
+          "fill": "#d0ebff",
+          "stroke": "#1864ab",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 42,
+          "y": 4,
+          "width": "100% - 58",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 42,
+          "y": "100% - 22",
+          "width": "100% - 58",
+          "height": 18,
+          "text": "= Kind",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 2v3 M5 7h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z M8.5 12.5h.01 M15.5 12.5h.01 M9 16h6",
+          "viewBox": [0, 0, 24, 24],
+          "x": 14,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1864ab",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "pill",
+        "fill": "#d0ebff",
+        "border": "#1864ab",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 190,
+          "height": 50,
+          "resizable": true
+        },
+        "icon": {
+          "name": "bot",
+          "colour": "#1864ab"
+        },
+        "subtitle": {
+          "attribute": "Kind"
+        }
+      }
+    },
+    "shp_risk": {
+      "id": "shp_risk",
+      "name": "Risk (coloured by rating)",
+      "kind": "node",
+      "size": {
+        "width": 120,
+        "height": 120,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          ["50%", 0],
+          ["100%", "50%"],
+          ["50%", "100%"],
+          [0, "50%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            ["50%", 0],
+            ["100%", "50%"],
+            ["50%", "100%"],
+            [0, "50%"]
+          ],
+          "fill": "= Rating == 'Low' ? '#d3f9d8' : Rating == 'Medium' ? '#fff3bf' : Rating == 'High' ? '#ffc9c9' : '#f1f3f5'",
+          "stroke": "#c92a2a",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": "24%",
+          "y": "24% + 18",
+          "width": "52%",
+          "height": "52% - 18",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 3L2 20h20z M12 10v5 M12 18h.01",
+          "viewBox": [0, 0, 24, 24],
+          "x": "50% - 10",
+          "y": "14%",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#c92a2a",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "diamond",
+        "fill": {
+          "by": "Rating",
+          "values": {
+            "Low": "#d3f9d8",
+            "Medium": "#fff3bf",
+            "High": "#ffc9c9"
+          },
+          "fallback": "#f1f3f5"
+        },
+        "border": "#c92a2a",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 120,
+          "height": 120,
+          "resizable": true
+        },
+        "icon": {
+          "name": "warning",
+          "colour": "#c92a2a"
+        }
+      }
+    },
+    "shp_contributes": {
+      "id": "shp_contributes",
+      "name": "Contributes to (arrow)",
+      "kind": "relation",
+      "line": {
+        "stroke": "#7048e8",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "triangle"
+      },
+      "look": {
+        "colour": "#7048e8",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "triangle",
+        "label": null
+      }
+    },
+    "shp_measured": {
+      "id": "shp_measured",
+      "name": "Measured by (dashed)",
+      "kind": "relation",
+      "line": {
+        "stroke": "#495057",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#495057",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_sponsors": {
+      "id": "shp_sponsors",
+      "name": "Sponsors (dotted)",
+      "kind": "relation",
+      "line": {
+        "stroke": "#e8590c",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [2, 4]
+      },
+      "startMarker": {
+        "type": "circle"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#e8590c",
+        "width": 1.5,
+        "style": "dotted",
+        "routing": "orthogonal",
+        "start": "circle",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_needsdata": {
+      "id": "shp_needsdata",
+      "name": "Needs data (coloured by criticality)",
+      "kind": "relation",
+      "line": {
+        "stroke": "= Criticality == 'Low' ? '#868e96' : Criticality == 'Medium' ? '#1971c2' : Criticality == 'High' ? '#c92a2a' : '#1971c2'",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "labels": [
+        {
+          "at": "middle",
+          "text": "= Criticality",
+          "font": {
+            "size": 11
+          },
+          "background": "#ffffff",
+          "visible": "= Criticality != null"
+        }
+      ],
+      "look": {
+        "colour": {
+          "by": "Criticality",
+          "values": {
+            "Low": "#868e96",
+            "Medium": "#1971c2",
+            "High": "#c92a2a"
+          },
+          "fallback": "#1971c2"
+        },
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": {
+          "attribute": "Criticality"
+        }
+      }
+    },
+    "shp_usestech": {
+      "id": "shp_usestech",
+      "name": "Uses technique (dashed)",
+      "kind": "relation",
+      "line": {
+        "stroke": "#1864ab",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "open-arrow"
+      },
+      "look": {
+        "colour": "#1864ab",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "open-arrow",
+        "label": null
+      }
+    },
+    "shp_hasrisk": {
+      "id": "shp_hasrisk",
+      "name": "Has risk (red)",
+      "kind": "relation",
+      "line": {
+        "stroke": "#c92a2a",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "diamond"
+      },
+      "look": {
+        "colour": "#c92a2a",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "diamond",
+        "label": null
+      }
+    }
+  },
+  "panels": {
+    "cls_usecase": {
+      "class": "cls_usecase",
+      "tabs": [
+        {
+          "label": "Overview",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            },
+            {
+              "attribute": "Problem",
+              "control": "textarea"
+            },
+            {
+              "attribute": "Status",
+              "control": "select"
+            }
+          ]
+        },
+        {
+          "label": "Scoring",
+          "items": [
+            {
+              "attribute": "Value"
+            },
+            {
+              "attribute": "Feasibility"
+            },
+            {
+              "attribute": "DataReadiness"
+            },
+            {
+              "attribute": "RiskLevel",
+              "control": "segmented"
+            },
+            {
+              "attribute": "PriorityScore"
+            },
+            {
+              "attribute": "Quadrant"
+            }
+          ]
+        },
+        {
+          "label": "Delivery",
+          "items": [
+            {
+              "attribute": "Effort"
+            },
+            {
+              "attribute": "EstimatedAnnualValue"
+            },
+            {
+              "attribute": "Mitigation",
+              "control": "textarea",
+              "required": "= RiskLevel == 'High'"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_objective": {
+      "class": "cls_objective",
+      "tabs": [
+        {
+          "label": "General",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            },
+            {
+              "attribute": "Horizon",
+              "control": "segmented"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_kpi": {
+      "class": "cls_kpi",
+      "tabs": [
+        {
+          "label": "General",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Unit"
+            },
+            {
+              "attribute": "Target"
+            },
+            {
+              "attribute": "Current"
+            },
+            {
+              "attribute": "Direction",
+              "control": "segmented"
+            },
+            {
+              "attribute": "OnTrack"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_stakeholder": {
+      "class": "cls_stakeholder",
+      "tabs": [
+        {
+          "label": "General",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Role"
+            },
+            {
+              "attribute": "Interest",
+              "control": "segmented"
+            },
+            {
+              "attribute": "Influence",
+              "control": "segmented"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_dataasset": {
+      "class": "cls_dataasset",
+      "tabs": [
+        {
+          "label": "General",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Classification",
+              "control": "select"
+            },
+            {
+              "attribute": "Readiness"
+            },
+            {
+              "attribute": "Owner"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_technique": {
+      "class": "cls_technique",
+      "tabs": [
+        {
+          "label": "General",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Kind",
+              "control": "select"
+            },
+            {
+              "attribute": "Notes",
+              "control": "textarea"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_risk": {
+      "class": "cls_risk",
+      "tabs": [
+        {
+          "label": "General",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Kind",
+              "control": "select"
+            },
+            {
+              "attribute": "Likelihood"
+            },
+            {
+              "attribute": "Impact"
+            },
+            {
+              "attribute": "Score"
+            },
+            {
+              "attribute": "Rating"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    }
+  },
+  "rules": {
+    "rule_approve": {
+      "id": "rule_approve",
+      "label": "Mark approved",
+      "when": {
+        "event": "command"
+      },
+      "if": "= Status == 'Assessed'",
+      "then": [
+        {
+          "action": "setAttribute",
+          "attribute": "Status",
+          "value": "Approved",
+          "target": "self"
+        }
+      ],
+      "command": {
+        "label": "Mark approved",
+        "place": "toolbar"
+      }
+    },
+    "rule_deliver": {
+      "id": "rule_deliver",
+      "label": "Start delivery",
+      "when": {
+        "event": "command"
+      },
+      "if": "= Status == 'Approved'",
+      "then": [
+        {
+          "action": "setAttribute",
+          "attribute": "Status",
+          "value": "In delivery",
+          "target": "self"
+        }
+      ],
+      "command": {
+        "label": "Start delivery",
+        "place": "context"
+      }
+    },
+    "rule_value": {
+      "id": "rule_value",
+      "label": "Portfolio value",
+      "when": {
+        "event": "command"
+      },
+      "then": [
+        {
+          "action": "message",
+          "kind": "info",
+          "text": "= count(objects('UseCase')) + ' use cases, estimated at $' + sum(objects('UseCase').EstimatedAnnualValue) + ' a year for ' + sum(objects('UseCase').Effort) + ' person-weeks of effort.'"
+        }
+      ],
+      "command": {
+        "label": "Portfolio value",
+        "place": "model"
+      }
+    },
+    "rule_high_risk": {
+      "id": "rule_high_risk",
+      "label": "High risk needs a mitigation",
+      "when": {
+        "event": "attribute.changed",
+        "class": "cls_usecase",
+        "attribute": "RiskLevel"
+      },
+      "if": "= RiskLevel == 'High' && trim(Mitigation ?? '') == ''",
+      "then": [
+        {
+          "action": "message",
+          "kind": "warning",
+          "text": "= Name + ' is high risk now. Describe how the risk is mitigated on the Delivery tab.'"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "scr_rank": {
+      "id": "scr_rank",
+      "name": "Rank use cases",
+      "source": "// For the Kit \"AI use-case portfolio\". The command \"Rank use cases\" lists the use cases from the\n// highest priority score down, with their quadrant and status, and counts them per quadrant.\n// Sorting and counting need a loop, which is why this is a script and not a rule.\nimport { commands, model, ui } from 'metakit';\n\nconst QUADRANTS = ['Quick win', 'Strategic bet', 'Fill-in', 'Deprioritise'];\nconst TOP = 10;\n\ncommands.register({\n  id: 'rank-use-cases',\n  label: 'Rank use cases',\n  menu: 'Model',\n  run: () => {\n    const useCases = model.objects('UseCase').map((u) => ({\n      name: u.attrs.Name || 'Unnamed use case',\n      score: u.attrs.PriorityScore,\n      quadrant: u.attrs.Quadrant,\n      status: u.attrs.Status ?? 'no status',\n    }));\n    if (useCases.length === 0) {\n      ui.message('There are no use cases in this model yet.');\n      return;\n    }\n\n    // Use cases without a score go last; equal scores keep their names in order.\n    useCases.sort(\n      (a, b) =>\n        (typeof b.score === 'number' ? b.score : -1) -\n          (typeof a.score === 'number' ? a.score : -1) ||\n        a.name.localeCompare(b.name),\n    );\n\n    const lines = useCases\n      .slice(0, TOP)\n      .map(\n        (u, i) =>\n          `${i + 1}. ${u.name}: ${typeof u.score === 'number' ? u.score : 'not scored'} (${u.quadrant || 'no quadrant'}, ${u.status})`,\n      );\n    const counts = QUADRANTS.map(\n      (q) => `${q}: ${useCases.filter((u) => u.quadrant === q).length}`,\n    );\n    const shown =\n      useCases.length > TOP\n        ? `Top ${TOP} of ${useCases.length} use cases`\n        : `${useCases.length} use cases`;\n    ui.message(\n      `${shown}, by priority score:\\n${lines.join('\\n')}\\n\\nPer quadrant: ${counts.join(', ')}.`,\n    );\n  },\n});\n"
+    }
+  }
+}

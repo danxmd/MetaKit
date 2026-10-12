@@ -3,7 +3,7 @@ import {
   SAMPLE,
   clone,
   emptySampleModel,
-  sampleTool,
+  sampleKit,
 } from '@metakit-app/core/testing';
 import { describe, expect, it } from 'vitest';
 import { fromBytes, toBytes } from './adapter';
@@ -16,13 +16,13 @@ import {
 import { MemoryAdapter } from './memory';
 import { slugify, Workspace } from './workspace';
 
-const tool = sampleTool();
+const kit = sampleKit();
 const fixedNow = () => new Date('2026-10-07T09:00:00.000Z');
 const text = async (a: MemoryAdapter, path: string) =>
   fromBytes(await a.read(path));
 
 function aModel(): Model {
-  const store = createModelStore(emptySampleModel(), { tool });
+  const store = createModelStore(emptySampleModel(), { kit });
   store.execute({
     type: 'batch',
     commands: [
@@ -121,16 +121,16 @@ describe('creating and opening', () => {
 describe('the layout', () => {
   it("matches the plan: identity files written once, content in the instance's own state folder", async () => {
     const { adapter, ws } = await fresh();
-    const toolSlug = await ws.createTool(tool);
+    const kitSlug = await ws.createKit(kit);
     const modelSlug = await ws.createModel(aModel(), {
       slug: 'order-to-cash-9xk2',
     });
-    expect(toolSlug).toBe('sample');
+    expect(kitSlug).toBe('sample');
     expect(adapter.paths()).toEqual([
+      'kits/sample/_state/aaaa0001/snapshot.json',
+      'kits/sample/kit.json',
       'models/order-to-cash-9xk2/_state/aaaa0001/snapshot.json',
       'models/order-to-cash-9xk2/model.json',
-      'tools/sample/_state/aaaa0001/snapshot.json',
-      'tools/sample/tool.json',
       'workspace.json',
     ]);
     expect(modelSlug).toBe('order-to-cash-9xk2');
@@ -139,34 +139,41 @@ describe('the layout', () => {
     );
     expect(identity).toEqual({
       created: '2026-10-07T09:00:00.000Z',
-      formatVersion: 1,
+      formatVersion: 2,
       id: 'mdl_sample',
       kind: 'model',
       modelType: SAMPLE.process,
       name: 'Order process',
-      tool: SAMPLE.tool,
+      kit: SAMPLE.kit,
+    });
+    expect(JSON.parse(await text(adapter, 'kits/sample/kit.json'))).toEqual({
+      created: '2026-10-07T09:00:00.000Z',
+      formatVersion: 2,
+      id: SAMPLE.kit,
+      kind: 'kit',
+      name: 'Sample',
     });
   });
 
   it('gives each model a readable folder with a random tail', async () => {
     const { ws } = await fresh();
-    await ws.createTool(tool);
+    await ws.createKit(kit);
     const slug = await ws.createModel(aModel());
     expect(slug).toMatch(/^order-process-[a-z0-9]{4}$/);
   });
 
-  it('numbers a tool folder when the name is taken', async () => {
+  it('numbers a Kit folder when the name is taken', async () => {
     const { ws } = await fresh();
-    expect(await ws.createTool(tool)).toBe('sample');
-    expect(await ws.createTool(tool)).toBe('sample-2');
+    expect(await ws.createKit(kit)).toBe('sample');
+    expect(await ws.createKit(kit)).toBe('sample-2');
   });
 
   it('refuses unsafe folder names', async () => {
     const { ws } = await fresh();
-    await expect(ws.createTool(tool, { slug: '../evil' })).rejects.toThrow(
+    await expect(ws.createKit(kit, { slug: '../evil' })).rejects.toThrow(
       /not a valid folder name/,
     );
-    await expect(ws.createTool(tool, { slug: '.hidden' })).rejects.toThrow(
+    await expect(ws.createKit(kit, { slug: '.hidden' })).rejects.toThrow(
       /not a valid folder name/,
     );
     await expect(ws.loadModel('A B')).rejects.toThrow(
@@ -185,16 +192,16 @@ describe('the layout', () => {
 describe('saving and reading back', () => {
   it('reads back exactly what was saved', async () => {
     const { adapter, ws } = await fresh();
-    const toolSlug = await ws.createTool(tool);
+    const kitSlug = await ws.createKit(kit);
     const model = aModel();
     const modelSlug = await ws.createModel(model);
     const other = await Workspace.open(adapter.asInstance('bbbb0002'));
-    const loadedTool = await other.loadTool(toolSlug);
+    const loadedKit = await other.loadKit(kitSlug);
     const loadedModel = await other.loadModel(modelSlug);
-    expect(loadedTool.document).toEqual(tool);
+    expect(loadedKit.document).toEqual(kit);
     expect(loadedModel.document).toEqual(model);
-    expect(loadedTool.warnings).toEqual([]);
-    expect(loadedTool.issues).toEqual([]);
+    expect(loadedKit.warnings).toEqual([]);
+    expect(loadedKit.issues).toEqual([]);
     expect(loadedModel.issues).toEqual([]);
   });
 
@@ -208,13 +215,13 @@ describe('saving and reading back', () => {
     expect(await text(adapter, path)).toBe(first);
   });
 
-  it('writes the first snapshot in format 2, one entity per line, ending with a newline', async () => {
+  it('writes the first snapshot in format 3, one entity per line, ending with a newline', async () => {
     const { adapter, ws } = await fresh();
     await ws.createModel(aModel(), { slug: 'm' });
     const raw = await text(adapter, 'models/m/_state/aaaa0001/snapshot.json');
     expect(raw.endsWith('}\n')).toBe(true);
     const parsed = JSON.parse(raw);
-    expect(parsed.formatVersion).toBe(2);
+    expect(parsed.formatVersion).toBe(3);
     expect(parsed.kind).toBe('model');
     expect(
       raw.split('\n').filter((l) => l.startsWith('    "elements/el_')),
@@ -223,10 +230,10 @@ describe('saving and reading back', () => {
 
   it('keeps the folder when a model is renamed', async () => {
     const { adapter, ws } = await fresh();
-    await ws.createTool(tool);
+    await ws.createKit(kit);
     const slug = await ws.createModel(aModel());
     const store = createModelStore((await ws.loadModel(slug)).document, {
-      tool,
+      kit,
     });
     store.execute({
       type: 'updateManifest',
@@ -245,32 +252,32 @@ describe('saving and reading back', () => {
     ).toBe('Order process');
   });
 
-  it('lists tools and models', async () => {
+  it('lists Kits and models', async () => {
     const { ws } = await fresh();
-    await ws.createTool(tool);
+    await ws.createKit(kit);
     await ws.createModel(aModel(), { slug: 'one' });
-    expect(await ws.listTools()).toEqual([
-      { slug: 'sample', id: SAMPLE.tool, name: 'Sample', version: '1.0.0' },
+    expect(await ws.listKits()).toEqual([
+      { slug: 'sample', id: SAMPLE.kit, name: 'Sample', version: '1.0.0' },
     ]);
     expect(await ws.listModels()).toEqual([
       {
         slug: 'one',
         id: 'mdl_sample',
         name: 'Order process',
-        tool: SAMPLE.tool,
+        kit: SAMPLE.kit,
         modelType: SAMPLE.process,
       },
     ]);
-    expect(await ws.findToolSlug(SAMPLE.tool)).toBe('sample');
-    expect(await ws.findToolSlug('tool_nope')).toBeNull();
+    expect(await ws.findKitSlug(SAMPLE.kit)).toBe('sample');
+    expect(await ws.findKitSlug('tool_nope')).toBeNull();
   });
 
   it('reports problems in a definition but still returns it', async () => {
     const { ws } = await fresh();
-    const broken = clone(tool);
+    const broken = clone(kit);
     broken.classes[SAMPLE.task]!.extends = 'cls_missing';
-    const slug = await ws.createTool(broken);
-    const loaded = await ws.loadTool(slug);
+    const slug = await ws.createKit(broken);
+    const loaded = await ws.loadKit(slug);
     expect(loaded.document).toEqual(broken);
     expect(loaded.issues.map((i) => i.path)).toEqual([
       `classes.${SAMPLE.task}.extends`,
@@ -282,8 +289,8 @@ describe('saving and reading back', () => {
     await expect(ws.saveModel('ghost', aModel())).rejects.toThrow(
       /Use createModel first/,
     );
-    await expect(ws.saveTool('ghost', tool)).rejects.toThrow(
-      /Use createTool first/,
+    await expect(ws.saveKit('ghost', kit)).rejects.toThrow(
+      /Use createKit first/,
     );
     await expect(ws.loadModel('ghost')).rejects.toThrow(/no model "ghost"/);
   });
@@ -307,7 +314,7 @@ describe('several instances', () => {
     const slug = await wsA.createModel(aModel(), { slug: 'm' });
     const wsB = await Workspace.open(b, { now });
     const edited = createModelStore((await wsB.loadModel(slug)).document, {
-      tool,
+      kit,
     });
     edited.execute({ type: 'updateManifest', name: 'Edited by B' });
     await wsB.saveModel(slug, edited.state as Model);
@@ -388,45 +395,35 @@ describe('several instances', () => {
 describe('assets', () => {
   it('names a file by its content and stores it once', async () => {
     const { adapter, ws } = await fresh();
-    const slug = await ws.createTool(tool);
+    const slug = await ws.createKit(kit);
     const bytes = toBytes('<svg xmlns="http://www.w3.org/2000/svg"/>');
-    const first = await ws.addToolAsset(slug, 'Gear Icon.SVG', bytes);
-    const again = await ws.addToolAsset(slug, 'Gear Icon.SVG', bytes);
+    const first = await ws.addKitAsset(slug, 'Gear Icon.SVG', bytes);
+    const again = await ws.addKitAsset(slug, 'Gear Icon.SVG', bytes);
     expect(first).toMatch(/^gear-icon\.[0-9a-f]{8}\.svg$/);
     expect(again).toBe(first);
     expect(adapter.paths().filter((p) => p.includes('/assets/'))).toEqual([
-      `tools/sample/assets/${first}`,
+      `kits/sample/assets/${first}`,
     ]);
-    expect(await ws.readToolAsset(slug, first)).toEqual(bytes);
+    expect(await ws.readKitAsset(slug, first)).toEqual(bytes);
   });
 
   it('gives different content a different name', async () => {
     const { ws } = await fresh();
-    const slug = await ws.createTool(tool);
-    const a = await ws.addToolAsset(
-      slug,
-      'icon.png',
-      new Uint8Array([1, 2, 3]),
-    );
-    const b = await ws.addToolAsset(
-      slug,
-      'icon.png',
-      new Uint8Array([1, 2, 4]),
-    );
+    const slug = await ws.createKit(kit);
+    const a = await ws.addKitAsset(slug, 'icon.png', new Uint8Array([1, 2, 3]));
+    const b = await ws.addKitAsset(slug, 'icon.png', new Uint8Array([1, 2, 4]));
     expect(a).not.toBe(b);
     expect(a.split('.')[0]).toBe(b.split('.')[0]);
   });
 
   it('refuses names that are not usable and assets that are missing', async () => {
     const { ws } = await fresh();
-    const slug = await ws.createTool(tool);
+    const slug = await ws.createKit(kit);
     await expect(
-      ws.addToolAsset(slug, '.svg', new Uint8Array([1])),
+      ws.addKitAsset(slug, '.svg', new Uint8Array([1])),
     ).rejects.toThrow(/no usable name/);
-    await expect(ws.readToolAsset(slug, 'nope.svg')).rejects.toThrow(
-      /no asset/,
-    );
-    await expect(ws.readToolAsset(slug, '../tool.json')).rejects.toThrow(
+    await expect(ws.readKitAsset(slug, 'nope.svg')).rejects.toThrow(/no asset/);
+    await expect(ws.readKitAsset(slug, '../tool.json')).rejects.toThrow(
       /not an asset name/,
     );
   });
@@ -435,13 +432,13 @@ describe('assets', () => {
 describe('the editable model file through the workspace', () => {
   it('exports a stored model and imports it as a new one', async () => {
     const { ws } = await fresh();
-    const toolSlug = await ws.createTool(tool);
+    const kitSlug = await ws.createKit(kit);
     const modelSlug = await ws.createModel(aModel(), { slug: 'one' });
     const text1 = await ws.exportModel(modelSlug);
     expect(text1).toContain('"class": "Task"');
     const copySlug = await ws.importModel(
       text1.replace('"id": "mdl_sample"', '"id": "mdl_copy"'),
-      { toolSlug, slug: 'copy' },
+      { kitSlug, slug: 'copy' },
     );
     const copy = (await ws.loadModel(copySlug)).document;
     expect(copy.manifest.id).toBe('mdl_copy');
@@ -450,11 +447,11 @@ describe('the editable model file through the workspace', () => {
     );
   });
 
-  it('says when the tool of a model is not in the workspace', async () => {
+  it('says when the Kit of a model is not in the workspace', async () => {
     const { ws } = await fresh();
-    await ws.createTool(tool);
+    await ws.createKit(kit);
     const other = clone(aModel());
-    (other.manifest as { tool: string }).tool = 'tool_elsewhere';
+    (other.manifest as { kit: string }).kit = 'tool_elsewhere';
     const slug = await ws.createModel(other, { slug: 'x' });
     await expect(ws.exportModel(slug)).rejects.toThrow(
       /tool_elsewhere.*is not in this workspace/,
@@ -555,11 +552,11 @@ describe('editing together', () => {
     const a = new MemoryAdapter('aaaa0001');
     const b = a.asInstance('bbbb0002');
     const wsA = await Workspace.create(a, { name: 'W' }, { now: fixedNow });
-    await wsA.createTool(tool);
+    await wsA.createKit(kit);
     const slug = await wsA.createModel(aModel(), { slug: 'm' });
     const wsB = await Workspace.open(b, { now: fixedNow });
-    const openA = await wsA.openModel(slug, tool, { retries: 0 });
-    const openB = await wsB.openModel(slug, tool, { retries: 0 });
+    const openA = await wsA.openModel(slug, kit, { retries: 0 });
+    const openB = await wsB.openModel(slug, kit, { retries: 0 });
     const id = (
       openA.store.execute({
         type: 'createElement',
@@ -592,20 +589,20 @@ describe('editing together', () => {
     expect(again.warnings).toEqual([]);
   });
 
-  it('edits a tool library live and leaves its assets alone', async () => {
+  it('edits a Kit live and leaves its assets alone', async () => {
     const { ws } = await fresh();
-    const slug = await ws.createTool(tool);
-    const opened = await ws.openTool(slug, { retries: 0 });
+    const slug = await ws.createKit(kit);
+    const opened = await ws.openKit(slug, { retries: 0 });
     opened.store.execute({ type: 'updateManifest', name: 'Renamed tool' });
     await opened.session.close();
-    expect((await ws.loadTool(slug)).document.manifest.name).toBe(
+    expect((await ws.loadKit(slug)).document.manifest.name).toBe(
       'Renamed tool',
     );
   });
 
   it('refuses to open something that is not in the workspace', async () => {
     const { ws } = await fresh();
-    await expect(ws.openModel('ghost', tool)).rejects.toThrow(NotFoundError);
+    await expect(ws.openModel('ghost', kit)).rejects.toThrow(NotFoundError);
   });
 });
 
@@ -629,16 +626,16 @@ describe('the 30-day trash', () => {
     };
   }
 
-  it('trashes and restores a tool library like a model', async () => {
+  it('trashes and restores a Kit like a model', async () => {
     const { ws } = await atTime();
-    const slug = await ws.createTool(tool);
-    await ws.trashTool(slug);
-    expect(await ws.listTools()).toEqual([]);
-    const all = await ws.listTools({ includeTrashed: true });
+    const slug = await ws.createKit(kit);
+    await ws.trashKit(slug);
+    expect(await ws.listKits()).toEqual([]);
+    const all = await ws.listKits({ includeTrashed: true });
     expect(all[0]).toMatchObject({ slug, trashed: true, expired: false });
-    expect(await ws.findToolSlug(SAMPLE.tool)).toBe(slug);
-    await ws.restoreTool(slug);
-    expect((await ws.listTools()).map((t) => t.slug)).toEqual([slug]);
+    expect(await ws.findKitSlug(SAMPLE.kit)).toBe(slug);
+    await ws.restoreKit(slug);
+    expect((await ws.listKits()).map((t) => t.slug)).toEqual([slug]);
   });
 
   it('lists a model deleted more than 30 days ago as expired, and 29 days ago as restorable', async () => {
@@ -658,12 +655,12 @@ describe('the 30-day trash', () => {
 
   it('removes no file when something is trashed, expired or restored', async () => {
     const { ws, adapter, later } = await atTime();
-    const slug = await ws.createTool(tool);
+    const slug = await ws.createKit(kit);
     const before = adapter.paths();
-    await ws.trashTool(slug);
+    await ws.trashKit(slug);
     later(40 * day);
-    await ws.listTools({ includeTrashed: true });
-    await ws.restoreTool(slug);
+    await ws.listKits({ includeTrashed: true });
+    await ws.restoreKit(slug);
     for (const p of before) expect(adapter.paths()).toContain(p);
   });
 });

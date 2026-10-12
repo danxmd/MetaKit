@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { SAMPLE, sampleTool } from '../testing/sample-tool';
-import { createToolStore } from './commands';
-import { validateToolLibrary } from './guards';
+import { SAMPLE, sampleKit } from '../testing/sample-kit';
+import { createKitStore } from './commands';
+import { validateKit } from './guards';
 import type { NodeShape, PanelLayout, RelationShape } from './shape-types';
-import type { ToolLibrary } from './types';
+import type { Kit } from './types';
 
 const taskShape: NodeShape = {
   id: 'shp_task',
@@ -26,70 +26,70 @@ const flowShape: RelationShape = {
   endMarker: { type: 'arrow' },
 };
 
-function withShapes(extra: Partial<ToolLibrary> = {}): ToolLibrary {
-  const tool = sampleTool();
+function withShapes(extra: Partial<Kit> = {}): Kit {
+  const kit = sampleKit();
   // Copies, so that a test that edits a shape does not change the next test's shapes.
   const shapes = JSON.parse(
     JSON.stringify({ shp_task: taskShape, shp_flow: flowShape }),
   );
-  return { ...tool, shapes, ...extra } as ToolLibrary;
+  return { ...kit, shapes, ...extra } as Kit;
 }
 
-const paths = (tool: unknown) => validateToolLibrary(tool).map((i) => i.path);
+const paths = (kit: unknown) => validateKit(kit).map((i) => i.path);
 
-describe('tool format 2 validation', () => {
+describe('Kit format 2 validation', () => {
   it('accepts shapes and panels', () => {
-    const tool = withShapes();
-    tool.classes[SAMPLE.task]!.shape = 'shp_task';
-    tool.relations[SAMPLE.flow]!.shape = 'shp_flow';
-    expect(validateToolLibrary(tool)).toEqual([]);
+    const kit = withShapes();
+    kit.classes[SAMPLE.task]!.shape = 'shp_task';
+    kit.relations[SAMPLE.flow]!.shape = 'shp_flow';
+    expect(validateKit(kit)).toEqual([]);
   });
 
   it('asks for both tables', () => {
-    const tool = sampleTool() as unknown as Record<string, unknown>;
-    delete tool.shapes;
-    delete tool.panels;
-    expect(paths(tool)).toEqual(['shapes', 'panels']);
+    const kit = sampleKit() as unknown as Record<string, unknown>;
+    delete kit.shapes;
+    delete kit.panels;
+    expect(paths(kit)).toEqual(['shapes', 'panels']);
   });
 
   it('reports a bad part with its path', () => {
-    const tool = withShapes();
-    (tool.shapes.shp_task as NodeShape).parts.push({ type: 'blob' } as never);
-    expect(paths(tool)).toContain('shapes.shp_task.parts[2].type');
+    const kit = withShapes();
+    (kit.shapes.shp_task as NodeShape).parts.push({ type: 'blob' } as never);
+    expect(paths(kit)).toContain('shapes.shp_task.parts[2].type');
   });
 
   it('reports unknown fields, missing text and an id that does not match', () => {
-    const tool = withShapes();
-    (tool.shapes.shp_task as NodeShape).parts[1] = {
+    const kit = withShapes();
+    (kit.shapes.shp_task as NodeShape).parts[1] = {
       type: 'text',
       colour: 'red',
     } as never;
-    (tool.shapes as Record<string, unknown>).shp_other = {
+    (kit.shapes as Record<string, unknown>).shp_other = {
       ...taskShape,
       id: 'shp_wrong',
     };
-    const p = paths(tool);
+    const p = paths(kit);
     expect(p).toContain('shapes.shp_task.parts[1].colour');
     expect(p).toContain('shapes.shp_task.parts[1].text');
     expect(p).toContain('shapes.shp_other.id');
   });
 
   it('checks references to shapes', () => {
-    const tool = withShapes();
-    tool.classes[SAMPLE.task]!.shape = 'shp_missing';
-    tool.modelTypes[SAMPLE.process]!.background = 'shp_gone';
-    (tool.shapes.shp_task as NodeShape).parts.push({
+    const kit = withShapes();
+    kit.classes[SAMPLE.task]!.shape = 'shp_missing';
+    kit.modelTypes[SAMPLE.process]!.background = 'shp_gone';
+    (kit.shapes.shp_task as NodeShape).parts.push({
       type: 'use',
       shape: 'shp_nowhere',
     });
-    const p = paths(tool);
+    const p = paths(kit);
     expect(p).toContain(`classes.${SAMPLE.task}.shape`);
     expect(p).toContain(`modelTypes.${SAMPLE.process}.background`);
     expect(p).toContain('shapes.shp_task');
   });
 
   it('checks panel layouts against the attributes of the class', () => {
-    const tool = withShapes();
+    const kit = withShapes();
     const layout: PanelLayout = {
       class: SAMPLE.task,
       tabs: [
@@ -102,25 +102,25 @@ describe('tool format 2 validation', () => {
         },
       ],
     };
-    (tool.panels as Record<string, PanelLayout>)[SAMPLE.task] = layout;
+    (kit.panels as Record<string, PanelLayout>)[SAMPLE.task] = layout;
     expect(
-      validateToolLibrary(tool)
+      validateKit(kit)
         .map((i) => i.message)
         .join('\n'),
     ).toMatch(/"Nope"/);
   });
 
   it('checks container rules', () => {
-    const tool = withShapes();
-    tool.modelTypes[SAMPLE.process]!.containers = {
+    const kit = withShapes();
+    kit.modelTypes[SAMPLE.process]!.containers = {
       [SAMPLE.lane]: [SAMPLE.task],
     };
-    expect(validateToolLibrary(tool)).toEqual([]);
-    tool.modelTypes[SAMPLE.process]!.containers = {
+    expect(validateKit(kit)).toEqual([]);
+    kit.modelTypes[SAMPLE.process]!.containers = {
       [SAMPLE.lane]: ['cls_none'],
     } as never;
     expect(
-      paths(tool).some((p) =>
+      paths(kit).some((p) =>
         p.startsWith(`modelTypes.${SAMPLE.process}.containers.${SAMPLE.lane}`),
       ),
     ).toBe(true);
@@ -129,7 +129,7 @@ describe('tool format 2 validation', () => {
 
 describe('shape and panel commands', () => {
   it('puts and removes shapes, refusing one that is in use', () => {
-    const store = createToolStore(sampleTool());
+    const store = createKitStore(sampleKit());
     store.execute({ type: 'putShape', def: taskShape });
     store.execute({
       type: 'putPanel',
@@ -158,7 +158,7 @@ describe('shape and panel commands', () => {
   });
 
   it('refuses a panel for an unknown class and a shape with a wrong id', () => {
-    const store = createToolStore(sampleTool());
+    const store = createKitStore(sampleKit());
     expect(() =>
       store.execute({ type: 'putPanel', layout: { class: 'cls_x', tabs: [] } }),
     ).toThrow();
@@ -171,7 +171,7 @@ describe('shape and panel commands', () => {
   });
 
   it('undoes a shape change', () => {
-    const store = createToolStore(sampleTool());
+    const store = createKitStore(sampleKit());
     store.execute({ type: 'putShape', def: taskShape });
     store.undo();
     expect(store.state.shapes.shp_task).toBeUndefined();

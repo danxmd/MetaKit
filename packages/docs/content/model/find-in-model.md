@@ -2,7 +2,7 @@
 id: find-in-model
 title: Find in a model
 category: model
-summary: The find box in the header searches names and attribute values of the open model and jumps to the object you pick.
+summary: The find box in the toolbar searches names and attribute values of the open model and jumps to the object you pick.
 keywords: [find in model, find box, search the model, find results, search objects]
 contexts: []
 order: 250
@@ -16,13 +16,13 @@ A search over the open model only. It looks at the text of every object and conn
 
 ## Where to find it
 
-The find box at the right end of the first header row. Its placeholder is "Find (Ctrl+F)". The **Edit** menu also has **Find**.
+The find box at the right end of the toolbar, under the top bar. Its placeholder is "Find (Ctrl+F)". The **Edit** menu also has **Find**.
 
 ## How to use it
 
 1. Press **Ctrl+F**. The cursor jumps into the find box. Or click the box.
 2. Type part of a word. Results appear under the box as you type.
-3. Click a result. The object is selected, the canvas centres on it and the list closes.
+3. Click a result. The object is selected, the canvas centres on it, and the list closes and the box clears.
 4. Press **Escape** in the box to clear it and close the list.
 
 ## Every option explained

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
-  createToolStore,
+  createKitStore,
   effectiveAttributes,
-  validateToolLibrary,
+  validateKit,
   type AttributeDef,
   type ClassId,
   type NodeLook,
@@ -10,9 +10,9 @@ import {
   type RelationId,
   type RelationShape,
   type ShapeId,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
-import { SAMPLE, sampleTool } from '@metakit-app/core/testing';
+import { SAMPLE, sampleKit } from '@metakit-app/core/testing';
 import {
   defaultNodeLook,
   defaultRelationLook,
@@ -40,25 +40,24 @@ import {
   withoutLook,
 } from './appearance-model';
 
-const attrs = (tool: ToolLibrary): AttributeDef[] =>
-  effectiveAttributes(tool, SAMPLE.task as ClassId);
-const priority = (tool: ToolLibrary) =>
-  attrs(tool).find((a) => a.key === 'Priority')!;
+const attrs = (kit: Kit): AttributeDef[] =>
+  effectiveAttributes(kit, SAMPLE.task as ClassId);
+const priority = (kit: Kit) => attrs(kit).find((a) => a.key === 'Priority')!;
 
-/** The sample tool where Task draws with a look of its own. */
-function withLook(look: NodeLook = defaultNodeLook('node')): ToolLibrary {
-  const tool = sampleTool();
+/** The sample Kit where Task draws with a look of its own. */
+function withLook(look: NodeLook = defaultNodeLook('node')): Kit {
+  const kit = sampleKit();
   const shape = nodeShapeFromLook(
     look,
     'shp_task_look' as ShapeId,
     'Task look',
   );
   return {
-    ...tool,
-    shapes: { ...tool.shapes, [shape.id]: shape },
+    ...kit,
+    shapes: { ...kit.shapes, [shape.id]: shape },
     classes: {
-      ...tool.classes,
-      [SAMPLE.task]: { ...tool.classes[SAMPLE.task]!, shape: shape.id },
+      ...kit.classes,
+      [SAMPLE.task]: { ...kit.classes[SAMPLE.task]!, shape: shape.id },
     },
   };
 }
@@ -77,8 +76,8 @@ describe('colours', () => {
   });
 
   it('turns a colour into one by the options of a choice, keeping the old colour as the fallback', () => {
-    const tool = sampleTool();
-    const colour = dataColour(priority(tool), '#abcdef');
+    const kit = sampleKit();
+    const colour = dataColour(priority(kit), '#abcdef');
     expect(colour).toMatchObject({ by: 'Priority', fallback: '#abcdef' });
     expect(Object.keys((colour as { values: object }).values)).toEqual([
       'Low',
@@ -94,7 +93,7 @@ describe('colours', () => {
       ),
     ).toEqual(['Low', 'Medium']);
     // The same attribute again keeps what was chosen.
-    expect(dependOn(colour, priority(tool))).toBe(colour);
+    expect(dependOn(colour, priority(kit))).toBe(colour);
   });
 
   it('lists Yes and No for a yes/no attribute', () => {
@@ -139,25 +138,25 @@ describe('changing the form', () => {
 
 describe('saving a look', () => {
   it('rewrites the own shape of the class in place and keeps its id and name', () => {
-    const tool = withLook();
-    const store = createToolStore(tool);
+    const kit = withLook();
+    const store = createKitStore(kit);
     const next = { ...defaultNodeLook('node'), fill: '#00ff00' };
     expect(
-      store.execute(saveNodeLook(tool, SAMPLE.task as ClassId, next)).ok,
+      store.execute(saveNodeLook(kit, SAMPLE.task as ClassId, next)).ok,
     ).toBe(true);
     const shape = store.state.shapes['shp_task_look' as ShapeId] as NodeShape;
     expect(shape.name).toBe('Task look');
     expect(shape.look?.fill).toBe('#00ff00');
-    expect(Object.keys(store.state.shapes)).toEqual(Object.keys(tool.shapes));
-    expect(validateToolLibrary(store.state)).toEqual([]);
+    expect(Object.keys(store.state.shapes)).toEqual(Object.keys(kit.shapes));
+    expect(validateKit(store.state)).toEqual([]);
   });
 
   it('gives a class without a shape one of its own, as one undo step', () => {
-    const tool = sampleTool();
-    const before = Object.keys(tool.shapes).length;
-    const store = createToolStore(tool);
+    const kit = sampleKit();
+    const before = Object.keys(kit.shapes).length;
+    const store = createKitStore(kit);
     const command = saveNodeLook(
-      tool,
+      kit,
       SAMPLE.task as ClassId,
       defaultNodeLook(),
     );
@@ -167,22 +166,22 @@ describe('saving a look', () => {
     expect((store.state.shapes[cls.shape!] as NodeShape).look).toBeDefined();
     expect(Object.keys(store.state.shapes)).toHaveLength(before + 1);
     store.undo();
-    expect(store.state).toEqual(tool);
+    expect(store.state).toEqual(kit);
   });
 
   it('copies a shape other classes share instead of changing it for all', () => {
-    const tool = withLook();
-    const shared: ToolLibrary = {
-      ...tool,
+    const kit = withLook();
+    const shared: Kit = {
+      ...kit,
       classes: {
-        ...tool.classes,
+        ...kit.classes,
         [SAMPLE.gateway]: {
-          ...tool.classes[SAMPLE.gateway]!,
+          ...kit.classes[SAMPLE.gateway]!,
           shape: 'shp_task_look' as ShapeId,
         },
       },
     };
-    const store = createToolStore(shared);
+    const store = createKitStore(shared);
     const next = { ...defaultNodeLook('node'), fill: '#00ff00' };
     store.execute(saveNodeLook(shared, SAMPLE.task as ClassId, next));
     const own = store.state.classes[SAMPLE.task]!.shape!;
@@ -196,20 +195,20 @@ describe('saving a look', () => {
   });
 
   it('saves a relation look the same way', () => {
-    const tool = sampleTool();
-    const store = createToolStore(tool);
+    const kit = sampleKit();
+    const store = createKitStore(kit);
     const look = {
       ...defaultRelationLook(),
       style: 'dashed' as const,
       end: 'triangle' as const,
     };
-    store.execute(saveRelationLook(tool, SAMPLE.flow as RelationId, look));
+    store.execute(saveRelationLook(kit, SAMPLE.flow as RelationId, look));
     const state = appearanceOfRelation(store.state, SAMPLE.flow as RelationId);
     expect(state.kind).toBe('look');
     const shape = (state as { shape: RelationShape }).shape;
     expect(shape.line.dash).toEqual([7, 4]);
     expect(shape.endMarker).toEqual({ type: 'triangle' });
-    expect(validateToolLibrary(store.state)).toEqual([]);
+    expect(validateKit(store.state)).toEqual([]);
   });
 
   it('starts new classes with a look that suits their kind', () => {
@@ -273,17 +272,17 @@ describe('hand-drawn shapes', () => {
 
 describe('preview tiles', () => {
   it('has one tile for a look that does not change with data', () => {
-    const tool = sampleTool();
-    const groups = previewGroups(defaultNodeLook(), attrs(tool));
+    const kit = sampleKit();
+    const groups = previewGroups(defaultNodeLook(), attrs(kit));
     expect(groups).toHaveLength(1);
     expect(groups[0]!.tiles).toHaveLength(1);
   });
 
   it('has a tile per option for the attribute that drives the fill, and a mark group', () => {
-    const tool = sampleTool();
+    const kit = sampleKit();
     const look: NodeLook = {
       ...defaultNodeLook(),
-      fill: dataColour(priority(tool), '#cccccc'),
+      fill: dataColour(priority(kit), '#cccccc'),
       badge: {
         attribute: 'GatewayKind',
         equals: 'XOR',
@@ -292,8 +291,8 @@ describe('preview tiles', () => {
       },
     };
     const groups = previewGroups(look, [
-      ...attrs(tool),
-      ...effectiveAttributes(tool, SAMPLE.gateway as ClassId),
+      ...attrs(kit),
+      ...effectiveAttributes(kit, SAMPLE.gateway as ClassId),
     ]);
     expect(groups.map((g) => g.title)).toEqual(['Priority', 'GatewayKind']);
     expect(groups[0]!.tiles.map((t) => t.label)).toEqual([
@@ -304,7 +303,7 @@ describe('preview tiles', () => {
   });
 
   it('draws each value with its own colour', () => {
-    const tool = sampleTool();
+    const kit = sampleKit();
     const look: NodeLook = {
       ...defaultNodeLook('node', 'box'),
       fill: {
@@ -316,7 +315,7 @@ describe('preview tiles', () => {
     const fillOf = (value: string | null) => {
       const pic = compileTile(
         look,
-        attrs(tool),
+        attrs(kit),
         {
           attribute: 'Priority',
           label: String(value),

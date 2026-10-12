@@ -8,7 +8,7 @@ contexts: []
 order: 60
 ---
 
-MetaKit is a set of static web files. There is no MetaKit server, no database and no user accounts. Your tool libraries and models are plain JSON files in a folder you choose. The app reads and writes that folder directly from your browser.
+MetaKit is a set of static web files. There is no MetaKit server, no database and no user accounts. Your Kits and models are plain JSON files in a folder you choose. The app reads and writes that folder directly from your browser.
 
 ## What it is
 
@@ -35,16 +35,16 @@ What stays where:
 
 | What | Where it is kept |
 | --- | --- |
-| Tool libraries, models, history | In your workspace folder, as files. |
+| Kits, models, history | In your workspace folder, as files. |
 | The folder you last used | In your browser (IndexedDB), as a permission handle. |
 | Your name and colour | In your browser (IndexedDB). |
-| Light or dark choice | In your browser (local storage). See [[theme]]. |
+| Look and light or dark choice | In your browser (local storage). See [[theme]]. |
 | Git tokens, assistant key, script permissions | In your browser (IndexedDB) only. Never in the workspace folder. See [[git-tokens]]. |
 
 Things that do leave your computer, only when you ask for them:
 
-- **Git mode** talks to GitHub or GitLab to read and write a tool library ([[git-mode]]).
-- **The assistant**, if you switch it on, sends tool library definitions (not model data) to the AI service with your own key ([[assistant-privacy]]).
+- **Git mode** talks to GitHub or GitLab to read and write a Kit ([[git-mode]]).
+- **The assistant**, if you switch it on, sends Kit definitions (not model data) to the AI service with your own key ([[assistant-privacy]]).
 - **Scripts** can use the network only if you grant the permission ([[script-permissions]]).
 
 ## Examples

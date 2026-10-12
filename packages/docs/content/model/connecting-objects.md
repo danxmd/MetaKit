@@ -8,7 +8,7 @@ contexts: []
 order: 140
 ---
 
-A connection (also called a connector) joins two objects and has a *relation*, such as **Performs** or **Feeds**. The tool library decides which relations may join which kinds of object.
+A connection (also called a connector) joins two objects and has a *relation*, such as **Performs** or **Feeds**. The Kit decides which relations may join which kinds of object.
 
 ## What it is
 
@@ -73,17 +73,19 @@ Messages show over the canvas for six seconds. See [[status-and-messages]].
 
 ### How the line is drawn
 
-Without bend points the line leaves the facing edges of the two objects and turns at right angles in the middle. With bend points it runs in straight pieces through them. The arrowheads and line style come from the tool library.
+Without bend points the line leaves the facing edges of the two objects and turns at right angles in the middle. With bend points it runs in straight pieces through them. The arrowheads and line style come from the Kit.
+
+Connections are drawn above containers and swimlanes and below every other object, so a line between two objects in the same lane stays visible. See [[containers-swimlanes]].
 
 ## Examples
 
-In the Code review pipeline, click **Performs**, press on the agent **Planner**, drag to the task **Draft plan** and let go. The connection is created. Now press on **Planner** and drop on **Sam**, a **Human**, with **Performs** still chosen. Nothing is created. The message says that a **Performs** cannot go from an Agent to a Human, because the tool says **Performs** goes from an *Actor* (an Agent or a Human) to a *Task*.
+In the Code review pipeline, click **Performs**, press on the agent **Planner**, drag to the task **Draft plan** and let go. The connection is created. Now press on **Planner** and drop on **Sam**, a **Human**, with **Performs** still chosen. Nothing is created. The message says that a **Performs** cannot go from an Agent to a Human, because the Kit says **Performs** goes from an *Actor* (an Agent or a Human) to a *Task*.
 
 Select the **Merge** task and drag from its edge to the gate **Code review**. Only **Hands over to** fits Task to Gate, so no menu appears. Drag from an artifact to a task: only **Feeds** fits, and it is created.
 
 ## Good to know
 
-- Only relations that are in the active palette view can be used. Switch the view to **All** if a connection is refused unexpectedly. See [[menu-view]].
+- Only relations that are in the active palette view can be used. Switch the view to **All** at the top of the palette if a connection is refused unexpectedly. See [[palette#palette-view]].
 - Rules about how many connections an object must or may have (cardinality) are not enforced while drawing. They show up as warnings in the [[problems-panel]].
 - You can draw several connections between the same two objects.
 - Deleting an object deletes the connections attached to it. Undo restores both.

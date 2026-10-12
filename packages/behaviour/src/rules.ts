@@ -17,7 +17,7 @@ import {
   type Rule,
   type RuleAction,
   type RuleValue,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 import { toText, truthy, type Value } from '@metakit-app/formula';
 import type { CommandRegistry } from './commands';
@@ -27,8 +27,8 @@ export interface RuleEngineOptions {
   store: ModelStore;
   bus: EventBus;
   calculator: ModelCalculator;
-  /** The tool library as it is now; read on every use so that Build mode edits are seen. */
-  tool: () => ToolLibrary;
+  /** The Kit as it is now; read on every use so that Build mode edits are seen. */
+  kit: () => Kit;
   host: BehaviourHost;
   commands: CommandRegistry;
 }
@@ -63,7 +63,7 @@ const isFormulaText = (v: unknown): v is string =>
   typeof v === 'string' && v.startsWith('=');
 
 /**
- * Runs the rules of a tool library: one bus handler per enabled rule, and the rules with the event
+ * Runs the rules of a Kit: one bus handler per enabled rule, and the rules with the event
  * "command" as entries in the command registry. Actions go through the model store inside the step
  * that triggered the rule, so one undo takes back both. Problems in a rule become a warning for
  * the user and end that rule; they are never thrown.
@@ -97,12 +97,12 @@ export class RuleEngine {
     );
   }
 
-  /** Reads the rules again after the tool library changed. */
+  /** Reads the rules again after the Kit changed. */
   reload(): void {
     this.unsubscribe();
     const { bus, commands } = this.o;
     commands.clear('rule');
-    for (const rule of Object.values(this.o.tool().rules ?? {})) {
+    for (const rule of Object.values(this.o.kit().rules ?? {})) {
       if (rule.enabled === false) continue;
       if (rule.when.event === 'command') {
         commands.register({
@@ -127,7 +127,7 @@ export class RuleEngine {
 
   /** Runs a rule on demand, for a command entry or a panel button. */
   run(ruleId: string, target: string | null): void {
-    const rule = this.o.tool().rules?.[ruleId as Rule['id']];
+    const rule = this.o.kit().rules?.[ruleId as Rule['id']];
     if (!rule) {
       this.o.host.message('warning', `The rule ${ruleId} does not exist.`);
       return;
@@ -362,7 +362,7 @@ export class RuleEngine {
   /** Outside a step the shared calculator is right; inside one it would read the old state. */
   private calc(): ModelCalculator {
     if (this.active === 0) return this.o.calculator;
-    return new ModelCalculator(this.o.tool(), () => this.live());
+    return new ModelCalculator(this.o.kit(), () => this.live());
   }
 
   private live(): Model {
@@ -420,15 +420,13 @@ export class RuleEngine {
   // Changes -----------------------------------------------------------------------------------
 
   private defsOf(owner: ClassId | string): AttributeDef[] {
-    const tool = this.o.tool();
+    const kit = this.o.kit();
     try {
       if (owner === 'model')
-        return (
-          tool.modelTypes[this.live().manifest.modelType]?.attributes ?? []
-        );
+        return kit.modelTypes[this.live().manifest.modelType]?.attributes ?? [];
       if (owner.startsWith('rel_'))
-        return effectiveRelationAttributes(tool, owner as never);
-      return effectiveAttributes(tool, owner as ClassId);
+        return effectiveRelationAttributes(kit, owner as never);
+      return effectiveAttributes(kit, owner as ClassId);
     } catch {
       return [];
     }
@@ -506,7 +504,7 @@ export class RuleEngine {
   }
 
   private describe(a: RuleAction, ctx: Ctx, indent: string): string[] {
-    const tool = this.o.tool();
+    const kit = this.o.kit();
     const line = (s: string) => [`${indent}${s}`];
     switch (a.action) {
       case 'setAttribute':
@@ -515,7 +513,7 @@ export class RuleEngine {
         );
       case 'createObject':
         return line(
-          `Create a ${tool.classes[a.class]?.key ?? a.class} object${
+          `Create a ${kit.classes[a.class]?.key ?? a.class} object${
             a.attributes
               ? ` with ${Object.entries(a.attributes)
                   .map(([k, v]) => `${k} = ${this.show(ctx, v)}`)
@@ -527,7 +525,7 @@ export class RuleEngine {
         return line(
           `Connect ${a.from ? `"${a.from}"` : 'the object'} to ${
             a.to ? `"${a.to}"` : 'the new object or the object'
-          } with a ${tool.relations[a.relation]?.key ?? a.relation} connector.`,
+          } with a ${kit.relations[a.relation]?.key ?? a.relation} connector.`,
         );
       case 'delete':
         return line(`Delete ${this.who(a.target)}.`);

@@ -2,7 +2,7 @@
 
 ## Why
 
-Danial: notation creation is far too complicated and does not make sense. Today a tool builder draws a shape from layers (rectangles, text, formulas, `fx` buttons, sample values, SVG import), which is the mental model of a drawing program, not of "how should a Task look". Most notations need a handful of choices.
+Danial: notation creation is far too complicated and does not make sense. Today a Kit builder draws a shape from layers (rectangles, text, formulas, `fx` buttons, sample values, SVG import), which is the mental model of a drawing program, not of "how should a Task look". Most notations need a handful of choices.
 
 ## What Changes
 
@@ -10,7 +10,7 @@ Danial: notation creation is far too complicated and does not make sense. Today 
 - A relation look: line colour, width and style (solid, dashed, dotted), routing, arrowheads for both ends, and a label from an attribute.
 - The existing drawing editor stays as **Advanced**: opening a simple look in it turns the shape into a hand-drawn one (said clearly beforehand); hand-drawn shapes can be kept or replaced by a simple look.
 - The look is stored in the shape (`look`), and the drawing parts are generated from it, so nothing else in MetaKit changes (compiler, canvas, exports, Git layout).
-- Tool format 5 (adds the optional `look` to shapes), migration 4 to 5, test.
+- Kit format 5 (adds the optional `look` to shapes), migration 4 to 5, test.
 - Starter looks for new classes and relations: a new class already has a sensible look.
 
 ## Capabilities
@@ -21,4 +21,4 @@ Danial: notation creation is far too complicated and does not make sense. Today 
 
 ## Impact
 
-- Format change: tool format 5 (ADR 0009). Older tool libraries open unchanged; shapes without a `look` are hand-drawn shapes.
+- Format change: Kit format 5 (ADR 0009). Older Kits open unchanged; shapes without a `look` are hand-drawn shapes.

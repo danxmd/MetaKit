@@ -8,14 +8,14 @@ contexts: []
 order: 50
 ---
 
-Scripts import everything from one module called `metakit`. This page lists all of it. The editor knows the same list and fits it to your tool library, so `model.objects("Task")` completes with your own class names. See [[script-editor]].
+Scripts import everything from one module called `metakit`. This page lists all of it. The editor knows the same list and fits it to your Kit, so `model.objects("Task")` completes with your own class names. See [[script-editor]].
 
 ## What it is
 
 The module has these exports:
 
 ```ts
-import { on, cancel, model, tool, ui, files, http, commands } from "metakit";
+import { on, cancel, model, kit, ui, files, http, commands } from "metakit";
 ```
 
 Everything crosses a narrow bridge as plain JSON. The host checks every request again (names, permissions, sizes), so a script gains nothing by trying to reach the bridge by other means.
@@ -115,9 +115,18 @@ All 24 are described in [[rule-triggers]]. Every payload has `event`, `target` (
 
 Writing checks the value. A wrong one fails with `The attribute "X" ...`, for example about a type or a choice that is not an option. Writing a formula attribute fails with `The attribute "X" is calculated and cannot be set.`
 
-### `tool`
+### `kit`
 
-Read-only facts about the meta-model: `tool.name`, `tool.version`, `tool.classes()`, `tool.class(key)`, `tool.relations()`, `tool.relation(key)`, `tool.modelTypes()`, `tool.modelType(key)` and `tool.attribute(owner, key)`. They return `ClassInfo`, `RelationInfo`, `ModelTypeInfo` and `AttributeInfo` records. `ClassInfo.attributes` includes inherited attributes.
+`kit` gives access to the Kit. It holds read-only facts about its meta-model: `kit.name`, `kit.version`, `kit.classes()`, `kit.class(key)`, `kit.relations()`, `kit.relation(key)`, `kit.modelTypes()`, `kit.modelType(key)` and `kit.attribute(owner, key)`. They return `ClassInfo`, `RelationInfo`, `ModelTypeInfo` and `AttributeInfo` records. `ClassInfo.attributes` includes inherited attributes.
+
+```ts
+import { kit, ui } from "metakit";
+
+const task = kit.class("Task");
+ui.message(`${kit.name} ${kit.version}: Task has ${task.attributes.length} attributes.`);
+```
+
+**Older name `tool`.** Scripts written before the tool library was called a Kit import `tool`. It is the same object, so these scripts keep running unchanged. The editor shows `tool` struck through; hover over it to read `Deprecated. Use kit.` Replace `tool` with `kit` when you next edit such a script.
 
 ### `ui`
 
@@ -181,7 +190,7 @@ See [[script-examples]] for a longer one.
 
 ## Good to know
 
-- **Errors.** Typical texts: `This tool has no class "X". Classes: A, B.`; `The object el_x does not exist in this model (it may have been deleted).`; `The class "X" is abstract; create one of its subclasses.`; `The change was cancelled: reason`.
+- **Errors.** Typical texts: `This Kit has no class "X". Classes: A, B.`; `The object el_x does not exist in this model (it may have been deleted).`; `The class "X" is abstract; create one of its subclasses.`; `The change was cancelled: reason`.
 - **Not allowed.** `The model itself cannot be deleted by a script.`, `A connector has attributes only; it has no position or size.`
 - **Fresh reads.** Objects are looked up each time you read a field. Do not keep copies across an `await`; read again.
 - **Keep calls short.** Time limits are in [[scripts]].

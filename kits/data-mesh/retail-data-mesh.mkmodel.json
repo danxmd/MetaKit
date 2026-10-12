@@ -1,0 +1,725 @@
+{
+  "attributes": {
+    "Organisation": "A fashion retailer",
+    "Title": "Retail data mesh"
+  },
+  "connectors": [
+    {
+      "attributes": {
+        "Frequency": "Nightly"
+      },
+      "from": "el_src_pos",
+      "id": "cn_001",
+      "relation": "FlowsTo",
+      "to": "el_in_pos"
+    },
+    {
+      "attributes": {
+        "Frequency": "Live"
+      },
+      "from": "el_src_web",
+      "id": "cn_002",
+      "relation": "FlowsTo",
+      "to": "el_in_web"
+    },
+    {
+      "from": "el_src_crm",
+      "id": "cn_003",
+      "relation": "FlowsTo",
+      "to": "el_in_crm"
+    },
+    {
+      "attributes": {
+        "Frequency": "Live"
+      },
+      "from": "el_src_wms",
+      "id": "cn_004",
+      "relation": "FlowsTo",
+      "to": "el_in_wms"
+    },
+    {
+      "from": "el_in_pos",
+      "id": "cn_005",
+      "relation": "Feeds",
+      "to": "el_dp_orders"
+    },
+    {
+      "from": "el_in_web",
+      "id": "cn_006",
+      "relation": "Feeds",
+      "to": "el_dp_orders"
+    },
+    {
+      "from": "el_in_orders",
+      "id": "cn_007",
+      "relation": "Feeds",
+      "to": "el_dp_profile"
+    },
+    {
+      "from": "el_in_crm",
+      "id": "cn_008",
+      "relation": "Feeds",
+      "to": "el_dp_profile"
+    },
+    {
+      "from": "el_in_wms",
+      "id": "cn_009",
+      "relation": "Feeds",
+      "to": "el_dp_stock"
+    },
+    {
+      "from": "el_in_profiles",
+      "id": "cn_010",
+      "relation": "Feeds",
+      "to": "el_dp_segments"
+    },
+    {
+      "from": "el_in_sales",
+      "id": "cn_011",
+      "relation": "Feeds",
+      "to": "el_dp_segments"
+    },
+    {
+      "from": "el_dp_orders",
+      "id": "cn_012",
+      "relation": "Publishes",
+      "to": "el_out_orders"
+    },
+    {
+      "from": "el_dp_profile",
+      "id": "cn_013",
+      "relation": "Publishes",
+      "to": "el_out_profile"
+    },
+    {
+      "from": "el_dp_stock",
+      "id": "cn_014",
+      "relation": "Publishes",
+      "to": "el_out_stock"
+    },
+    {
+      "from": "el_dp_segments",
+      "id": "cn_015",
+      "relation": "Publishes",
+      "to": "el_out_segments"
+    },
+    {
+      "from": "el_out_orders",
+      "id": "cn_016",
+      "relation": "HasContract",
+      "to": "el_ct_orders"
+    },
+    {
+      "from": "el_out_profile",
+      "id": "cn_017",
+      "relation": "HasContract",
+      "to": "el_ct_profile"
+    },
+    {
+      "from": "el_out_segments",
+      "id": "cn_018",
+      "relation": "HasContract",
+      "to": "el_ct_segments"
+    },
+    {
+      "attributes": {
+        "Frequency": "Daily"
+      },
+      "from": "el_out_orders",
+      "id": "cn_019",
+      "relation": "FlowsTo",
+      "to": "el_in_orders"
+    },
+    {
+      "attributes": {
+        "Frequency": "Weekly"
+      },
+      "from": "el_out_orders",
+      "id": "cn_020",
+      "relation": "FlowsTo",
+      "to": "el_in_sales"
+    },
+    {
+      "attributes": {
+        "Frequency": "Daily"
+      },
+      "from": "el_out_orders",
+      "id": "cn_021",
+      "relation": "FlowsTo",
+      "to": "el_con_finance"
+    },
+    {
+      "attributes": {
+        "Frequency": "Weekly"
+      },
+      "from": "el_out_profile",
+      "id": "cn_022",
+      "relation": "FlowsTo",
+      "to": "el_in_profiles"
+    },
+    {
+      "from": "el_out_segments",
+      "id": "cn_023",
+      "relation": "FlowsTo",
+      "to": "el_con_campaigns"
+    },
+    {
+      "attributes": {
+        "Frequency": "Live"
+      },
+      "from": "el_out_stock",
+      "id": "cn_024",
+      "relation": "FlowsTo",
+      "to": "el_con_replenish"
+    },
+    {
+      "from": "el_dp_profile",
+      "id": "cn_025",
+      "relation": "GovernedBy",
+      "to": "el_pol_personal"
+    },
+    {
+      "from": "el_dp_segments",
+      "id": "cn_026",
+      "relation": "GovernedBy",
+      "to": "el_pol_personal"
+    },
+    {
+      "from": "el_svc_access",
+      "id": "cn_027",
+      "relation": "Enforces",
+      "to": "el_pol_personal"
+    },
+    {
+      "from": "el_svc_catalog",
+      "id": "cn_028",
+      "relation": "Enforces",
+      "to": "el_pol_naming"
+    },
+    {
+      "from": "el_dp_stock",
+      "id": "cn_029",
+      "relation": "BuiltOn",
+      "to": "el_svc_pipelines"
+    }
+  ],
+  "elements": [
+    {
+      "attributes": {
+        "Hosting": "On-premises",
+        "Name": "Till system",
+        "Technology": "Store point of sale"
+      },
+      "class": "SourceSystem",
+      "h": 70,
+      "id": "el_src_pos",
+      "w": 150,
+      "x": 40,
+      "y": 90
+    },
+    {
+      "attributes": {
+        "Hosting": "Software as a service",
+        "Name": "Online shop",
+        "Technology": "Web shop platform"
+      },
+      "class": "SourceSystem",
+      "h": 70,
+      "id": "el_src_web",
+      "w": 150,
+      "x": 40,
+      "y": 180
+    },
+    {
+      "attributes": {
+        "Hosting": "Software as a service",
+        "Name": "Customer service system"
+      },
+      "class": "SourceSystem",
+      "h": 70,
+      "id": "el_src_crm",
+      "w": 150,
+      "x": 40,
+      "y": 470
+    },
+    {
+      "attributes": {
+        "Hosting": "On-premises",
+        "Name": "Warehouse system"
+      },
+      "class": "SourceSystem",
+      "h": 70,
+      "id": "el_src_wms",
+      "w": 150,
+      "x": 40,
+      "y": 670
+    },
+    {
+      "attributes": {
+        "Description": "Orders from the stores and the online shop.",
+        "DomainOwner": "Head of sales operations",
+        "Name": "Sales"
+      },
+      "class": "DataDomain",
+      "h": 250,
+      "id": "el_dom_sales",
+      "w": 600,
+      "x": 240,
+      "y": 40
+    },
+    {
+      "attributes": {
+        "Mechanism": "Batch",
+        "Name": "Store sales"
+      },
+      "class": "InputPort",
+      "h": 44,
+      "id": "el_in_pos",
+      "parent": "el_dom_sales",
+      "w": 140,
+      "x": 260,
+      "y": 100
+    },
+    {
+      "attributes": {
+        "Mechanism": "Streaming",
+        "Name": "Web orders"
+      },
+      "class": "InputPort",
+      "h": 44,
+      "id": "el_in_web",
+      "parent": "el_dom_sales",
+      "w": 140,
+      "x": 260,
+      "y": 190
+    },
+    {
+      "attributes": {
+        "Classification": "Internal",
+        "Name": "Orders",
+        "Owner": "Sales data team",
+        "ProductType": "Source-aligned",
+        "Status": "Live",
+        "Version": "2.1.0"
+      },
+      "class": "DataProduct",
+      "h": 80,
+      "id": "el_dp_orders",
+      "parent": "el_dom_sales",
+      "w": 160,
+      "x": 450,
+      "y": 125
+    },
+    {
+      "attributes": {
+        "Address": "sales.orders",
+        "Interface": "Table",
+        "Name": "Orders table"
+      },
+      "class": "OutputPort",
+      "h": 44,
+      "id": "el_out_orders",
+      "parent": "el_dom_sales",
+      "w": 150,
+      "x": 660,
+      "y": 100
+    },
+    {
+      "attributes": {
+        "Availability": 99.5,
+        "ChangeNotice": "30 days",
+        "Freshness": "Updated by 06:00 every day",
+        "Name": "Orders contract",
+        "Schema": "order_id: text, key\ncustomer_id: text\nstore_id: text\nordered_at: date and time\nnet_amount: decimal",
+        "Status": "Active",
+        "Version": "2.1.0"
+      },
+      "class": "DataContract",
+      "h": 90,
+      "id": "el_ct_orders",
+      "parent": "el_dom_sales",
+      "w": 120,
+      "x": 675,
+      "y": 170
+    },
+    {
+      "attributes": {
+        "Description": "Who our customers are and how they buy.",
+        "DomainOwner": "Head of customer",
+        "Name": "Customer"
+      },
+      "class": "DataDomain",
+      "h": 250,
+      "id": "el_dom_customer",
+      "w": 600,
+      "x": 240,
+      "y": 330
+    },
+    {
+      "attributes": {
+        "Mechanism": "Batch",
+        "Name": "Order history"
+      },
+      "class": "InputPort",
+      "h": 44,
+      "id": "el_in_orders",
+      "parent": "el_dom_customer",
+      "w": 140,
+      "x": 260,
+      "y": 390
+    },
+    {
+      "attributes": {
+        "Mechanism": "API",
+        "Name": "Contacts"
+      },
+      "class": "InputPort",
+      "h": 44,
+      "id": "el_in_crm",
+      "parent": "el_dom_customer",
+      "w": 140,
+      "x": 260,
+      "y": 480
+    },
+    {
+      "attributes": {
+        "Classification": "Confidential",
+        "Name": "Customer profile",
+        "Owner": "Customer data team",
+        "ProductType": "Aggregate",
+        "Status": "Live",
+        "Version": "1.4.0"
+      },
+      "class": "DataProduct",
+      "h": 80,
+      "id": "el_dp_profile",
+      "parent": "el_dom_customer",
+      "w": 160,
+      "x": 450,
+      "y": 415
+    },
+    {
+      "attributes": {
+        "Address": "customer.profiles",
+        "Interface": "Table",
+        "Name": "Profiles table"
+      },
+      "class": "OutputPort",
+      "h": 44,
+      "id": "el_out_profile",
+      "parent": "el_dom_customer",
+      "w": 150,
+      "x": 660,
+      "y": 390
+    },
+    {
+      "attributes": {
+        "Availability": 99,
+        "ChangeNotice": "60 days",
+        "Freshness": "Updated every 4 hours",
+        "Name": "Profile contract",
+        "Status": "Active",
+        "Version": "1.4.0"
+      },
+      "class": "DataContract",
+      "h": 90,
+      "id": "el_ct_profile",
+      "parent": "el_dom_customer",
+      "w": 120,
+      "x": 675,
+      "y": 460
+    },
+    {
+      "attributes": {
+        "Description": "Stock in the warehouse and in the stores.",
+        "DomainOwner": "Head of logistics",
+        "Name": "Supply chain"
+      },
+      "class": "DataDomain",
+      "h": 250,
+      "id": "el_dom_supply",
+      "w": 600,
+      "x": 240,
+      "y": 620
+    },
+    {
+      "attributes": {
+        "Mechanism": "Change data capture",
+        "Name": "Stock movements"
+      },
+      "class": "InputPort",
+      "h": 44,
+      "id": "el_in_wms",
+      "parent": "el_dom_supply",
+      "w": 140,
+      "x": 260,
+      "y": 680
+    },
+    {
+      "attributes": {
+        "Classification": "Internal",
+        "Name": "Stock levels",
+        "Owner": "Logistics data team",
+        "ProductType": "Source-aligned",
+        "Status": "In development"
+      },
+      "class": "DataProduct",
+      "h": 80,
+      "id": "el_dp_stock",
+      "parent": "el_dom_supply",
+      "w": 160,
+      "x": 450,
+      "y": 705
+    },
+    {
+      "attributes": {
+        "Interface": "Event stream",
+        "Name": "Stock events"
+      },
+      "class": "OutputPort",
+      "h": 44,
+      "id": "el_out_stock",
+      "parent": "el_dom_supply",
+      "w": 150,
+      "x": 660,
+      "y": 680
+    },
+    {
+      "attributes": {
+        "Description": "Segments and audiences for campaigns.",
+        "DomainOwner": "Head of marketing",
+        "Name": "Marketing"
+      },
+      "class": "DataDomain",
+      "h": 250,
+      "id": "el_dom_marketing",
+      "w": 600,
+      "x": 900,
+      "y": 330
+    },
+    {
+      "attributes": {
+        "Mechanism": "Batch",
+        "Name": "Profiles"
+      },
+      "class": "InputPort",
+      "h": 44,
+      "id": "el_in_profiles",
+      "parent": "el_dom_marketing",
+      "w": 140,
+      "x": 920,
+      "y": 390
+    },
+    {
+      "attributes": {
+        "Mechanism": "Batch",
+        "Name": "Recent orders"
+      },
+      "class": "InputPort",
+      "h": 44,
+      "id": "el_in_sales",
+      "parent": "el_dom_marketing",
+      "w": 140,
+      "x": 920,
+      "y": 480
+    },
+    {
+      "attributes": {
+        "Classification": "Confidential",
+        "Name": "Customer segments",
+        "Owner": "Marketing analytics team",
+        "ProductType": "Consumer-aligned",
+        "Status": "Live",
+        "Version": "1.0.0"
+      },
+      "class": "DataProduct",
+      "h": 80,
+      "id": "el_dp_segments",
+      "parent": "el_dom_marketing",
+      "w": 160,
+      "x": 1110,
+      "y": 415
+    },
+    {
+      "attributes": {
+        "Interface": "API",
+        "Name": "Segments API"
+      },
+      "class": "OutputPort",
+      "h": 44,
+      "id": "el_out_segments",
+      "parent": "el_dom_marketing",
+      "w": 150,
+      "x": 1320,
+      "y": 390
+    },
+    {
+      "attributes": {
+        "ChangeNotice": "14 days",
+        "Freshness": "Updated every Monday",
+        "Name": "Segments contract",
+        "Status": "Draft",
+        "Version": "1.0.0"
+      },
+      "class": "DataContract",
+      "h": 90,
+      "id": "el_ct_segments",
+      "parent": "el_dom_marketing",
+      "w": 120,
+      "x": 1335,
+      "y": 460
+    },
+    {
+      "attributes": {
+        "ConsumerType": "Report",
+        "Name": "Finance reporting",
+        "Purpose": "Daily revenue and margin."
+      },
+      "class": "Consumer",
+      "h": 70,
+      "id": "el_con_finance",
+      "w": 160,
+      "x": 1600,
+      "y": 85
+    },
+    {
+      "attributes": {
+        "ConsumerType": "Team",
+        "Name": "Campaign planning",
+        "Purpose": "Choosing who receives which offer."
+      },
+      "class": "Consumer",
+      "h": 70,
+      "id": "el_con_campaigns",
+      "w": 160,
+      "x": 1600,
+      "y": 380
+    },
+    {
+      "attributes": {
+        "ConsumerType": "Application",
+        "Name": "Store replenishment",
+        "Purpose": "Ordering stock for the stores."
+      },
+      "class": "Consumer",
+      "h": 70,
+      "id": "el_con_replenish",
+      "w": 160,
+      "x": 1600,
+      "y": 670
+    },
+    {
+      "attributes": {
+        "Name": "Product naming and versions",
+        "Owner": "Data governance council",
+        "Scope": "Global"
+      },
+      "class": "Policy",
+      "h": 90,
+      "id": "el_pol_naming",
+      "w": 120,
+      "x": 920,
+      "y": 680
+    },
+    {
+      "attributes": {
+        "Name": "Personal data protection",
+        "Owner": "Data protection officer",
+        "Scope": "Global"
+      },
+      "class": "Policy",
+      "h": 90,
+      "id": "el_pol_personal",
+      "w": 120,
+      "x": 1150,
+      "y": 680
+    },
+    {
+      "attributes": {
+        "Name": "Self-serve data platform",
+        "PlatformTeam": "Data platform team"
+      },
+      "class": "SelfServePlatform",
+      "h": 150,
+      "id": "el_platform",
+      "w": 1260,
+      "x": 240,
+      "y": 910
+    },
+    {
+      "attributes": {
+        "Category": "Storage",
+        "Name": "Storage"
+      },
+      "class": "PlatformService",
+      "h": 60,
+      "id": "el_svc_storage",
+      "parent": "el_platform",
+      "w": 170,
+      "x": 260,
+      "y": 970
+    },
+    {
+      "attributes": {
+        "Category": "Pipelines",
+        "Name": "Pipelines"
+      },
+      "class": "PlatformService",
+      "h": 60,
+      "id": "el_svc_pipelines",
+      "parent": "el_platform",
+      "w": 170,
+      "x": 505,
+      "y": 970
+    },
+    {
+      "attributes": {
+        "Category": "Catalog and discovery",
+        "Name": "Data catalog"
+      },
+      "class": "PlatformService",
+      "h": 60,
+      "id": "el_svc_catalog",
+      "parent": "el_platform",
+      "w": 170,
+      "x": 750,
+      "y": 970
+    },
+    {
+      "attributes": {
+        "Category": "Access control",
+        "Name": "Access control"
+      },
+      "class": "PlatformService",
+      "h": 60,
+      "id": "el_svc_access",
+      "parent": "el_platform",
+      "w": 170,
+      "x": 995,
+      "y": 970
+    },
+    {
+      "attributes": {
+        "Category": "Monitoring",
+        "Name": "Quality monitoring"
+      },
+      "class": "PlatformService",
+      "h": 60,
+      "id": "el_svc_monitoring",
+      "parent": "el_platform",
+      "w": 170,
+      "x": 1240,
+      "y": 970
+    }
+  ],
+  "formatVersion": 2,
+  "id": "mdl_retaildatamesh",
+  "kind": "mkmodel",
+  "kit": {
+    "id": "kit_datamesh",
+    "name": "Data mesh and data products",
+    "version": "1.0.0"
+  },
+  "modelType": "DataMesh",
+  "name": "Retail data mesh"
+}

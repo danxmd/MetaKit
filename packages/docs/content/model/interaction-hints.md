@@ -52,9 +52,9 @@ Switch hints on and click **Performs** in the palette of the Code review pipelin
 
 ## Good to know
 
-- Hints for the palette come from the same tool definitions as the [[palette-preview]] card.
+- Hints for the palette come from the same Kit definitions as the [[palette-preview]] card.
 - Messages about a refused connection are separate. They appear for six seconds as a notice. See [[status-and-messages]].
-- Hints are for learning. People who know a tool well can switch them off.
+- Hints are for learning. People who know a Kit well can switch them off.
 
 ## Related
 

@@ -1,0 +1,9 @@
+{
+  "created": "2026-06-01T09:00:00.000Z",
+  "formatVersion": 1,
+  "id": "mdl_beforerename",
+  "kind": "model",
+  "modelType": "mt_process",
+  "name": "Order process",
+  "tool": "tool_bpmnlite"
+}

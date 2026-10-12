@@ -7,7 +7,7 @@ Every screen of MetaKit tells you where you are in one place, and the same kind 
 ## ADDED Requirements
 
 ### Requirement: One location bar
-In a workspace, the top bar SHALL show a breadcrumb of the current location, and each crumb except the last SHALL be a link to that page. The model view and the tool library editor SHALL NOT repeat the location in a bar of their own.
+In a workspace, the top bar SHALL show a breadcrumb of the current location, and each crumb except the last SHALL be a link to that page. The model view and the Kit editor SHALL NOT repeat the location in a bar of their own.
 
 #### Scenario: Back from a model
 - **WHEN** a model "Order process" is open
@@ -42,7 +42,7 @@ An action of the app that can be undone SHALL happen at once and show a message 
 Classes, Relation classes, Model types, Shapes, Rules and Scripts SHALL each show an item column (a "New …" field, the items, and row actions) next to an editor for the selected item. When a section opens with nothing selected and it has items, the first item SHALL be selected.
 
 #### Scenario: Open model types
-- **WHEN** Model types is chosen and the tool library has one model type
+- **WHEN** Model types is chosen and the Kit has one model type
 - **THEN** that model type is selected and its editor shows
 
 ### Requirement: Try it follows the person

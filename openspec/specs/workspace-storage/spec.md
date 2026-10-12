@@ -46,8 +46,8 @@ The local folder adapter SHALL keep the chosen folder handle in IndexedDB and SH
 A workspace SHALL be a folder with `workspace.json`, `tools/<slug>/tool.json` and `models/<slug>/model.json` written once at creation, each document's content in `_state/<instanceId>/snapshot.json` of its folder, and assets in `tools/<slug>/assets/` named by content hash.
 
 #### Scenario: Create and reopen
-- **WHEN** a workspace with one tool library and one model is created, saved and opened again
-- **THEN** the tool library and the model read back equal to what was saved
+- **WHEN** a workspace with one Kit and one model is created, saved and opened again
+- **THEN** the Kit and the model read back equal to what was saved
 
 #### Scenario: Folder names never change
 - **WHEN** a model is renamed
@@ -95,10 +95,10 @@ Every stored file SHALL carry a format version, files with an older version SHAL
 - **THEN** both steps are applied in order
 
 ### Requirement: Editable model file
-A model SHALL be exportable to and importable from a `.mkmodel.json` file that refers to the tool, model type, classes, relation classes and attributes by key, and the round trip SHALL lose nothing.
+A model SHALL be exportable to and importable from a `.mkmodel.json` file that refers to the Kit, model type, classes, relation classes and attributes by key, and the round trip SHALL lose nothing.
 
 #### Scenario: Round trip
-- **WHEN** a model is exported and imported against the same tool
+- **WHEN** a model is exported and imported against the same Kit
 - **THEN** the result equals the original, apart from position keys, which keep the same order
 
 #### Scenario: Hand-written ids
@@ -106,15 +106,15 @@ A model SHALL be exportable to and importable from a `.mkmodel.json` file that r
 - **THEN** import creates element ids and rewrites the connectors' ends accordingly
 
 #### Scenario: Unknown key
-- **WHEN** a file uses a class key that the tool does not have
+- **WHEN** a file uses a class key that the Kit does not have
 - **THEN** import fails with a message naming the key and the place in the file
 
 #### Scenario: Stale attribute values
-- **WHEN** a model holds a value for an attribute id the tool no longer defines
+- **WHEN** a model holds a value for an attribute id the Kit no longer defines
 - **THEN** export writes it under its id and import keeps it
 
 ### Requirement: Assets
-Assets SHALL be stored under the tool library's `assets` folder with a name that includes a hash of the content, written once.
+Assets SHALL be stored under the Kit's `assets` folder with a name that includes a hash of the content, written once.
 
 #### Scenario: Same bytes, same name
 - **WHEN** the same bytes are added twice

@@ -9,13 +9,13 @@ import {
   type ModelTypeDef,
   type RelationDef,
   type RelationId,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 
 /**
  * What a concept can be connected to (smart modelling): for each relation class that allows the
  * concept's class at one end, the classes that may be at the other end, and the elements of the
- * model that already fit. Everything comes from the tool library and the model type, so a tool
+ * model that already fit. Everything comes from the Kit and the model type, so a Kit
  * builder's rules are the single source of truth.
  */
 
@@ -37,7 +37,7 @@ const byKey = <T extends { key: string }>(a: T, b: T) =>
   a.key < b.key ? -1 : a.key > b.key ? 1 : 0;
 
 export function suggestConnections(
-  tool: ToolLibrary,
+  kit: Kit,
   modelType: ModelTypeDef,
   model: Model,
   elementId: ElementId,
@@ -49,18 +49,18 @@ export function suggestConnections(
   const element = model.elements[elementId];
   if (!element) return [];
   const own = element.class;
-  const candidates = Object.values(tool.classes)
+  const candidates = Object.values(kit.classes)
     .filter(
       (c) =>
         !c.abstract &&
-        modelTypeAllowsClass(tool, modelType, c.id) &&
+        modelTypeAllowsClass(kit, modelType, c.id) &&
         (!onlyClasses || onlyClasses.has(c.id)),
     )
     .sort(byKey);
 
   const existingOf = (cls: ClassId): ElementId[] =>
     Object.values(model.elements)
-      .filter((e) => e.id !== elementId && isA(tool, e.class, cls))
+      .filter((e) => e.id !== elementId && isA(kit, e.class, cls))
       .map((e) => e.id);
 
   const groups = new Map<RelationId, RelationSuggestion>();
@@ -75,7 +75,7 @@ export function suggestConnections(
 
   for (const other of candidates) {
     for (const relation of allowedRelations(
-      tool,
+      kit,
       modelType,
       own,
       other.id,
@@ -86,7 +86,7 @@ export function suggestConnections(
         existing: existingOf(other.id),
       });
     for (const relation of allowedRelations(
-      tool,
+      kit,
       modelType,
       other.id,
       own,
@@ -98,10 +98,10 @@ export function suggestConnections(
 }
 
 /** "Performs: from an Actor to a Task", for hints and previews. */
-export function describeEnds(tool: ToolLibrary, relation: RelationDef): string {
+export function describeEnds(kit: Kit, relation: RelationDef): string {
   const a = (word: string) => `${/^[aeiou]/i.test(word) ? 'an' : 'a'} ${word}`;
   const names = (ids: readonly ClassId[]) => {
-    const keys = ids.map((id) => tool.classes[id]?.key ?? id);
+    const keys = ids.map((id) => kit.classes[id]?.key ?? id);
     return keys.length === 0
       ? 'anything'
       : keys.length === 1

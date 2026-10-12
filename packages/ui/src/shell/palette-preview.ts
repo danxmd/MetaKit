@@ -7,7 +7,7 @@ import {
   type AttributeDef,
   type ClassDef,
   type RelationDef,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 import { labelOf } from './palette';
 
@@ -103,13 +103,13 @@ function inheritedHelp(
 
 /** The card for a class in the palette. Attributes include the inherited ones. */
 export function previewOfClass(
-  tool: ToolLibrary,
+  kit: Kit,
   cls: ClassDef,
   language = 'en',
 ): PreviewInfo {
   let defs: AttributeDef[] = cls.attributes;
   try {
-    defs = effectiveAttributes(tool, cls.id);
+    defs = effectiveAttributes(kit, cls.id);
   } catch {
     // A broken inheritance chain is reported in Build mode; the class's own attributes will do here.
   }
@@ -125,7 +125,7 @@ export function previewOfClass(
     key: cls.key,
     help:
       helpOf(cls.help, language) ??
-      inheritedHelp(() => classChain(tool, cls.id), language),
+      inheritedHelp(() => classChain(kit, cls.id), language),
     ...attributesOf(defs, language),
     ends: null,
     sentence: null,
@@ -134,21 +134,21 @@ export function previewOfClass(
 
 /** The card for a relation class: its attributes and which classes it joins. */
 export function previewOfRelation(
-  tool: ToolLibrary,
+  kit: Kit,
   rel: RelationDef,
   language = 'en',
 ): PreviewInfo {
   let defs: AttributeDef[] = rel.attributes;
   let ends = { from: rel.from, to: rel.to };
   try {
-    defs = effectiveRelationAttributes(tool, rel.id);
-    ends = effectiveEnds(tool, rel.id);
+    defs = effectiveRelationAttributes(kit, rel.id);
+    ends = effectiveEnds(kit, rel.id);
   } catch {
     // See previewOfClass.
   }
   const names = (ids: string[]) =>
     ids.map((id) => {
-      const c = tool.classes[id as keyof typeof tool.classes];
+      const c = kit.classes[id as keyof typeof kit.classes];
       return c ? labelOf(c, language) : id;
     });
   const from = names(ends.from);
@@ -163,7 +163,7 @@ export function previewOfRelation(
     key: rel.key,
     help:
       helpOf(rel.help, language) ??
-      inheritedHelp(() => relationChain(tool, rel.id), language),
+      inheritedHelp(() => relationChain(kit, rel.id), language),
     ...attributesOf(defs, language),
     ends: { from, to },
     sentence: `${title}: from ${list(from)} to ${list(to)}`,

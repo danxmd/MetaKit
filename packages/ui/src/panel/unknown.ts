@@ -5,7 +5,7 @@ import {
   type ClassId,
   type Json,
   type RelationId,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 
 export interface UnknownAttribute {
@@ -20,23 +20,23 @@ export interface UnknownAttribute {
  * object is already shown as a placeholder.
  */
 export function unknownAttributes(
-  tool: ToolLibrary,
+  kit: Kit,
   classId: string,
   attrs: Readonly<Record<string, Json>>,
 ): UnknownAttribute[] {
   // The tables are keyed by prefixed ids; a plain string lookup is how the id arrives from a model.
-  const classes = tool.classes as Record<string, unknown>;
-  const relations = tool.relations as Record<string, unknown>;
-  const modelTypes = tool.modelTypes as Record<
+  const classes = kit.classes as Record<string, unknown>;
+  const relations = kit.relations as Record<string, unknown>;
+  const modelTypes = kit.modelTypes as Record<
     string,
     { attributes: AttributeDef[] } | undefined
   >;
   let defs: AttributeDef[] | undefined;
   try {
     if (Object.hasOwn(classes, classId))
-      defs = effectiveAttributes(tool, classId as ClassId);
+      defs = effectiveAttributes(kit, classId as ClassId);
     else if (Object.hasOwn(relations, classId))
-      defs = effectiveRelationAttributes(tool, classId as RelationId);
+      defs = effectiveRelationAttributes(kit, classId as RelationId);
     else if (Object.hasOwn(modelTypes, classId))
       defs = modelTypes[classId]!.attributes;
   } catch {

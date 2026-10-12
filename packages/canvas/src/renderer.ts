@@ -9,7 +9,12 @@ import {
   traceOutline,
   type RoutedLook,
 } from './paint';
-import type { ConnectorItem, ElementItem, Scene } from './scene';
+import {
+  aroundConnectors,
+  type ConnectorItem,
+  type ElementItem,
+  type Scene,
+} from './scene';
 import { SELECT_COLOR, STROKE, TEXT_COLOR } from './shapes';
 import { visibleRect, type View } from './view';
 
@@ -253,12 +258,15 @@ export class Renderer {
     }
     elements.sort((a, b) => a.rank - b.rank);
 
+    const { below, above } = aroundConnectors(elements);
+    let labels = this.drawElements(ctx, below, view);
+    this.setTransform(ctx, view);
     this.drawConnectors(
       ctx,
       connectors.map((c) => ({ route: this.routeOf(c), look: c.look })),
       s,
     );
-    const labels = this.drawElements(ctx, elements, view);
+    labels += this.drawElements(ctx, above, view);
     this.renderedView = { ...view };
     this.sceneCanvas.style.transform = '';
     this.stats = {
@@ -301,6 +309,9 @@ export class Renderer {
     // compiled list. Drawing order is kept by flushing the batch before a large element.
     let batch = new Map<string, ElementItem[]>();
     const flush = () => {
+      if (batch.size === 0) return;
+      // Batched outlines are in world coordinates; a large element before them moved the origin.
+      this.setTransform(ctx, view);
       ctx.lineWidth = outline;
       ctx.strokeStyle = STROKE;
       for (const [fill, items] of batch) {
@@ -386,7 +397,8 @@ export class Renderer {
     const { s } = view;
     const area = this.visible();
 
-    // Items the scene bitmap leaves out: connectors first, then elements.
+    // Items the scene bitmap leaves out, in the same order as the scene: moved containers, then
+    // connectors, then the other moved elements.
     const movedConnectors = new Set<ConnectorId>();
     for (const id of state.previews.keys())
       for (const c of this.scene.connectorsOf(id)) movedConnectors.add(c);
@@ -404,8 +416,6 @@ export class Renderer {
       const item = this.scene.connectors.get(id);
       if (item) routed.push({ route, look: item.look });
     }
-    this.drawConnectors(ctx, routed, s);
-
     const previewed: ElementItem[] = [];
     for (const [id, rect] of state.previews) {
       const item = this.scene.elements.get(id);
@@ -427,7 +437,11 @@ export class Renderer {
       });
     }
     previewed.sort((a, b) => a.rank - b.rank);
-    if (previewed.length > 0) this.drawElements(ctx, previewed, view);
+    const { below, above } = aroundConnectors(previewed);
+    if (below.length > 0) this.drawElements(ctx, below, view);
+    this.setTransform(ctx, view);
+    this.drawConnectors(ctx, routed, s);
+    if (above.length > 0) this.drawElements(ctx, above, view);
 
     // Selection outlines and handles.
     this.setTransform(ctx, view);

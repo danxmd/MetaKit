@@ -12,11 +12,11 @@ MetaKit tells you two things about teamwork. The first is the state of your own 
 
 ## What it is
 
-**Save status** is a word in the model toolbar. **Sync status** is a line beside it. **Folder health** is a box in the model list that appears when the files look wrong. All three are built from what MetaKit can see in files. MetaKit cannot see whether your sync program is running. It can only see what the files show.
+**Save status** is a word in the [[top-bar]]. **Sync status** is a line beside it. **Folder health** is a box in the model list that appears when the files look wrong. All three are built from what MetaKit can see in files. MetaKit cannot see whether your sync program is running. It can only see what the files show.
 
 ## Where to find it
 
-- In Model mode, the toolbar near the right end shows the save word and the sync line, then the people avatars (see [[instances-and-presence]]).
+- In Model mode, the top bar near the right end shows the save word and the sync line, then the people avatars (see [[instances-and-presence]]).
 - In the model list (the Models page, see [[page-models]]), the health box sits above the list of models.
 
 ## How to use it

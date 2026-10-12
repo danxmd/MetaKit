@@ -4,7 +4,7 @@ import {
   EVENT_NAMES,
   RULE_ACTION_TYPES,
 } from './rule-types';
-import type { ToolLibrary } from './types';
+import type { Kit } from './types';
 
 type Rec = Record<string, unknown>;
 
@@ -217,19 +217,16 @@ export function checkConstraints(
 }
 
 /** Checks references from rules to classes and relation classes; run only when the structure is sound. */
-export function checkRuleReferences(c: Checker, tool: ToolLibrary): void {
+export function checkRuleReferences(c: Checker, kit: Kit): void {
   const check = (
     actionsList: { action: string; [k: string]: unknown }[],
     path: string,
   ) => {
     actionsList.forEach((a, i) => {
       const p = `${path}[${i}]`;
-      if (a.action === 'createObject' && !tool.classes[a.class as never])
+      if (a.action === 'createObject' && !kit.classes[a.class as never])
         c.add(`${p}.class`, `The class ${String(a.class)} does not exist.`);
-      if (
-        a.action === 'createConnector' &&
-        !tool.relations[a.relation as never]
-      )
+      if (a.action === 'createConnector' && !kit.relations[a.relation as never])
         c.add(
           `${p}.relation`,
           `The relation class ${String(a.relation)} does not exist.`,
@@ -240,11 +237,11 @@ export function checkRuleReferences(c: Checker, tool: ToolLibrary): void {
       }
     });
   };
-  for (const r of Object.values(tool.rules ?? {})) {
+  for (const r of Object.values(kit.rules ?? {})) {
     const path = `rules.${r.id}`;
-    if (r.when.class && !tool.classes[r.when.class])
+    if (r.when.class && !kit.classes[r.when.class])
       c.add(`${path}.when.class`, `The class ${r.when.class} does not exist.`);
-    if (r.when.relation && !tool.relations[r.when.relation])
+    if (r.when.relation && !kit.relations[r.when.relation])
       c.add(
         `${path}.when.relation`,
         `The relation class ${r.when.relation} does not exist.`,

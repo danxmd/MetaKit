@@ -20,7 +20,7 @@ import type {
   Labels,
   ModelTypeDef,
   RelationDef,
-  ToolLibrary,
+  Kit,
 } from '../meta/types';
 import { checkAttributeValue, isEmptyValue } from '../meta/values';
 import {
@@ -51,49 +51,49 @@ export interface ValidationIssue {
 }
 
 function labelOf(
-  tool: ToolLibrary,
+  kit: Kit,
   labels: Labels | undefined,
   fallback: string,
 ): string {
   if (!labels) return fallback;
-  for (const lang of tool.manifest.languages)
+  for (const lang of kit.manifest.languages)
     if (labels[lang]) return labels[lang]!;
   return Object.values(labels)[0] ?? fallback;
 }
 
-const attrLabel = (tool: ToolLibrary, def: AttributeDef) =>
-  labelOf(tool, def.labels, def.key);
+const attrLabel = (kit: Kit, def: AttributeDef) =>
+  labelOf(kit, def.labels, def.key);
 
 /** "Task "Review order"": the class and, when it has one, the value of its Name attribute. */
-function describeElement(tool: ToolLibrary, el: ElementData): string {
-  const cls = tool.classes[el.class];
+function describeElement(kit: Kit, el: ElementData): string {
+  const cls = kit.classes[el.class];
   if (!cls) return `Element ${el.id}`;
-  const label = labelOf(tool, cls.labels, cls.key);
+  const label = labelOf(kit, cls.labels, cls.key);
   let name: unknown;
   try {
-    const nameAttr = effectiveAttributes(tool, el.class).find(
+    const nameAttr = effectiveAttributes(kit, el.class).find(
       (a) => a.key === 'Name',
     );
     name = nameAttr ? el.attrs[nameAttr.id] : undefined;
   } catch {
-    // A broken inheritance chain is a tool library problem; fall back to the class label.
+    // A broken inheritance chain is a Kit problem; fall back to the class label.
   }
   return typeof name === 'string' && name !== '' ? `${label} "${name}"` : label;
 }
 
-function describeConnector(tool: ToolLibrary, cn: ConnectorData): string {
-  const rel = tool.relations[cn.relation];
-  return rel ? labelOf(tool, rel.labels, rel.key) : `Connector ${cn.id}`;
+function describeConnector(kit: Kit, cn: ConnectorData): string {
+  const rel = kit.relations[cn.relation];
+  return rel ? labelOf(kit, rel.labels, rel.key) : `Connector ${cn.id}`;
 }
 
-function listLabels(tool: ToolLibrary, ids: readonly string[]): string {
+function listLabels(kit: Kit, ids: readonly string[]): string {
   return ids
     .map((id) =>
-      tool.classes[id as never]
+      kit.classes[id as never]
         ? labelOf(
-            tool,
-            tool.classes[id as never]!.labels,
-            tool.classes[id as never]!.key,
+            kit,
+            kit.classes[id as never]!.labels,
+            kit.classes[id as never]!.key,
           )
         : id,
     )
@@ -101,7 +101,7 @@ function listLabels(tool: ToolLibrary, ids: readonly string[]): string {
 }
 
 function checkValues(
-  tool: ToolLibrary,
+  kit: Kit,
   who: string,
   id: ValidationIssue['id'],
   defs: AttributeDef[],
@@ -112,7 +112,7 @@ function checkValues(
   for (const def of defs) {
     if (def.type === 'formula' || def.type === 'action') continue;
     const value = values[def.id];
-    const name = attrLabel(tool, def);
+    const name = attrLabel(kit, def);
     if (def.required && isEmptyValue(value)) {
       out.push({
         id,
@@ -150,11 +150,11 @@ function checkValues(
 /**
  * Runs the constraints and the formula attributes of one object. A constraint holds when its
  * formula is true; a formula that cannot be evaluated is reported as a warning because it says
- * nothing about the object, only about the tool library.
+ * nothing about the object, only about the Kit.
  */
 function checkFormulas(
   calc: ModelCalculator,
-  tool: ToolLibrary,
+  kit: Kit,
   who: string,
   id: ValidationIssue['id'],
   defs: AttributeDef[],
@@ -170,7 +170,7 @@ function checkFormulas(
         severity: 'warning',
         code: 'formula-error',
         attr: def.id,
-        message: `${who}: the formula of ${attrLabel(tool, def)} cannot be calculated. ${problem}`,
+        message: `${who}: the formula of ${attrLabel(kit, def)} cannot be calculated. ${problem}`,
       });
   }
   const byKey = new Map(defs.map((d) => [d.key, d]));
@@ -217,28 +217,28 @@ function safely<T>(fallback: T, run: () => T): T {
 }
 
 /**
- * Checks a model against its tool library and returns every problem found. It never changes the
+ * Checks a model against its Kit and returns every problem found. It never changes the
  * model and never blocks an edit: the application decides what to show and when.
  * Order: the model itself, then elements, then connectors, each in drawing order.
  * With a calculator it also reports violated constraints and formulas that cannot be
  * calculated; without one those checks are skipped.
  */
 export function validateModel(
-  tool: ToolLibrary,
+  kit: Kit,
   model: Model,
   calculator?: ModelCalculator,
 ): ValidationIssue[] {
   const out: ValidationIssue[] = [];
   const modelType: ModelTypeDef | undefined =
-    tool.modelTypes[model.manifest.modelType];
+    kit.modelTypes[model.manifest.modelType];
 
   // --- the model itself ---
-  if (model.manifest.tool !== tool.manifest.id) {
+  if (model.manifest.kit !== kit.manifest.id) {
     out.push({
       id: 'model',
       severity: 'warning',
-      code: 'tool-mismatch',
-      message: `This model was made with the tool ${model.manifest.tool}, but it is being checked against ${tool.manifest.id}.`,
+      code: 'kit-mismatch',
+      message: `This model was made with the Kit ${model.manifest.kit}, but it is being checked against ${kit.manifest.id}.`,
     });
   }
   if (!modelType) {
@@ -246,11 +246,11 @@ export function validateModel(
       id: 'model',
       severity: 'error',
       code: 'unknown-model-type',
-      message: `The model type ${model.manifest.modelType} does not exist in the tool library, so the model cannot be checked against its rules.`,
+      message: `The model type ${model.manifest.modelType} does not exist in the Kit, so the model cannot be checked against its rules.`,
     });
   } else {
     checkValues(
-      tool,
+      kit,
       `Model "${model.manifest.name}"`,
       'model',
       modelType.attributes,
@@ -261,7 +261,7 @@ export function validateModel(
     if (calculator)
       checkFormulas(
         calculator,
-        tool,
+        kit,
         `Model "${model.manifest.name}"`,
         'model',
         modelType.attributes,
@@ -278,10 +278,10 @@ export function validateModel(
     for (const card of modelType.cardinalities) {
       if (card.kind !== 'count') continue;
       const count = elements.filter((e) =>
-        isA(tool, e.class, card.class),
+        isA(kit, e.class, card.class),
       ).length;
-      const cls = tool.classes[card.class];
-      const name = cls ? labelOf(tool, cls.labels, cls.key) : card.class;
+      const cls = kit.classes[card.class];
+      const name = cls ? labelOf(kit, cls.labels, cls.key) : card.class;
       if (card.min !== undefined && count < card.min) {
         out.push({
           id: 'model',
@@ -303,13 +303,13 @@ export function validateModel(
 
   // --- elements ---
   for (const el of elements) {
-    const cls: ClassDef | undefined = tool.classes[el.class];
+    const cls: ClassDef | undefined = kit.classes[el.class];
     if (el.parent && !model.elements[el.parent]) {
       out.push({
         id: el.id,
         severity: 'error',
         code: 'dangling-parent',
-        message: `${describeElement(tool, el)} sits in the container ${el.parent}, which is not in the model.`,
+        message: `${describeElement(kit, el)} sits in the container ${el.parent}, which is not in the model.`,
       });
     }
     if (el.parent && parentChainLoops(model, el.id)) {
@@ -317,28 +317,28 @@ export function validateModel(
         id: el.id,
         severity: 'error',
         code: 'parent-loop',
-        message: `${describeElement(tool, el)} is inside itself: following its containers leads back to it.`,
+        message: `${describeElement(kit, el)} is inside itself: following its containers leads back to it.`,
       });
     }
     const parentEl = el.parent ? model.elements[el.parent] : undefined;
-    if (parentEl && tool.classes[parentEl.class]) {
-      if (!isContainerClass(tool, parentEl.class)) {
+    if (parentEl && kit.classes[parentEl.class]) {
+      if (!isContainerClass(kit, parentEl.class)) {
         out.push({
           id: el.id,
           severity: 'warning',
           code: 'parent-not-container',
-          message: `${describeElement(tool, el)} sits in ${describeElement(tool, parentEl)}, which is not a container or swimlane.`,
+          message: `${describeElement(kit, el)} sits in ${describeElement(kit, parentEl)}, which is not a container or swimlane.`,
         });
       } else if (
         modelType &&
         cls &&
-        !containerAccepts(tool, modelType.id, parentEl.class, el.class)
+        !containerAccepts(kit, modelType.id, parentEl.class, el.class)
       ) {
         out.push({
           id: el.id,
           severity: 'warning',
           code: 'parent-not-accepted',
-          message: `${describeElement(tool, el)} sits in ${describeElement(tool, parentEl)}, which does not accept ${labelOf(tool, cls.labels, cls.key)} elements.`,
+          message: `${describeElement(kit, el)} sits in ${describeElement(kit, parentEl)}, which does not accept ${labelOf(kit, cls.labels, cls.key)} elements.`,
         });
       }
     }
@@ -347,11 +347,11 @@ export function validateModel(
         id: el.id,
         severity: 'info',
         code: 'unknown-class',
-        message: `Element ${el.id} uses the class ${el.class}, which the tool library no longer has. It is kept and shown as a placeholder.`,
+        message: `Element ${el.id} uses the class ${el.class}, which the Kit no longer has. It is kept and shown as a placeholder.`,
       });
       continue;
     }
-    const who = describeElement(tool, el);
+    const who = describeElement(kit, el);
     if (cls.abstract) {
       out.push({
         id: el.id,
@@ -360,19 +360,19 @@ export function validateModel(
         message: `${who} is of an abstract class and should be one of its subclasses.`,
       });
     }
-    if (modelType && !modelTypeAllowsClass(tool, modelType, el.class)) {
+    if (modelType && !modelTypeAllowsClass(kit, modelType, el.class)) {
       out.push({
         id: el.id,
         severity: 'warning',
         code: 'class-not-in-model-type',
-        message: `${who}: the class ${labelOf(tool, cls.labels, cls.key)} is not allowed in the model type ${labelOf(tool, modelType.labels, modelType.key)}.`,
+        message: `${who}: the class ${labelOf(kit, cls.labels, cls.key)} is not allowed in the model type ${labelOf(kit, modelType.labels, modelType.key)}.`,
       });
     }
     checkValues(
-      tool,
+      kit,
       who,
       el.id,
-      safely([], () => effectiveAttributes(tool, el.class)),
+      safely([], () => effectiveAttributes(kit, el.class)),
       el.attrs,
       out,
       'its class',
@@ -380,28 +380,25 @@ export function validateModel(
     if (calculator)
       checkFormulas(
         calculator,
-        tool,
+        kit,
         who,
         el.id,
-        safely([], () => effectiveAttributes(tool, el.class)),
-        safely([] as ClassDef[], () => classChain(tool, el.class)).flatMap(
+        safely([], () => effectiveAttributes(kit, el.class)),
+        safely([] as ClassDef[], () => classChain(kit, el.class)).flatMap(
           (c) => c.constraints ?? [],
         ),
         out,
       );
     if (modelType) {
       for (const card of modelType.cardinalities) {
-        if (card.kind !== 'degree' || !isA(tool, el.class, card.class))
-          continue;
+        if (card.kind !== 'degree' || !isA(kit, el.class, card.class)) continue;
         const degree = connectors.filter(
           (cn) =>
-            relationIsA(tool, cn.relation, card.relation) &&
+            relationIsA(kit, cn.relation, card.relation) &&
             (card.end === 'from' ? cn.from === el.id : cn.to === el.id),
         ).length;
-        const rel = tool.relations[card.relation];
-        const relName = rel
-          ? labelOf(tool, rel.labels, rel.key)
-          : card.relation;
+        const rel = kit.relations[card.relation];
+        const relName = rel ? labelOf(kit, rel.labels, rel.key) : card.relation;
         const side = card.end === 'from' ? 'leaving' : 'entering';
         if (card.min !== undefined && degree < card.min) {
           out.push({
@@ -425,8 +422,8 @@ export function validateModel(
 
   // --- connectors ---
   for (const cn of connectors) {
-    const rel: RelationDef | undefined = tool.relations[cn.relation];
-    const who = describeConnector(tool, cn);
+    const rel: RelationDef | undefined = kit.relations[cn.relation];
+    const who = describeConnector(kit, cn);
     const ends = { from: model.elements[cn.from], to: model.elements[cn.to] };
     for (const end of ['from', 'to'] as const) {
       if (!ends[end]) {
@@ -443,7 +440,7 @@ export function validateModel(
         id: cn.id,
         severity: 'info',
         code: 'unknown-relation',
-        message: `Connector ${cn.id} uses the relation class ${cn.relation}, which the tool library no longer has. It is kept.`,
+        message: `Connector ${cn.id} uses the relation class ${cn.relation}, which the Kit no longer has. It is kept.`,
       });
       continue;
     }
@@ -455,35 +452,35 @@ export function validateModel(
         message: `${who} is of an abstract relation class and should be one of its subclasses.`,
       });
     }
-    if (modelType && !modelTypeAllowsRelation(tool, modelType, cn.relation)) {
+    if (modelType && !modelTypeAllowsRelation(kit, modelType, cn.relation)) {
       out.push({
         id: cn.id,
         severity: 'warning',
         code: 'relation-not-in-model-type',
-        message: `${who} is not allowed in the model type ${labelOf(tool, modelType.labels, modelType.key)}.`,
+        message: `${who} is not allowed in the model type ${labelOf(kit, modelType.labels, modelType.key)}.`,
       });
     }
     for (const end of ['from', 'to'] as const) {
       const el = ends[end];
-      if (!el || !tool.classes[el.class]) continue;
-      if (!safely(true, () => allowsEnd(tool, cn.relation, end, el.class))) {
+      if (!el || !kit.classes[el.class]) continue;
+      if (!safely(true, () => allowsEnd(kit, cn.relation, end, el.class))) {
         const allowed = safely(
           { from: [] as string[], to: [] as string[] },
-          () => effectiveEnds(tool, cn.relation),
+          () => effectiveEnds(kit, cn.relation),
         )[end];
         out.push({
           id: cn.id,
           severity: 'warning',
           code: `${end}-not-allowed`,
-          message: `${who}: ${describeElement(tool, el)} cannot be at the ${end === 'from' ? 'start' : 'end'} of a ${labelOf(tool, rel.labels, rel.key)}. Allowed: ${listLabels(tool, allowed)}.`,
+          message: `${who}: ${describeElement(kit, el)} cannot be at the ${end === 'from' ? 'start' : 'end'} of a ${labelOf(kit, rel.labels, rel.key)}. Allowed: ${listLabels(kit, allowed)}.`,
         });
       }
     }
     checkValues(
-      tool,
+      kit,
       who,
       cn.id,
-      safely([], () => effectiveRelationAttributes(tool, cn.relation)),
+      safely([], () => effectiveRelationAttributes(kit, cn.relation)),
       cn.attrs,
       out,
       'its relation class',
@@ -491,12 +488,12 @@ export function validateModel(
     if (calculator)
       checkFormulas(
         calculator,
-        tool,
+        kit,
         who,
         cn.id,
-        safely([], () => effectiveRelationAttributes(tool, cn.relation)),
+        safely([], () => effectiveRelationAttributes(kit, cn.relation)),
         safely([] as RelationDef[], () =>
-          relationChain(tool, cn.relation),
+          relationChain(kit, cn.relation),
         ).flatMap((r) => r.constraints ?? []),
         out,
       );

@@ -6,7 +6,7 @@
 
 **Left to right:**
 1. brand
-2. breadcrumb (`nav aria-label="Location"`): workspace name ▸ Models / Tool libraries ▸ document name
+2. breadcrumb (`nav aria-label="Location"`): workspace name ▸ Models / Kits ▸ document name
 3. Model | Build switch (`aria-label="Mode"`, which matches the docs)
 4. spacer
 5. document status slot: save or sync status and people. `ModelView` and `BuildView` fill it through a Svelte snippet passed up via a small context, so the top bar does not import model code.
@@ -44,13 +44,13 @@ The crumbs carry new test ids: `crumb-workspace`, `crumb-area`, `crumb-document`
 - Uses the native `<dialog>` with a title, a message and buttons for cancel and the action. The action button can be marked `danger`.
 - `confirmAction({ title, message, action, danger })` returns a promise.
 - Used where undo cannot help, or where the person should choose first. Today that is one place: turning a simple look into a drawing. It can be undone, but the person loses the simple controls.
-- Deleting a model or a tool library moves it to the trash, so it happens at once too, and the toast's Undo restores it from the trash.
+- Deleting a model or a Kit moves it to the trash, so it happens at once too, and the toast's Undo restores it from the trash.
 
 **Undo toast**
 - `shell/toast.ts` holds a one-message store with an optional action. The model view's existing `message` toast and BuildView's `build-message` both render from it.
-- Deleting a class, relation class, model type, shape, rule, script or attribute calls the tool command, then shows "Deleted <kind> <label>" with **Undo**.
+- Deleting a class, relation class, model type, shape, rule, script or attribute calls the Kit command, then shows "Deleted <kind> <label>" with **Undo**.
 - The inline confirms in AttributeList and RulesSection are removed. `attr-confirm-delete` is dropped from the panels e2e test.
-- The offer is withdrawn on the next local change to the tool library (`offerUndo` in `shell/feedback.ts`), so Undo can never revert a different step than the one the toast names.
+- The offer is withdrawn on the next local change to the Kit (`offerUndo` in `shell/feedback.ts`), so Undo can never revert a different step than the one the toast names.
 - Not in scope: the `confirm` and `choose` that rules and scripts call (`BehaviourHost`) stay on the browser's dialogs, because the script API answers them synchronously.
 
 ## Build layout
@@ -98,9 +98,9 @@ Attributes keep expanding in place inside the class editor, because they are par
 ## Documentation
 
 These topics are updated in the same PR as the change they describe:
-- **pages:** top-bar, settings-menu, docs-help, page-models, page-tool-libraries
+- **pages:** top-bar, settings-menu, docs-help, page-models, page-kits
 - **model:** page-model-view, model-toolbar, menu-view, palette, status-and-messages, keyboard-shortcuts
-- **build:** page-build-view, build-navigation, try-it-preview, shapes-section, tool-settings
+- **build:** page-build-view, build-navigation, try-it-preview, shapes-section, kit-settings
 - **behaviour:** rules, scripts
 - **start:** quick-tour, concepts-modes
 

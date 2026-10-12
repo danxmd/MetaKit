@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { toBytes, type StorageAdapter } from './adapter';
 import { checkFolderHealth } from './health';
 import { MemoryAdapter } from './memory';
+import { PresenceService } from '@metakit-app/sync';
 
 function folder() {
   const a = new MemoryAdapter('aaaa0001');
@@ -32,19 +33,19 @@ describe('checkFolderHealth', () => {
   it('finds nothing wrong in a healthy folder', async () => {
     const a = folder();
     a.plant('workspace.json', '{}\n');
-    a.plant('models/m/_state/aaaa0001/snapshot.json', '{}\n');
+    a.plant('models/m/_state/bbbb0002/snapshot.json', '{}\n');
     a.plant('models/m/_state/aaaa0001/000001.jsonl', '{}\n');
     expect(await checkFolderHealth(a, options({ t: 0 }))).toEqual([]);
   });
 
   it('warns that the folder may be online only when reads are slow, and says what to do', async () => {
     const a = folder();
-    a.plant('models/m/_state/aaaa0001/snapshot.json', '{}\n');
+    a.plant('models/m/_state/bbbb0002/snapshot.json', '{}\n');
     const clock = { t: 0 };
     const findings = await checkFolderHealth(
       slowOn(
         a,
-        new Set(['models/m/_state/aaaa0001/snapshot.json']),
+        new Set(['models/m/_state/bbbb0002/snapshot.json']),
         clock,
         3500,
       ),
@@ -71,8 +72,8 @@ describe('checkFolderHealth', () => {
 
   it('reports empty and unreadable files', async () => {
     const a = folder();
-    a.plant('models/m/_state/aaaa0001/000001.jsonl', '');
-    a.plant('models/m/_state/aaaa0001/000002.jsonl', '{}\n');
+    a.plant('models/m/_state/bbbb0002/000001.jsonl', '');
+    a.plant('models/m/_state/bbbb0002/000002.jsonl', '{}\n');
     const broken = Object.assign(Object.create(a) as StorageAdapter, {
       read: async (path: string) => {
         if (path.endsWith('000002.jsonl'))
@@ -92,7 +93,7 @@ describe('checkFolderHealth', () => {
 
   it('calls a file incomplete only when it stayed without its final newline for a while', async () => {
     const a = folder();
-    a.plant('models/m/_state/aaaa0001/000001.jsonl', '{"half":');
+    a.plant('models/m/_state/bbbb0002/000001.jsonl', '{"half":');
     // Planted files have a small modified time, far in the past of `now`.
     const findings = await checkFolderHealth(a, options({ t: 0 }));
     expect(findings.map((f) => f.kind)).toEqual(['incomplete-file']);
@@ -102,5 +103,46 @@ describe('checkFolderHealth', () => {
     });
     expect(fresh).toEqual([]);
     expect(toBytes('\n')).toHaveLength(1);
+  });
+
+  it("never reports this instance's own files or presence files as a problem", async () => {
+    const a = folder();
+    // Being written right now by this instance: a new file is empty until its content is swapped in.
+    a.plant('_presence/aaaa0001.json', '');
+    a.plant('models/m/_state/aaaa0001/000001.jsonl', '');
+    a.plant('models/m/_state/aaaa0001/000002.jsonl', '{"half":');
+    // Another instance's presence file caught between two refreshes.
+    a.plant('_presence/bbbb0002.json', '');
+    // The same in another instance's area is a real sign of trouble.
+    a.plant('models/m/_state/bbbb0002/000001.jsonl', '');
+    const findings = await checkFolderHealth(a, options({ t: 0 }));
+    expect(findings.map((f) => [f.kind, f.path])).toEqual([
+      ['empty-file', 'models/m/_state/bbbb0002/000001.jsonl'],
+    ]);
+  });
+
+  it('finds nothing while a new workspace writes its first presence file', async () => {
+    const a = folder();
+    a.plant('workspace.json', '{}\n');
+    // Like the browser's folder access: the file exists, empty, before its content arrives.
+    const pending: (() => void)[] = [];
+    const writing = Object.assign(Object.create(a) as StorageAdapter, {
+      overwrite: async (path: string, data: Uint8Array) => {
+        a.plant(path, '');
+        await new Promise<void>((done) => pending.push(done));
+        await a.overwrite(path, data);
+      },
+    });
+    const presence = new PresenceService({
+      adapter: writing,
+      profile: { name: 'Anna', colour: '#e8590c' },
+    });
+    presence.start();
+    await expect.poll(() => pending.length).toBe(1);
+    expect(await a.exists('_presence/aaaa0001.json')).toBe(true);
+    // The check runs while the presence file is still empty, as when a workspace has just opened.
+    expect(await checkFolderHealth(writing, options({ t: 0 }))).toEqual([]);
+    pending[0]!();
+    await presence.stop();
   });
 });

@@ -64,6 +64,8 @@
   import HintLine from './HintLine.svelte';
   import SuggestionCard from './SuggestionCard.svelte';
   import ModelToolbar from './ModelToolbar.svelte';
+  import DocumentStatus from './DocumentStatus.svelte';
+  import { useDocumentBar } from '../shell/document-bar';
   import PaletteList from './Palette.svelte';
 
   let {
@@ -71,25 +73,23 @@
     controller,
     references,
     registerOpenElement,
-    onBack,
   }: {
     app: AppState;
     controller: ControllerPort;
     references: ReferenceServices;
     /** Lets the app select an element after switching to this model (from a reference "Open"). */
     registerOpenElement: (fn: (id: ElementId) => void) => void;
-    onBack: () => void;
   } = $props();
 
   // The app mounts one ModelView per open model (keyed by its folder), so these never change.
   // svelte-ignore state_referenced_locally
   const { store, slug, behaviour } = app.open!;
   // svelte-ignore state_referenced_locally
-  const firstTool = app.open!.tool;
-  // The tool library follows changes made in Build mode, here or by anyone in the folder.
-  const tool = $derived(app.open?.tool ?? firstTool);
+  const firstKit = app.open!.kit;
+  // The Kit follows changes made in Build mode, here or by anyone in the folder.
+  const kit = $derived(app.open?.kit ?? firstKit);
   const modelType = $derived(
-    tool.modelTypes[(store.state as Model).manifest.modelType]!,
+    kit.modelTypes[(store.state as Model).manifest.modelType]!,
   );
 
   let host: HTMLDivElement;
@@ -141,7 +141,7 @@
     return store.state as Model;
   });
   const palette = $derived(
-    paletteFor(tool, modelType, (viewId || null) as ViewId | null),
+    paletteFor(kit, modelType, (viewId || null) as ViewId | null),
   );
   const targets = $derived.by(() => {
     const ids: (ElementId | ConnectorId)[] =
@@ -154,14 +154,9 @@
   });
   const calculator = behaviour.calculator;
   const sections = $derived(
-    buildPanel(
-      tool,
-      model,
-      targets,
-      issues,
-      tool.manifest.languages[0] ?? 'en',
-      { calculator },
-    ),
+    buildPanel(kit, model, targets, issues, kit.manifest.languages[0] ?? 'en', {
+      calculator,
+    }),
   );
   const panelMessages = $derived(
     objectMessages(
@@ -169,14 +164,14 @@
       targets.map((t) => t.id),
     ),
   );
-  // The tool's panel layout for the selection, when it has one; conditions follow the values.
+  // The Kit's panel layout for the selection, when it has one; conditions follow the values.
   const layoutPanel = $derived(
     buildLayoutPanelFor(
-      tool,
+      kit,
       model,
       targets,
       issues,
-      tool.manifest.languages[0] ?? 'en',
+      kit.manifest.languages[0] ?? 'en',
       { calculator },
     ),
   );
@@ -185,10 +180,10 @@
     if (targets.length !== 1) return [];
     const id = targets[0]!.id;
     const element = model.elements[id as ElementId];
-    if (element) return unknownAttributes(tool, element.class, element.attrs);
+    if (element) return unknownAttributes(kit, element.class, element.attrs);
     const connector = model.connectors[id as ConnectorId];
     return connector
-      ? unknownAttributes(tool, connector.relation, connector.attrs)
+      ? unknownAttributes(kit, connector.relation, connector.attrs)
       : [];
   });
   function removeUnknown(entry: UnknownAttribute) {
@@ -205,11 +200,11 @@
     const id = targets[0]!.id;
     const element = model.elements[id as ElementId];
     if (element) {
-      const cls = tool.classes[element.class];
+      const cls = kit.classes[element.class];
       return cls ? labelOf(cls) : 'Object';
     }
     const connector = model.connectors[id as ConnectorId];
-    const rel = connector && tool.relations[connector.relation];
+    const rel = connector && kit.relations[connector.relation];
     return rel ? labelOf(rel) : 'Connection';
   });
 
@@ -240,14 +235,14 @@
     if (ready) view.setActive({ remote });
   });
 
-  // The tool library the canvas was built with; it is rebuilt only when this one is replaced.
-  let appliedTool = firstTool;
+  // The Kit the canvas was built with; it is rebuilt only when this one is replaced.
+  let appliedKit = firstKit;
   $effect(() => {
-    const next = tool;
-    if (!ready || next === appliedTool) return;
-    appliedTool = next;
-    scene.setTool(next);
-    editor.useToolLibrary(next);
+    const next = kit;
+    if (!ready || next === appliedKit) return;
+    appliedKit = next;
+    scene.setKit(next);
+    editor.useKit(next);
     view.setGrid(next.settings.grid);
     scheduleValidation();
   });
@@ -269,6 +264,21 @@
     }
     return 'Saved';
   });
+
+  const saveText = $derived(
+    app.save === 'saved'
+      ? 'Saved'
+      : app.save === 'saving'
+        ? 'Saving…'
+        : 'Not saved',
+  );
+
+  // The name and the status go into the top bar; only a new name updates the crumbs.
+  const showDocumentBar = useDocumentBar();
+  const documentName = $derived(model.manifest.name);
+  $effect(() =>
+    showDocumentBar({ name: documentName, status: documentStatus }),
+  );
 
   /** Switching the palette view is an event: rules may cancel it, and hear when it happened. */
   function changeView(select: HTMLSelectElement) {
@@ -338,30 +348,30 @@
     const t = activeTool;
     let state: HintState;
     if (t.type === 'place') {
-      const cls = tool.classes[t.class];
+      const cls = kit.classes[t.class];
       state = cls
         ? { kind: 'place', class: cls }
         : { kind: 'idle', selected: 0 };
     } else if (t.type === 'connect') {
-      const relation = t.relation ? tool.relations[t.relation] : undefined;
+      const relation = t.relation ? kit.relations[t.relation] : undefined;
       if (!relation)
         return 'Choose a relation in the palette, then click the concept it should start at.';
       state = { kind: 'connect', relation, picked: false };
     } else if (paletteHover && 'relation' in paletteHover) {
-      const relation = tool.relations[paletteHover.relation];
+      const relation = kit.relations[paletteHover.relation];
       state = relation
         ? { kind: 'palette-relation', relation }
         : { kind: 'idle', selected: 0 };
     } else if (paletteHover) {
-      const cls = tool.classes[paletteHover.class];
+      const cls = kit.classes[paletteHover.class];
       state = cls
         ? { kind: 'palette-class', class: cls }
         : { kind: 'idle', selected: 0 };
     } else if (connectorHover && model.connectors[connectorHover]) {
       const c = model.connectors[connectorHover]!;
-      const relation = tool.relations[c.relation];
+      const relation = kit.relations[c.relation];
       const name = (id: ElementId) =>
-        tool.classes[model.elements[id]?.class as ClassId]?.key ?? '?';
+        kit.classes[model.elements[id]?.class as ClassId]?.key ?? '?';
       state = relation
         ? { kind: 'connector', relation, from: name(c.from), to: name(c.to) }
         : { kind: 'idle', selected: 0 };
@@ -371,7 +381,7 @@
         selected: selection.elements.size + selection.connectors.size,
       };
     }
-    return hintFor(tool, state);
+    return hintFor(kit, state);
   });
 
   /** The name a concept shows: its label attribute when it has one, else the class name. */
@@ -382,7 +392,7 @@
     const value = attr ? element.attrs[attr as never] : undefined;
     return typeof value === 'string' && value !== ''
       ? value
-      : (tool.classes[element.class]?.key ?? 'concept');
+      : (kit.classes[element.class]?.key ?? 'concept');
   }
 
   // Smart modelling: hovering a concept lists what it can be connected to.
@@ -413,7 +423,7 @@
     const element = (store.state as Model).elements[id];
     if (!element || !modelType) return;
     const groups = suggestConnections(
-      tool,
+      kit,
       modelType,
       store.state as Model,
       id,
@@ -476,7 +486,7 @@
     const from = suggest?.id;
     if (!from) return;
     const model0 = store.state as Model;
-    const shape = cls.shape ? tool.shapes[cls.shape as never] : undefined;
+    const shape = cls.shape ? kit.shapes[cls.shape as never] : undefined;
     const size =
       shape?.kind === 'node'
         ? { w: shape.size.width, h: shape.size.height }
@@ -607,7 +617,7 @@
   function scheduleValidation() {
     clearTimeout(validateTimer);
     validateTimer = setTimeout(() => {
-      issues = validateModel(tool, store.state as Model, calculator);
+      issues = validateModel(kit, store.state as Model, calculator);
     }, 200);
   }
 
@@ -621,12 +631,12 @@
       () => undefined,
     );
     stopCommands = behaviour.commands.onChange(() => (commandTick += 1));
-    scene = new Scene(store.state as Model, tool, { calculator });
+    scene = new Scene(store.state as Model, kit, { calculator });
     stopStore = scene.attach(store);
-    view = new CanvasView(host, scene, { grid: tool.settings.grid });
+    view = new CanvasView(host, scene, { grid: kit.settings.grid });
     editor = new Editor({
       store,
-      tool,
+      kit,
       view,
       allowedRelations: () => palette.relationIds,
       host: {
@@ -733,7 +743,7 @@
     }
   }
 
-  // Palette and tools --------------------------------------------------------------------------
+  // Palette and Kits --------------------------------------------------------------------------
 
   const choosePlace = (cls: ClassId) =>
     editor.setTool({ type: 'place', class: cls });
@@ -756,14 +766,16 @@
   // Find ---------------------------------------------------------------------------------------
 
   function runFind() {
-    hits = findInModel(tool, store.state as Model, query);
+    hits = findInModel(kit, store.state as Model, query);
   }
 
   function pick(hit: FindHit) {
     if (hit.kind === 'element') editor.select([hit.id as ElementId]);
     else editor.select([], [hit.id as ConnectorId]);
     centreOn(hit.id);
+    // The search is done: clear it, or the box would say "Nothing found." under the find field.
     hits = [];
+    query = '';
   }
 
   // Panel edits --------------------------------------------------------------------------------
@@ -857,30 +869,30 @@
   onclick={() => (contextMenu = null)}
 />
 
+{#snippet documentStatus()}
+  <DocumentStatus
+    {saveText}
+    saveBad={app.save === 'error'}
+    syncText={statusText}
+    me={{
+      instance: app.me.instance,
+      name: app.me.name,
+      colour: app.me.colour,
+      initials: initials(app.me.name),
+    }}
+    people={here.map((p) => ({
+      instance: p.instance,
+      name: p.name,
+      colour: p.colour,
+      initials: initials(p.name),
+    }))}
+    tour="model"
+  />
+{/snippet}
+
 <div class="workbench" data-testid="model-view">
   <div class="bar">
     <ModelToolbar
-      name={model.manifest.name}
-      saveText={app.save === 'saved'
-        ? 'Saved'
-        : app.save === 'saving'
-          ? 'Saving…'
-          : 'Not saved'}
-      saveBad={app.save === 'error'}
-      syncText={statusText}
-      me={{
-        instance: app.me.instance,
-        name: app.me.name,
-        colour: app.me.colour,
-        initials: initials(app.me.name),
-      }}
-      people={here.map((p) => ({
-        instance: p.instance,
-        name: p.name,
-        colour: p.colour,
-        initials: initials(p.name),
-      }))}
-      {onBack}
       {canUndo}
       {canRedo}
       onUndo={() => editor.undo()}
@@ -897,9 +909,6 @@
       onDistribute={(axis) => editor.distribute(axis)}
       onAutoLayout={autoLayout}
       onExport={() => (exportOpen = true)}
-      views={palette.views.map((v) => ({ id: v.id, label: labelOf(v) }))}
-      {viewId}
-      onViewChange={changeView}
       {minimapOn}
       onToggleMinimap={toggleMinimap}
       {assist}
@@ -915,7 +924,7 @@
       onRunCommand={runCommand}
     >
       {#snippet trailing()}
-        <div class="find">
+        <div class="find" data-tour="model-find">
           <input
             bind:this={findInput}
             type="search"
@@ -951,9 +960,9 @@
     </ModelToolbar>
   </div>
 
-  <div class="palette-slot">
+  <div class="palette-slot" data-tour="model-palette">
     <PaletteList
-      {tool}
+      {kit}
       {palette}
       {activeTool}
       onSelect={chooseSelect}
@@ -961,6 +970,8 @@
       onConnect={chooseConnect}
       onDragClass={dragStart}
       onHover={(target) => (paletteHover = target)}
+      {viewId}
+      onViewChange={changeView}
     />
   </div>
 
@@ -978,6 +989,7 @@
       role="application"
       aria-label="Model canvas"
       data-testid="canvas-host"
+      data-tour="model-canvas"
     >
       <div class="minimap" bind:this={mapHost} hidden={!minimapOn}></div>
       <HintLine text={hintText} />
@@ -986,7 +998,7 @@
         {#if el}
           <SuggestionCard
             name={labelOfElement(suggest.id)}
-            className={tool.classes[el.class]?.key ?? ''}
+            className={kit.classes[el.class]?.key ?? ''}
             groups={suggest.groups}
             left={suggest.left}
             top={suggest.top}
@@ -1132,7 +1144,7 @@
               onclick={() => (problemsOpen = false)}
               aria-label="Close the problems list">×</button
             >
-            <ValidationList {issues} {model} {tool} onSelect={showIssue} />
+            <ValidationList {issues} {model} {kit} onSelect={showIssue} />
           </aside>
         {/if}
       </div>
@@ -1149,7 +1161,7 @@
     />
   {/if}
 
-  <div class="side">
+  <div class="side" data-tour="model-attributes">
     <AttributePanel
       {sections}
       count={targets.length}

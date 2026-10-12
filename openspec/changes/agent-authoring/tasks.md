@@ -4,19 +4,19 @@ Starts after `ai-data-catalog` PRs 1 and 2 (copy and catalog).
 
 ## 1. PR 1: operations and plans (`feat/authoring-operations`)
 
-- [ ] 1.1 `packages/authoring`: session with working copies, diff, the read and tool-library operations, JSON schemas.
+- [ ] 1.1 `packages/authoring`: session with working copies, diff, the read and Kit operations, JSON schemas.
 - [ ] 1.2 Model operations, refs, auto-layout.
 - [ ] 1.3 Plans: format, `runPlan`, errors by step.
-- [ ] 1.4 Tests: each operation; plans that build the three new built-in tools and a model for each.
-- [ ] 1.5 ADR 0011.
+- [ ] 1.4 Tests: each operation; plans that build the three new built-in Kits and a model for each.
+- [ ] 1.5 ADR 0012.
 
-## 2. PR 2: built-in agent for tool libraries (`feat/agent-tools`)
+## 2. PR 2: built-in agent for Kits (`feat/agent-tools`)
 
 - [ ] 2.1 `runAgent` tool-use loop with limits and Stop; prompts.
 - [ ] 2.2 `AgentPanel`: goal, progress, review with Try it, Accept, Discard, Keep going.
-- [ ] 2.3 Entry points: Tool libraries page (scratch or extend) and Build mode.
+- [ ] 2.3 Entry points: Kits page (scratch or extend) and Build mode.
 - [ ] 2.4 Tests with a scripted fake provider; e2e with the test seam's provider.
-- [ ] 2.5 Docs: build a tool library with the assistant; assistant overview.
+- [ ] 2.5 Docs: build a Kit with the assistant; assistant overview.
 
 ## 3. PR 3: built-in agent for models (`feat/agent-models`)
 
@@ -28,7 +28,7 @@ Starts after `ai-data-catalog` PRs 1 and 2 (copy and catalog).
 ## 4. PR 4: paste route (`feat/agent-paste`)
 
 - [ ] 4.1 Brief builder and plan extraction, with tests.
-- [ ] 4.2 `OutsideAiDialog` in the Tool libraries page, Build mode and Model mode; shared review.
+- [ ] 4.2 `OutsideAiDialog` in the Kits page, Build mode and Model mode; shared review.
 - [ ] 4.3 e2e: paste a plan, review, accept, undo.
 - [ ] 4.4 Docs: working with Claude or ChatGPT from outside (paste part); the plan format.
 

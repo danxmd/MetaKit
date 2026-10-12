@@ -4,7 +4,13 @@ export interface ParsedArgs {
 }
 
 /** Flags that take a value; anything else starting with `--` is a switch. */
-const WITH_VALUE = new Set(['tool', 'workspace', 'out', 'format', 'name']);
+const WITH_VALUE = new Set(['kit', 'workspace', 'out', 'format', 'name']);
+
+/** The flag names from before the Kit rename, which keep working. */
+export const FLAG_ALIASES: Readonly<Record<string, string>> = {
+  tool: 'kit',
+  'no-tool': 'no-kit',
+};
 
 export class UsageError extends Error {}
 
@@ -21,18 +27,19 @@ export function parseArgs(args: string[]): ParsedArgs {
       positionals.push(arg);
       continue;
     }
-    const [name, inline] = arg.slice(2).split(/=(.*)/s, 2) as [
+    const [given, inline] = arg.slice(2).split(/=(.*)/s, 2) as [
       string,
       string | undefined,
     ];
+    const name = FLAG_ALIASES[given] ?? given;
     if (WITH_VALUE.has(name)) {
       const value = inline ?? args[++i];
       if (value === undefined || value.startsWith('--'))
-        throw new UsageError(`--${name} needs a value.`);
+        throw new UsageError(`--${given} needs a value.`);
       flags.set(name, value);
     } else {
       if (inline !== undefined)
-        throw new UsageError(`--${name} does not take a value.`);
+        throw new UsageError(`--${given} does not take a value.`);
       flags.set(name, true);
     }
   }

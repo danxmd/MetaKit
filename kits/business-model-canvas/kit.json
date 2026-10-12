@@ -1,0 +1,626 @@
+{
+  "formatVersion": 7,
+  "manifest": {
+    "id": "kit_bmcanvas",
+    "name": "Business model canvas",
+    "version": "1.0.0",
+    "languages": ["en"]
+  },
+  "settings": {
+    "grid": {
+      "size": 10,
+      "snap": true,
+      "visible": true
+    },
+    "layers": [],
+    "numbering": {
+      "enabled": false,
+      "prefix": "",
+      "start": 1
+    }
+  },
+  "classes": {
+    "cls_canvasblock": {
+      "id": "cls_canvasblock",
+      "key": "CanvasBlock",
+      "kind": "container",
+      "labels": {
+        "en": "Canvas block"
+      },
+      "help": {
+        "en": "One of the nine blocks of the canvas, such as Value propositions. Place its items inside it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Canvas block",
+          "id": "att_canvasblock_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Block",
+          "options": [
+            "Key partners",
+            "Key activities",
+            "Key resources",
+            "Value propositions",
+            "Customer relationships",
+            "Channels",
+            "Customer segments",
+            "Cost structure",
+            "Revenue streams"
+          ],
+          "required": true,
+          "id": "att_canvasblock_block",
+          "labels": {
+            "en": "Block"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Question",
+          "formula": "Block == 'Key partners' ? 'Who helps us, and what do they bring?' : (Block == 'Key activities' ? 'What must we do well to deliver the value?' : (Block == 'Key resources' ? 'What do we need to have to deliver the value?' : (Block == 'Value propositions' ? 'What value do we bring, and which problems do we solve?' : (Block == 'Customer relationships' ? 'How do we win, keep and grow customers?' : (Block == 'Channels' ? 'How do we reach and serve our customers?' : (Block == 'Customer segments' ? 'For whom do we create value?' : (Block == 'Cost structure' ? 'What are the main costs?' : (Block == 'Revenue streams' ? 'For what do customers pay, and how?' : (null)))))))))",
+          "result": "text",
+          "id": "att_canvasblock_question",
+          "labels": {
+            "en": "Question"
+          },
+          "help": {
+            "en": "The question the block answers."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Items",
+          "formula": "count(children())",
+          "result": "number",
+          "id": "att_canvasblock_items",
+          "labels": {
+            "en": "Items"
+          },
+          "help": {
+            "en": "How many items sit inside."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Total",
+          "formula": "sum(children().AnnualAmount)",
+          "result": "number",
+          "id": "att_canvasblock_total",
+          "labels": {
+            "en": "Total"
+          },
+          "help": {
+            "en": "The annual amounts of the items inside added up."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Heading",
+          "formula": "Name + (Total > 0 ? ', ' + Total + ' a year' : '')",
+          "result": "text",
+          "id": "att_canvasblock_heading",
+          "labels": {
+            "en": "Heading"
+          },
+          "help": {
+            "en": "The name, and the total for blocks with amounts, shown as the heading."
+          }
+        }
+      ],
+      "shape": "shp_canvasblock"
+    },
+    "cls_canvasitem": {
+      "id": "cls_canvasitem",
+      "key": "CanvasItem",
+      "kind": "node",
+      "labels": {
+        "en": "Canvas item"
+      },
+      "help": {
+        "en": "A note in a block: a partner, an activity, a segment, a cost and so on. Say how well it is tested, and give revenue streams and costs an annual amount."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Canvas item",
+          "id": "att_canvasitem_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Details",
+          "multiline": true,
+          "id": "att_canvasitem_details",
+          "labels": {
+            "en": "Details"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Evidence",
+          "options": ["Assumption", "Tested", "Proven"],
+          "default": "Assumption",
+          "id": "att_canvasitem_evidence",
+          "labels": {
+            "en": "Evidence"
+          },
+          "help": {
+            "en": "Assumption: not checked yet. Tested: an experiment supports it. Proven: it works in the market."
+          }
+        },
+        {
+          "type": "number",
+          "key": "AnnualAmount",
+          "min": 0,
+          "id": "att_canvasitem_annualamount",
+          "labels": {
+            "en": "Annual amount"
+          },
+          "help": {
+            "en": "For revenue streams and costs: the amount per year, in your currency."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Block",
+          "formula": "parent ? parent.Block : null",
+          "result": "text",
+          "id": "att_canvasitem_block",
+          "labels": {
+            "en": "Block"
+          },
+          "help": {
+            "en": "The block it sits in."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Revenue",
+          "formula": "Block == 'Revenue streams' ? AnnualAmount : null",
+          "result": "number",
+          "id": "att_canvasitem_revenue",
+          "labels": {
+            "en": "Revenue"
+          },
+          "help": {
+            "en": "The annual amount when it is a revenue stream."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Cost",
+          "formula": "Block == 'Cost structure' ? AnnualAmount : null",
+          "result": "number",
+          "id": "att_canvasitem_cost",
+          "labels": {
+            "en": "Cost"
+          },
+          "help": {
+            "en": "The annual amount when it is a cost."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Note",
+          "formula": "AnnualAmount == null ? (Evidence ?? '') : AnnualAmount + ' a year'",
+          "result": "text",
+          "id": "att_canvasitem_note",
+          "labels": {
+            "en": "Note"
+          },
+          "help": {
+            "en": "The annual amount, or how well it is tested, shown on the diagram."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_item_block",
+          "formula": "parent != null",
+          "message": "= 'Item \"' + Name + '\" is not inside any block.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_item_amount",
+          "formula": "AnnualAmount == null || Block == 'Revenue streams' || Block == 'Cost structure'",
+          "message": "= 'Item \"' + Name + '\" has an annual amount but is not a revenue stream or a cost.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_item_valuepropositions",
+          "formula": "Block != 'Value propositions' || count(outgoing('Links')) + count(incoming('Links')) > 0",
+          "message": "= 'Value proposition \"' + Name + '\" is not linked to any other item.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_item_customersegments",
+          "formula": "Block != 'Customer segments' || count(outgoing('Links')) + count(incoming('Links')) > 0",
+          "message": "= 'Customer segment \"' + Name + '\" is not linked to any other item.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_canvasitem"
+    }
+  },
+  "relations": {
+    "rel_links": {
+      "id": "rel_links",
+      "key": "Links",
+      "labels": {
+        "en": "Links to"
+      },
+      "help": {
+        "en": "Two items belong together, such as a value proposition and the segment it is for. Say how on the line."
+      },
+      "from": ["cls_canvasitem"],
+      "to": ["cls_canvasitem"],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Label",
+          "id": "att_links_label",
+          "labels": {
+            "en": "Label"
+          }
+        }
+      ],
+      "shape": "shp_rel_links"
+    }
+  },
+  "modelTypes": {
+    "mt_canvas": {
+      "id": "mt_canvas",
+      "key": "Canvas",
+      "labels": {
+        "en": "Business model canvas"
+      },
+      "classes": ["cls_canvasblock", "cls_canvasitem"],
+      "relations": ["rel_links"],
+      "views": [],
+      "cardinalities": [
+        {
+          "kind": "count",
+          "class": "cls_canvasblock",
+          "max": 9
+        }
+      ],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Title",
+          "required": true,
+          "maxLength": 100,
+          "id": "att_mtcanvas_title",
+          "labels": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Organisation",
+          "id": "att_mtcanvas_organisation",
+          "labels": {
+            "en": "Organisation"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Version",
+          "id": "att_mtcanvas_version",
+          "labels": {
+            "en": "Version"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "TotalRevenue",
+          "formula": "sum(objects('CanvasItem').Revenue)",
+          "result": "number",
+          "id": "att_mtcanvas_totalrevenue",
+          "labels": {
+            "en": "Total revenue"
+          },
+          "help": {
+            "en": "The annual amounts of all revenue streams."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "TotalCost",
+          "formula": "sum(objects('CanvasItem').Cost)",
+          "result": "number",
+          "id": "att_mtcanvas_totalcost",
+          "labels": {
+            "en": "Total cost"
+          },
+          "help": {
+            "en": "The annual amounts of all costs."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Margin",
+          "formula": "TotalRevenue - TotalCost",
+          "result": "number",
+          "id": "att_mtcanvas_margin",
+          "labels": {
+            "en": "Margin"
+          },
+          "help": {
+            "en": "Total revenue minus total cost, per year."
+          }
+        }
+      ],
+      "help": {
+        "en": "The nine blocks of a business model with their items, and the links between them."
+      },
+      "containers": {
+        "cls_canvasblock": ["cls_canvasitem"]
+      }
+    }
+  },
+  "shapes": {
+    "shp_canvasblock": {
+      "id": "shp_canvasblock",
+      "name": "CanvasBlock look",
+      "kind": "node",
+      "size": {
+        "width": 240,
+        "height": 480,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 6,
+          "fill": "= Block == 'Key partners' ? '#e7f5ff66' : Block == 'Key activities' ? '#e7f5ff66' : Block == 'Key resources' ? '#e7f5ff66' : Block == 'Value propositions' ? '#fff9db66' : Block == 'Customer relationships' ? '#ebfbee66' : Block == 'Channels' ? '#ebfbee66' : Block == 'Customer segments' ? '#ebfbee66' : Block == 'Cost structure' ? '#fff5f566' : Block == 'Revenue streams' ? '#f3f0ff66' : '#f8f9fa66'",
+          "stroke": "#495057",
+          "strokeWidth": 1.5,
+          "dash": [7, 4]
+        },
+        {
+          "type": "text",
+          "x": 12,
+          "y": 4,
+          "width": "100% - 48",
+          "height": 24,
+          "text": "= Heading",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "container",
+        "fill": {
+          "by": "Block",
+          "values": {
+            "Key partners": "#e7f5ff66",
+            "Key activities": "#e7f5ff66",
+            "Key resources": "#e7f5ff66",
+            "Value propositions": "#fff9db66",
+            "Customer relationships": "#ebfbee66",
+            "Channels": "#ebfbee66",
+            "Customer segments": "#ebfbee66",
+            "Cost structure": "#fff5f566",
+            "Revenue streams": "#f3f0ff66"
+          },
+          "fallback": "#f8f9fa66"
+        },
+        "border": "#495057",
+        "borderWidth": 1.5,
+        "borderStyle": "dashed",
+        "title": {
+          "attribute": "Heading",
+          "bold": true
+        },
+        "size": {
+          "width": 240,
+          "height": 480,
+          "resizable": true
+        }
+      }
+    },
+    "shp_canvasitem": {
+      "id": "shp_canvasitem",
+      "name": "CanvasItem look",
+      "kind": "node",
+      "size": {
+        "width": 150,
+        "height": 56,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 0,
+          "fill": "= Evidence == 'Assumption' ? '#fff3bf' : Evidence == 'Tested' ? '#d0ebff' : Evidence == 'Proven' ? '#d3f9d8' : '#fff3bf'",
+          "stroke": "#f08c00",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 4,
+          "width": "100% - 16",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 22",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= Note",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "box",
+        "fill": {
+          "by": "Evidence",
+          "values": {
+            "Assumption": "#fff3bf",
+            "Tested": "#d0ebff",
+            "Proven": "#d3f9d8"
+          },
+          "fallback": "#fff3bf"
+        },
+        "border": "#f08c00",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 150,
+          "height": 56,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Note"
+        }
+      }
+    },
+    "shp_rel_links": {
+      "id": "shp_rel_links",
+      "name": "Links look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#1c7ed6",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "labels": [
+        {
+          "at": "middle",
+          "text": "= Label",
+          "font": {
+            "size": 11
+          },
+          "background": "#ffffff",
+          "visible": "= Label != null"
+        }
+      ],
+      "look": {
+        "colour": "#1c7ed6",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": {
+          "attribute": "Label"
+        }
+      }
+    }
+  },
+  "panels": {
+    "cls_canvasblock": {
+      "class": "cls_canvasblock",
+      "tabs": [
+        {
+          "label": "Block",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Block",
+              "control": "select"
+            },
+            {
+              "attribute": "Question"
+            },
+            {
+              "attribute": "Items"
+            },
+            {
+              "attribute": "Total"
+            }
+          ]
+        }
+      ]
+    },
+    "cls_canvasitem": {
+      "class": "cls_canvasitem",
+      "tabs": [
+        {
+          "label": "Item",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Block"
+            },
+            {
+              "attribute": "Evidence",
+              "control": "segmented"
+            },
+            {
+              "attribute": "Details",
+              "control": "textarea"
+            },
+            {
+              "attribute": "AnnualAmount"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    }
+  },
+  "rules": {},
+  "scripts": {}
+}

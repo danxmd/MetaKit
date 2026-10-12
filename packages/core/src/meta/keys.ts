@@ -13,7 +13,7 @@ import {
   subclasses,
 } from './inherit';
 import { isFormula } from './shape-types';
-import type { AttributeDef, ToolLibrary } from './types';
+import type { AttributeDef, Kit } from './types';
 
 export type KeyOwner =
   | { kind: 'class'; id: ClassId }
@@ -48,32 +48,32 @@ export function keyProblem(key: string): string | null {
   return null;
 }
 
-export function ownerDef(tool: ToolLibrary, owner: KeyOwner) {
+export function ownerDef(kit: Kit, owner: KeyOwner) {
   const table =
     owner.kind === 'class'
-      ? tool.classes
+      ? kit.classes
       : owner.kind === 'relation'
-        ? tool.relations
-        : tool.modelTypes;
+        ? kit.relations
+        : kit.modelTypes;
   return (table as Record<string, { key: string; attributes: AttributeDef[] }>)[
     owner.id
   ];
 }
 
 /** The owners that see this owner's attributes: itself and everything that extends it. */
-export function scopeOwners(tool: ToolLibrary, owner: KeyOwner): KeyOwner[] {
+export function scopeOwners(kit: Kit, owner: KeyOwner): KeyOwner[] {
   if (owner.kind === 'class')
     return [
       owner,
-      ...subclasses(tool, owner.id).map((c) => ({
+      ...subclasses(kit, owner.id).map((c) => ({
         kind: 'class' as const,
         id: c.id,
       })),
     ];
   if (owner.kind === 'relation') {
-    const subs = Object.values(tool.relations)
+    const subs = Object.values(kit.relations)
       .filter(
-        (r) => r.id !== owner.id && isRelationDescendant(tool, r.id, owner.id),
+        (r) => r.id !== owner.id && isRelationDescendant(kit, r.id, owner.id),
       )
       .map((r) => ({ kind: 'relation' as const, id: r.id }));
     return [owner, ...subs];
@@ -82,23 +82,23 @@ export function scopeOwners(tool: ToolLibrary, owner: KeyOwner): KeyOwner[] {
 }
 
 function isRelationDescendant(
-  tool: ToolLibrary,
+  kit: Kit,
   id: RelationId,
   ancestor: RelationId,
 ): boolean {
   const seen = new Set<string>();
-  let cur: RelationId | undefined = tool.relations[id]?.extends;
+  let cur: RelationId | undefined = kit.relations[id]?.extends;
   while (cur && !seen.has(cur)) {
     if (cur === ancestor) return true;
     seen.add(cur);
-    cur = tool.relations[cur]?.extends;
+    cur = kit.relations[cur]?.extends;
   }
   return false;
 }
 
 /** Keys that an attribute of this owner could clash with: everything it inherits or passes on. */
 export function relatedKeys(
-  tool: ToolLibrary,
+  kit: Kit,
   owner: KeyOwner,
   except: AttributeId,
 ): Map<string, string> {
@@ -109,24 +109,24 @@ export function relatedKeys(
   };
   if (owner.kind === 'modelType') {
     add(
-      tool.modelTypes[owner.id]?.attributes ?? [],
-      `model type "${tool.modelTypes[owner.id]?.key}"`,
+      kit.modelTypes[owner.id]?.attributes ?? [],
+      `model type "${kit.modelTypes[owner.id]?.key}"`,
     );
     return keys;
   }
-  const own = ownerDef(tool, owner);
+  const own = ownerDef(kit, owner);
   try {
     add(
       owner.kind === 'class'
-        ? effectiveAttributes(tool, owner.id)
-        : effectiveRelationAttributes(tool, owner.id),
+        ? effectiveAttributes(kit, owner.id)
+        : effectiveRelationAttributes(kit, owner.id),
       `"${own?.key}" or a parent`,
     );
   } catch {
     add(own?.attributes ?? [], `"${own?.key}"`);
   }
-  for (const o of scopeOwners(tool, owner)) {
-    const def = ownerDef(tool, o);
+  for (const o of scopeOwners(kit, owner)) {
+    const def = ownerDef(kit, o);
     if (def) add(def.attributes, `"${def.key}", which extends "${own?.key}"`);
   }
   return keys;
@@ -225,16 +225,13 @@ function rewriteJson(value: Json, key: string | null, w: Walk): Json {
 }
 
 /** Shapes that classes or relations in scope draw with, including the ones they embed with `use`. */
-function shapesInScope(
-  tool: ToolLibrary,
-  start: (ShapeId | undefined)[],
-): Set<ShapeId> {
+function shapesInScope(kit: Kit, start: (ShapeId | undefined)[]): Set<ShapeId> {
   const found = new Set<ShapeId>();
   const queue = start.filter((s): s is ShapeId => s !== undefined);
   while (queue.length > 0) {
     const id = queue.pop()!;
     if (found.has(id)) continue;
-    const shape = tool.shapes?.[id];
+    const shape = kit.shapes?.[id];
     if (!shape) continue;
     found.add(id);
     const visit = (
@@ -280,7 +277,7 @@ function attributesWithFormulas(
  * The plan is a list of writes, so that running it is one command and one undo step.
  */
 export function planKeyRename(
-  tool: ToolLibrary,
+  kit: Kit,
   scope: KeyScope,
   newKey: string,
 ): RenamePlan | { error: string } {
@@ -291,10 +288,10 @@ export function planKeyRename(
   if (scope.kind !== 'attribute') {
     const table =
       scope.kind === 'class'
-        ? tool.classes
+        ? kit.classes
         : scope.kind === 'relation'
-          ? tool.relations
-          : tool.modelTypes;
+          ? kit.relations
+          : kit.modelTypes;
     const def = (table as Record<string, { key: string }>)[scope.id];
     if (!def)
       return {
@@ -318,11 +315,11 @@ export function planKeyRename(
     return plan;
   }
 
-  const owner = ownerDef(tool, scope.owner);
+  const owner = ownerDef(kit, scope.owner);
   const attr = owner?.attributes.find((a) => a.id === scope.id);
   if (!owner || !attr) return { error: 'That attribute does not exist.' };
   if (attr.key === newKey) return plan;
-  const clash = relatedKeys(tool, scope.owner, attr.id).get(newKey);
+  const clash = relatedKeys(kit, scope.owner, attr.id).get(newKey);
   if (clash)
     return {
       error: `The key "${newKey}" is already used by an attribute of ${clash}.`,
@@ -335,11 +332,11 @@ export function planKeyRename(
       : o.kind === 'relation'
         ? 'relations'
         : 'modelTypes';
-  const owners = scopeOwners(tool, scope.owner);
+  const owners = scopeOwners(kit, scope.owner);
 
   // Attribute lists: the renamed attribute, and formula attributes that read it.
   for (const o of owners) {
-    const def = ownerDef(tool, o)!;
+    const def = ownerDef(kit, o)!;
     const probe: Walk = { ...w, hits: 0 };
     let attrs = attributesWithFormulas(def.attributes, probe);
     if (probe.hits > 0) plan.usages.push(`a formula attribute of "${def.key}"`);
@@ -356,7 +353,7 @@ export function planKeyRename(
 
   // Constraints of the owners, and rules about their classes.
   for (const o of owners) {
-    const def = ownerDef(tool, o)!;
+    const def = ownerDef(kit, o)!;
     const constraints = (def as { constraints?: unknown }).constraints;
     if (!constraints) continue;
     const probe: Walk = { ...w, hits: 0 };
@@ -372,7 +369,7 @@ export function planKeyRename(
   const classOwners = new Set(
     owners.filter((o) => o.kind === 'class').map((o) => o.id as string),
   );
-  for (const rule of Object.values(tool.rules ?? {})) {
+  for (const rule of Object.values(kit.rules ?? {})) {
     if (!rule.when.class || !classOwners.has(rule.when.class)) continue;
     const probe: Walk = { ...w, hits: 0 };
     let next = rewriteJson(
@@ -392,12 +389,12 @@ export function planKeyRename(
   // Shapes and panel layouts that the owners use.
   const starts: (ShapeId | undefined)[] = [];
   for (const o of owners) {
-    if (o.kind === 'class') starts.push(tool.classes[o.id]?.shape);
-    else if (o.kind === 'relation') starts.push(tool.relations[o.id]?.shape);
-    else starts.push(tool.modelTypes[o.id]?.background);
+    if (o.kind === 'class') starts.push(kit.classes[o.id]?.shape);
+    else if (o.kind === 'relation') starts.push(kit.relations[o.id]?.shape);
+    else starts.push(kit.modelTypes[o.id]?.background);
   }
-  for (const id of shapesInScope(tool, starts)) {
-    const shape = tool.shapes[id]!;
+  for (const id of shapesInScope(kit, starts)) {
+    const shape = kit.shapes[id]!;
     const probe: Walk = { ...w, hits: 0 };
     const rewritten = rewriteJson(
       shape as unknown as Json,
@@ -411,7 +408,7 @@ export function planKeyRename(
     plan.usages.push(`the shape "${shape.name ?? id}"`);
   }
   for (const o of owners) {
-    const layout = o.kind === 'modelType' ? undefined : tool.panels?.[o.id];
+    const layout = o.kind === 'modelType' ? undefined : kit.panels?.[o.id];
     if (!layout) continue;
     const probe: Walk = { ...w, hits: 0 };
     const tabs = rewriteJson(layout.tabs as unknown as Json, null, probe);
@@ -422,7 +419,7 @@ export function planKeyRename(
         path: ['panels', o.id, 'tabs'],
         value: renamed.value,
       });
-      plan.usages.push(`the panel layout of "${ownerDef(tool, o)?.key}"`);
+      plan.usages.push(`the panel layout of "${ownerDef(kit, o)?.key}"`);
     }
   }
   return plan;
@@ -453,13 +450,13 @@ function renameItemKeys(
 }
 
 /** Where a key is read, for showing before it is renamed or its attribute is deleted. */
-export function findKeyUsages(tool: ToolLibrary, scope: KeyScope): string[] {
+export function findKeyUsages(kit: Kit, scope: KeyScope): string[] {
   if (scope.kind !== 'attribute') return [];
-  const owner = ownerDef(tool, scope.owner);
+  const owner = ownerDef(kit, scope.owner);
   const attr = owner?.attributes.find((a) => a.id === scope.id);
   if (!attr) return [];
   // A name that cannot clash gives the full list of places that read the old one.
-  const plan = planKeyRename(tool, scope, `${attr.key}__probe`);
+  const plan = planKeyRename(kit, scope, `${attr.key}__probe`);
   return 'error' in plan ? [] : [...new Set(plan.usages)];
 }
 

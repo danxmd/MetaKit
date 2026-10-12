@@ -2,7 +2,7 @@
 
 ## 1. Format and core
 
-- [x] 1.1 Tool format 3: constraints, defaultFormula, rules table (migration, guards, tests).
+- [x] 1.1 Kit format 3: constraints, defaultFormula, rules table (migration, guards, tests).
 - [x] 1.2 Default formulas in `createElement`; validation of constraints and formula errors; tests.
 
 ## 2. UI and canvas

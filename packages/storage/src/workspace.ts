@@ -1,18 +1,18 @@
 import {
   createModelStore,
-  createToolStore,
+  createKitStore,
   validateModelDocument,
-  validateToolLibrary,
+  validateKit,
   type Issue,
   type Json,
   type Model,
   type ModelId,
   type ModelStore,
   type ModelTypeId,
-  type ToolId,
-  type ToolLibrary,
-  type ToolOrigin,
-  type ToolStore,
+  type KitId,
+  type Kit,
+  type KitOrigin,
+  type KitStore,
 } from '@metakit-app/core';
 import {
   loadDocument,
@@ -38,10 +38,17 @@ import {
 import { jsonBytes, readJsonFile, type ReadOptions } from './json';
 import { exportMkModel, importMkModel } from './mkmodel';
 import { CURRENT_FORMAT, migrate } from './migrate';
+import {
+  KIT_FOLDER,
+  KIT_IDENTITY_FILE,
+  KIT_KIND,
+  OLDER_KIT_FOLDER,
+  OLDER_KIT_IDENTITY_FILE,
+} from './names';
 import { joinPath } from './paths';
 import { slugify } from './slugify';
 
-export type DocumentKind = 'tool' | 'model';
+export type DocumentKind = typeof KIT_KIND | 'model';
 
 export interface WorkspaceInfo {
   name: string;
@@ -67,26 +74,26 @@ export interface OpenedDocument<S> {
   issues: Issue[];
 }
 
-export interface ToolEntry {
+export interface KitEntry {
   slug: string;
-  id: ToolId;
+  id: KitId;
   name: string;
   version: string;
-  /** The tool library this one was copied from (ADR 0010). */
-  basedOn?: ToolOrigin;
+  /** The Kit this one was copied from (ADR 0010). */
+  basedOn?: KitOrigin;
   trashed?: boolean;
   trashedAt?: string;
   expired?: boolean;
 }
 
-/** How long a deleted model or tool library can be restored. */
+/** How long a deleted model or Kit can be restored. */
 export const TRASH_DAYS = 30;
 
 export interface ModelEntry {
   slug: string;
   id: ModelId;
   name: string;
-  tool: ToolId;
+  kit: KitId;
   modelType: ModelTypeId;
   folder?: string;
   /** Only present when trashed models were asked for. */
@@ -112,13 +119,24 @@ function newerAsStorageError(error: unknown): never {
   throw error;
 }
 
+/** Where new documents of each kind are made. A Kit made before the Kit rename stays in `tools/`. */
 const FOLDERS: Record<DocumentKind, string> = {
-  tool: 'tools',
+  [KIT_KIND]: KIT_FOLDER,
   model: 'models',
 };
-const IDENTITY_FILE: Record<DocumentKind, string> = {
-  tool: 'tool.json',
-  model: 'model.json',
+const MODEL_IDENTITY_FILE = 'model.json';
+
+/** The identity file of a document folder: `tool.json` in a Kit folder under `tools/` (ADR 0011). */
+function identityFile(kind: DocumentKind, folder: string): string {
+  if (kind === 'model') return MODEL_IDENTITY_FILE;
+  return folder.startsWith(`${OLDER_KIT_FOLDER}/`)
+    ? OLDER_KIT_IDENTITY_FILE
+    : KIT_IDENTITY_FILE;
+}
+/** How messages name each kind. */
+const KIND_WORDS: Record<DocumentKind, string> = {
+  [KIT_KIND]: 'Kit',
+  model: 'model',
 };
 
 export { slugify };
@@ -136,11 +154,14 @@ function randomSuffix(): string {
 }
 
 /**
- * A workspace folder: tool libraries and models, each in its own folder that never changes name.
+ * A workspace folder: Kits and models, each in its own folder that never changes name.
  *
- * Until change files arrive (phase 3), a document is saved as one snapshot, written by the
- * instance that saved it to `<folder>/_state/<instance>/snapshot.json`. The identity files
- * (`tool.json`, `model.json`) are written once.
+ * Each document is saved as change files and snapshots of the instances that edit it, under
+ * `<folder>/_state/<instance>/`. The identity files (`kit.json`, `model.json`) are written once.
+ *
+ * New Kits are made in `kits/<slug>/`. A Kit made by a release before the Kit rename lives in
+ * `tools/<slug>/` with a `tool.json`, and is read and edited where it is: moving it would mean
+ * moving files that other instances wrote (rule 6, ADR 0011). Slugs are unique over both folders.
  */
 export class Workspace {
   private constructor(
@@ -210,15 +231,67 @@ export class Workspace {
 
   // --- documents ---------------------------------------------------------------------------
 
-  private folder(kind: DocumentKind, slug: string): string {
+  /** Where a new document of this kind and slug goes. */
+  private newFolder(kind: DocumentKind, slug: string): string {
     if (!SLUG.test(slug))
       throw new FormatError(
-        `"${slug}" is not a valid folder name for a ${kind}.`,
+        `"${slug}" is not a valid folder name for a ${KIND_WORDS[kind]}.`,
       );
     return joinPath(FOLDERS[kind], slug);
   }
 
+  /** Slug to folder of every Kit, in `kits/` and `tools/`; read again when a slug is not in it. */
+  private kitFolders: Map<string, string> | null = null;
+
+  /**
+   * Finds the Kit folders. A name in `kits/` is its slug. A name in `tools/` is too, unless `kits/`
+   * has the same name (a release before the rename does not look in `kits/`); then it gets the
+   * suffix `-tools`, so that every slug names one folder.
+   */
+  private async scanKitFolders(): Promise<Map<string, string>> {
+    const names = async (folder: string) =>
+      (await this.adapter.list(folder))
+        .filter((e) => e.kind === 'directory' && SLUG.test(e.name))
+        .map((e) => e.name)
+        .sort();
+    const map = new Map<string, string>();
+    for (const name of await names(KIT_FOLDER))
+      map.set(name, joinPath(KIT_FOLDER, name));
+    for (const name of await names(OLDER_KIT_FOLDER)) {
+      let slug = name;
+      for (let i = 1; map.has(slug); i++)
+        slug = i === 1 ? `${name}-tools` : `${name}-tools-${i}`;
+      map.set(slug, joinPath(OLDER_KIT_FOLDER, name));
+    }
+    this.kitFolders = map;
+    return map;
+  }
+
+  /** The folder of a document, wherever it lives; for a Kit that is not there, where it would be made. */
+  private async folder(kind: DocumentKind, slug: string): Promise<string> {
+    if (kind === KIT_KIND) {
+      const known =
+        this.kitFolders?.get(slug) ?? (await this.scanKitFolders()).get(slug);
+      if (known !== undefined) return known;
+    }
+    return this.newFolder(kind, slug);
+  }
+
+  /** The folder of a Kit in the workspace, such as `kits/process` or `tools/bpmn-lite`. */
+  kitFolder(slug: string): Promise<string> {
+    return this.folder(KIT_KIND, slug);
+  }
+
+  /** Every Kit folder with its slug, readable or not, in `kits/` and then `tools/`. */
+  async listKitFolders(): Promise<{ slug: string; folder: string }[]> {
+    return [...(await this.scanKitFolders())].map(([slug, folder]) => ({
+      slug,
+      folder,
+    }));
+  }
+
   private async slugs(kind: DocumentKind): Promise<string[]> {
+    if (kind === KIT_KIND) return [...(await this.scanKitFolders()).keys()];
     return (await this.adapter.list(FOLDERS[kind]))
       .filter((e) => e.kind === 'directory')
       .map((e) => e.name);
@@ -241,10 +314,10 @@ export class Workspace {
     throw new Error('Could not find a free folder name.');
   }
 
-  private syncOptions(kind: DocumentKind, slug: string) {
+  private async syncOptions(kind: DocumentKind, slug: string) {
     return {
       adapter: this.adapter,
-      folder: this.folder(kind, slug),
+      folder: await this.folder(kind, slug),
       kind,
       now: () => this.now.getTime(),
       ...(this.options.read?.retries === undefined
@@ -260,10 +333,11 @@ export class Workspace {
     kind: DocumentKind,
     slug: string,
   ): Promise<Record<string, unknown>> {
-    const identityPath = joinPath(this.folder(kind, slug), IDENTITY_FILE[kind]);
+    const folder = await this.folder(kind, slug);
+    const identityPath = joinPath(folder, identityFile(kind, folder));
     if (!(await this.adapter.exists(identityPath)))
       throw new NotFoundError(
-        `There is no ${kind} "${slug}" in this workspace.`,
+        `There is no ${KIND_WORDS[kind]} "${slug}" in this workspace.`,
       );
     return migrate(
       kind,
@@ -276,7 +350,7 @@ export class Workspace {
     slug: string,
   ): Promise<{ identity: Record<string, unknown>; loaded: Loaded<T> }> {
     const identity = await this.readIdentity(kind, slug);
-    const options = this.syncOptions(kind, slug);
+    const options = await this.syncOptions(kind, slug);
     const { state, warnings } = await loadDocument(
       this.adapter,
       options.folder,
@@ -288,15 +362,17 @@ export class Workspace {
     ).catch(newerAsStorageError);
     if (state.size === 0)
       throw new NotFoundError(
-        `The ${kind} "${slug}" has no saved content yet.${warnings.length ? ` ${warnings.join(' ')}` : ''}`,
+        `The ${KIND_WORDS[kind]} "${slug}" has no saved content yet.${warnings.length ? ` ${warnings.join(' ')}` : ''}`,
       );
-    // Tool libraries from earlier formats are brought up to date in memory; saving writes the new one.
+    // Documents from earlier formats are brought up to date in memory; saving writes the new one.
     const stored = materialize(state);
-    const document =
-      kind === 'tool' ? migrate('tool-document', stored).value : stored;
+    const document = migrate(
+      kind === KIT_KIND ? 'kit-document' : 'model-document',
+      stored,
+    ).value;
     const issues =
-      kind === 'tool'
-        ? validateToolLibrary(document)
+      kind === KIT_KIND
+        ? validateKit(document)
         : validateModelDocument(document);
     return {
       identity,
@@ -309,17 +385,17 @@ export class Workspace {
     };
   }
 
-  // --- tool libraries ----------------------------------------------------------------------
+  // --- Kits ----------------------------------------------------------------------
 
-  async listTools(
+  async listKits(
     options: { includeTrashed?: boolean } = {},
-  ): Promise<ToolEntry[]> {
-    const entries: ToolEntry[] = [];
-    for (const slug of await this.slugs('tool')) {
+  ): Promise<KitEntry[]> {
+    const entries: KitEntry[] = [];
+    for (const slug of await this.slugs(KIT_KIND)) {
       try {
-        const trash = await this.trashState('tool', slug);
+        const trash = await this.trashState(KIT_KIND, slug);
         if (trash.trashed && !options.includeTrashed) continue;
-        const { loaded } = await this.load<ToolLibrary>('tool', slug);
+        const { loaded } = await this.load<Kit>(KIT_KIND, slug);
         const m = loaded.document.manifest;
         entries.push({
           slug,
@@ -330,104 +406,114 @@ export class Workspace {
           ...(options.includeTrashed ? this.trashFields(trash) : {}),
         });
       } catch {
-        // A folder that is not a readable tool is not listed; opening it by name explains why.
+        // A folder that is not a readable Kit is not listed; opening it by name explains why.
       }
     }
     return entries;
   }
 
-  /** Adds a tool library and returns its folder name. Pass a `slug` to choose it. */
-  async createTool(
-    tool: ToolLibrary,
-    options: { slug?: string } = {},
-  ): Promise<string> {
+  /** Adds a Kit in `kits/` and returns its folder name. Pass a `slug` to choose it. */
+  async createKit(kit: Kit, options: { slug?: string } = {}): Promise<string> {
     const slug =
       options.slug ??
-      (await this.uniqueSlug('tool', tool.manifest.name, false));
-    const folder = this.folder('tool', slug);
+      (await this.uniqueSlug(KIT_KIND, kit.manifest.name, false));
+    const folder = this.newFolder(KIT_KIND, slug);
+    if ((await this.scanKitFolders()).has(slug))
+      throw new AlreadyExistsError(
+        `There is already a Kit "${slug}" in this workspace.`,
+      );
     await this.adapter.writeNew(
-      joinPath(folder, IDENTITY_FILE.tool),
+      joinPath(folder, KIT_IDENTITY_FILE),
       jsonBytes({
-        formatVersion: CURRENT_FORMAT.tool,
-        kind: 'tool',
-        id: tool.manifest.id,
-        name: tool.manifest.name,
+        formatVersion: CURRENT_FORMAT[KIT_KIND],
+        kind: KIT_KIND,
+        id: kit.manifest.id,
+        name: kit.manifest.name,
         created: this.now.toISOString(),
       }),
     );
     await writeNewDocument(
       this.adapter,
       folder,
-      'tool',
-      tool as unknown as Record<string, Json>,
+      KIT_KIND,
+      kit as unknown as Record<string, Json>,
       () => this.now.getTime(),
     );
+    this.kitFolders?.set(slug, folder);
     return slug;
   }
 
-  loadTool(slug: string): Promise<Loaded<ToolLibrary>> {
-    return this.load<ToolLibrary>('tool', slug).then((r) => r.loaded);
+  loadKit(slug: string): Promise<Loaded<Kit>> {
+    return this.load<Kit>(KIT_KIND, slug).then((r) => r.loaded);
   }
 
-  /** Writes a whole tool library as the changes from what the folder holds; see `openTool` for live editing. */
-  async saveTool(slug: string, tool: ToolLibrary): Promise<void> {
-    await this.readIdentity('tool', slug).catch(() => {
+  /** Writes a whole Kit as the changes from what the folder holds; see `openKit` for live editing. */
+  async saveKit(slug: string, kit: Kit): Promise<void> {
+    await this.readIdentity(KIT_KIND, slug).catch(() => {
       throw new NotFoundError(
-        `There is no tool "${slug}" in this workspace. Use createTool first.`,
+        `There is no Kit "${slug}" in this workspace. Use createKit first.`,
       );
     });
     await replaceDocument(
-      this.syncOptions('tool', slug),
-      tool as unknown as Record<string, Json>,
+      await this.syncOptions(KIT_KIND, slug),
+      kit as unknown as Record<string, Json>,
     );
   }
 
   /**
-   * Opens a tool library for editing: the store holds the merged content, and the session keeps it
+   * Opens a Kit for editing: the store holds the merged content, and the session keeps it
    * in step with the other people working in the folder.
    */
-  async openTool(
+  async openKit(
     slug: string,
     session: Partial<SessionOptions> = {},
-  ): Promise<OpenedDocument<ToolStore>> {
-    await this.readIdentity('tool', slug);
+  ): Promise<OpenedDocument<KitStore>> {
+    await this.readIdentity(KIT_KIND, slug);
     const opened = await SyncSession.open(
-      { ...this.syncOptions('tool', slug), ...session },
-      (doc) => createToolStore(doc as unknown as ToolLibrary),
+      { ...(await this.syncOptions(KIT_KIND, slug)), ...session },
+      (doc) => createKitStore(doc as unknown as Kit),
     ).catch(newerAsStorageError);
     return {
       ...opened,
-      issues: validateToolLibrary(opened.store.state),
+      issues: validateKit(opened.store.state),
     };
   }
 
-  /** The folder of the tool library with this id. */
-  async findToolSlug(id: ToolId): Promise<string | null> {
-    // A deleted tool library still serves the models made with it, until it is gone for good.
-    for (const t of await this.listTools({ includeTrashed: true }))
+  /** The folder of the Kit with this id. */
+  async findKitSlug(id: KitId): Promise<string | null> {
+    // A deleted Kit still serves the models made with it, until it is gone for good.
+    for (const t of await this.listKits({ includeTrashed: true }))
       if (t.id === id) return t.slug;
     return null;
   }
 
-  addToolAsset(
+  async addKitAsset(
     slug: string,
     fileName: string,
     bytes: Uint8Array,
   ): Promise<string> {
     return addAsset(
       this.adapter,
-      joinPath(this.folder('tool', slug), 'assets'),
+      joinPath(await this.folder(KIT_KIND, slug), 'assets'),
       fileName,
       bytes,
     );
   }
 
-  readToolAsset(slug: string, name: string): Promise<Uint8Array> {
+  async readKitAsset(slug: string, name: string): Promise<Uint8Array> {
     return readAsset(
       this.adapter,
-      joinPath(this.folder('tool', slug), 'assets'),
+      joinPath(await this.folder(KIT_KIND, slug), 'assets'),
       name,
     );
+  }
+
+  /** The file names of the assets of a Kit; none when it has no `assets` folder. */
+  async listKitAssets(slug: string): Promise<string[]> {
+    const folder = joinPath(await this.folder(KIT_KIND, slug), 'assets');
+    return (await this.adapter.list(folder))
+      .filter((e) => e.kind === 'file')
+      .map((e) => e.name);
   }
 
   // --- models ------------------------------------------------------------------------------
@@ -446,13 +532,13 @@ export class Workspace {
           slug,
           id: m.id,
           name: m.name,
-          tool: m.tool,
+          kit: m.kit,
           modelType: m.modelType,
           ...(m.folder === undefined ? {} : { folder: m.folder }),
           ...(options.includeTrashed ? this.trashFields(trash) : {}),
         });
       } catch {
-        // See listTools.
+        // See listKits.
       }
     }
     return entries;
@@ -467,10 +553,12 @@ export class Workspace {
     slug: string,
     trashed: boolean,
   ): Promise<void> {
-    const folder = this.folder(kind, slug);
-    if (!(await this.adapter.exists(joinPath(folder, IDENTITY_FILE[kind]))))
+    const folder = await this.folder(kind, slug);
+    if (
+      !(await this.adapter.exists(joinPath(folder, identityFile(kind, folder))))
+    )
       throw new NotFoundError(
-        `There is no ${kind} "${slug}" in this workspace.`,
+        `There is no ${KIND_WORDS[kind]} "${slug}" in this workspace.`,
       );
     await this.adapter.overwrite(
       this.trashPath(folder),
@@ -496,12 +584,12 @@ export class Workspace {
     return this.writeTrashMarker('model', slug, false);
   }
 
-  trashTool(slug: string): Promise<void> {
-    return this.writeTrashMarker('tool', slug, true);
+  trashKit(slug: string): Promise<void> {
+    return this.writeTrashMarker(KIT_KIND, slug, true);
   }
 
-  restoreTool(slug: string): Promise<void> {
-    return this.writeTrashMarker('tool', slug, false);
+  restoreKit(slug: string): Promise<void> {
+    return this.writeTrashMarker(KIT_KIND, slug, false);
   }
 
   private trashFields(t: { trashed: boolean; at?: string }): {
@@ -520,7 +608,7 @@ export class Workspace {
     kind: DocumentKind,
     slug: string,
   ): Promise<{ trashed: boolean; at?: string }> {
-    const state = joinPath(this.folder(kind, slug), '_state');
+    const state = joinPath(await this.folder(kind, slug), '_state');
     let newest: { at: string; instance: string; trashed: boolean } | null =
       null;
     for (const entry of await this.adapter.list(state)) {
@@ -546,8 +634,8 @@ export class Workspace {
       } catch (error) {
         const note =
           error instanceof Error && error.name === 'NewerFormatError'
-            ? `The trash marker of instance ${entry.name} for ${kind} "${slug}" is from a newer version of MetaKit and was ignored.`
-            : `The trash marker of instance ${entry.name} for ${kind} "${slug}" could not be read and was ignored: ${(error as Error).message}`;
+            ? `The trash marker of instance ${entry.name} for ${KIND_WORDS[kind]} "${slug}" is from a newer version of MetaKit and was ignored.`
+            : `The trash marker of instance ${entry.name} for ${KIND_WORDS[kind]} "${slug}" could not be read and was ignored: ${(error as Error).message}`;
         if (!this.warnings.includes(note)) this.warnings.push(note);
       }
     }
@@ -563,14 +651,14 @@ export class Workspace {
   ): Promise<string> {
     const slug =
       options.slug ?? `${slugify(model.manifest.name)}-${randomSuffix()}`;
-    const folder = this.folder('model', slug);
+    const folder = this.newFolder('model', slug);
     await this.adapter.writeNew(
-      joinPath(folder, IDENTITY_FILE.model),
+      joinPath(folder, MODEL_IDENTITY_FILE),
       jsonBytes({
         formatVersion: CURRENT_FORMAT.model,
         kind: 'model',
         id: model.manifest.id,
-        tool: model.manifest.tool,
+        kit: model.manifest.kit,
         modelType: model.manifest.modelType,
         name: model.manifest.name,
         created: this.now.toISOString(),
@@ -598,47 +686,47 @@ export class Workspace {
       );
     });
     await replaceDocument(
-      this.syncOptions('model', slug),
+      await this.syncOptions('model', slug),
       model as unknown as Record<string, Json>,
     );
   }
 
   /**
-   * Opens a model for editing with the tool library it was made with. Changes made in the store
+   * Opens a model for editing with the Kit it was made with. Changes made in the store
    * are written to the folder within two seconds, and changes of other people arrive through
    * the session.
    */
   async openModel(
     slug: string,
-    tool: ToolLibrary,
+    kit: Kit,
     session: Partial<SessionOptions> = {},
   ): Promise<OpenedDocument<ModelStore>> {
     await this.readIdentity('model', slug);
     const opened = await SyncSession.open(
-      { ...this.syncOptions('model', slug), ...session },
-      (doc) => createModelStore(doc as unknown as Model, { tool }),
+      { ...(await this.syncOptions('model', slug)), ...session },
+      (doc) => createModelStore(doc as unknown as Model, { kit }),
     ).catch(newerAsStorageError);
     return { ...opened, issues: validateModelDocument(opened.store.state) };
   }
 
-  /** The model as an editable `.mkmodel.json` text, using the tool library it was made with. */
+  /** The model as an editable `.mkmodel.json` text, using the Kit it was made with. */
   async exportModel(slug: string): Promise<string> {
     const { document: model } = await this.loadModel(slug);
-    const toolSlug = await this.findToolSlug(model.manifest.tool);
-    if (!toolSlug)
+    const kitSlug = await this.findKitSlug(model.manifest.kit);
+    if (!kitSlug)
       throw new NotFoundError(
-        `The tool library ${model.manifest.tool} that this model was made with is not in this workspace.`,
+        `The Kit ${model.manifest.kit} that this model was made with is not in this workspace.`,
       );
-    return exportMkModel((await this.loadTool(toolSlug)).document, model);
+    return exportMkModel((await this.loadKit(kitSlug)).document, model);
   }
 
   /** Creates a model from an editable model file and returns its folder name. */
   async importModel(
     text: string,
-    options: { toolSlug: string; slug?: string },
+    options: { kitSlug: string; slug?: string },
   ): Promise<string> {
-    const tool = (await this.loadTool(options.toolSlug)).document;
-    const model = importMkModel(tool, text);
+    const kit = (await this.loadKit(options.kitSlug)).document;
+    const model = importMkModel(kit, text);
     return this.createModel(model, options.slug ? { slug: options.slug } : {});
   }
 }

@@ -1,18 +1,18 @@
-import type { ToolLibrary } from '@metakit-app/core';
-import { SAMPLE, sampleTool } from '@metakit-app/core/testing';
+import type { Kit } from '@metakit-app/core';
+import { SAMPLE, sampleKit } from '@metakit-app/core/testing';
 
 /** A text that must never leave the browser; tests plant it in models. */
 export const MARKER = 'ZX9-SECRET-MARKER';
 
-/** The sample tool with the attributes of the plan's examples on Task. */
-export function planTool(): ToolLibrary {
-  const tool = sampleTool();
-  tool.classes[SAMPLE.task]!.attributes.push(
+/** The sample Kit with the attributes of the plan's examples on Task. */
+export function planKit(): Kit {
+  const kit = sampleKit();
+  kit.classes[SAMPLE.task]!.attributes.push(
     { id: 'att_owner', key: 'Owner', type: 'text' },
     { id: 'att_status', key: 'Status', type: 'text' },
     { id: 'att_number', key: 'Number', type: 'integer' },
   );
-  return tool;
+  return kit;
 }
 
 /** The rule of the plan, as a reply of the drafting model. */

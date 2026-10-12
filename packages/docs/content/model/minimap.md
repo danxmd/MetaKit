@@ -33,7 +33,7 @@ Bottom right of the canvas. If you do not see it, it is switched off: open **Vie
 | **View**, **Minimap** | Shows or hides the minimap. |
 | Outlined rectangle | Marks the visible area of the canvas. |
 
-The colours follow the light or dark appearance. See [[theme]].
+The colours follow the look and the light or dark choice. See [[theme]].
 
 ## Examples
 

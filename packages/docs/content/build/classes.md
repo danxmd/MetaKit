@@ -47,7 +47,7 @@ To start from ready-made classes such as Dataset, Risk or AI use case instead, p
 | Field | What it does |
 | --- | --- |
 | **Key** | The name used in formulas, scripts and rules. Letters, digits and underscores; it must start with a letter or underscore; it must be unique among classes. Changing it rewrites every formula that uses it. See [[keys-and-renaming]]. |
-| **Label** | One text box per language of the tool library (the language code is shown beside it). Modellers see the label. An empty box removes that language. If a language is missing the key is shown. |
+| **Label** | One text box per language of the Kit (the language code is shown beside it). Modellers see the label. An empty box removes that language. If a language is missing the key is shown. |
 | **Kind** | **Object** is an ordinary box. **Container** can hold other objects. **Swimlane** is a lane that holds other objects. See [[containers-swimlanes]]. |
 | **Extends** | The parent class. **Nothing** means no parent. The list leaves out the class itself and every class that already extends it, so loops cannot be made. |
 | **Abstract (only for others to extend)** | An abstract class is not offered in the palette and no object of it can be created. It exists to hold shared attributes. See [[abstract-classes]]. |
@@ -82,7 +82,7 @@ These two blocks are explained in [[attributes]], [[attribute-types]] and [[cons
 
 ## Examples
 
-In the Agent pipeline tool, **Task** is an object class with ten attributes, two constraints and a panel layout with the tabs Overview, Effort and Quality. **Stage** has the kind **Swimlane**: a modeller drags tasks, agents and gates into it. **Agent** and **Human** both extend the abstract class **Actor**, which owns Name, Role and Notes, so both inherit those attributes.
+In the Agent pipeline Kit, **Task** is an object class with ten attributes, two constraints and a panel layout with the tabs Overview, Effort and Quality. **Stage** has the kind **Swimlane**: a modeller drags tasks, agents and gates into it. **Agent** and **Human** both extend the abstract class **Actor**, which owns Name, Role and Notes, so both inherit those attributes.
 
 ## Good to know
 

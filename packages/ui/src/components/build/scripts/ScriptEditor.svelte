@@ -11,7 +11,7 @@
   }: {
     /** The text to start with; later changes that did not come from this editor replace the text. */
     source: string;
-    /** The TypeScript declarations of the `metakit` module for the tool, from `generateDeclarations`. */
+    /** The TypeScript declarations of the `metakit` module for the kit, from `generateDeclarations`. */
     declarations: string;
     onChange: (source: string) => void;
     /** Starts the language service; the app's worker by default. */
@@ -72,7 +72,7 @@
     };
   });
 
-  // The tool changed (a class or attribute was added): the editor checks against the new names.
+  // The kit changed (a class or attribute was added): the editor checks against the new names.
   $effect(() => {
     const text = declarations;
     if (client && handle)

@@ -18,7 +18,7 @@ A **group** holds several parts and treats them as one. Groups can hold other gr
 
 ## Where to find it
 
-In the [[shape-editor]], top of the left column. The panel is titled **Layers**.
+In the [[shape-editor]], top of the left column. The panel is titled **Layers**. It always shows its rows; when there are many, the list scrolls by itself.
 
 ## How to use it
 
@@ -46,14 +46,15 @@ An empty shape says: "Nothing drawn yet. Add a part with the buttons above."
 
 ## Examples
 
-The **Task (status stripe)** shape of the Agent pipeline tool lists, from front to back:
+The **Task (colour by status)** shape of the Agent pipeline Kit, after **Edit as drawing** ([[shape-editor]]), lists from front to back:
 
-1. **Text: Status + (Priority == 'High' ? ' · high' : '')**, the small line at the bottom;
-2. **Text: $label**, the name;
-3. **Rectangle**, the narrow coloured stripe;
-4. **Rectangle**, the white body.
+1. **Text: !**, the text of the mark;
+2. **Rectangle**, the red mark on the corner;
+3. **Text: Status**, the small line at the bottom;
+4. **Text: $label**, the name;
+5. **Rectangle**, the body coloured by Status.
 
-To hide the stripe while you work, untick the checkbox of the third row. To put the stripe behind the body (so it disappears), press **Down** on it.
+To hide the mark while you work, untick the checkboxes of the first two rows. To put the status line behind the body (so it disappears), press **Down** on it twice.
 
 ## Good to know
 

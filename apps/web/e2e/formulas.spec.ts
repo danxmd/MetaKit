@@ -19,17 +19,17 @@ type Hook = {
   };
 };
 
-/** The bpmn-lite tool with a Created default, an Effort constraint and a shape that prints Cost. */
-function formulaTool(): string {
-  const tool = JSON.parse(
+/** The bpmn-lite Kit with a Created default, an Effort constraint and a shape that prints Cost. */
+function formulaKit(): string {
+  const kit = JSON.parse(
     readFileSync(
       fileURLToPath(
-        new URL('../../../tools/bpmn-lite/tool.json', import.meta.url),
+        new URL('../../../kits/bpmn-lite/kit.json', import.meta.url),
       ),
       'utf8',
     ),
   ) as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any -- test-only edit of a JSON document
-  const task = tool.classes['cls_task'];
+  const task = kit.classes['cls_task'];
   task.attributes.push({
     id: 'att_created',
     key: 'Created',
@@ -44,7 +44,7 @@ function formulaTool(): string {
     },
   ];
   task.shape = 'shp_cost';
-  tool.shapes['shp_cost'] = {
+  kit.shapes['shp_cost'] = {
     id: 'shp_cost',
     kind: 'node',
     size: { width: 140, height: 70 },
@@ -59,7 +59,7 @@ function formulaTool(): string {
       },
     ],
   };
-  return JSON.stringify(tool);
+  return JSON.stringify(kit);
 }
 
 const execute = (page: Page, command: unknown) =>
@@ -84,7 +84,7 @@ test.describe('formula uses', () => {
   test('editing Effort updates the panel, the validation message and the shape', async ({
     page,
   }) => {
-    // Seed the workspace ourselves: `prepare` would seed the plain bpmn-lite tool.
+    // Seed the workspace ourselves: `prepare` would seed the plain bpmn-lite Kit.
     await prepare(page, { name: 'Anna', colour: '#e8590c', seed: false });
     await loadHarness(page, './seed-harness.ts');
     await page.evaluate(
@@ -92,7 +92,7 @@ test.describe('formula uses', () => {
         (window as unknown as { __seed(t: string): Promise<void> }).__seed(
           json,
         ),
-      formulaTool(),
+      formulaKit(),
     );
     await page.reload();
     await newModel(page, 'Formulas');

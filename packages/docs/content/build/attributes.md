@@ -68,7 +68,7 @@ If the app refuses a change, the red message appears under the form or under the
 
 ## Examples
 
-The Task class of the Agent pipeline tool starts with **Name** (Text, required, default "New task"), **Description** (Text), **Status** (Choice, default Planned) and **Priority** (Choice). **Effort**, **ActualEffort**, **EstimatedCost** are Numbers in the group **Effort**, and **Variance** is a Formula in the same group: `(ActualEffort ?? 0) - (Effort ?? 0)`. **Checks** is a Table in the group **Quality**.
+The Task class of the Agent pipeline Kit starts with **Name** (Text, required, default "New task"), **Description** (Text), **Status** (Choice, default Planned) and **Priority** (Choice). **Effort**, **ActualEffort**, **EstimatedCost** are Numbers in the group **Effort**, and **Variance** is a Formula in the same group: `(ActualEffort ?? 0) - (Effort ?? 0)`. **Checks** is a Table in the group **Quality**.
 
 To add a "Due date": choose **Date** in the type list, press **Add attribute**, set the Key to `DueDate`, the Label to "Due date" and leave the rest.
 
@@ -83,7 +83,7 @@ To add a "Due date": choose **Date** in the type list, press **Add attribute**, 
 > Give every class a required **Name** text attribute. Validation messages use an attribute with the key `Name` to say which object a problem is about.
 
 > **Warning**
-> Renaming a key rewrites formulas, constraints, rules, shapes, looks and panel layouts, but not scripts. Deleting an attribute rewrites none of them (only its panel layout items are removed), so check the problems banner afterwards ([[tool-validation]]).
+> Renaming a key rewrites formulas, constraints, rules, shapes, looks and panel layouts, but not scripts. Deleting an attribute rewrites none of them (only its panel layout items are removed), so check the problems banner afterwards ([[kit-validation]]).
 
 ## Related
 

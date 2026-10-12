@@ -1,24 +1,24 @@
 <script lang="ts">
   import type { DraftKind } from '@metakit-app/assistant';
-  import type { ToolCommand, ToolLibrary } from '@metakit-app/core';
+  import type { KitCommand, Kit } from '@metakit-app/core';
   import type { AssistantPort } from '../../assistant/assistant-service';
   import DraftDialog from './DraftDialog.svelte';
 
   let {
     kind,
-    tool,
+    kit,
     assistant = undefined,
     enabled = undefined,
     onAccept,
     language = undefined,
   }: {
     kind: DraftKind;
-    tool: ToolLibrary;
+    kit: Kit;
     /** Absent: nothing is shown, so editors look the same as before. */
     assistant?: AssistantPort | undefined;
     /** Overrides `assistant.enabled`. */
     enabled?: boolean | undefined;
-    onAccept: (commands: ToolCommand[]) => void;
+    onAccept: (commands: KitCommand[]) => void;
     language?: string | undefined;
   } = $props();
 
@@ -49,7 +49,7 @@
   {#if open}
     <DraftDialog
       {kind}
-      {tool}
+      {kit}
       {assistant}
       {language}
       {onAccept}

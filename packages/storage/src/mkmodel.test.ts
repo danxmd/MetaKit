@@ -9,7 +9,7 @@ import {
   SAMPLE,
   clone,
   emptySampleModel,
-  sampleTool,
+  sampleKit,
 } from '@metakit-app/core/testing';
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
@@ -21,7 +21,7 @@ import {
   toMkModel,
 } from './mkmodel';
 
-const tool = sampleTool();
+const kit = sampleKit();
 
 function seeded(seed: number): RandomSource {
   let a = seed >>> 0;
@@ -40,7 +40,7 @@ function seeded(seed: number): RandomSource {
 }
 
 function process(): Model {
-  const store = createModelStore(emptySampleModel(), { tool });
+  const store = createModelStore(emptySampleModel(), { kit });
   store.execute({
     type: 'batch',
     commands: [
@@ -140,7 +140,7 @@ function essence(model: Model) {
 
 describe('export', () => {
   it('writes keys instead of ids, in drawing order, with the details a person would want', () => {
-    const file = toMkModel(tool, process());
+    const file = toMkModel(kit, process());
     expect(file.modelType).toBe('Process');
     expect(file.elements.map((e) => [e.id, e.class])).toEqual([
       ['el_lane', 'Lane'],
@@ -160,7 +160,7 @@ describe('export', () => {
     });
     expect(file.connectors![1]!.attributes).toEqual({ Condition: 'approved' });
     expect(file.attributes).toEqual({ Title: 'Orders' });
-    expect(file.tool).toEqual({
+    expect(file.kit).toEqual({
       id: 'tool_sample',
       name: 'Sample',
       version: '1.0.0',
@@ -168,16 +168,16 @@ describe('export', () => {
   });
 
   it('is canonical text that ends with a newline and parses back to the same file', () => {
-    const text = exportMkModel(tool, process());
+    const text = exportMkModel(kit, process());
     expect(text.endsWith('\n')).toBe(true);
     expect(JSON.parse(text)).toEqual(
-      JSON.parse(JSON.stringify(toMkModel(tool, process()))),
+      JSON.parse(JSON.stringify(toMkModel(kit, process()))),
     );
-    expect(exportMkModel(tool, process())).toBe(text);
+    expect(exportMkModel(kit, process())).toBe(text);
   });
 
   it('leaves out empty attribute lists and bends', () => {
-    const file = toMkModel(tool, emptySampleModel());
+    const file = toMkModel(kit, emptySampleModel());
     expect(file).not.toHaveProperty('attributes');
     expect(file).not.toHaveProperty('connectors');
   });
@@ -186,7 +186,7 @@ describe('export', () => {
 describe('round trip', () => {
   it('loses nothing', () => {
     const model = process();
-    const back = importMkModel(tool, exportMkModel(tool, model));
+    const back = importMkModel(kit, exportMkModel(kit, model));
     expect(essence(back)).toEqual(essence(model));
     expect(inDrawingOrder(back.elements).map((e) => e.id)).toEqual(
       inDrawingOrder(model.elements).map((e) => e.id),
@@ -194,11 +194,11 @@ describe('round trip', () => {
   });
 
   it('is stable when exported again', () => {
-    const text = exportMkModel(tool, process());
-    expect(exportMkModel(tool, importMkModel(tool, text))).toBe(text);
+    const text = exportMkModel(kit, process());
+    expect(exportMkModel(kit, importMkModel(kit, text))).toBe(text);
   });
 
-  it('keeps values for attributes the tool no longer has, under their ids', () => {
+  it('keeps values for attributes the Kit no longer has, under their ids', () => {
     const model = clone(process()) as unknown as {
       elements: Record<
         string,
@@ -209,11 +209,11 @@ describe('round trip', () => {
     model.elements.el_task!.attrs.att_removed = 'legacy';
     model.elements.el_end!.class = 'cls_removed';
     model.connectors.cn_a!.relation = 'rel_removed';
-    const text = exportMkModel(tool, model as never);
+    const text = exportMkModel(kit, model as never);
     expect(text).toContain('att_removed');
     expect(text).toContain('cls_removed');
     expect(text).toContain('rel_removed');
-    expect(essence(importMkModel(tool, text))).toEqual(essence(model as never));
+    expect(essence(importMkModel(kit, text))).toEqual(essence(model as never));
   });
 
   it('survives random models', () => {
@@ -229,7 +229,7 @@ describe('round trip', () => {
         fc.array(intent, { minLength: 1, maxLength: 40 }),
         (seed, intents) => {
           const store = createModelStore(emptySampleModel(), {
-            tool,
+            kit,
             random: seeded(seed),
           });
           const classes = [
@@ -309,10 +309,10 @@ describe('round trip', () => {
             }
           }
           const model = store.state as Model;
-          const text = exportMkModel(tool, model);
-          const back = importMkModel(tool, text, { random: seeded(seed + 1) });
+          const text = exportMkModel(kit, model);
+          const back = importMkModel(kit, text, { random: seeded(seed + 1) });
           expect(essence(back)).toEqual(essence(model));
-          expect(exportMkModel(tool, back)).toBe(text);
+          expect(exportMkModel(kit, back)).toBe(text);
         },
       ),
       { numRuns: 300 },
@@ -358,7 +358,7 @@ describe('hand-written files', () => {
   };
 
   it('creates ids for names that are not ids and rewrites every reference', () => {
-    const model = importMkModel(tool, handWritten);
+    const model = importMkModel(kit, handWritten);
     const els = inDrawingOrder(model.elements);
     expect(els.map((e) => e.id)).toSatisfy((ids: string[]) =>
       ids.every((id) => /^el_[0-9a-z]{10}$/.test(id)),
@@ -381,15 +381,15 @@ describe('hand-written files', () => {
     expect(model.attrs).toEqual({ [SAMPLE.attTitle]: 'By hand' });
     expect(model.manifest).toMatchObject({
       name: 'Hand made',
-      tool: SAMPLE.tool,
-      toolVersion: '1.0.0',
+      kit: SAMPLE.kit,
+      kitVersion: '1.0.0',
       modelType: SAMPLE.process,
     });
     expect(model.manifest.id).toMatch(/^mdl_/);
   });
 
   it('puts elements in drawing order by position in the file', () => {
-    const model = importMkModel(tool, handWritten);
+    const model = importMkModel(kit, handWritten);
     expect(
       inDrawingOrder(model.elements).map((e) => model.elements[e.id]!.x),
     ).toEqual([0, 150, 300]);
@@ -407,7 +407,7 @@ describe('hand-written files', () => {
       y: 0,
       attributes: { LaneName: 'A' },
     });
-    const model = importMkModel(tool, file);
+    const model = importMkModel(kit, file);
     const lane = Object.values(model.elements).find(
       (e) => e.class === SAMPLE.lane,
     )!;
@@ -417,7 +417,7 @@ describe('hand-written files', () => {
   });
 
   it('accepts text and parsed data alike', () => {
-    expect(importMkModel(tool, JSON.stringify(handWritten)).manifest.name).toBe(
+    expect(importMkModel(kit, JSON.stringify(handWritten)).manifest.name).toBe(
       'Hand made',
     );
   });
@@ -435,7 +435,7 @@ describe('problems are reported with their place', () => {
     });
   const issues = (file: unknown) => {
     try {
-      importMkModel(tool, file);
+      importMkModel(kit, file);
     } catch (error) {
       expect(error).toBeInstanceOf(MkModelError);
       return (error as MkModelError).issues;
@@ -492,14 +492,17 @@ describe('problems are reported with their place', () => {
         'connectors[1].relation',
       ]),
     );
-    expect(() => importMkModel(tool, file)).toThrow(
+    expect(() => importMkModel(kit, file)).toThrow(
       /problems:\n {2}modelType: Unknown model type "Procss"\. Did you mean "Process"\?/,
     );
   });
 
-  it('refuses a file for another tool', () => {
-    const file = { ...base(), tool: { id: 'tool_other' } };
-    expect(issues(file)[0]).toMatchObject({ path: 'tool.id' });
+  it('refuses a file for another Kit', () => {
+    const file = { ...base(), formatVersion: 2, kit: { id: 'kit_other' } };
+    expect(issues(file)[0]).toMatchObject({ path: 'kit.id' });
+    // A format 1 file named its Kit `tool`; it is read as `kit`.
+    const older = { ...base(), formatVersion: 1, tool: { id: 'tool_other' } };
+    expect(issues(older)[0]).toMatchObject({ path: 'kit.id' });
   });
 
   it('refuses a container loop, a bad container and bad bend points', () => {
@@ -544,11 +547,11 @@ describe('problems are reported with their place', () => {
   });
 
   it('refuses files that are not model files', () => {
-    expect(() => importMkModel(tool, '{ not json')).toThrow(FormatError);
-    expect(() => importMkModel(tool, { kind: 'mkmodel' })).toThrow(
+    expect(() => importMkModel(kit, '{ not json')).toThrow(FormatError);
+    expect(() => importMkModel(kit, { kind: 'mkmodel' })).toThrow(
       /no format version/,
     );
-    expect(() => importMkModel(tool, { formatVersion: 9 })).toThrow(
+    expect(() => importMkModel(kit, { formatVersion: 9 })).toThrow(
       /newer version of MetaKit/,
     );
     expect(
@@ -575,6 +578,6 @@ describe('problems are reported with their place', () => {
       message: 'The id "el_keep" is used twice.',
     });
     file.elements.pop();
-    expect(importMkModel(tool, file).elements).toHaveProperty('el_keep');
+    expect(importMkModel(kit, file).elements).toHaveProperty('el_keep');
   });
 });

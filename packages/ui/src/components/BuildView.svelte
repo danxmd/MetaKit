@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { DocContext } from '@metakit-app/docs';
-  import { openDocs, pushDocsContext } from '../docs/context';
+  import { pushDocsContext } from '../docs/context';
   import {
     effectiveAttributes,
     effectiveRelationAttributes,
@@ -11,12 +11,15 @@
     type NodeShape,
     type ModelTypeId,
     type RelationId,
-    type ToolLibrary,
+    type Kit,
   } from '@metakit-app/core';
   import { uniqueKey } from '../build/attributes';
   import type { AppState, BuildPort } from '../shell/controller';
   import { menuBehaviour } from '../shell/menu-action';
+  import { tours, type TourRun } from '../tours/tour-state';
   import Icon from './Icon.svelte';
+  import DocumentStatus from './DocumentStatus.svelte';
+  import { useDocumentBar } from '../shell/document-bar';
   import { confirmAction } from '../shell/feedback';
   import { provideBuildUndo, useBuildUndo } from '../build/undo-context';
   import type { AssistantPort } from '../assistant/assistant-service';
@@ -30,7 +33,7 @@
   import RulesSection from './build/rules/RulesSection.svelte';
   import SettingsEditor from './build/SettingsEditor.svelte';
   import ShapesSection from './build/ShapesSection.svelte';
-  import ToolPreview from './build/ToolPreview.svelte';
+  import KitPreview from './build/KitPreview.svelte';
   import PanelLayoutEditor from './PanelLayoutEditor.svelte';
   import ShapeEditor from './shape-editor/ShapeEditor.svelte';
   import { defaultLayout } from '../build/panel-layout-model';
@@ -46,12 +49,10 @@
   let {
     app,
     controller,
-    onBack,
     assistant,
   }: {
     app: AppState;
     controller: BuildPort;
-    onBack: () => void;
     /** The optional assistant; the "Draft with assistant" buttons appear only when it is on. */
     assistant?: AssistantPort;
   } = $props();
@@ -85,21 +86,8 @@
     },
     { id: 'appearance', title: 'Appearance', sections: ['shapes'] },
     { id: 'behaviour', title: 'Behaviour', sections: ['rules', 'scripts'] },
-    { id: 'tool', title: 'Tool library', sections: ['settings'] },
+    { id: 'kit', title: 'Kit', sections: ['settings'] },
   ];
-  // The topic the "?" button of the header opens for each page of Build mode.
-  const HELP_TOPIC: Partial<Record<DocContext, string>> = {
-    'build.classes': 'classes',
-    'build.relations': 'relations',
-    'build.modelTypes': 'model-types',
-    'build.shapes': 'shapes-section',
-    'build.rules': 'rules',
-    'build.scripts': 'scripts',
-    'build.settings': 'tool-settings',
-    'build.panel-layout': 'panel-layout',
-    'build.appearance': 'appearance-editor',
-    'build.shape-editor': 'shape-editor',
-  };
   const NEW_LABEL: Record<string, string> = {
     classes: 'New class',
     relations: 'New relation class',
@@ -130,12 +118,12 @@
   };
 
   const build = $derived(app.build!);
-  // Reading `revision` makes this run again after every change to the tool library.
-  const tool = $derived.by((): ToolLibrary => {
+  // Reading `revision` makes this run again after every change to the Kit.
+  const kit = $derived.by((): Kit => {
     void build.revision;
     return build.store.state;
   });
-  const language = $derived(tool.manifest.languages[0] ?? 'en');
+  const language = $derived(kit.manifest.languages[0] ?? 'en');
 
   let section = $state<Section>('classes');
   let selected = $state<Record<string, string | undefined>>({});
@@ -152,6 +140,22 @@
     | { kind: 'appearance'; id: string }
     | null
   >(null);
+  // A Build tour starts on the plain Build view: an editor left open would cover what it shows.
+  let lastRun: TourRun | null = null;
+  $effect(() =>
+    tours.subscribe(({ run }) => {
+      const started =
+        run !== null &&
+        run !== lastRun &&
+        run.index === 0 &&
+        run.direction === 1;
+      if (started && run.tour.page === 'build') {
+        overlay = null;
+        catalogOpen = false;
+      }
+      lastRun = run;
+    }),
+  );
   // A line shape whose form the Shapes list opens first (a relation class asked to edit it).
   let openLine = $state<string | null>(null);
   // What Help shows: an open editor wins over the section behind it.
@@ -215,11 +219,11 @@
       key: x.key,
       text: x.labels[language] ?? x.key,
     });
-    if (section === 'classes') return Object.values(tool.classes).map(labelOf);
+    if (section === 'classes') return Object.values(kit.classes).map(labelOf);
     if (section === 'relations')
-      return Object.values(tool.relations).map(labelOf);
+      return Object.values(kit.relations).map(labelOf);
     if (section === 'modelTypes')
-      return Object.values(tool.modelTypes).map(labelOf);
+      return Object.values(kit.modelTypes).map(labelOf);
     return [];
   });
   const sortedItems = $derived(
@@ -232,10 +236,10 @@
       section === 'modelTypes',
   );
   const counts = $derived<Partial<Record<Section, number>>>({
-    classes: Object.keys(tool.classes).length,
-    relations: Object.keys(tool.relations).length,
-    modelTypes: Object.keys(tool.modelTypes).length,
-    shapes: Object.keys(tool.shapes).length,
+    classes: Object.keys(kit.classes).length,
+    relations: Object.keys(kit.relations).length,
+    modelTypes: Object.keys(kit.modelTypes).length,
+    shapes: Object.keys(kit.shapes).length,
   });
 
   function add() {
@@ -340,13 +344,13 @@
   }
 
   const usagesFor = (owner: KeyOwner) => (attributeId: string) =>
-    findKeyUsages(tool, { kind: 'attribute', owner, id: attributeId as never });
+    findKeyUsages(kit, { kind: 'attribute', owner, id: attributeId as never });
 
   function editPanel(classId: string) {
-    if (!tool.panels[classId]) {
+    if (!kit.panels[classId]) {
       const defs = classId.startsWith('rel_')
-        ? effectiveRelationAttributes(tool, classId as RelationId)
-        : effectiveAttributes(tool, classId as ClassId);
+        ? effectiveRelationAttributes(kit, classId as RelationId)
+        : effectiveAttributes(kit, classId as ClassId);
       const result = run({
         type: 'putPanel',
         layout: defaultLayout(classId as ClassId, defs),
@@ -361,7 +365,7 @@
    * once it is edited as a drawing, so that is confirmed first.
    */
   async function editShape(id: string) {
-    const shape = tool.shapes[id as keyof typeof tool.shapes];
+    const shape = kit.shapes[id as keyof typeof kit.shapes];
     if (!shape) return;
     if (
       shape.look &&
@@ -379,19 +383,6 @@
     } else overlay = { kind: 'shape', id };
   }
 
-  function rename(text: string) {
-    if (text.trim() === '' || text === tool.manifest.name) return;
-    run({ type: 'updateManifest', name: text.trim() } as never);
-  }
-  function setVersion(text: string) {
-    if (text === tool.manifest.version) return;
-    if (!/^\d+\.\d+\.\d+([-+][0-9A-Za-z.-]+)?$/.test(text)) {
-      message = 'A version looks like 1.0.0.';
-      return;
-    }
-    run({ type: 'updateManifest', version: text } as never);
-  }
-
   const status = $derived(
     app.sync.error
       ? app.sync.error
@@ -400,33 +391,24 @@
         : 'Saved',
   );
 
-  async function back() {
-    await controller.closeBuild();
-    onBack();
-  }
+  // The Kit's name and save status go into the top bar.
+  const showDocumentBar = useDocumentBar();
+  const documentName = $derived(kit.manifest.name);
+  $effect(() =>
+    showDocumentBar({ name: documentName, status: documentStatus }),
+  );
 </script>
+
+{#snippet documentStatus()}
+  <DocumentStatus
+    saveText={status}
+    saveBad={!!app.sync.error}
+    testid="build-status"
+  />
+{/snippet}
 
 <div class="build" data-testid="build-view">
   <header class="bar">
-    <button type="button" class="ghost" onclick={back} data-testid="build-back"
-      >← Tool libraries</button
-    >
-    <input
-      class="name"
-      value={tool.manifest.name}
-      onchange={(e) => rename(e.currentTarget.value)}
-      aria-label="Tool library name"
-      data-testid="build-name"
-    />
-    <label class="version"
-      >Version <input
-        value={tool.manifest.version}
-        onchange={(e) => setVersion(e.currentTarget.value)}
-        data-testid="build-version"
-      /></label
-    >
-    <span class="status" data-testid="build-status">{status}</span>
-    <span class="spacer"></span>
     <button
       type="button"
       class="icon ghost"
@@ -434,7 +416,8 @@
       onclick={() => controller.undoBuild()}
       title="Undo"
       aria-label="Undo"
-      data-testid="build-undo"><Icon name="undo" /></button
+      data-testid="build-undo"
+      data-tour="build-undo"><Icon name="undo" /></button
     >
     <button
       type="button"
@@ -447,7 +430,9 @@
     >
     {#if git.link}
       <details class="menu" use:menuBehaviour data-testid="git-menu">
-        <summary data-testid="git-menu-summary">Source control</summary>
+        <summary data-testid="git-menu-summary" data-tour="build-git"
+          >Source control</summary
+        >
         <div class="menu-list right">
           <div class="menu-heading">Linked repository</div>
           <div class="repo">
@@ -484,17 +469,10 @@
     {/if}
     <button
       type="button"
-      class="icon"
-      onclick={() => openDocs(HELP_TOPIC[docsContextNow])}
-      title="Help on this section"
-      aria-label="Help on this section"
-      data-testid="build-help">?</button
-    >
-    <button
-      type="button"
       aria-pressed={showPreview}
       onclick={() => (showPreview = !showPreview)}
-      data-testid="build-preview-toggle">Try it</button
+      data-testid="build-preview-toggle"
+      data-tour="build-try">Try it</button
     >
   </header>
   {#if git.note}<p class="notice success" data-testid="git-note">
@@ -551,7 +529,7 @@
     <details class="notice warning issues" data-testid="build-issues">
       <summary
         >{build.issues.length} problem{build.issues.length === 1 ? '' : 's'} in this
-        tool library</summary
+        Kit</summary
       >
       <ul>
         {#each build.issues.slice(0, 20) as issue (issue.path + issue.message)}<li
@@ -563,9 +541,15 @@
   {/if}
 
   <div class="body">
-    <nav aria-label="Tool library sections">
+    <nav aria-label="Kit sections" data-tour="build-sections">
       {#each GROUPS as group (group.id)}
-        <div class="group" role="group" aria-labelledby="grp-{group.id}">
+        <div
+          class="group"
+          role="group"
+          aria-labelledby="grp-{group.id}"
+          data-section-group={group.id}
+          style:--section="var(--section-{group.id})"
+        >
           <h3 id="grp-{group.id}" class="group-title">{group.title}</h3>
           <div role="tablist" aria-orientation="vertical">
             {#each group.sections as id (id)}
@@ -577,6 +561,7 @@
                 class:on={section === id}
                 onclick={() => (section = id)}
                 data-testid="build-tab-{id}"
+                data-tour="build-tab-{id}"
                 ><span>{LABELS[id]}</span>
                 {#if counts[id] !== undefined}<span class="count"
                     >{counts[id]}</span
@@ -591,6 +576,7 @@
       <section class="items" aria-label={LABELS[section]}>
         <form
           class="new"
+          data-tour="build-new"
           onsubmit={(e) => {
             e.preventDefault();
             add();
@@ -614,7 +600,8 @@
             type="button"
             class="catalog-open"
             onclick={openCatalog}
-            data-testid="catalog-open">Add from catalog…</button
+            data-testid="catalog-open"
+            data-tour="build-catalog">Add from catalog…</button
           >
         {/if}
         {#if sortedItems.length === 0}
@@ -623,7 +610,7 @@
           </p>
         {:else}
           <ul class="list">
-            {#each sortedItems as item (item.id)}
+            {#each sortedItems as item, i (item.id)}
               <li class:on={current === item.id}>
                 <button
                   type="button"
@@ -632,6 +619,9 @@
                   onclick={() =>
                     (selected = { ...selected, [section]: item.id })}
                   data-testid="build-item-{item.key}"
+                  data-tour={(current ? current === item.id : i === 0)
+                    ? 'build-item'
+                    : undefined}
                   >{item.key}<small
                     >{item.text !== item.key ? item.text : ''}</small
                   ></button
@@ -650,12 +640,12 @@
         {/if}
       </section>
     {/if}
-    <main>
-      {#if section === 'classes' && current && tool.classes[current as ClassId]}
+    <main data-tour="build-editor">
+      {#if section === 'classes' && current && kit.classes[current as ClassId]}
         {#key current}
           <ClassEditor
             {assistant}
-            {tool}
+            {kit}
             id={current as ClassId}
             {run}
             onEditShape={editShape}
@@ -665,10 +655,10 @@
             usages={usagesFor({ kind: 'class', id: current as ClassId })}
           />
         {/key}
-      {:else if section === 'relations' && current && tool.relations[current as RelationId]}
+      {:else if section === 'relations' && current && kit.relations[current as RelationId]}
         {#key current}
           <RelationEditor
-            {tool}
+            {kit}
             id={current as RelationId}
             {run}
             onEditShape={editShape}
@@ -677,10 +667,10 @@
             usages={usagesFor({ kind: 'relation', id: current as RelationId })}
           />
         {/key}
-      {:else if section === 'modelTypes' && current && tool.modelTypes[current as ModelTypeId]}
+      {:else if section === 'modelTypes' && current && kit.modelTypes[current as ModelTypeId]}
         {#key current}
           <ModelTypeEditor
-            {tool}
+            {kit}
             id={current as ModelTypeId}
             {run}
             usages={usagesFor({
@@ -692,7 +682,7 @@
       {:else if section === 'shapes'}
         <ShapesSection
           {assistant}
-          {tool}
+          {kit}
           {run}
           onEditShape={editShape}
           onEditAppearance={(oid) =>
@@ -700,11 +690,11 @@
           open={openLine}
         />
       {:else if section === 'rules'}
-        <RulesSection {tool} {run} {assistant} />
+        <RulesSection {kit} {run} {assistant} />
       {:else if section === 'scripts'}
-        <ScriptsSection {tool} {run} {assistant} />
+        <ScriptsSection {kit} {run} {assistant} />
       {:else if section === 'settings'}
-        <SettingsEditor {tool} {run} />
+        <SettingsEditor {kit} {run} />
       {:else}
         <div class="empty-state" data-testid="build-empty">
           <h2>{EMPTY_TITLE[section]}</h2>
@@ -714,16 +704,16 @@
     </main>
     {#if showPreview}
       <aside class="dock" aria-label="Try it">
-        <ToolPreview {tool} onCollapse={() => (showPreview = false)} />
+        <KitPreview {kit} onCollapse={() => (showPreview = false)} />
       </aside>
     {/if}
   </div>
 
   {#if overlay?.kind === 'shape'}
     {@const id = overlay.id}
-    {@const shape = tool.shapes[id as keyof typeof tool.shapes]}
+    {@const shape = kit.shapes[id as keyof typeof kit.shapes]}
     {#if shape?.kind === 'node'}
-      {@const user = Object.values(tool.classes).find((c) => c.shape === id)}
+      {@const user = Object.values(kit.classes).find((c) => c.shape === id)}
       <div
         class="overlay"
         role="dialog"
@@ -733,9 +723,9 @@
         {#key id}
           <ShapeEditor
             shape={shape as NodeShape}
-            attributes={user ? effectiveAttributes(tool, user.id) : []}
+            attributes={user ? effectiveAttributes(kit, user.id) : []}
             className={user?.key ?? ''}
-            shapes={(sid) => tool.shapes[sid]}
+            shapes={(sid) => kit.shapes[sid]}
             onChange={(next) => run({ type: 'putShape', def: next } as never)}
             onClose={() => (overlay = null)}
           />
@@ -746,7 +736,7 @@
 
   {#if overlay?.kind === 'appearance'}
     {@const id = overlay.id}
-    {#if id.startsWith('rel_') && tool.relations[id as RelationId]}
+    {#if id.startsWith('rel_') && kit.relations[id as RelationId]}
       <div
         class="overlay"
         role="dialog"
@@ -755,14 +745,14 @@
       >
         {#key id}
           <RelationLookEditor
-            {tool}
+            {kit}
             relationId={id as RelationId}
             {run}
             onClose={() => (overlay = null)}
           />
         {/key}
       </div>
-    {:else if tool.classes[id as ClassId]}
+    {:else if kit.classes[id as ClassId]}
       <div
         class="overlay"
         role="dialog"
@@ -771,7 +761,7 @@
       >
         {#key id}
           <AppearanceEditor
-            {tool}
+            {kit}
             classId={id as ClassId}
             {run}
             onClose={() => (overlay = null)}
@@ -783,7 +773,7 @@
 
   {#if catalogOpen && CatalogDialog}
     <CatalogDialog
-      {tool}
+      {kit}
       onAdd={addFromCatalog}
       onClose={() => (catalogOpen = false)}
     />
@@ -791,7 +781,7 @@
 
   {#if overlay?.kind === 'panel'}
     {@const id = overlay.id}
-    {@const layout = tool.panels[id]}
+    {@const layout = kit.panels[id]}
     {#if layout}
       <div
         class="overlay"
@@ -802,8 +792,8 @@
         <PanelLayoutEditor
           {layout}
           attributes={id.startsWith('rel_')
-            ? effectiveRelationAttributes(tool, id as RelationId)
-            : effectiveAttributes(tool, id as ClassId)}
+            ? effectiveRelationAttributes(kit, id as RelationId)
+            : effectiveAttributes(kit, id as ClassId)}
           onChange={(next) => run({ type: 'putPanel', layout: next } as never)}
           onClose={() => (overlay = null)}
         />
@@ -823,31 +813,12 @@
   }
   .bar {
     display: flex;
+    justify-content: flex-end;
     gap: var(--gap-2);
     align-items: center;
-    padding: var(--gap-2) var(--gap-4);
+    padding: var(--gap-1) var(--gap-4);
     background: var(--surface);
     border-bottom: 1px solid var(--line);
-  }
-  .name {
-    font-size: var(--text-m);
-    font-weight: 650;
-    min-width: 12rem;
-  }
-  .version {
-    display: flex;
-    gap: var(--gap-2);
-    align-items: center;
-  }
-  .version input {
-    width: 6rem;
-  }
-  .spacer {
-    flex: 1;
-  }
-  .status {
-    color: var(--text-muted);
-    font-size: var(--text-s);
   }
   .repo {
     padding: 0.2rem 0.6rem;
@@ -876,12 +847,14 @@
     align-content: start;
     gap: var(--gap-4);
   }
+  /* Each group has its own colour in a look that colours the parts of a Kit. */
   .group-title {
+    font-family: var(--font-display);
     font-size: 0.7rem;
-    font-weight: 650;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--text-faint);
+    font-weight: var(--label-weight);
+    text-transform: var(--label-case);
+    letter-spacing: var(--label-tracking);
+    color: var(--section);
     padding: 0 var(--gap-2) var(--gap-1);
   }
   .group [role='tablist'] {
@@ -897,9 +870,13 @@
     background: transparent;
   }
   .tab.on {
-    background: var(--accent-soft);
-    color: var(--accent);
+    background: var(--tab-active-bg);
+    color: var(--tab-active-text);
     font-weight: 600;
+    /* The indicator: in the group's colour, or in the mark colour; a look sets one width. */
+    box-shadow:
+      inset var(--tab-indicator-section) 0 0 var(--section),
+      inset var(--tab-indicator-mark) 0 0 var(--mark);
   }
   .count {
     font-size: 0.72rem;

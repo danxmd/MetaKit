@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The events a tool library's rules and scripts can react to.
+The events a Kit's rules and scripts can react to.
 
 ## ADDED Requirements
 

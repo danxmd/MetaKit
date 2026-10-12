@@ -2,7 +2,7 @@
 
 ## Purpose
 
-GitHub and GitLab as remotes for tool libraries.
+GitHub and GitLab as remotes for Kits.
 
 ## ADDED Requirements
 

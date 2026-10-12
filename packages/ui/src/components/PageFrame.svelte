@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SupportFooter from './SupportFooter.svelte';
   import type { Snippet } from 'svelte';
 
   let {
@@ -28,6 +29,7 @@
     </header>
     {@render children()}
   </div>
+  <SupportFooter />
 </main>
 
 <style>

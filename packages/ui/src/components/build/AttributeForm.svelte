@@ -4,7 +4,7 @@
     type ClassId,
     type ModelTypeId,
     type TableColumn,
-    type ToolLibrary,
+    type Kit,
   } from '@metakit-app/core';
   import {
     ATTRIBUTE_TYPE_LABELS,
@@ -18,18 +18,18 @@
 
   let {
     def,
-    tool,
+    kit,
     onPut,
     onRename,
   }: {
     def: AttributeDef;
-    tool: ToolLibrary;
+    kit: Kit;
     /** Saves the changed definition; returns an error text when it is refused. */
     onPut: (def: AttributeDef) => string | null;
     onRename: (key: string) => string | null;
   } = $props();
 
-  const languages = $derived(tool.manifest.languages);
+  const languages = $derived(kit.manifest.languages);
   const lang = $derived(languages[0] ?? 'en');
   let problem = $state<string | null>(null);
 
@@ -44,10 +44,10 @@
     text.trim() === '' || Number.isNaN(Number(text)) ? undefined : Number(text);
 
   const classes = $derived(
-    Object.values(tool.classes).sort((a, b) => a.key.localeCompare(b.key)),
+    Object.values(kit.classes).sort((a, b) => a.key.localeCompare(b.key)),
   );
   const modelTypes = $derived(
-    Object.values(tool.modelTypes).sort((a, b) => a.key.localeCompare(b.key)),
+    Object.values(kit.modelTypes).sort((a, b) => a.key.localeCompare(b.key)),
   );
 
   const toggle = toggled;
@@ -465,8 +465,8 @@
 <style>
   .form {
     display: grid;
-    gap: 0.6rem;
-    padding: 0.6rem 0.8rem;
+    gap: var(--gap-2);
+    padding: var(--gap-2) var(--gap-3);
     background: var(--surface-2);
     border-radius: 6px;
   }
@@ -477,12 +477,12 @@
   }
   label.inline {
     display: inline-flex;
-    gap: 0.4rem;
+    gap: var(--gap-2);
     align-items: center;
   }
   .row {
     display: flex;
-    gap: 0.8rem;
+    gap: var(--gap-3);
     flex-wrap: wrap;
     align-items: center;
   }
@@ -490,11 +490,11 @@
     border: 1px solid var(--line);
     border-radius: 6px;
     display: flex;
-    gap: 0.8rem;
+    gap: var(--gap-3);
     flex-wrap: wrap;
   }
   .muted {
-    color: var(--muted);
+    color: var(--text-muted);
     margin: 0;
     font-size: 0.85rem;
   }

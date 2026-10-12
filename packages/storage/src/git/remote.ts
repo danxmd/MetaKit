@@ -6,7 +6,7 @@
 
 /** A file of the repository as text. Binary assets are carried as base64 with `encoding: 'base64'`. */
 export interface GitFile {
-  /** Path from the root of the folder that holds the tool library, with `/` separators. */
+  /** Path from the root of the folder that holds the Kit, with `/` separators. */
   path: string;
   content: string;
   encoding?: 'utf8' | 'base64';
@@ -15,7 +15,7 @@ export interface GitFile {
 export interface GitSnapshot {
   /** The commit this snapshot is the tree of. */
   commit: string;
-  /** Every file under the tool library's folder. */
+  /** Every file under the Kit's folder. */
   files: GitFile[];
 }
 

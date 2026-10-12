@@ -5,8 +5,8 @@ import { prepare } from './app';
 import { loadHarness } from './bundle';
 import { chooseFromMenu } from './menus';
 
-const tools = (p: string) =>
-  fileURLToPath(new URL(`../../../tools/agent-pipeline/${p}`, import.meta.url));
+const kits = (p: string) =>
+  fileURLToPath(new URL(`../../../kits/agent-pipeline/${p}`, import.meta.url));
 
 type Hook = {
   store: {
@@ -36,13 +36,13 @@ async function openPipeline(page: Page) {
   await page.evaluate(
     (json) =>
       (window as unknown as { __seed(t: string): Promise<void> }).__seed(json),
-    readFileSync(tools('tool.json'), 'utf8'),
+    readFileSync(kits('kit.json'), 'utf8'),
   );
   await page.reload();
   await page.getByTestId('open-folder').click();
   await page
     .locator('input[type="file"][aria-label="Files to import"]')
-    .setInputFiles(tools('code-review.mkmodel.json'));
+    .setInputFiles(kits('code-review.mkmodel.json'));
   await page
     .getByRole('tree')
     .getByRole('button', { name: 'Code review pipeline' })

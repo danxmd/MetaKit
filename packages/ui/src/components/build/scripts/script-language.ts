@@ -3,11 +3,11 @@ import ts from 'typescript';
 /**
  * The TypeScript language service for the script editor, as plain functions. It runs inside a Web
  * Worker in the app (script-language-worker.ts) and directly in tests. It knows three files: the
- * script, the declarations generated from the tool (the `metakit` module), and the few globals a
+ * script, the declarations generated from the Kit (the `metakit` module), and the few globals a
  * script has (the console). Nothing here touches the DOM.
  */
 
-export type DiagnosticSeverity = 'error' | 'warning' | 'info';
+export type DiagnosticSeverity = 'error' | 'warning' | 'info' | 'hint';
 
 export interface EditorDiagnostic {
   from: number;
@@ -15,6 +15,8 @@ export interface EditorDiagnostic {
   severity: DiagnosticSeverity;
   message: string;
   code: number;
+  /** A use of something marked `@deprecated`, which the editor strikes through. */
+  deprecated?: true;
 }
 
 export interface EditorCompletion {
@@ -117,6 +119,18 @@ const kindOf = (kind: string): string => {
 const plain = (parts: readonly ts.SymbolDisplayPart[] | undefined): string =>
   ts.displayPartsToString([...(parts ?? [])]);
 
+/** The documentation, with a "Deprecated" line first so the hover says what to use instead. */
+const docsOf = (
+  documentation: readonly ts.SymbolDisplayPart[] | undefined,
+  tags: readonly ts.JSDocTagInfo[] | undefined,
+): string => {
+  const deprecated = (tags ?? []).find((t) => t.name === 'deprecated');
+  const text = plain(documentation);
+  if (!deprecated) return text;
+  const note = `Deprecated. ${plain(deprecated.text)}`.trim();
+  return text ? `${note}\n${text}` : note;
+};
+
 export function createLanguageServer(
   libs: Record<string, string>,
 ): LanguageServer {
@@ -157,19 +171,29 @@ export function createLanguageServer(
 
     diagnostics(source) {
       setFile(SCRIPT, source);
-      return [
-        ...service.getSyntacticDiagnostics(SCRIPT),
-        ...service.getSemanticDiagnostics(SCRIPT),
-      ].map((d) => {
+      const shown = (
+        d: ts.Diagnostic,
+        deprecated: boolean,
+      ): EditorDiagnostic => {
         const from = d.start ?? 0;
         return {
           from,
           to: from + Math.max(d.length ?? 1, 1),
-          severity: severityOf(d.category),
+          severity: deprecated ? 'hint' : severityOf(d.category),
           message: ts.flattenDiagnosticMessageText(d.messageText, '\n'),
           code: d.code,
+          ...(deprecated ? { deprecated: true as const } : {}),
         };
-      });
+      };
+      return [
+        ...service.getSyntacticDiagnostics(SCRIPT).map((d) => shown(d, false)),
+        ...service.getSemanticDiagnostics(SCRIPT).map((d) => shown(d, false)),
+        // Of the suggestions only uses of deprecated names are shown, such as `tool` (now `kit`).
+        ...service
+          .getSuggestionDiagnostics(SCRIPT)
+          .filter((d) => d.reportsDeprecated)
+          .map((d) => shown(d, true)),
+      ];
     },
 
     completions(source, position) {
@@ -212,7 +236,7 @@ export function createLanguageServer(
         from: position,
         to: position,
         text: plain(d.displayParts),
-        docs: plain(d.documentation),
+        docs: docsOf(d.documentation, d.tags),
       };
     },
 
@@ -224,7 +248,7 @@ export function createLanguageServer(
         from: info.textSpan.start,
         to: info.textSpan.start + info.textSpan.length,
         text: plain(info.displayParts),
-        docs: plain(info.documentation),
+        docs: docsOf(info.documentation, info.tags),
       };
     },
   };

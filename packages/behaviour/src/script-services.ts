@@ -1,6 +1,6 @@
 /**
  * What scripts may ask of the app beyond models and dialogs. The app implements these; both need
- * a permission the person has allowed for the tool in this browser (permissions.ts).
+ * a permission the person has allowed for the Kit in this browser (permissions.ts).
  */
 
 /** Text files inside the workspace folder. Paths use `/` and are relative to the workspace. */

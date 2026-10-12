@@ -1,18 +1,18 @@
 <script lang="ts">
   import { drawPreview, type PreviewTarget } from '@metakit-app/canvas';
-  import type { ToolLibrary } from '@metakit-app/core';
+  import type { Kit } from '@metakit-app/core';
   import { canvasTheme } from '../shell/canvas-theme';
   import { pageTheme } from '../theme/theme';
 
   let {
-    tool,
+    kit,
     target,
     width,
     height,
     text = true,
     padding = 3,
   }: {
-    tool: ToolLibrary;
+    kit: Kit;
     target: PreviewTarget;
     width: number;
     height: number;
@@ -31,7 +31,7 @@
     void themeTick;
     if (!canvas) return;
     const theme = canvasTheme();
-    drawPreview(canvas, tool, target, {
+    drawPreview(canvas, kit, target, {
       width,
       height,
       text,

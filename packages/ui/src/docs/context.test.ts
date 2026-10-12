@@ -42,10 +42,10 @@ describe('docsContext', () => {
     const seen: string[] = [];
     const stop = docsContext.subscribe((c) => seen.push(c));
     setDocsContext('models');
-    setDocsContext('tool-libraries');
+    setDocsContext('kits');
     stop();
     setDocsContext('models');
-    expect(seen).toEqual(['models', 'tool-libraries']);
+    expect(seen).toEqual(['models', 'kits']);
   });
 });
 

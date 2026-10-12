@@ -67,21 +67,21 @@ A single import adds at most 2000 elements; the rest is reported: The drawing ha
 
 ## Examples
 
-You have `bot.svg`, a robot head, for the Agent class of the Agent pipeline tool. Import it **As one image** to keep every detail, then add a text part with `= $label` below it. If you want the head to change colour for the Autonomy attribute, import it as **Separate parts** instead and use **Colour by attribute...** on its main part ([[shape-colour-helper]]).
+You have `bot.svg`, a robot head, for the Agent class of the Agent pipeline Kit. Import it **As one image** to keep every detail, then add a text part with `= $label` below it. If you want the head to change colour for the Autonomy attribute, import it as **Separate parts** instead and use **Colour by attribute...** on its main part ([[shape-colour-helper]]).
 
 ## Good to know
 
 - Imported pieces are normal parts. They are selected, grouped, resized and deleted like parts you drew.
 - Undo removes the whole import in one step.
 - An image part keeps its picture as a data address, so the shape does not depend on an extra file.
-- Large pictures make large tool libraries. Prefer simple drawings ([[performance-limits]]).
+- Large pictures make large Kits. Prefer simple drawings ([[performance-limits]]).
 - If you only need a small standard picture for a look, the simple Appearance editor has fourteen built-in icons ([[appearance-forms]]).
 
 > **Tip**
 > Clean an SVG in your drawing program first: use plain fills and outlines, and convert text to ordinary text, not to outlines.
 
 > **Warning**
-> An SVG from an unknown source is still treated as untrusted. MetaKit strips scripts, but check how the picture looks before sharing the tool library.
+> An SVG from an unknown source is still treated as untrusted. MetaKit strips scripts, but check how the picture looks before sharing the Kit.
 
 ## Related
 

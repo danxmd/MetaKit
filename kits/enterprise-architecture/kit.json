@@ -1,0 +1,2248 @@
+{
+  "formatVersion": 7,
+  "manifest": {
+    "id": "kit_enterprisearch",
+    "name": "Enterprise architecture",
+    "version": "1.0.0",
+    "languages": ["en"]
+  },
+  "settings": {
+    "grid": {
+      "size": 10,
+      "snap": true,
+      "visible": true
+    },
+    "layers": [],
+    "numbering": {
+      "enabled": false,
+      "prefix": "",
+      "start": 1
+    }
+  },
+  "classes": {
+    "cls_role": {
+      "id": "cls_role",
+      "key": "Role",
+      "kind": "node",
+      "labels": {
+        "en": "Business role"
+      },
+      "help": {
+        "en": "A part that actors play in the business, such as order clerk, independent of who fills it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Role",
+          "id": "att_role_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_role_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Responsibilities",
+          "multiline": true,
+          "id": "att_role_responsibilities",
+          "labels": {
+            "en": "Responsibilities"
+          }
+        }
+      ],
+      "shape": "shp_role"
+    },
+    "cls_businessprocess": {
+      "id": "cls_businessprocess",
+      "key": "BusinessProcess",
+      "kind": "node",
+      "labels": {
+        "en": "Business process"
+      },
+      "help": {
+        "en": "A repeatable set of activities that produces a result for a customer or for the organisation."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Business process",
+          "id": "att_businessprocess_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_businessprocess_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_businessprocess_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Frequency",
+          "options": [
+            "Ad hoc",
+            "Daily",
+            "Weekly",
+            "Monthly",
+            "Quarterly",
+            "Yearly"
+          ],
+          "id": "att_businessprocess_frequency",
+          "labels": {
+            "en": "Frequency"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "AutomationLevel",
+          "options": ["Manual", "Partly automated", "Fully automated"],
+          "id": "att_businessprocess_automationlevel",
+          "labels": {
+            "en": "Automation level"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "ServedBy",
+          "formula": "count(incoming('Serves'))",
+          "result": "number",
+          "id": "att_businessprocess_servedby",
+          "labels": {
+            "en": "Served by"
+          },
+          "help": {
+            "en": "How many services, components and interfaces serve it."
+          }
+        }
+      ],
+      "shape": "shp_businessprocess"
+    },
+    "cls_interface": {
+      "id": "cls_interface",
+      "key": "Interface",
+      "kind": "node",
+      "labels": {
+        "en": "Application interface"
+      },
+      "help": {
+        "en": "A point where an application can be reached by people or other applications, such as a screen or an API, with the format it uses."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Interface",
+          "id": "att_interface_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_interface_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Direction",
+          "options": ["Inbound", "Outbound", "Both"],
+          "id": "att_interface_direction",
+          "labels": {
+            "en": "Direction"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Format",
+          "id": "att_interface_format",
+          "labels": {
+            "en": "Format"
+          }
+        }
+      ],
+      "shape": "shp_interface"
+    },
+    "cls_layer": {
+      "id": "cls_layer",
+      "key": "Layer",
+      "kind": "swimlane",
+      "labels": {
+        "en": "Layer"
+      },
+      "help": {
+        "en": "A band that gathers the elements of one layer: business, application or technology. Lines between layers stay visible across it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Layer",
+          "id": "att_layer_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Kind",
+          "options": ["Business", "Application", "Technology"],
+          "id": "att_layer_kind",
+          "labels": {
+            "en": "Kind"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_layer_description",
+          "labels": {
+            "en": "Description"
+          }
+        }
+      ],
+      "shape": "shp_layer"
+    },
+    "cls_businessactor": {
+      "id": "cls_businessactor",
+      "key": "BusinessActor",
+      "kind": "node",
+      "labels": {
+        "en": "Business actor"
+      },
+      "help": {
+        "en": "A person, team or outside party that does something, such as a customer or a department."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Business actor",
+          "id": "att_businessactor_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_businessactor_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Kind",
+          "options": ["Person", "Team", "Organisation unit", "Outside party"],
+          "id": "att_businessactor_kind",
+          "labels": {
+            "en": "Kind"
+          }
+        }
+      ],
+      "shape": "shp_businessactor"
+    },
+    "cls_businessservice": {
+      "id": "cls_businessservice",
+      "key": "BusinessService",
+      "kind": "node",
+      "labels": {
+        "en": "Business service"
+      },
+      "help": {
+        "en": "What the business offers to its customers or to other parts of the organisation, such as ordering or invoicing."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Business service",
+          "id": "att_businessservice_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_businessservice_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Consumers",
+          "id": "att_businessservice_consumers",
+          "labels": {
+            "en": "Consumers"
+          },
+          "help": {
+            "en": "Who uses it."
+          }
+        },
+        {
+          "type": "text",
+          "key": "ServiceLevel",
+          "id": "att_businessservice_servicelevel",
+          "labels": {
+            "en": "Service level"
+          },
+          "help": {
+            "en": "What is promised, such as opening hours."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_bservice_realised",
+          "formula": "count(incoming('Realises')) > 0",
+          "message": "= 'Business service \"' + Name + '\" is not realised: connect the process or application service that provides it with \"Realises\".'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_businessservice"
+    },
+    "cls_applicationcomponent": {
+      "id": "cls_applicationcomponent",
+      "key": "ApplicationComponent",
+      "kind": "node",
+      "labels": {
+        "en": "Application component"
+      },
+      "help": {
+        "en": "A piece of software with its own owner and life cycle, such as a web shop or an order system."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Application component",
+          "id": "att_applicationcomponent_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_applicationcomponent_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_applicationcomponent_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Lifecycle",
+          "options": ["Plan", "Invest", "Tolerate", "Migrate", "Retire"],
+          "id": "att_applicationcomponent_lifecycle",
+          "labels": {
+            "en": "Lifecycle"
+          },
+          "help": {
+            "en": "What should happen to it: build it, invest in it, keep it as it is, move away from it, or switch it off."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Hosting",
+          "options": ["On-premises", "Cloud", "Software as a service"],
+          "id": "att_applicationcomponent_hosting",
+          "labels": {
+            "en": "Hosting"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "Users",
+          "min": 0,
+          "id": "att_applicationcomponent_users",
+          "labels": {
+            "en": "Users"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Supports",
+          "formula": "count(outgoing('Serves')) + count(outgoing('Realises'))",
+          "result": "number",
+          "id": "att_applicationcomponent_supports",
+          "labels": {
+            "en": "Supports"
+          },
+          "help": {
+            "en": "How many elements it serves or realises."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_component_retire",
+          "formula": "Lifecycle != 'Retire' || Supports == 0",
+          "message": "= 'Application component \"' + Name + '\" is to be retired but still serves or realises ' + Supports + ' element' + (Supports == 1 ? '' : 's') + ': move them to another component first.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_component_runs",
+          "formula": "Hosting == 'Software as a service' || count(incoming('AssignedTo')) > 0",
+          "message": "= 'Application component \"' + Name + '\" runs nowhere: connect the node or system software it runs on with \"Assigned to\".'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_applicationcomponent"
+    },
+    "cls_applicationservice": {
+      "id": "cls_applicationservice",
+      "key": "ApplicationService",
+      "kind": "node",
+      "labels": {
+        "en": "Application service"
+      },
+      "help": {
+        "en": "A function that an application offers to the business or to other applications, such as order handling."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Application service",
+          "id": "att_applicationservice_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_applicationservice_description",
+          "labels": {
+            "en": "Description"
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_aservice_realised",
+          "formula": "count(incoming('Realises')) > 0",
+          "message": "= 'Application service \"' + Name + '\" is not realised: connect the application component that provides it with \"Realises\".'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_applicationservice"
+    },
+    "cls_dataobject": {
+      "id": "cls_dataobject",
+      "key": "DataObject",
+      "kind": "node",
+      "labels": {
+        "en": "Data object"
+      },
+      "help": {
+        "en": "Data that applications use and keep, such as an order or a customer record."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Data object",
+          "id": "att_dataobject_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_dataobject_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Classification",
+          "options": ["Public", "Internal", "Confidential", "Restricted"],
+          "id": "att_dataobject_classification",
+          "labels": {
+            "en": "Classification"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "UsedBy",
+          "formula": "count(incoming('Accesses'))",
+          "result": "number",
+          "id": "att_dataobject_usedby",
+          "labels": {
+            "en": "Used by"
+          },
+          "help": {
+            "en": "How many processes, components and services access it."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_data_used",
+          "formula": "UsedBy > 0",
+          "message": "= 'Data object \"' + Name + '\" is not used by anything.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_dataobject"
+    },
+    "cls_node": {
+      "id": "cls_node",
+      "key": "Node",
+      "kind": "node",
+      "labels": {
+        "en": "Node"
+      },
+      "help": {
+        "en": "Something software runs on: a server, a virtual machine, a container platform, a cloud service or a device."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Node",
+          "id": "att_node_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_node_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Kind",
+          "options": [
+            "Physical server",
+            "Virtual machine",
+            "Container platform",
+            "Cloud service",
+            "Device"
+          ],
+          "id": "att_node_kind",
+          "labels": {
+            "en": "Kind"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Location",
+          "id": "att_node_location",
+          "labels": {
+            "en": "Location"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Environment",
+          "options": ["Development", "Test", "Production"],
+          "id": "att_node_environment",
+          "labels": {
+            "en": "Environment"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Runs",
+          "formula": "count(outgoing('AssignedTo'))",
+          "result": "number",
+          "id": "att_node_runs",
+          "labels": {
+            "en": "Runs"
+          },
+          "help": {
+            "en": "How many components and system software it runs."
+          }
+        }
+      ],
+      "shape": "shp_node"
+    },
+    "cls_systemsoftware": {
+      "id": "cls_systemsoftware",
+      "key": "SystemSoftware",
+      "kind": "node",
+      "labels": {
+        "en": "System software"
+      },
+      "help": {
+        "en": "Software that other software needs, such as an operating system, a database or middleware."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "System software",
+          "id": "att_systemsoftware_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_systemsoftware_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Kind",
+          "options": [
+            "Operating system",
+            "Database",
+            "Middleware",
+            "Runtime",
+            "Other"
+          ],
+          "id": "att_systemsoftware_kind",
+          "labels": {
+            "en": "Kind"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Version",
+          "id": "att_systemsoftware_version",
+          "labels": {
+            "en": "Version"
+          }
+        }
+      ],
+      "shape": "shp_systemsoftware"
+    },
+    "cls_network": {
+      "id": "cls_network",
+      "key": "Network",
+      "kind": "node",
+      "labels": {
+        "en": "Network"
+      },
+      "help": {
+        "en": "A network that connects nodes, such as a local network or the internet."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Network",
+          "id": "att_network_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_network_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Kind",
+          "options": [
+            "Local network",
+            "Wide area network",
+            "Internet",
+            "Private link"
+          ],
+          "id": "att_network_kind",
+          "labels": {
+            "en": "Kind"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Bandwidth",
+          "id": "att_network_bandwidth",
+          "labels": {
+            "en": "Bandwidth"
+          }
+        }
+      ],
+      "shape": "shp_network"
+    }
+  },
+  "relations": {
+    "rel_serves": {
+      "id": "rel_serves",
+      "key": "Serves",
+      "labels": {
+        "en": "Serves"
+      },
+      "help": {
+        "en": "Offers its function to the element it points to: a service serves a process, a component serves another component, a node serves the software on it."
+      },
+      "from": [
+        "cls_businessservice",
+        "cls_applicationservice",
+        "cls_interface",
+        "cls_applicationcomponent",
+        "cls_node",
+        "cls_systemsoftware"
+      ],
+      "to": [
+        "cls_businessactor",
+        "cls_role",
+        "cls_businessprocess",
+        "cls_applicationcomponent",
+        "cls_applicationservice"
+      ],
+      "attributes": [],
+      "shape": "shp_rel_serves"
+    },
+    "rel_realises": {
+      "id": "rel_realises",
+      "key": "Realises",
+      "labels": {
+        "en": "Realises"
+      },
+      "help": {
+        "en": "Makes the service or interface real: a process realises a business service, a component realises an application service or interface."
+      },
+      "from": [
+        "cls_businessprocess",
+        "cls_applicationcomponent",
+        "cls_applicationservice"
+      ],
+      "to": ["cls_businessservice", "cls_applicationservice", "cls_interface"],
+      "attributes": [],
+      "shape": "shp_rel_realises"
+    },
+    "rel_assignedto": {
+      "id": "rel_assignedto",
+      "key": "AssignedTo",
+      "labels": {
+        "en": "Assigned to"
+      },
+      "help": {
+        "en": "Who or what does the work or runs it: an actor fills a role, a role performs a process, a node runs software."
+      },
+      "from": [
+        "cls_businessactor",
+        "cls_role",
+        "cls_node",
+        "cls_systemsoftware"
+      ],
+      "to": [
+        "cls_role",
+        "cls_businessprocess",
+        "cls_applicationcomponent",
+        "cls_systemsoftware"
+      ],
+      "attributes": [],
+      "shape": "shp_rel_assignedto"
+    },
+    "rel_accesses": {
+      "id": "rel_accesses",
+      "key": "Accesses",
+      "labels": {
+        "en": "Accesses"
+      },
+      "help": {
+        "en": "The process, component or service reads or writes the data object."
+      },
+      "from": [
+        "cls_businessprocess",
+        "cls_applicationcomponent",
+        "cls_applicationservice"
+      ],
+      "to": ["cls_dataobject"],
+      "attributes": [
+        {
+          "type": "choice",
+          "key": "Access",
+          "options": ["Reads", "Writes", "Reads and writes"],
+          "id": "att_accesses_access",
+          "labels": {
+            "en": "Access"
+          }
+        }
+      ],
+      "shape": "shp_rel_accesses"
+    },
+    "rel_flowsto": {
+      "id": "rel_flowsto",
+      "key": "FlowsTo",
+      "labels": {
+        "en": "Flows to"
+      },
+      "help": {
+        "en": "Something passes from one process or component to the next, such as an order."
+      },
+      "from": ["cls_businessprocess", "cls_applicationcomponent"],
+      "to": ["cls_businessprocess", "cls_applicationcomponent"],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "What",
+          "id": "att_flowsto_what",
+          "labels": {
+            "en": "What"
+          },
+          "help": {
+            "en": "What passes, such as \"order\"."
+          }
+        }
+      ],
+      "shape": "shp_rel_flowsto"
+    },
+    "rel_triggers": {
+      "id": "rel_triggers",
+      "key": "Triggers",
+      "labels": {
+        "en": "Triggers"
+      },
+      "help": {
+        "en": "The actor or process starts the next process."
+      },
+      "from": ["cls_businessactor", "cls_businessprocess"],
+      "to": ["cls_businessprocess"],
+      "attributes": [],
+      "shape": "shp_rel_triggers"
+    },
+    "rel_connectedto": {
+      "id": "rel_connectedto",
+      "key": "ConnectedTo",
+      "labels": {
+        "en": "Connected to"
+      },
+      "help": {
+        "en": "The node is connected to the network, or the two are linked."
+      },
+      "from": ["cls_node", "cls_network"],
+      "to": ["cls_node", "cls_network"],
+      "attributes": [],
+      "shape": "shp_rel_connectedto"
+    }
+  },
+  "modelTypes": {
+    "mt_architecture": {
+      "id": "mt_architecture",
+      "key": "Architecture",
+      "labels": {
+        "en": "Enterprise architecture"
+      },
+      "classes": [
+        "cls_role",
+        "cls_businessprocess",
+        "cls_interface",
+        "cls_layer",
+        "cls_businessactor",
+        "cls_businessservice",
+        "cls_applicationcomponent",
+        "cls_applicationservice",
+        "cls_dataobject",
+        "cls_node",
+        "cls_systemsoftware",
+        "cls_network"
+      ],
+      "relations": [
+        "rel_serves",
+        "rel_realises",
+        "rel_assignedto",
+        "rel_accesses",
+        "rel_flowsto",
+        "rel_triggers",
+        "rel_connectedto"
+      ],
+      "views": [
+        {
+          "id": "vw_business",
+          "key": "Business",
+          "labels": {
+            "en": "Business layer"
+          },
+          "classes": [
+            "cls_layer",
+            "cls_businessactor",
+            "cls_role",
+            "cls_businessprocess",
+            "cls_businessservice"
+          ],
+          "relations": [
+            "rel_serves",
+            "rel_realises",
+            "rel_assignedto",
+            "rel_triggers",
+            "rel_flowsto"
+          ]
+        },
+        {
+          "id": "vw_application",
+          "key": "Application",
+          "labels": {
+            "en": "Application layer"
+          },
+          "classes": [
+            "cls_layer",
+            "cls_applicationcomponent",
+            "cls_interface",
+            "cls_applicationservice",
+            "cls_dataobject"
+          ],
+          "relations": [
+            "rel_serves",
+            "rel_realises",
+            "rel_accesses",
+            "rel_flowsto"
+          ]
+        },
+        {
+          "id": "vw_technology",
+          "key": "Technology",
+          "labels": {
+            "en": "Technology layer"
+          },
+          "classes": [
+            "cls_layer",
+            "cls_node",
+            "cls_systemsoftware",
+            "cls_network"
+          ],
+          "relations": ["rel_serves", "rel_assignedto", "rel_connectedto"]
+        }
+      ],
+      "cardinalities": [],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Title",
+          "required": true,
+          "maxLength": 100,
+          "id": "att_mtarchitecture_title",
+          "labels": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Organisation",
+          "id": "att_mtarchitecture_organisation",
+          "labels": {
+            "en": "Organisation"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Architect",
+          "id": "att_mtarchitecture_architect",
+          "labels": {
+            "en": "Architect"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Applications",
+          "formula": "count(objects('ApplicationComponent'))",
+          "result": "number",
+          "id": "att_mtarchitecture_applications",
+          "labels": {
+            "en": "Applications"
+          },
+          "help": {
+            "en": "How many application components the model holds."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Processes",
+          "formula": "count(objects('BusinessProcess'))",
+          "result": "number",
+          "id": "att_mtarchitecture_processes",
+          "labels": {
+            "en": "Processes"
+          },
+          "help": {
+            "en": "How many business processes the model holds."
+          }
+        }
+      ],
+      "help": {
+        "en": "The business, application and technology layers of an organisation and how they serve, realise and run each other."
+      },
+      "containers": {
+        "cls_layer": [
+          "cls_businessactor",
+          "cls_role",
+          "cls_businessprocess",
+          "cls_businessservice",
+          "cls_applicationcomponent",
+          "cls_interface",
+          "cls_applicationservice",
+          "cls_dataobject",
+          "cls_node",
+          "cls_systemsoftware",
+          "cls_network"
+        ]
+      }
+    }
+  },
+  "shapes": {
+    "shp_role": {
+      "id": "shp_role",
+      "name": "Role look",
+      "kind": "node",
+      "size": {
+        "width": 160,
+        "height": 44,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 999,
+          "fill": "#b2f2bb",
+          "stroke": "#2f9e44",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 42,
+          "y": 4,
+          "width": "100% - 58",
+          "height": "100% - 8",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7",
+          "viewBox": [0, 0, 24, 24],
+          "x": 14,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "pill",
+        "fill": "#b2f2bb",
+        "border": "#2f9e44",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 160,
+          "height": 44,
+          "resizable": true
+        },
+        "icon": {
+          "name": "person"
+        }
+      }
+    },
+    "shp_businessprocess": {
+      "id": "shp_businessprocess",
+      "name": "BusinessProcess look",
+      "kind": "node",
+      "size": {
+        "width": 150,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "#b2f2bb",
+          "stroke": "#2f9e44",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 4,
+          "width": "100% - 16",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 22",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= Owner",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": "#b2f2bb",
+        "border": "#2f9e44",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 150,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Owner"
+        }
+      }
+    },
+    "shp_interface": {
+      "id": "shp_interface",
+      "name": "Interface look",
+      "kind": "node",
+      "size": {
+        "width": 150,
+        "height": 56,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "#a5d8ff",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 4,
+          "width": "100% - 16",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 22",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= Format",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": "#a5d8ff",
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 150,
+          "height": 56,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Format"
+        }
+      }
+    },
+    "shp_layer": {
+      "id": "shp_layer",
+      "name": "Layer look",
+      "kind": "node",
+      "size": {
+        "width": 1300,
+        "height": 250,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "fill": "#ffffff00",
+          "stroke": "#adb5bd",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": 28,
+          "height": "100%",
+          "fill": "= Kind == 'Business' ? '#b2f2bb' : Kind == 'Application' ? '#a5d8ff' : Kind == 'Technology' ? '#96f2d7' : '#e9ecef'",
+          "stroke": "#adb5bd",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": -66,
+          "y": "50% - 14",
+          "width": 160,
+          "height": 28,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          },
+          "transform": {
+            "rotate": -90
+          }
+        }
+      ],
+      "look": {
+        "base": "swimlane",
+        "fill": {
+          "by": "Kind",
+          "values": {
+            "Business": "#b2f2bb",
+            "Application": "#a5d8ff",
+            "Technology": "#96f2d7"
+          },
+          "fallback": "#e9ecef"
+        },
+        "border": "#adb5bd",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 1300,
+          "height": 250,
+          "resizable": true
+        }
+      }
+    },
+    "shp_businessactor": {
+      "id": "shp_businessactor",
+      "name": "BusinessActor look",
+      "kind": "node",
+      "size": {
+        "width": 90,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "ellipse",
+          "x": "50% - 16",
+          "y": 4,
+          "width": 32,
+          "height": 32,
+          "fill": "#b2f2bb",
+          "stroke": "#2f9e44",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 6,
+          "y": 42,
+          "width": "100% - 12",
+          "height": "100% - 46",
+          "radius": 18,
+          "fill": "#b2f2bb",
+          "stroke": "#2f9e44",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 10,
+          "y": 46,
+          "width": "100% - 20",
+          "height": "100% - 52",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "person",
+        "fill": "#b2f2bb",
+        "border": "#2f9e44",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 90,
+          "height": 110,
+          "resizable": true
+        }
+      }
+    },
+    "shp_businessservice": {
+      "id": "shp_businessservice",
+      "name": "BusinessService look",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 50,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 999,
+          "fill": "#b2f2bb",
+          "stroke": "#2f9e44",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 42,
+          "y": 4,
+          "width": "100% - 58",
+          "height": "100% - 8",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z",
+          "viewBox": [0, 0, 24, 24],
+          "x": 14,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "pill",
+        "fill": "#b2f2bb",
+        "border": "#2f9e44",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 170,
+          "height": 50,
+          "resizable": true
+        },
+        "icon": {
+          "name": "star"
+        }
+      }
+    },
+    "shp_applicationcomponent": {
+      "id": "shp_applicationcomponent",
+      "name": "ApplicationComponent look",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 0,
+          "fill": "#a5d8ff",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= Lifecycle",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M19 12l2-1-1-3-2 .5-1.5-1.5.5-2-3-1-1 2h-2l-1-2-3 1 .5 2L6 8.5 4 8l-1 3 2 1v2l-2 1 1 3 2-.5L7.5 19l-.5 2 3 1 1-2h2l1 2 3-1-.5-2 1.5-1.5 2 .5 1-3-2-1z",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "box",
+        "fill": "#a5d8ff",
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 170,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Lifecycle"
+        },
+        "icon": {
+          "name": "gear"
+        }
+      }
+    },
+    "shp_applicationservice": {
+      "id": "shp_applicationservice",
+      "name": "ApplicationService look",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 50,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 999,
+          "fill": "#a5d8ff",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 42,
+          "y": 4,
+          "width": "100% - 58",
+          "height": "100% - 8",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z",
+          "viewBox": [0, 0, 24, 24],
+          "x": 14,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "pill",
+        "fill": "#a5d8ff",
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 170,
+          "height": 50,
+          "resizable": true
+        },
+        "icon": {
+          "name": "star"
+        }
+      }
+    },
+    "shp_dataobject": {
+      "id": "shp_dataobject",
+      "name": "DataObject look",
+      "kind": "node",
+      "size": {
+        "width": 140,
+        "height": 80,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          [0, 0],
+          ["100% - 18", 0],
+          ["100%", 18],
+          ["100%", "100%"],
+          [0, "100%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            [0, 0],
+            ["100% - 18", 0],
+            ["100%", 18],
+            ["100%", "100%"],
+            [0, "100%"]
+          ],
+          "fill": "#a5d8ff",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "polygon",
+          "points": [
+            ["100% - 18", 0],
+            ["100% - 18", 18],
+            ["100%", 18]
+          ],
+          "fill": "#00000022",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 20,
+          "width": "100% - 16",
+          "height": "100% - 46",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 24",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= Classification",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "document",
+        "fill": "#a5d8ff",
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 140,
+          "height": 80,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Classification"
+        }
+      }
+    },
+    "shp_node": {
+      "id": "shp_node",
+      "name": "Node look",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 0,
+          "fill": "#96f2d7",
+          "stroke": "#0c8599",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= Kind",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M7 18a4 4 0 0 1-.5-8A5.5 5.5 0 0 1 17 8.5 4.5 4.5 0 0 1 17.5 18z",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "box",
+        "fill": "#96f2d7",
+        "border": "#0c8599",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 170,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Kind"
+        },
+        "icon": {
+          "name": "cloud"
+        }
+      }
+    },
+    "shp_systemsoftware": {
+      "id": "shp_systemsoftware",
+      "name": "SystemSoftware look",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "#96f2d7",
+          "stroke": "#0c8599",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= Kind",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6 M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": "#96f2d7",
+        "border": "#0c8599",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 170,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Kind"
+        },
+        "icon": {
+          "name": "database"
+        }
+      }
+    },
+    "shp_network": {
+      "id": "shp_network",
+      "name": "Network look",
+      "kind": "node",
+      "size": {
+        "width": 180,
+        "height": 54,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 999,
+          "fill": "#96f2d7",
+          "stroke": "#0c8599",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 16,
+          "y": 4,
+          "width": "100% - 32",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 16,
+          "y": "100% - 22",
+          "width": "100% - 32",
+          "height": 18,
+          "text": "= Kind",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "pill",
+        "fill": "#96f2d7",
+        "border": "#0c8599",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 180,
+          "height": 54,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Kind"
+        }
+      }
+    },
+    "shp_rel_serves": {
+      "id": "shp_rel_serves",
+      "name": "Serves look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#495057",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "open-arrow"
+      },
+      "look": {
+        "colour": "#495057",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "open-arrow",
+        "label": null
+      }
+    },
+    "shp_rel_realises": {
+      "id": "shp_rel_realises",
+      "name": "Realises look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#495057",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "triangle"
+      },
+      "look": {
+        "colour": "#495057",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "triangle",
+        "label": null
+      }
+    },
+    "shp_rel_assignedto": {
+      "id": "shp_rel_assignedto",
+      "name": "AssignedTo look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#495057",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "startMarker": {
+        "type": "circle"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#495057",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "circle",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_accesses": {
+      "id": "shp_rel_accesses",
+      "name": "Accesses look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#1c7ed6",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [2, 4]
+      },
+      "endMarker": {
+        "type": "open-arrow"
+      },
+      "labels": [
+        {
+          "at": "middle",
+          "text": "= Access",
+          "font": {
+            "size": 11
+          },
+          "background": "#ffffff",
+          "visible": "= Access != null"
+        }
+      ],
+      "look": {
+        "colour": "#1c7ed6",
+        "width": 1.5,
+        "style": "dotted",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "open-arrow",
+        "label": {
+          "attribute": "Access"
+        }
+      }
+    },
+    "shp_rel_flowsto": {
+      "id": "shp_rel_flowsto",
+      "name": "FlowsTo look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#7048e8",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "labels": [
+        {
+          "at": "middle",
+          "text": "= What",
+          "font": {
+            "size": 11
+          },
+          "background": "#ffffff",
+          "visible": "= What != null"
+        }
+      ],
+      "look": {
+        "colour": "#7048e8",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": {
+          "attribute": "What"
+        }
+      }
+    },
+    "shp_rel_triggers": {
+      "id": "shp_rel_triggers",
+      "name": "Triggers look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#2f9e44",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "triangle"
+      },
+      "look": {
+        "colour": "#2f9e44",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "triangle",
+        "label": null
+      }
+    },
+    "shp_rel_connectedto": {
+      "id": "shp_rel_connectedto",
+      "name": "ConnectedTo look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#0c8599",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "look": {
+        "colour": "#0c8599",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "none",
+        "label": null
+      }
+    }
+  },
+  "panels": {
+    "cls_applicationcomponent": {
+      "class": "cls_applicationcomponent",
+      "tabs": [
+        {
+          "label": "Component",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            },
+            {
+              "attribute": "Owner"
+            },
+            {
+              "attribute": "Users"
+            }
+          ]
+        },
+        {
+          "label": "Life cycle",
+          "items": [
+            {
+              "attribute": "Lifecycle",
+              "control": "segmented"
+            },
+            {
+              "attribute": "Hosting",
+              "control": "select"
+            },
+            {
+              "attribute": "Supports"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    }
+  },
+  "rules": {},
+  "scripts": {}
+}

@@ -6,7 +6,7 @@ import {
   type DraftMap,
   type DraftOutcome,
 } from '@metakit-app/assistant';
-import type { ToolCommand, ToolLibrary } from '@metakit-app/core';
+import type { KitCommand, Kit } from '@metakit-app/core';
 import type { AssistantPort } from './assistant-service';
 
 export const KIND_NOUN: Record<DraftKind, string> = {
@@ -70,7 +70,7 @@ export class DraftDialogModel<K extends DraftKind> {
 
   constructor(
     readonly kind: K,
-    private tool: ToolLibrary,
+    private kit: Kit,
     private readonly assistant: AssistantPort,
     private readonly language?: string,
   ) {}
@@ -91,9 +91,9 @@ export class DraftDialogModel<K extends DraftKind> {
     for (const l of [...this.listeners]) l();
   }
 
-  /** The tool as it is now, so that the plain-English lines and the commands match it. */
-  setTool(tool: ToolLibrary): void {
-    this.tool = tool;
+  /** The Kit as it is now, so that the plain-English lines and the commands match it. */
+  setKit(kit: Kit): void {
+    this.kit = kit;
   }
 
   get canStart(): boolean {
@@ -108,7 +108,7 @@ export class DraftDialogModel<K extends DraftKind> {
     try {
       const outcome = await this.assistant.draft(
         this.kind,
-        this.tool,
+        this.kit,
         this.sentence,
         this.language,
       );
@@ -126,7 +126,7 @@ export class DraftDialogModel<K extends DraftKind> {
     let lines: string[] = [];
     if (d) {
       try {
-        lines = describeDraftChange(this.kind, d, this.tool);
+        lines = describeDraftChange(this.kind, d, this.kit);
       } catch {
         // A draft that cannot be described is still shown raw, with its errors.
         lines = [];
@@ -151,12 +151,12 @@ export class DraftDialogModel<K extends DraftKind> {
   }
 
   /**
-   * The commands that apply the draft to the tool as it is now, or null when there is nothing
+   * The commands that apply the draft to the Kit as it is now, or null when there is nothing
    * to accept. Applying them is one undo step; the caller runs them through Build mode.
    */
-  accept(tool: ToolLibrary = this.tool): ToolCommand[] | null {
+  accept(kit: Kit = this.kit): KitCommand[] | null {
     if (!this.outcome?.draft || this.outcome.errors.length > 0) return null;
-    return draftToCommands(this.kind, this.outcome.draft, tool);
+    return draftToCommands(this.kind, this.outcome.draft, kit);
   }
 
   /** Forgets the draft and the sentence, ready for a new one. */

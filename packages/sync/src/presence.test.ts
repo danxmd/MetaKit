@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MemoryFolder } from './memory-adapter';
+import { MemoryFolder, planted } from './memory-adapter';
 import {
   detectDivergence,
   formatPresence,
@@ -169,6 +169,23 @@ describe('PresenceService', () => {
     expect(log.length).toBeGreaterThan(0);
     for (const l of log) expect(l.path).toBe('_presence/aaaa0001.json');
     expect(folder.files.has('_presence/aaaa0001.json')).toBe(false);
+  });
+
+  it('never counts its own file as another person, under any name', async () => {
+    const { folder, a, b } = pair();
+    a.start();
+    b.start();
+    await a.refresh();
+    // A sync service's conflicted copy of a's own file, and an empty file still being written.
+    planted(
+      folder,
+      '_presence/aaaa0001 (1).json',
+      folder.text('_presence/aaaa0001.json'),
+    );
+    planted(folder, '_presence/aaaa0001.json.tmp.json', '');
+    expect((await a.refresh()).map((p) => p.instance)).toEqual(['bbbb0002']);
+    // The others see a once.
+    expect((await b.refresh()).map((p) => p.instance)).toEqual(['aaaa0001']);
   });
 
   it('forgets a person whose file stopped being refreshed', async () => {

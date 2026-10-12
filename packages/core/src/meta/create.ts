@@ -1,24 +1,20 @@
 import { newId, type RandomSource } from '../ids';
-import {
-  emptyToolSettings,
-  TOOL_FORMAT_VERSION,
-  type ToolLibrary,
-} from './types';
+import { emptyKitSettings, KIT_FORMAT_VERSION, type Kit } from './types';
 
-/** A tool library with nothing in it yet, as Build mode starts one. */
-export function createEmptyTool(
+/** A Kit with nothing in it yet, as Build mode starts one. */
+export function createEmptyKit(
   input: { name: string; languages?: string[] },
   random?: RandomSource,
-): ToolLibrary {
+): Kit {
   return {
-    formatVersion: TOOL_FORMAT_VERSION,
+    formatVersion: KIT_FORMAT_VERSION,
     manifest: {
-      id: newId('tool', random),
+      id: newId('kit', random),
       name: input.name,
       version: '0.1.0',
       languages: input.languages?.length ? input.languages : ['en'],
     },
-    settings: emptyToolSettings(),
+    settings: emptyKitSettings(),
     classes: {},
     relations: {},
     modelTypes: {},
@@ -30,23 +26,23 @@ export function createEmptyTool(
 }
 
 /**
- * A copy of a tool library to extend: a new id and name, version 1.0.0 and a note of where it came
- * from. Every other id is kept; ids of classes and shapes only need to be unique inside one tool
+ * A copy of a Kit to extend: a new id and name, version 1.0.0 and a note of where it came
+ * from. Every other id is kept; ids of classes and shapes only need to be unique inside one Kit
  * library, and keeping them lets a copy be compared with its original.
  */
-export function cloneToolLibrary(
-  source: ToolLibrary,
+export function cloneKit(
+  source: Kit,
   name: string,
   random?: RandomSource,
-): ToolLibrary {
-  // A tool library is plain JSON, so a JSON round trip is a full, independent copy.
-  const copy = JSON.parse(JSON.stringify(source)) as ToolLibrary;
+): Kit {
+  // A Kit is plain JSON, so a JSON round trip is a full, independent copy.
+  const copy = JSON.parse(JSON.stringify(source)) as Kit;
   return {
     ...copy,
-    formatVersion: TOOL_FORMAT_VERSION,
+    formatVersion: KIT_FORMAT_VERSION,
     manifest: {
       ...copy.manifest,
-      id: newId('tool', random),
+      id: newId('kit', random),
       name,
       version: '1.0.0',
       basedOn: {

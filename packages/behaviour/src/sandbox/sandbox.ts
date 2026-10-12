@@ -66,7 +66,7 @@ type Core = typeof import('quickjs-emscripten-core');
 let codePromise: Promise<{ core: Core; variant: VariantCode }> | null = null;
 
 /**
- * Loads QuickJS on first use. Nothing of it is imported or fetched until a tool has a script, so
+ * Loads QuickJS on first use. Nothing of it is imported or fetched until a Kit has a script, so
  * an app that never runs one never pays for it.
  */
 export function loadQuickJSCode(): Promise<{

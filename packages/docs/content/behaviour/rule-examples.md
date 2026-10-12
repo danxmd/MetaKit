@@ -2,28 +2,28 @@
 id: rule-examples
 title: Rule examples
 category: behaviour
-summary: Worked rules from the sample tool libraries, with the form settings and the stored JSON.
+summary: Worked rules from the sample Kits, with the form settings and the stored JSON.
 keywords: [rule examples, example rules, mark ready rule, autonomous agents need a gate, total effort rule]
 contexts: []
 order: 35
 ---
 
-This page walks through rules that really ship with the sample tool libraries in the repository folder `tools/`. They show the three usual shapes: a hint that reacts to a change, a status button, and a calculation on demand.
+This page walks through rules that really ship with the sample Kits in the repository folder `kits/`. They show the three usual shapes: a hint that reacts to a change, a status button, and a calculation on demand.
 
 ## What it is
 
-Each example gives the settings as you would fill them in the rule form (see [[rules]]), then the JSON that is stored in the tool library. You do not need the JSON to build rules. It helps when you read a tool library file or a Git repository (see [[git-layout]]).
+Each example gives the settings as you would fill them in the rule form (see [[rules]]), then the JSON that is stored in the Kit. You do not need the JSON to build rules. It helps when you read a Kit file or a Git repository (see [[git-layout]]).
 
 ## Where to find it
 
-The rules live in the tool library `tools/agent-pipeline/tool.json` and the file `tools/behaviour-examples/total-effort.rule.json` of the MetaKit repository. Add the tool library to a workspace with **Add tool library file** (see [[dialog-tool-import]]), then open it in Build mode and choose **Rules**.
+The rules live in the Kit `kits/agent-pipeline/kit.json` and the file `kits/behaviour-examples/total-effort.rule.json` of the MetaKit repository. Add the Kit to a workspace with **Add > From file…** on the [[page-kits|Kits page]], then open it in Build mode and choose **Rules**.
 
 ## How to use it
 
-1. Open the tool library in Build mode and choose **Rules**.
+1. Open the Kit in Build mode and choose **Rules**.
 2. Open a rule from the list.
 3. Compare the form with the table below.
-4. Open a model made with the tool, select an object and press **Try on the selected object** to read what the rule would do.
+4. Open a model made with the Kit, select an object and press **Try on the selected object** to read what the rule would do.
 
 ## Every option explained
 
@@ -129,7 +129,7 @@ Try these small changes on the rules above.
 - **Ids in the JSON.** `cls_agent` is the id of the class, not its key. Ids never change when you rename a class. See [[keys-and-renaming]].
 - **Formulas are text.** A value that starts with `=` is a formula in the file too.
 - **Messages are not saved.** A message is shown and forgotten. It does not write anything into the model.
-- **Check the whole tool.** Run the tool library check from [[tool-validation]] after you change rules by hand.
+- **Check the whole Kit.** Run the Kit check from [[kit-validation]] after you change rules by hand.
 
 ## Related
 

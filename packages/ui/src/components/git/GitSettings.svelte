@@ -264,7 +264,7 @@
     </div>
   </form>
 
-  <h3>Choose the tool library</h3>
+  <h3>Choose the Kit</h3>
   {#if tokens.length === 0}
     <p class="hint">Save a token first.</p>
   {:else}
@@ -341,7 +341,7 @@
             onclick={() => target && onChoose(target)}
             data-testid="git-choose"
           >
-            Use this tool library
+            Use this Kit
           </button>
         </div>
       {/if}

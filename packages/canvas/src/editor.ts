@@ -14,7 +14,7 @@ import {
   type Point,
   type RelationDef,
   type RelationId,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 import { isTyping, type CanvasView } from './canvas-view';
 import {
@@ -77,7 +77,7 @@ export interface EditorHost {
 
 export interface EditorOptions {
   store: ModelStore;
-  tool: ToolLibrary;
+  kit: Kit;
   view: CanvasView;
   host?: EditorHost;
   /** Relations offered in the current view; others are not used for new connectors. */
@@ -148,13 +148,13 @@ export class Editor {
   private currentTool: EditorTool = { type: 'select' };
   private readonly cleanups: (() => void)[] = [];
   private readonly store: ModelStore;
-  private tool: ToolLibrary;
+  private kit: Kit;
   private readonly view: CanvasView;
   private readonly host: EditorHost;
 
   constructor(private readonly options: EditorOptions) {
     this.store = options.store;
-    this.tool = options.tool;
+    this.kit = options.kit;
     this.view = options.view;
     this.host = options.host ?? {};
     this.install();
@@ -179,9 +179,9 @@ export class Editor {
 
   // Tool and selection --------------------------------------------------------------------
 
-  /** Takes a changed tool library (hot reload); the next action follows its rules. */
-  useToolLibrary(tool: ToolLibrary): void {
-    this.tool = tool;
+  /** Takes a changed Kit (hot reload); the next action follows its rules. */
+  useKit(kit: Kit): void {
+    this.kit = kit;
   }
 
   setTool(tool: EditorTool): void {
@@ -277,7 +277,7 @@ export class Editor {
   }
 
   private gridSize(): number {
-    const g = this.tool.settings.grid;
+    const g = this.kit.settings.grid;
     return g.snap ? g.size : 0;
   }
 
@@ -289,7 +289,7 @@ export class Editor {
     // The element's centre decides its container; its default size is the one the command uses.
     const parent = containerAt(
       this.model,
-      this.tool,
+      this.kit,
       this.model.manifest.modelType,
       { x: x + 60, y: y + 30 },
       [],
@@ -378,7 +378,7 @@ export class Editor {
   copy(): string | null {
     if (this.selectionState.elements.size === 0) return null;
     const data = copySelection(
-      this.tool,
+      this.kit,
       this.model,
       this.selectionState.elements,
     );
@@ -410,10 +410,10 @@ export class Editor {
       pastes = 1;
     }
     if (!data) return false;
-    const modelType = this.tool.modelTypes[this.model.manifest.modelType];
+    const modelType = this.kit.modelTypes[this.model.manifest.modelType];
     if (!modelType) return false;
     const offset = { x: PASTE_STEP * pastes, y: PASTE_STEP * pastes };
-    const plan = planPaste(this.tool, modelType, data, offset);
+    const plan = planPaste(this.kit, modelType, data, offset);
     if (plan.skipped.elements + plan.skipped.connectors > 0) {
       const n = plan.skipped.elements;
       this.host.onMessage?.(
@@ -780,11 +780,11 @@ export class Editor {
     let next: ElementId | null = null;
     if (this.currentTool.type === 'connect') {
       const item = this.view.scene.elementAt(world);
-      const modelType = this.tool.modelTypes[this.model.manifest.modelType];
+      const modelType = this.kit.modelTypes[this.model.manifest.modelType];
       if (
         item &&
         modelType &&
-        canConnectAt(this.tool, modelType, item.cls, {
+        canConnectAt(this.kit, modelType, item.cls, {
           relation: this.currentTool.relation,
           only: this.onlyRelations(),
         })
@@ -857,7 +857,7 @@ export class Editor {
     const scene = this.view.scene;
     const containers = ids.filter((id) => {
       const cls = scene.elements.get(id)?.cls;
-      return cls !== undefined && isContainerClass(this.tool, cls);
+      return cls !== undefined && isContainerClass(this.kit, cls);
     });
     if (containers.length === 0) return found;
     const index = childrenIndex(this.model);
@@ -880,7 +880,7 @@ export class Editor {
     if (!r || !id || !cls) return null;
     return containerAt(
       this.model,
-      this.tool,
+      this.kit,
       this.model.manifest.modelType,
       {
         x: (r.minX + r.maxX) / 2 + delta.dx,
@@ -976,7 +976,7 @@ export class Editor {
   } {
     const target = this.view.scene.elementAt(world);
     if (!target) return { target, options: [], reason: '' };
-    const modelType = this.tool.modelTypes[this.model.manifest.modelType];
+    const modelType = this.kit.modelTypes[this.model.manifest.modelType];
     if (!modelType || target.id === from.id)
       return {
         target,
@@ -984,20 +984,20 @@ export class Editor {
         reason: 'A connector needs two different elements.',
       };
     let options = allowedRelations(
-      this.tool,
+      this.kit,
       modelType,
       from.cls,
       target.cls,
       this.onlyRelations(),
     );
-    const wanted = relation ? this.tool.relations[relation] : undefined;
+    const wanted = relation ? this.kit.relations[relation] : undefined;
     if (wanted) options = options.filter((r) => r.id === relation);
     return {
       target,
       options,
       reason:
         options.length === 0
-          ? refusalReason(this.tool, from.cls, target.cls, wanted)
+          ? refusalReason(this.kit, from.cls, target.cls, wanted)
           : '',
     };
   }
@@ -1074,14 +1074,14 @@ export class Editor {
     end: 'from' | 'to',
     target: ElementItem,
   ): boolean {
-    const modelType = this.tool.modelTypes[this.model.manifest.modelType];
+    const modelType = this.kit.modelTypes[this.model.manifest.modelType];
     const other = this.view.scene.elements.get(
       end === 'from' ? item.to : item.from,
     );
     if (!modelType || !other) return false;
     const [fromClass, toClass] =
       end === 'from' ? [target.cls, other.cls] : [other.cls, target.cls];
-    return allowedRelations(this.tool, modelType, fromClass, toClass).some(
+    return allowedRelations(this.kit, modelType, fromClass, toClass).some(
       (r) => r.id === item.relation,
     );
   }
@@ -1221,11 +1221,11 @@ export class Editor {
           const other = this.view.scene.elements.get(
             mode.end === 'from' ? item.to : item.from,
           );
-          const relation = this.tool.relations[item.relation];
+          const relation = this.kit.relations[item.relation];
           if (other)
             this.host.onMessage?.(
               refusalReason(
-                this.tool,
+                this.kit,
                 mode.end === 'from' ? target.cls : other.cls,
                 mode.end === 'from' ? other.cls : target.cls,
                 relation,
@@ -1337,7 +1337,7 @@ export class Editor {
       else this.clearSelection();
     } else if (key.startsWith('arrow') && !mod) {
       e.preventDefault();
-      const step = (this.tool.settings.grid.size || 10) * (e.shiftKey ? 5 : 1);
+      const step = (this.kit.settings.grid.size || 10) * (e.shiftKey ? 5 : 1);
       const dx = key === 'arrowleft' ? -step : key === 'arrowright' ? step : 0;
       const dy = key === 'arrowup' ? -step : key === 'arrowdown' ? step : 0;
       this.nudge(dx, dy);

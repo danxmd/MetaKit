@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { generateDeclarations } from '@metakit-app/behaviour';
-import { SAMPLE, sampleTool } from '@metakit-app/core/testing';
-import type { ToolLibrary } from '@metakit-app/core';
+import { SAMPLE, sampleKit } from '@metakit-app/core/testing';
+import type { Kit } from '@metakit-app/core';
 import { createLanguageServer, type LanguageServer } from './script-language';
 import { loadTestLibs as loadLibs } from './test-libs';
 
@@ -29,8 +29,8 @@ commands.register({
 });
 `;
 
-function tool(): ToolLibrary {
-  const t = sampleTool();
+function kit(): Kit {
+  const t = sampleKit();
   t.classes[SAMPLE.task]!.attributes.push({
     id: 'att_number',
     key: 'Number',
@@ -42,7 +42,7 @@ function tool(): ToolLibrary {
 let server: LanguageServer;
 beforeAll(() => {
   server = createLanguageServer(loadLibs());
-  server.setDeclarations(generateDeclarations(tool()));
+  server.setDeclarations(generateDeclarations(kit()));
 });
 
 const messages = (source: string) =>
@@ -127,6 +127,23 @@ commands.register({ id: "x", label: "X", run: async () => { await files.write("b
     ).toEqual([]);
   });
 
+  it('marks the old name "tool" as deprecated and accepts "kit"', () => {
+    expect(
+      server.diagnostics(`import { kit } from "metakit";
+console.log(kit.name, kit.classes().length);`),
+    ).toEqual([]);
+    const source = `import { tool } from "metakit";
+console.log(tool.classes().length);`;
+    const found = server.diagnostics(source);
+    expect(found.length).toBeGreaterThan(0);
+    for (const d of found)
+      expect(d).toMatchObject({ severity: 'hint', deprecated: true });
+    expect(found.map((d) => source.slice(d.from, d.to))).toContain('tool');
+    expect(
+      server.quickInfo(source, source.indexOf('tool.classes'))?.docs,
+    ).toMatch(/^Deprecated. Use kit./);
+  });
+
   it('reports a syntax error with its position', () => {
     const d = server.diagnostics('const a = ;\n');
     expect(d[0]).toMatchObject({ severity: 'error', from: 10 });
@@ -183,8 +200,8 @@ commands.register({ id: "x", label: "X", run: async () => { await files.write("b
     expect(server.details(src, src.length, 'Effort')?.text).toContain('number');
   });
 
-  it('follows a change of the tool: new declarations, new names', () => {
-    const other = sampleTool();
+  it('follows a change of the Kit: new declarations, new names', () => {
+    const other = sampleKit();
     other.classes = {};
     other.relations = {};
     other.modelTypes = {};
@@ -194,7 +211,7 @@ commands.register({ id: "x", label: "X", run: async () => { await files.write("b
       s.diagnostics(`import { model } from "metakit";\nmodel.objects("Task");`)
         .length,
     ).toBeGreaterThan(0);
-    s.setDeclarations(generateDeclarations(tool()));
+    s.setDeclarations(generateDeclarations(kit()));
     expect(
       s.diagnostics(`import { model } from "metakit";\nmodel.objects("Task");`),
     ).toEqual([]);

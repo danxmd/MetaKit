@@ -1,13 +1,13 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import type { ClassId, ElementId } from '../ids';
-import type { ToolLibrary } from '../meta/types';
+import type { Kit } from '../meta/types';
 import {
   SAMPLE,
   clone,
   emptySampleModel,
-  sampleTool,
-} from '../testing/sample-tool';
+  sampleKit,
+} from '../testing/sample-kit';
 import { validateModel } from '../validation/validate';
 import { createModelStore, type ModelStore } from './commands';
 import {
@@ -23,23 +23,23 @@ import type { Model } from './types';
 
 const BOX = 'cls_box' as ClassId;
 
-/** The sample tool plus a plain container class, with the lane limited to tasks and gateways. */
-function containerTool(): ToolLibrary {
-  const tool = clone(sampleTool());
-  tool.classes[BOX] = {
+/** The sample Kit plus a plain container class, with the lane limited to tasks and gateways. */
+function containerKit(): Kit {
+  const kit = clone(sampleKit());
+  kit.classes[BOX] = {
     id: BOX,
     key: 'Box',
     kind: 'container',
     labels: { en: 'Box' },
     attributes: [],
   };
-  const mt = tool.modelTypes[SAMPLE.process]!;
+  const mt = kit.modelTypes[SAMPLE.process]!;
   mt.classes.push(BOX);
   mt.containers = { [SAMPLE.lane]: [SAMPLE.task, SAMPLE.gateway] };
-  return tool;
+  return kit;
 }
 
-const tool = containerTool();
+const kit = containerKit();
 const mt = SAMPLE.process;
 
 function create(
@@ -63,21 +63,21 @@ function create(
   if (!r.ok) throw new Error(r.reason);
   return r.value as ElementId;
 }
-const fresh = () => createModelStore(emptySampleModel(), { tool });
+const fresh = () => createModelStore(emptySampleModel(), { kit });
 const el = (store: ModelStore, id: ElementId) => store.state.elements[id]!;
 
 describe('containerAccepts', () => {
   it('accepts anything when the class has no rule, and subclasses of listed classes', () => {
-    expect(containerAccepts(tool, mt, BOX, SAMPLE.end)).toBe(true);
-    expect(containerAccepts(tool, mt, SAMPLE.lane, SAMPLE.task)).toBe(true);
-    expect(containerAccepts(tool, mt, SAMPLE.lane, SAMPLE.start)).toBe(false);
-    const t = clone(tool);
+    expect(containerAccepts(kit, mt, BOX, SAMPLE.end)).toBe(true);
+    expect(containerAccepts(kit, mt, SAMPLE.lane, SAMPLE.task)).toBe(true);
+    expect(containerAccepts(kit, mt, SAMPLE.lane, SAMPLE.start)).toBe(false);
+    const t = clone(kit);
     t.modelTypes[mt]!.containers = { [SAMPLE.lane]: [SAMPLE.flowNode] };
     expect(containerAccepts(t, mt, SAMPLE.lane, SAMPLE.end)).toBe(true);
   });
 
   it('inherits the rule of the nearest ancestor class that has one', () => {
-    const t = clone(tool);
+    const t = clone(kit);
     const sub = 'cls_sublane' as ClassId;
     t.classes[sub] = {
       id: sub,
@@ -100,14 +100,14 @@ describe('containerAt', () => {
     const lane = create(s, SAMPLE.lane, 50, 50, 300, 200, box);
     const model = s.state;
     const inLane = { x: 100, y: 100 };
-    expect(containerAt(model, tool, mt, inLane, [], SAMPLE.task)).toBe(lane);
+    expect(containerAt(model, kit, mt, inLane, [], SAMPLE.task)).toBe(lane);
     // The lane does not accept a start event, so the box is the target.
-    expect(containerAt(model, tool, mt, inLane, [], SAMPLE.start)).toBe(box);
+    expect(containerAt(model, kit, mt, inLane, [], SAMPLE.start)).toBe(box);
     expect(
-      containerAt(model, tool, mt, { x: 500, y: 300 }, [], SAMPLE.task),
+      containerAt(model, kit, mt, { x: 500, y: 300 }, [], SAMPLE.task),
     ).toBe(box);
     expect(
-      containerAt(model, tool, mt, { x: 900, y: 900 }, [], SAMPLE.task),
+      containerAt(model, kit, mt, { x: 900, y: 900 }, [], SAMPLE.task),
     ).toBe(null);
   });
 
@@ -117,19 +117,19 @@ describe('containerAt', () => {
     const inner = create(s, BOX, 10, 10, 200, 200, box);
     const task = create(s, SAMPLE.task, 20, 20, 100, 50, inner);
     const p = { x: 50, y: 50 };
-    expect(containerAt(s.state, tool, mt, p, [], SAMPLE.task)).toBe(inner);
-    expect(containerAt(s.state, tool, mt, p, [task], SAMPLE.task)).toBe(inner);
-    expect(containerAt(s.state, tool, mt, p, [inner], BOX)).toBe(box);
-    expect(containerAt(s.state, tool, mt, p, [box], BOX)).toBe(null);
+    expect(containerAt(s.state, kit, mt, p, [], SAMPLE.task)).toBe(inner);
+    expect(containerAt(s.state, kit, mt, p, [task], SAMPLE.task)).toBe(inner);
+    expect(containerAt(s.state, kit, mt, p, [inner], BOX)).toBe(box);
+    expect(containerAt(s.state, kit, mt, p, [box], BOX)).toBe(null);
   });
 
   it('prefers the container drawn on top among equals', () => {
     const s = fresh();
     create(s, BOX, 0, 0, 100, 100);
     const top = create(s, BOX, 0, 0, 100, 100);
-    expect(
-      containerAt(s.state, tool, mt, { x: 5, y: 5 }, [], SAMPLE.task),
-    ).toBe(top);
+    expect(containerAt(s.state, kit, mt, { x: 5, y: 5 }, [], SAMPLE.task)).toBe(
+      top,
+    );
   });
 });
 
@@ -314,7 +314,7 @@ describe('swimlanes fit their children', () => {
 
 describe('validation of containers', () => {
   const issue = (model: Model, code: string) =>
-    validateModel(tool, model).filter((i) => i.code === code);
+    validateModel(kit, model).filter((i) => i.code === code);
 
   it('reports a parent that is not a container, not accepted, or in a loop', () => {
     const s = fresh();

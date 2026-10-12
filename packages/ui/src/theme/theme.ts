@@ -1,18 +1,26 @@
 /**
- * The appearance setting: follow the system, or always light, or always dark. The choice belongs
- * to the browser (localStorage); where that is not available the page simply follows the system.
+ * The appearance settings: the look (Workshop, Drafting, Meadow or Classic) and whether it shows
+ * light or dark, following the system or always one of them. Both choices belong to the browser
+ * (localStorage), never to the workspace; where storage is not available the page uses the
+ * default look and follows the system.
  */
 
+import { DEFAULT_LOOK, isLookId, type LookId } from './looks';
+
+export type { LookId } from './looks';
 export type ThemePreference = 'system' | 'light' | 'dark';
 export type EffectiveTheme = 'light' | 'dark';
+/** Model or Build: a look may give each its own accent. */
+export type AppMode = 'model' | 'build';
 
 export const THEME_KEY = 'metakit.theme';
+export const LOOK_KEY = 'metakit.look';
 
 export interface ThemeEnvironment {
   storage?: Pick<Storage, 'getItem' | 'setItem'> | undefined;
   /** Whether the system prefers a dark appearance. */
   prefersDark: () => boolean;
-  /** Where `data-theme` is written; `document.documentElement` in the browser. */
+  /** Where `data-theme`, `data-look` and `data-mode` are written; `<html>` in the browser. */
   root: {
     setAttribute(name: string, value: string): void;
     removeAttribute(name: string): void;
@@ -34,6 +42,19 @@ export function readPreference(
   }
 }
 
+export function readLook(storage: ThemeEnvironment['storage']): LookId {
+  try {
+    const stored = storage?.getItem(LOOK_KEY);
+    return isLookId(stored) ? stored : DEFAULT_LOOK;
+  } catch {
+    return DEFAULT_LOOK;
+  }
+}
+
+export function applyLook(look: LookId, root: ThemeEnvironment['root']): void {
+  root.setAttribute('data-look', look);
+}
+
 export function effectiveTheme(
   preference: ThemePreference,
   prefersDark: boolean,
@@ -51,17 +72,33 @@ export function applyPreference(
   else root.setAttribute('data-theme', preference);
 }
 
+/**
+ * Told whenever anything that changes the page's colours changes: the light or dark choice, the
+ * system setting, the look, or the mode. The canvas re-reads its colours then.
+ */
+export type ThemeListener = (
+  preference: ThemePreference,
+  effective: EffectiveTheme,
+  look: LookId,
+) => void;
+
 export function createThemeController(env: ThemeEnvironment) {
   let preference = readPreference(env.storage);
-  const listeners = new Set<(p: ThemePreference, e: EffectiveTheme) => void>();
+  let look = readLook(env.storage);
+  let mode: AppMode | undefined;
+  const listeners = new Set<ThemeListener>();
   const emit = () => {
     const effective = effectiveTheme(preference, env.prefersDark());
-    for (const l of listeners) l(preference, effective);
+    for (const l of listeners) l(preference, effective, look);
   };
   applyPreference(preference, env.root);
+  applyLook(look, env.root);
   return {
     get preference(): ThemePreference {
       return preference;
+    },
+    get look(): LookId {
+      return look;
     },
     get effective(): EffectiveTheme {
       return effectiveTheme(preference, env.prefersDark());
@@ -76,13 +113,28 @@ export function createThemeController(env: ThemeEnvironment) {
       applyPreference(next, env.root);
       emit();
     },
+    setLook(next: LookId): void {
+      look = next;
+      try {
+        env.storage?.setItem(LOOK_KEY, next);
+      } catch {
+        // Not remembered, but it still applies to this page.
+      }
+      applyLook(next, env.root);
+      emit();
+    },
+    /** Written by the app when the person moves between Model and Build; not stored. */
+    setMode(next: AppMode): void {
+      if (next === mode) return;
+      mode = next;
+      env.root.setAttribute('data-mode', next);
+      emit();
+    },
     /** Call when the system setting changes, so `system` follows it. */
     systemChanged(): void {
       emit();
     },
-    subscribe(
-      listener: (p: ThemePreference, e: EffectiveTheme) => void,
-    ): () => void {
+    subscribe(listener: ThemeListener): () => void {
       listeners.add(listener);
       return () => listeners.delete(listener);
     },

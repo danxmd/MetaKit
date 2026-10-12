@@ -12,11 +12,11 @@ The Build view has a short, fixed section list and, for three sections, a list o
 
 ## What it is
 
-The left side of [[page-build-view]] is a vertical list of tabs in four groups: **Metamodel**, **Appearance**, **Behaviour** and **Tool library**. When you choose a section that holds a list of items (classes, relation classes or model types), a second column appears with the items. The big area on the right shows the editor of the chosen item.
+The left side of [[page-build-view]] is a vertical list of tabs in four groups: **Metamodel**, **Appearance**, **Behaviour** and **Kit**. When you choose a section that holds a list of items (classes, relation classes or model types), a second column appears with the items. The big area on the right shows the editor of the chosen item.
 
 ## Where to find it
 
-It is the left part of every Build view screen. Screen readers announce the list as "Tool library sections".
+It is the left part of every Build view screen. Screen readers announce the list as "Kit sections".
 
 ## How to use it
 
@@ -38,7 +38,7 @@ It is the left part of every Build view screen. Screen readers announce the list
 | **Appearance** | **Shapes** | Manage every shape and line style ([[shapes-section]]). |
 | **Behaviour** | **Rules** | No-code reactions ([[rules]]). |
 | **Behaviour** | **Scripts** | TypeScript behaviour ([[scripts]]). |
-| **Tool library** | **Settings** | Languages and grid ([[tool-settings]]). |
+| **Kit** | **Settings** | Languages and grid ([[kit-settings]]). |
 
 The small number on the right of **Classes**, **Relation classes**, **Model types** and **Shapes** is the item count.
 
@@ -52,7 +52,7 @@ The label changes with the section: **New class**, **New relation class** or **N
 
 ### Add from catalog
 
-In the **Classes** section only, an **Add from catalog…** button sits under the add box. It opens a pop-up with ready-made classes in seven topics, a search box across all of them, and a choice to add the relation classes between the picked classes. One **Add** is one undo step. See [[class-catalog]].
+In the **Classes** section only, an **Add from catalog…** button sits under the add box. It opens a pop-up with about 250 ready-made classes in 16 topics, a search box across all of them, and a choice to add the relation classes between the picked classes. One **Add** is one undo step. See [[class-catalog]].
 
 ### The item row
 
@@ -72,11 +72,11 @@ Some actions open a full-screen editor over the whole Build view: **Edit appeara
 
 ## Examples
 
-In the Agent pipeline tool, select **Relation classes**. You see six items: Approves, DelegatesTo, Feeds, HandsOverTo, Performs and Produces, sorted by key. The label of `HandsOverTo` is "Hands over to", so the row shows both. Select **Performs**. Under **From** only **Actor** is ticked. Because Actor is an abstract class that Agent and Human extend, both of them may start a Performs connection.
+In the Agent pipeline Kit, select **Relation classes**. You see six items: Approves, DelegatesTo, Feeds, HandsOverTo, Performs and Produces, sorted by key. The label of `HandsOverTo` is "Hands over to", so the row shows both. Select **Performs**. Under **From** only **Actor** is ticked. Because Actor is an abstract class that Agent and Human extend, both of them may start a Performs connection.
 
 ## Good to know
 
-- The first language in [[tool-settings]] is the one used for the labels shown in the item rows.
+- The first language in [[kit-settings]] is the one used for the labels shown in the item rows.
 - Sections keep their selected item, but if you delete the selected item the editor goes back to "No class selected".
 - Counts update as you work, which makes it easy to see that an add worked.
 
@@ -85,4 +85,4 @@ In the Agent pipeline tool, select **Relation classes**. You see six items: Appr
 
 ## Related
 
-[[page-build-view]], [[classes]], [[class-catalog]], [[relations]], [[model-types]], [[keys-and-renaming]], [[tool-validation]]
+[[page-build-view]], [[classes]], [[class-catalog]], [[relations]], [[model-types]], [[keys-and-renaming]], [[kit-validation]]

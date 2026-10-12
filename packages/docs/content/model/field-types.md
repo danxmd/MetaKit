@@ -16,7 +16,7 @@ A catalogue of every control, how to use it and what it accepts. Values are save
 
 ## Where to find it
 
-In the attribute panel, under each label. The same controls appear in tool-designed panels and in generated ones.
+In the attribute panel, under each label. The same controls appear in designed panels and in generated ones.
 
 ## How to use it
 
@@ -61,7 +61,7 @@ A value that breaks a rule is not saved until you correct it. A required attribu
 
 ### Tables
 
-A table is a small grid inside the panel. Its columns are set by the tool.
+A table is a small grid inside the panel. Its columns are set by the Kit.
 
 - **Add row** appends an empty row. It is grey when the maximum number of rows is reached.
 - **×** at the end of a row deletes that row. Its tooltip names the row, for example "Delete row 2".
@@ -82,7 +82,7 @@ A **Task** in the Agent pipeline shows: **Name** (text, required, max 100), **De
 ## Good to know
 
 - One edit of a field, even on several objects, is one undo step.
-- The label of every field can be translated by the tool builder. See [[tool-settings]].
+- The label of every field can be translated by the method engineer. See [[kit-settings]].
 - Required fields show an asterisk.
 
 ## Related

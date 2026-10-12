@@ -4,7 +4,7 @@
     type ClassId,
     type RelationDef,
     type RelationId,
-    type ToolLibrary,
+    type Kit,
   } from '@metakit-app/core';
   import { copyStarter, STARTER_IDS } from '@metakit-app/shapes';
   import { toggled, withPatch } from '../../build/attributes';
@@ -18,14 +18,14 @@
   import { appearanceOfRelation } from '../../build/appearance-model';
 
   let {
-    tool,
+    kit,
     id,
     run,
     onEditShape,
     onEditAppearance,
     usages,
   }: {
-    tool: ToolLibrary;
+    kit: Kit;
     id: RelationId;
     run: (command: never) => CommandResult;
     onEditShape: (shapeId: string) => void;
@@ -33,8 +33,8 @@
     usages: (attributeId: string) => string[];
   } = $props();
 
-  const def = $derived(tool.relations[id]);
-  const languages = $derived(tool.manifest.languages);
+  const def = $derived(kit.relations[id]);
+  const languages = $derived(kit.manifest.languages);
   let error = $state<string | null>(null);
 
   const exec = (command: Record<string, unknown>): string | null => {
@@ -47,15 +47,15 @@
       exec({ type: 'putRelation', def: withPatch<RelationDef>(def, changes) });
   };
   const classes = $derived(
-    Object.values(tool.classes).sort((a, b) => a.key.localeCompare(b.key)),
+    Object.values(kit.classes).sort((a, b) => a.key.localeCompare(b.key)),
   );
   const parents = $derived(
-    Object.values(tool.relations)
+    Object.values(kit.relations)
       .filter((r) => r.id !== id && r.extends !== id)
       .sort((a, b) => a.key.localeCompare(b.key)),
   );
   const relationShapes = $derived(
-    Object.values(tool.shapes).filter((s) => s.kind === 'relation'),
+    Object.values(kit.shapes).filter((s) => s.kind === 'relation'),
   );
   function toggle(end: 'from' | 'to', cls: ClassId, on: boolean) {
     if (def) patch({ [end]: toggled(def[end], cls, on) });
@@ -166,7 +166,7 @@
       help="How the connection is drawn between two objects."
     >
       <AppearanceCard
-        {tool}
+        {kit}
         owner={{ kind: 'relation', id }}
         {run}
         {onEditAppearance}
@@ -187,7 +187,7 @@
                 >{/each}
             </select>
           </label>
-          {#if def.shape && appearanceOfRelation(tool, id).kind === 'look'}
+          {#if def.shape && appearanceOfRelation(kit, id).kind === 'look'}
             <button type="button" onclick={() => onEditShape(def.shape!)}
               >Edit as drawing</button
             >
@@ -203,14 +203,14 @@
     <AttributeList
       owner={{ kind: 'relation', id }}
       attributes={def.attributes}
-      {tool}
+      {kit}
       {run}
       {usages}
     />
     <ConstraintsEditor
       owner={{ kind: 'relation', id }}
       constraints={def.constraints ?? []}
-      {tool}
+      {kit}
       {run}
     />
   </div>

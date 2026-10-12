@@ -1,0 +1,1932 @@
+{
+  "formatVersion": 7,
+  "manifest": {
+    "id": "kit_dataquality",
+    "name": "Data quality management",
+    "version": "1.0.0",
+    "languages": ["en"]
+  },
+  "settings": {
+    "grid": {
+      "size": 10,
+      "snap": true,
+      "visible": true
+    },
+    "layers": [],
+    "numbering": {
+      "enabled": false,
+      "prefix": "",
+      "start": 1
+    }
+  },
+  "classes": {
+    "cls_dataqualityrule": {
+      "id": "cls_dataqualityrule",
+      "key": "DataQualityRule",
+      "kind": "node",
+      "labels": {
+        "en": "Data quality rule"
+      },
+      "help": {
+        "en": "A check that every record of a data asset must pass, with the share of records that must pass. Its last check gives the result; Passing compares the result with the threshold."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Data quality rule",
+          "id": "att_dataqualityrule_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_dataqualityrule_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Dimension",
+          "formula": "join(outgoing('Measures').Name, ', ')",
+          "result": "text",
+          "id": "att_dataqualityrule_dimension",
+          "labels": {
+            "en": "Dimension"
+          },
+          "help": {
+            "en": "The quality dimensions it measures."
+          }
+        },
+        {
+          "type": "number",
+          "key": "Threshold",
+          "unit": "%",
+          "min": 0,
+          "max": 100,
+          "id": "att_dataqualityrule_threshold",
+          "labels": {
+            "en": "Threshold"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "LastResult",
+          "formula": "RecordsChecked == null || RecordsFailed == null || RecordsChecked == 0 ? null : round((RecordsChecked - RecordsFailed) / RecordsChecked * 100, 2)",
+          "result": "number",
+          "id": "att_dataqualityrule_lastresult",
+          "labels": {
+            "en": "Last result (%)"
+          },
+          "help": {
+            "en": "The share of records that passed the last check, in percent."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Passing",
+          "formula": "LastResult == null || Threshold == null ? null : LastResult >= Threshold",
+          "result": "boolean",
+          "id": "att_dataqualityrule_passing",
+          "labels": {
+            "en": "Passing"
+          },
+          "help": {
+            "en": "Yes when the last result reached the threshold."
+          }
+        },
+        {
+          "type": "text",
+          "key": "Expression",
+          "multiline": true,
+          "id": "att_dataqualityrule_expression",
+          "labels": {
+            "en": "Expression"
+          },
+          "help": {
+            "en": "The condition each record must meet, in words or as code."
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_dataqualityrule_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Frequency",
+          "options": ["Hourly", "Daily", "Weekly", "Monthly"],
+          "id": "att_dataqualityrule_frequency",
+          "labels": {
+            "en": "Frequency"
+          }
+        },
+        {
+          "type": "date",
+          "key": "LastRun",
+          "id": "att_dataqualityrule_lastrun",
+          "labels": {
+            "en": "Last check"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "RecordsChecked",
+          "min": 0,
+          "id": "att_dataqualityrule_recordschecked",
+          "labels": {
+            "en": "Records checked"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "RecordsFailed",
+          "min": 0,
+          "id": "att_dataqualityrule_recordsfailed",
+          "labels": {
+            "en": "Records failed"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "PassCount",
+          "formula": "Passing == null ? null : (Passing ? 1 : 0)",
+          "result": "number",
+          "id": "att_dataqualityrule_passcount",
+          "labels": {
+            "en": "Counts as passed"
+          },
+          "help": {
+            "en": "One when the rule passes and zero when it fails, so data assets can count the rules that pass."
+          }
+        }
+      ],
+      "shape": "shp_dataqualityrule",
+      "constraints": [
+        {
+          "id": "k_rule_checks",
+          "formula": "count(outgoing('Checks')) > 0",
+          "message": "= 'Rule \"' + Name + '\" checks no data asset: connect it with \"Checks\".'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_rule_failed",
+          "formula": "RecordsChecked == null || RecordsFailed == null || RecordsFailed <= RecordsChecked",
+          "message": "= 'Rule \"' + Name + '\" has more failed records than checked ones.'",
+          "severity": "warning"
+        }
+      ]
+    },
+    "cls_dataset": {
+      "id": "cls_dataset",
+      "key": "Dataset",
+      "kind": "node",
+      "labels": {
+        "en": "Data asset"
+      },
+      "help": {
+        "en": "A table, file or other set of data whose quality is checked. Pass rate and quality score add up the results of its rules."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Dataset",
+          "id": "att_dataset_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_dataset_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Format",
+          "id": "att_dataset_format",
+          "labels": {
+            "en": "Format"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Refresh",
+          "options": [
+            "Real time",
+            "Hourly",
+            "Daily",
+            "Weekly",
+            "Monthly",
+            "On demand"
+          ],
+          "id": "att_dataset_refresh",
+          "labels": {
+            "en": "Refresh"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Classification",
+          "options": ["Public", "Internal", "Confidential", "Restricted"],
+          "id": "att_dataset_classification",
+          "labels": {
+            "en": "Classification"
+          }
+        },
+        {
+          "type": "boolean",
+          "key": "ContainsPersonalData",
+          "id": "att_dataset_containspersonaldata",
+          "labels": {
+            "en": "Contains personal data"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "RowCount",
+          "min": 0,
+          "id": "att_dataset_rowcount",
+          "labels": {
+            "en": "Row count"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_dataset_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Criticality",
+          "options": ["Low", "Medium", "High"],
+          "id": "att_dataset_criticality",
+          "labels": {
+            "en": "Criticality"
+          },
+          "help": {
+            "en": "How much the business depends on it. A highly critical asset needs at least one rule."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Rules",
+          "formula": "count(incoming('Checks'))",
+          "result": "number",
+          "id": "att_dataset_rules",
+          "labels": {
+            "en": "Rules"
+          },
+          "help": {
+            "en": "How many rules check it."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "RulesPassed",
+          "formula": "sum(incoming('Checks').PassCount)",
+          "result": "number",
+          "id": "att_dataset_rulespassed",
+          "labels": {
+            "en": "Rules passed"
+          },
+          "help": {
+            "en": "How many of its rules passed their last check."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "PassRate",
+          "formula": "count(incoming('Checks').PassCount) == 0 ? null : round(RulesPassed / count(incoming('Checks').PassCount) * 100, 1)",
+          "result": "number",
+          "id": "att_dataset_passrate",
+          "labels": {
+            "en": "Pass rate (%)"
+          },
+          "help": {
+            "en": "The share of its checked rules that pass, in percent."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "QualityScore",
+          "formula": "IFERROR(round(avg(incoming('Checks').LastResult), 1), null)",
+          "result": "number",
+          "id": "att_dataset_qualityscore",
+          "labels": {
+            "en": "Quality score (%)"
+          },
+          "help": {
+            "en": "The average last result of its rules, in percent."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "QualityLevel",
+          "formula": "PassRate == null ? null : PassRate == 100 ? 'Good' : PassRate >= 50 ? 'Fair' : 'Poor'",
+          "result": "text",
+          "id": "att_dataset_qualitylevel",
+          "labels": {
+            "en": "Quality level"
+          },
+          "help": {
+            "en": "Good when every rule passes, Fair when at least half pass, otherwise Poor. The header colour shows it."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "OpenIssues",
+          "formula": "sum(incoming('Affects').OpenCount)",
+          "result": "number",
+          "id": "att_dataset_openissues",
+          "labels": {
+            "en": "Open issues"
+          },
+          "help": {
+            "en": "How many issues that affect it are not resolved or closed."
+          }
+        }
+      ],
+      "shape": "shp_dataset",
+      "constraints": [
+        {
+          "id": "k_dataset_rules",
+          "formula": "Criticality != 'High' || Rules > 0",
+          "message": "= 'Data asset \"' + Name + '\" is highly critical but no rule checks it.'",
+          "severity": "warning"
+        }
+      ]
+    },
+    "cls_issue": {
+      "id": "cls_issue",
+      "key": "Issue",
+      "kind": "node",
+      "labels": {
+        "en": "Data quality issue"
+      },
+      "help": {
+        "en": "A problem in the data that needs fixing, with its severity, status and owner. The fill shows the status."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Issue",
+          "id": "att_issue_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_issue_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Severity",
+          "options": ["Low", "Medium", "High", "Critical"],
+          "id": "att_issue_severity",
+          "labels": {
+            "en": "Severity"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_issue_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Status",
+          "options": ["Open", "In progress", "Resolved", "Closed"],
+          "id": "att_issue_status",
+          "labels": {
+            "en": "Status"
+          }
+        },
+        {
+          "type": "date",
+          "key": "Due",
+          "id": "att_issue_due",
+          "labels": {
+            "en": "Due"
+          }
+        },
+        {
+          "type": "date",
+          "key": "Found",
+          "id": "att_issue_found",
+          "labels": {
+            "en": "Found"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "RecordsAffected",
+          "min": 0,
+          "id": "att_issue_recordsaffected",
+          "labels": {
+            "en": "Records affected"
+          }
+        },
+        {
+          "type": "text",
+          "key": "RootCause",
+          "multiline": true,
+          "id": "att_issue_rootcause",
+          "labels": {
+            "en": "Root cause"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "OpenCount",
+          "formula": "Status != 'Resolved' && Status != 'Closed' ? 1 : 0",
+          "result": "number",
+          "id": "att_issue_opencount",
+          "labels": {
+            "en": "Counts as open"
+          },
+          "help": {
+            "en": "One while the issue is not resolved or closed, so data assets can count open issues."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Overdue",
+          "formula": "Due != null && Status != 'Resolved' && Status != 'Closed' && daysBetween(today(), Due) < 0",
+          "result": "boolean",
+          "id": "att_issue_overdue",
+          "labels": {
+            "en": "Overdue"
+          },
+          "help": {
+            "en": "Yes when the due date has passed and the issue is still open."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Actions",
+          "formula": "count(incoming('Resolves'))",
+          "result": "number",
+          "id": "att_issue_actions",
+          "labels": {
+            "en": "Actions"
+          },
+          "help": {
+            "en": "How many remediation actions work on it."
+          }
+        }
+      ],
+      "shape": "shp_issue",
+      "constraints": [
+        {
+          "id": "k_issue_owner",
+          "formula": "!(Status != 'Resolved' && Status != 'Closed') || !isEmpty(Owner)",
+          "message": "= 'Open issue \"' + Name + '\" has no owner.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_issue_action",
+          "formula": "!(Status != 'Resolved' && Status != 'Closed') || (Severity != 'High' && Severity != 'Critical') || Actions > 0",
+          "message": "= 'Issue \"' + Name + '\" is ' + lower(Severity) + ' but no remediation action works on it.'",
+          "severity": "warning"
+        }
+      ]
+    },
+    "cls_datasteward": {
+      "id": "cls_datasteward",
+      "key": "DataSteward",
+      "kind": "node",
+      "labels": {
+        "en": "Data steward"
+      },
+      "help": {
+        "en": "The person who looks after the quality and meaning of a set of data day to day."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Data steward",
+          "id": "att_datasteward_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_datasteward_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Domain",
+          "id": "att_datasteward_domain",
+          "labels": {
+            "en": "Domain"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Email",
+          "id": "att_datasteward_email",
+          "labels": {
+            "en": "Email"
+          }
+        }
+      ],
+      "shape": "shp_datasteward"
+    },
+    "cls_qualitydimension": {
+      "id": "cls_qualitydimension",
+      "key": "QualityDimension",
+      "kind": "node",
+      "labels": {
+        "en": "Quality dimension"
+      },
+      "help": {
+        "en": "An aspect of quality, such as completeness, validity, uniqueness or timeliness. Its score is the average result of the rules that measure it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Quality dimension",
+          "id": "att_qualitydimension_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_qualitydimension_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "number",
+          "key": "Target",
+          "unit": "%",
+          "min": 0,
+          "max": 100,
+          "id": "att_qualitydimension_target",
+          "labels": {
+            "en": "Target score"
+          },
+          "help": {
+            "en": "The score this dimension should reach."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Score",
+          "formula": "IFERROR(round(avg(incoming('Measures').LastResult), 2), null)",
+          "result": "number",
+          "id": "att_qualitydimension_score",
+          "labels": {
+            "en": "Score"
+          },
+          "help": {
+            "en": "The average last result of the rules that measure it, in percent."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "OnTarget",
+          "formula": "Score == null || Target == null ? null : Score >= Target",
+          "result": "boolean",
+          "id": "att_qualitydimension_ontarget",
+          "labels": {
+            "en": "On target"
+          },
+          "help": {
+            "en": "Yes when the score reaches the target. The fill shows it."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "ScoreText",
+          "formula": "Score == null ? 'No results' : text(Score) + '%' + (Target == null ? '' : ' of ' + text(Target) + '%')",
+          "result": "text",
+          "id": "att_qualitydimension_scoretext",
+          "labels": {
+            "en": "Score text"
+          },
+          "help": {
+            "en": "The score and the target, shown under the name."
+          }
+        }
+      ],
+      "shape": "shp_qualitydimension"
+    },
+    "cls_remediationaction": {
+      "id": "cls_remediationaction",
+      "key": "RemediationAction",
+      "kind": "node",
+      "labels": {
+        "en": "Remediation action"
+      },
+      "help": {
+        "en": "Work that resolves a data quality issue: fix the data, fix the source, change a process or change the rule."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Remediation action",
+          "id": "att_remediationaction_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_remediationaction_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "ActionType",
+          "options": [
+            "Fix the data",
+            "Fix the source",
+            "Change the process",
+            "Change the rule"
+          ],
+          "id": "att_remediationaction_actiontype",
+          "labels": {
+            "en": "Type"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_remediationaction_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Status",
+          "options": ["Not started", "In progress", "Done"],
+          "default": "Not started",
+          "id": "att_remediationaction_status",
+          "labels": {
+            "en": "Status"
+          }
+        },
+        {
+          "type": "date",
+          "key": "Due",
+          "id": "att_remediationaction_due",
+          "labels": {
+            "en": "Due"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Effort",
+          "options": ["Small", "Medium", "Large"],
+          "id": "att_remediationaction_effort",
+          "labels": {
+            "en": "Effort"
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_action_issue",
+          "formula": "count(outgoing('Resolves')) > 0",
+          "message": "= 'Remediation action \"' + Name + '\" resolves no issue.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_remediationaction"
+    }
+  },
+  "relations": {
+    "rel_flowsto": {
+      "id": "rel_flowsto",
+      "key": "FlowsTo",
+      "labels": {
+        "en": "Flows to"
+      },
+      "help": {
+        "en": "Data moves from one place to the next."
+      },
+      "from": ["cls_dataset"],
+      "to": ["cls_dataset"],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Frequency",
+          "id": "att_flowsto_frequency",
+          "labels": {
+            "en": "Frequency"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Format",
+          "id": "att_flowsto_format",
+          "labels": {
+            "en": "Format"
+          }
+        },
+        {
+          "type": "boolean",
+          "key": "ContainsPersonalData",
+          "id": "att_flowsto_containspersonaldata",
+          "labels": {
+            "en": "Contains personal data"
+          }
+        }
+      ],
+      "shape": "shp_rel_flowsto"
+    },
+    "rel_stewards": {
+      "id": "rel_stewards",
+      "key": "Stewards",
+      "labels": {
+        "en": "Stewards"
+      },
+      "help": {
+        "en": "A data steward looks after data day to day."
+      },
+      "from": ["cls_datasteward"],
+      "to": ["cls_dataset"],
+      "attributes": [],
+      "shape": "shp_rel_stewards"
+    },
+    "rel_checks": {
+      "id": "rel_checks",
+      "key": "Checks",
+      "labels": {
+        "en": "Checks"
+      },
+      "help": {
+        "en": "The rule checks the records of the data asset."
+      },
+      "from": ["cls_dataqualityrule"],
+      "to": ["cls_dataset"],
+      "attributes": [],
+      "shape": "shp_rel_checks"
+    },
+    "rel_measures": {
+      "id": "rel_measures",
+      "key": "Measures",
+      "labels": {
+        "en": "Measures"
+      },
+      "help": {
+        "en": "The rule measures this quality dimension."
+      },
+      "from": ["cls_dataqualityrule"],
+      "to": ["cls_qualitydimension"],
+      "attributes": [],
+      "shape": "shp_rel_measures"
+    },
+    "rel_foundby": {
+      "id": "rel_foundby",
+      "key": "FoundBy",
+      "labels": {
+        "en": "Found by"
+      },
+      "help": {
+        "en": "The issue was found by the rule."
+      },
+      "from": ["cls_issue"],
+      "to": ["cls_dataqualityrule"],
+      "attributes": [],
+      "shape": "shp_rel_foundby"
+    },
+    "rel_affects": {
+      "id": "rel_affects",
+      "key": "Affects",
+      "labels": {
+        "en": "Affects"
+      },
+      "help": {
+        "en": "The issue is in the data of the data asset."
+      },
+      "from": ["cls_issue"],
+      "to": ["cls_dataset"],
+      "attributes": [],
+      "shape": "shp_rel_affects"
+    },
+    "rel_resolves": {
+      "id": "rel_resolves",
+      "key": "Resolves",
+      "labels": {
+        "en": "Resolves"
+      },
+      "help": {
+        "en": "The action fixes the issue."
+      },
+      "from": ["cls_remediationaction"],
+      "to": ["cls_issue"],
+      "attributes": [],
+      "shape": "shp_rel_resolves"
+    }
+  },
+  "modelTypes": {
+    "mt_dataquality": {
+      "id": "mt_dataquality",
+      "key": "DataQuality",
+      "labels": {
+        "en": "Data quality"
+      },
+      "classes": [
+        "cls_dataqualityrule",
+        "cls_dataset",
+        "cls_issue",
+        "cls_datasteward",
+        "cls_qualitydimension",
+        "cls_remediationaction"
+      ],
+      "relations": [
+        "rel_flowsto",
+        "rel_stewards",
+        "rel_checks",
+        "rel_measures",
+        "rel_foundby",
+        "rel_affects",
+        "rel_resolves"
+      ],
+      "views": [
+        {
+          "id": "vw_rules",
+          "key": "Rules",
+          "labels": {
+            "en": "Rules and results"
+          },
+          "classes": [
+            "cls_qualitydimension",
+            "cls_dataqualityrule",
+            "cls_dataset"
+          ],
+          "relations": ["rel_checks", "rel_measures"]
+        },
+        {
+          "id": "vw_issues",
+          "key": "Issues",
+          "labels": {
+            "en": "Issues and actions"
+          },
+          "classes": [
+            "cls_issue",
+            "cls_remediationaction",
+            "cls_dataset",
+            "cls_datasteward"
+          ],
+          "relations": [
+            "rel_affects",
+            "rel_foundby",
+            "rel_resolves",
+            "rel_stewards"
+          ]
+        }
+      ],
+      "cardinalities": [],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Title",
+          "required": true,
+          "maxLength": 100,
+          "id": "att_mtdataquality_title",
+          "labels": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Organisation",
+          "id": "att_mtdataquality_organisation",
+          "labels": {
+            "en": "Organisation"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "OverallPassRate",
+          "formula": "count(objects('DataQualityRule').PassCount) == 0 ? null : round(sum(objects('DataQualityRule').PassCount) / count(objects('DataQualityRule').PassCount) * 100, 1)",
+          "result": "number",
+          "id": "att_mtdataquality_overallpassrate",
+          "labels": {
+            "en": "Overall pass rate (%)"
+          },
+          "help": {
+            "en": "The share of all checked rules that pass, in percent."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "OpenIssues",
+          "formula": "sum(objects('Issue').OpenCount)",
+          "result": "number",
+          "id": "att_mtdataquality_openissues",
+          "labels": {
+            "en": "Open issues"
+          },
+          "help": {
+            "en": "How many issues are not resolved or closed."
+          }
+        }
+      ],
+      "help": {
+        "en": "Data assets with the rules that check them and the quality dimensions those rules measure, the issues found, who owns them and the actions that resolve them."
+      }
+    }
+  },
+  "shapes": {
+    "shp_dataqualityrule": {
+      "id": "shp_dataqualityrule",
+      "name": "DataQualityRule look",
+      "kind": "node",
+      "size": {
+        "width": 190,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 4,
+          "fill": "#ffffff",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": 28,
+          "radius": 4,
+          "fill": "= Passing == true ? '#b2f2bb' : Passing == false ? '#ffc9c9' : '#e9ecef'",
+          "stroke": "#1c7ed6"
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 2,
+          "width": "100% - 36",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 34,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Dimension: ' + Dimension",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 50,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Threshold: ' + Threshold",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 66,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'LastResult: ' + LastResult",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M4 12.5l5 5L20 6.5",
+          "viewBox": [0, 0, 24, 24],
+          "x": "100% - 26",
+          "y": 4,
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "header-box",
+        "fill": {
+          "by": "Passing",
+          "values": {
+            "true": "#b2f2bb",
+            "false": "#ffc9c9"
+          },
+          "fallback": "#e9ecef"
+        },
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 190,
+          "height": 110,
+          "resizable": true
+        },
+        "icon": {
+          "name": "check"
+        },
+        "fields": ["Dimension", "Threshold", "LastResult"]
+      }
+    },
+    "shp_dataset": {
+      "id": "shp_dataset",
+      "name": "Dataset look",
+      "kind": "node",
+      "size": {
+        "width": 190,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 4,
+          "fill": "#ffffff",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": 28,
+          "radius": 4,
+          "fill": "= QualityLevel == 'Good' ? '#b2f2bb' : QualityLevel == 'Fair' ? '#ffec99' : QualityLevel == 'Poor' ? '#ffc9c9' : '#a5d8ff'",
+          "stroke": "#1c7ed6"
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 2,
+          "width": "100% - 36",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 34,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'PassRate: ' + PassRate",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 50,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'QualityScore: ' + QualityScore",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 66,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'OpenIssues: ' + OpenIssues",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6 M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3",
+          "viewBox": [0, 0, 24, 24],
+          "x": "100% - 26",
+          "y": 4,
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "header-box",
+        "fill": {
+          "by": "QualityLevel",
+          "values": {
+            "Good": "#b2f2bb",
+            "Fair": "#ffec99",
+            "Poor": "#ffc9c9"
+          },
+          "fallback": "#a5d8ff"
+        },
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 190,
+          "height": 110,
+          "resizable": true
+        },
+        "icon": {
+          "name": "database"
+        },
+        "fields": ["PassRate", "QualityScore", "OpenIssues"]
+      }
+    },
+    "shp_issue": {
+      "id": "shp_issue",
+      "name": "Issue look",
+      "kind": "node",
+      "size": {
+        "width": 180,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "= Status == 'Open' ? '#ffc9c9' : Status == 'In progress' ? '#fff3bf' : Status == 'Resolved' ? '#d3f9d8' : Status == 'Closed' ? '#e9ecef' : '#ffc9c9'",
+          "stroke": "#e03131",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= Severity",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 3L2 20h20z M12 10v5 M12 18h.01",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": {
+          "by": "Status",
+          "values": {
+            "Open": "#ffc9c9",
+            "In progress": "#fff3bf",
+            "Resolved": "#d3f9d8",
+            "Closed": "#e9ecef"
+          },
+          "fallback": "#ffc9c9"
+        },
+        "border": "#e03131",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 180,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Severity"
+        },
+        "icon": {
+          "name": "warning"
+        }
+      }
+    },
+    "shp_datasteward": {
+      "id": "shp_datasteward",
+      "name": "DataSteward look",
+      "kind": "node",
+      "size": {
+        "width": 90,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "ellipse",
+          "x": "50% - 16",
+          "y": 4,
+          "width": 32,
+          "height": 32,
+          "fill": "#ffc9c9",
+          "stroke": "#e03131",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 6,
+          "y": 42,
+          "width": "100% - 12",
+          "height": "100% - 46",
+          "radius": 18,
+          "fill": "#ffc9c9",
+          "stroke": "#e03131",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 10,
+          "y": 46,
+          "width": "100% - 20",
+          "height": "100% - 72",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 10,
+          "y": "100% - 24",
+          "width": "100% - 20",
+          "height": 18,
+          "text": "= Domain",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "person",
+        "fill": "#ffc9c9",
+        "border": "#e03131",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 90,
+          "height": 110,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Domain"
+        }
+      }
+    },
+    "shp_rel_flowsto": {
+      "id": "shp_rel_flowsto",
+      "name": "FlowsTo look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#1c7ed6",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "labels": [
+        {
+          "at": "middle",
+          "text": "= Frequency",
+          "font": {
+            "size": 11
+          },
+          "background": "#ffffff",
+          "visible": "= Frequency != null"
+        }
+      ],
+      "look": {
+        "colour": "#1c7ed6",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": {
+          "attribute": "Frequency"
+        }
+      }
+    },
+    "shp_rel_stewards": {
+      "id": "shp_rel_stewards",
+      "name": "Stewards look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#6b7a90",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "startMarker": {
+        "type": "circle"
+      },
+      "look": {
+        "colour": "#6b7a90",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "circle",
+        "end": "none",
+        "label": null
+      }
+    },
+    "shp_qualitydimension": {
+      "id": "shp_qualitydimension",
+      "name": "QualityDimension look",
+      "kind": "node",
+      "size": {
+        "width": 160,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          ["15%", 0],
+          ["85%", 0],
+          ["100%", "50%"],
+          ["85%", "100%"],
+          ["15%", "100%"],
+          [0, "50%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            ["15%", 0],
+            ["85%", 0],
+            ["100%", "50%"],
+            ["85%", "100%"],
+            ["15%", "100%"],
+            [0, "50%"]
+          ],
+          "fill": "= OnTarget == true ? '#b2f2bb' : OnTarget == false ? '#ffc9c9' : '#e9ecef'",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": "18%",
+          "y": 4,
+          "width": "64%",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": "18%",
+          "y": "100% - 22",
+          "width": "64%",
+          "height": 18,
+          "text": "= ScoreText",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "hexagon",
+        "fill": {
+          "by": "OnTarget",
+          "values": {
+            "true": "#b2f2bb",
+            "false": "#ffc9c9"
+          },
+          "fallback": "#e9ecef"
+        },
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 160,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "ScoreText"
+        }
+      }
+    },
+    "shp_remediationaction": {
+      "id": "shp_remediationaction",
+      "name": "RemediationAction look",
+      "kind": "node",
+      "size": {
+        "width": 180,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "= Status == 'Not started' ? '#e9ecef' : Status == 'In progress' ? '#fff3bf' : Status == 'Done' ? '#d3f9d8' : '#e9ecef'",
+          "stroke": "#f08c00",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= Owner",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M19 12l2-1-1-3-2 .5-1.5-1.5.5-2-3-1-1 2h-2l-1-2-3 1 .5 2L6 8.5 4 8l-1 3 2 1v2l-2 1 1 3 2-.5L7.5 19l-.5 2 3 1 1-2h2l1 2 3-1-.5-2 1.5-1.5 2 .5 1-3-2-1z",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": {
+          "by": "Status",
+          "values": {
+            "Not started": "#e9ecef",
+            "In progress": "#fff3bf",
+            "Done": "#d3f9d8"
+          },
+          "fallback": "#e9ecef"
+        },
+        "border": "#f08c00",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 180,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Owner"
+        },
+        "icon": {
+          "name": "gear"
+        }
+      }
+    },
+    "shp_rel_checks": {
+      "id": "shp_rel_checks",
+      "name": "Checks look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#1c7ed6",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#1c7ed6",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_measures": {
+      "id": "shp_rel_measures",
+      "name": "Measures look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#1c7ed6",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [2, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#1c7ed6",
+        "width": 1.5,
+        "style": "dotted",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_foundby": {
+      "id": "shp_rel_foundby",
+      "name": "FoundBy look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#e03131",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "open-arrow"
+      },
+      "look": {
+        "colour": "#e03131",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "open-arrow",
+        "label": null
+      }
+    },
+    "shp_rel_affects": {
+      "id": "shp_rel_affects",
+      "name": "Affects look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#e03131",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#e03131",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_resolves": {
+      "id": "shp_rel_resolves",
+      "name": "Resolves look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#f08c00",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#f08c00",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    }
+  },
+  "panels": {
+    "cls_dataqualityrule": {
+      "class": "cls_dataqualityrule",
+      "tabs": [
+        {
+          "label": "Rule",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Dimension"
+            },
+            {
+              "attribute": "Expression",
+              "control": "textarea"
+            },
+            {
+              "attribute": "Threshold"
+            },
+            {
+              "attribute": "Owner"
+            },
+            {
+              "attribute": "Frequency",
+              "control": "select"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            }
+          ]
+        },
+        {
+          "label": "Last check",
+          "items": [
+            {
+              "attribute": "LastRun"
+            },
+            {
+              "attribute": "RecordsChecked"
+            },
+            {
+              "attribute": "RecordsFailed"
+            },
+            {
+              "attribute": "LastResult"
+            },
+            {
+              "attribute": "Passing"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_issue": {
+      "class": "cls_issue",
+      "tabs": [
+        {
+          "label": "Issue",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Severity",
+              "control": "segmented"
+            },
+            {
+              "attribute": "Status",
+              "control": "segmented"
+            },
+            {
+              "attribute": "Owner"
+            },
+            {
+              "attribute": "Found"
+            },
+            {
+              "attribute": "Due"
+            },
+            {
+              "attribute": "Overdue"
+            }
+          ]
+        },
+        {
+          "label": "Details",
+          "items": [
+            {
+              "attribute": "RecordsAffected"
+            },
+            {
+              "attribute": "RootCause",
+              "control": "textarea"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            },
+            {
+              "attribute": "Actions"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    }
+  },
+  "rules": {},
+  "scripts": {}
+}

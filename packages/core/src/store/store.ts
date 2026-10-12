@@ -16,7 +16,7 @@ export interface BatchCommand<C extends BaseCommand> {
   commands: C[];
 }
 
-/** What differs between a model and a tool library: the commands and how they change state. */
+/** What differs between a model and a Kit: the commands and how they change state. */
 export interface DocumentKind<S, C extends BaseCommand, Ctx> {
   /** Applies one command (never a batch) through `tx` and returns what the caller may want back, such as a new id. */
   apply(tx: Tx<S>, command: C, context: Ctx): unknown;
@@ -82,7 +82,7 @@ export interface StoreOptions<S, C extends BaseCommand, Ctx> {
 export const MAX_NESTING = 8;
 
 /**
- * The one place state changes. Tool libraries and models both live in a store: commands go in,
+ * The one place state changes. Kits and models both live in a store: commands go in,
  * recorded patches come out, and undo and redo replay those patches exactly.
  */
 export class DocumentStore<S, C extends BaseCommand, Ctx = undefined> {
@@ -110,8 +110,8 @@ export class DocumentStore<S, C extends BaseCommand, Ctx = undefined> {
 
   /** The current state. It is frozen: assigning to it throws. */
   /**
-   * Changes what commands are checked against, for example the tool library of a model after the
-   * tool was edited. The state and the undo history are left as they are.
+   * Changes what commands are checked against, for example the Kit of a model after the
+   * Kit was edited. The state and the undo history are left as they are.
    */
   updateContext(patch: Partial<Ctx>): void {
     Object.assign(this.context as object, patch);

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { sampleTool } from '../testing/sample-tool';
-import { createToolStore } from './commands';
-import { validateToolLibrary } from './guards';
-import { TOOL_FORMAT_VERSION, type ToolLibrary } from './types';
+import { sampleKit } from '../testing/sample-kit';
+import { createKitStore } from './commands';
+import { validateKit } from './guards';
+import { KIT_FORMAT_VERSION, type Kit } from './types';
 import type { Script } from './script-types';
 
 const SCRIPT: Script = {
@@ -11,30 +11,30 @@ const SCRIPT: Script = {
   source: 'import { on } from "metakit";\non("object.created", () => {});',
 };
 
-const paths = (tool: unknown) => validateToolLibrary(tool).map((i) => i.path);
-const withScripts = (scripts: unknown, manifest: object = {}): ToolLibrary => {
-  const tool = sampleTool();
+const paths = (kit: unknown) => validateKit(kit).map((i) => i.path);
+const withScripts = (scripts: unknown, manifest: object = {}): Kit => {
+  const kit = sampleKit();
   return {
-    ...tool,
-    manifest: { ...tool.manifest, ...manifest },
+    ...kit,
+    manifest: { ...kit.manifest, ...manifest },
     scripts,
-  } as unknown as ToolLibrary;
+  } as unknown as Kit;
 };
 
-describe('scripts in the tool library', () => {
+describe('scripts in the Kit', () => {
   it('are in format 4 and later, and a library with scripts and permissions is valid', () => {
-    expect(TOOL_FORMAT_VERSION).toBe(6);
-    const tool = withScripts(
+    expect(KIT_FORMAT_VERSION).toBe(7);
+    const kit = withScripts(
       { [SCRIPT.id]: SCRIPT },
       { permissions: { network: true, files: false } },
     );
-    expect(validateToolLibrary(tool)).toEqual([]);
+    expect(validateKit(kit)).toEqual([]);
   });
 
   it('require the scripts table', () => {
-    const tool = sampleTool() as unknown as Record<string, unknown>;
-    delete tool.scripts;
-    expect(paths(tool)).toContain('scripts');
+    const kit = sampleKit() as unknown as Record<string, unknown>;
+    delete kit.scripts;
+    expect(paths(kit)).toContain('scripts');
   });
 
   it('report a wrong id, an id that does not match, an empty name and unknown fields', () => {
@@ -62,7 +62,7 @@ describe('scripts in the tool library', () => {
 
 describe('script commands', () => {
   it('put, replace and remove a script, and undo each step', () => {
-    const store = createToolStore(sampleTool());
+    const store = createKitStore(sampleKit());
     store.execute({ type: 'putScript', script: SCRIPT });
     expect(store.state.scripts[SCRIPT.id]).toEqual(SCRIPT);
     store.execute({
@@ -74,11 +74,11 @@ describe('script commands', () => {
     expect(store.state.scripts[SCRIPT.id]).toBeUndefined();
     store.undo();
     expect(store.state.scripts[SCRIPT.id]?.source).toBe('// new');
-    expect(validateToolLibrary(store.state)).toEqual([]);
+    expect(validateKit(store.state)).toEqual([]);
   });
 
   it('refuse a bad id, an empty name and a missing script', () => {
-    const store = createToolStore(sampleTool());
+    const store = createKitStore(sampleKit());
     expect(() =>
       store.execute({
         type: 'putScript',
@@ -94,7 +94,7 @@ describe('script commands', () => {
   });
 
   it('change the permissions through updateManifest', () => {
-    const store = createToolStore(sampleTool());
+    const store = createKitStore(sampleKit());
     store.execute({ type: 'updateManifest', permissions: { network: true } });
     expect(store.state.manifest.permissions).toEqual({ network: true });
   });

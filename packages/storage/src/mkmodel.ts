@@ -26,12 +26,13 @@ import {
   type Point,
   type RandomSource,
   type RelationId,
-  type ToolId,
-  type ToolLibrary,
+  type KitId,
+  type Kit,
 } from '@metakit-app/core';
 import { FormatError } from './errors';
 import { stringifyCanonical } from './json';
-import { migrate } from './migrate';
+import { CURRENT_FORMAT, migrate } from './migrate';
+import { MODEL_KIT_FIELD } from './names';
 import type { Workspace } from './workspace';
 import { slugify } from './slugify';
 
@@ -71,14 +72,15 @@ interface MkConnector {
 
 /**
  * The model as a person writes and reads it: classes, relation classes and attributes by their
- * keys, elements in drawing order (bottom first). Everything else is as in the model.
+ * keys, elements in drawing order (bottom first). Everything else is as in the model. Format 1,
+ * from releases before the Kit rename, called `kit` `tool`; it is read as this.
  */
 export interface MkModelFile {
   formatVersion: number;
   kind: 'mkmodel';
   id?: string;
   name: string;
-  tool?: { id?: string; name?: string; version?: string };
+  kit?: { id?: string; name?: string; version?: string };
   modelType: string;
   folder?: string;
   attributes?: Record<string, Json>;
@@ -86,7 +88,7 @@ export interface MkModelFile {
   connectors?: MkConnector[];
 }
 
-/** The key of an attribute, or its raw id when the tool no longer defines it (so nothing is lost). */
+/** The key of an attribute, or its raw id when the Kit no longer defines it (so nothing is lost). */
 function attrKey(defs: AttributeDef[], id: string): string {
   return defs.find((d) => d.id === id)?.key ?? id;
 }
@@ -109,12 +111,12 @@ function defsOf(read: () => AttributeDef[]): AttributeDef[] {
   }
 }
 
-export function toMkModel(tool: ToolLibrary, model: Model): MkModelFile {
-  const modelType = tool.modelTypes[model.manifest.modelType];
-  const known = tool.manifest.id === model.manifest.tool;
+export function toMkModel(kit: Kit, model: Model): MkModelFile {
+  const modelType = kit.modelTypes[model.manifest.modelType];
+  const known = kit.manifest.id === model.manifest.kit;
   const elements = inDrawingOrder(model.elements).map((e): MkElement => {
-    const cls = tool.classes[e.class];
-    const defs = cls ? defsOf(() => effectiveAttributes(tool, e.class)) : [];
+    const cls = kit.classes[e.class];
+    const defs = cls ? defsOf(() => effectiveAttributes(kit, e.class)) : [];
     const attributes = keyed(defs, e.attrs);
     return {
       id: e.id,
@@ -128,9 +130,9 @@ export function toMkModel(tool: ToolLibrary, model: Model): MkModelFile {
     };
   });
   const connectors = inDrawingOrder(model.connectors).map((c): MkConnector => {
-    const rel = tool.relations[c.relation];
+    const rel = kit.relations[c.relation];
     const defs = rel
-      ? defsOf(() => effectiveRelationAttributes(tool, c.relation))
+      ? defsOf(() => effectiveRelationAttributes(kit, c.relation))
       : [];
     const attributes = keyed(defs, c.attrs);
     return {
@@ -144,14 +146,14 @@ export function toMkModel(tool: ToolLibrary, model: Model): MkModelFile {
   });
   const modelAttributes = keyed(modelType?.attributes ?? [], model.attrs);
   return {
-    formatVersion: MODEL_FORMAT_VERSION,
+    formatVersion: CURRENT_FORMAT.mkmodel,
     kind: 'mkmodel',
     id: model.manifest.id,
     name: model.manifest.name,
-    tool: {
-      id: model.manifest.tool,
-      ...(known ? { name: tool.manifest.name } : {}),
-      version: model.manifest.toolVersion,
+    kit: {
+      id: model.manifest.kit,
+      ...(known ? { name: kit.manifest.name } : {}),
+      version: model.manifest.kitVersion,
     },
     modelType: modelType?.key ?? model.manifest.modelType,
     ...(model.manifest.folder === undefined
@@ -164,8 +166,8 @@ export function toMkModel(tool: ToolLibrary, model: Model): MkModelFile {
 }
 
 /** The text of the editable model file, in canonical form. */
-export function exportMkModel(tool: ToolLibrary, model: Model): string {
-  return stringifyCanonical(toMkModel(tool, model) as unknown as Json);
+export function exportMkModel(kit: Kit, model: Model): string {
+  return stringifyCanonical(toMkModel(kit, model) as unknown as Json);
 }
 
 function distance(a: string, b: string): number {
@@ -208,12 +210,12 @@ export interface ImportOptions {
 }
 
 /**
- * Reads an editable model file against its tool library. Every problem found is reported with
+ * Reads an editable model file against its Kit. Every problem found is reported with
  * its place in the file, not just the first. Ids that are not valid ids (hand-written names such
  * as `start`) are replaced by new ones and every reference is rewritten.
  */
 export function importMkModel(
-  tool: ToolLibrary,
+  kit: Kit,
   source: string | unknown,
   options: ImportOptions = {},
 ): Model {
@@ -238,10 +240,10 @@ export function importMkModel(
     add('kind', 'This is not a model file (kind must be "mkmodel").');
   if (typeof file.name !== 'string' || file.name.trim() === '')
     add('name', 'The model needs a name.');
-  if (file.tool?.id !== undefined && file.tool.id !== tool.manifest.id) {
+  if (file.kit?.id !== undefined && file.kit.id !== kit.manifest.id) {
     add(
-      'tool.id',
-      `The file was written for the tool ${file.tool.id}, but it is being read with ${tool.manifest.id} ("${tool.manifest.name}").`,
+      `${MODEL_KIT_FIELD}.id`,
+      `The file was written for the Kit ${file.kit.id}, but it is being read with ${kit.manifest.id} ("${kit.manifest.name}").`,
     );
   }
 
@@ -250,7 +252,7 @@ export function importMkModel(
   if (typeof file.modelType !== 'string')
     add('modelType', 'The model type is missing.');
   else {
-    const byKey = findModelTypeByKey(tool, file.modelType);
+    const byKey = findModelTypeByKey(kit, file.modelType);
     if (byKey) modelTypeId = byKey.id;
     else if (isId('modelType', file.modelType))
       modelTypeId = file.modelType as ModelTypeId;
@@ -259,11 +261,11 @@ export function importMkModel(
         'modelType',
         `Unknown model type "${file.modelType}".${didYouMean(
           file.modelType,
-          Object.values(tool.modelTypes).map((m) => m.key),
+          Object.values(kit.modelTypes).map((m) => m.key),
         )}`,
       );
   }
-  const modelType = modelTypeId ? tool.modelTypes[modelTypeId] : undefined;
+  const modelType = modelTypeId ? kit.modelTypes[modelTypeId] : undefined;
 
   const resolveAttributes = (
     raw: unknown,
@@ -347,7 +349,7 @@ export function importMkModel(
     if (typeof e.class !== 'string')
       add(`${path}.class`, 'The element needs a class.');
     else {
-      const cls = findClassByKey(tool, e.class);
+      const cls = findClassByKey(kit, e.class);
       if (cls) classId = cls.id;
       else if (isId('class', e.class)) classId = e.class as ClassId;
       else
@@ -355,7 +357,7 @@ export function importMkModel(
           `${path}.class`,
           `Unknown class "${e.class}".${didYouMean(
             e.class,
-            Object.values(tool.classes).map((c) => c.key),
+            Object.values(kit.classes).map((c) => c.key),
           )}`,
         );
     }
@@ -381,9 +383,9 @@ export function importMkModel(
           `The container "${String(e.parent)}" is not an element of this file.`,
         );
     }
-    const cls = classId ? tool.classes[classId] : undefined;
+    const cls = classId ? kit.classes[classId] : undefined;
     const defs =
-      cls && classId ? defsOf(() => effectiveAttributes(tool, classId!)) : [];
+      cls && classId ? defsOf(() => effectiveAttributes(kit, classId!)) : [];
     const elementAttrs = resolveAttributes(
       e.attributes,
       `${path}.attributes`,
@@ -436,7 +438,7 @@ export function importMkModel(
     if (typeof c.relation !== 'string')
       add(`${path}.relation`, 'The connector needs a relation class.');
     else {
-      const rel = findRelationByKey(tool, c.relation);
+      const rel = findRelationByKey(kit, c.relation);
       if (rel) relationId = rel.id;
       else if (isId('relation', c.relation))
         relationId = c.relation as RelationId;
@@ -445,7 +447,7 @@ export function importMkModel(
           `${path}.relation`,
           `Unknown relation class "${c.relation}".${didYouMean(
             c.relation,
-            Object.values(tool.relations).map((r) => r.key),
+            Object.values(kit.relations).map((r) => r.key),
           )}`,
         );
     }
@@ -480,10 +482,10 @@ export function importMkModel(
       while (usedConnectorIds.has(id));
     }
     usedConnectorIds.add(id);
-    const rel = relationId ? tool.relations[relationId] : undefined;
+    const rel = relationId ? kit.relations[relationId] : undefined;
     const defs =
       rel && relationId
-        ? defsOf(() => effectiveRelationAttributes(tool, relationId!))
+        ? defsOf(() => effectiveRelationAttributes(kit, relationId!))
         : [];
     const cAttrs = resolveAttributes(
       c.attributes,
@@ -525,8 +527,8 @@ export function importMkModel(
     manifest: {
       id: modelId,
       name: file.name,
-      tool: tool.manifest.id,
-      toolVersion: file.tool?.version ?? tool.manifest.version,
+      kit: kit.manifest.id,
+      kitVersion: file.kit?.version ?? kit.manifest.version,
       modelType: modelTypeId!,
       ...(file.folder === undefined ? {} : { folder: file.folder }),
     },
@@ -546,13 +548,13 @@ export function importMkModel(
 
 /** What an import did and what the person should know about it, in plain English. */
 export interface MkModelImportReport {
-  /** The tool library in the workspace that the model was read with. */
-  tool: { id: ToolId; name: string; version: string };
-  /** What the file says about its tool. */
-  fileTool: { id?: string; name?: string; version?: string };
-  /** The file was written with another version of the tool library than the one in the workspace. */
-  toolVersionDiffers: boolean;
-  /** Values the file holds for attributes the tool library does not define; they are kept as stored values. */
+  /** The Kit in the workspace that the model was read with. */
+  kit: { id: KitId; name: string; version: string };
+  /** What the file says about its Kit. */
+  fileKit: { id?: string; name?: string; version?: string };
+  /** The file was written with another version of the Kit than the one in the workspace. */
+  kitVersionDiffers: boolean;
+  /** Values the file holds for attributes the Kit does not define; they are kept as stored values. */
   unknownAttributes: number;
   /** The model got a new id because the workspace already has a model with the id from the file. */
   idChanged: boolean;
@@ -565,68 +567,64 @@ export interface MkModelImportResult {
   report: MkModelImportReport;
 }
 
-/** How many stored values belong to attributes the tool library does not define. */
-export function countUnknownAttributes(
-  tool: ToolLibrary,
-  model: Model,
-): number {
+/** How many stored values belong to attributes the Kit does not define. */
+export function countUnknownAttributes(kit: Kit, model: Model): number {
   const count = (values: Record<string, Json>, defs: AttributeDef[]) =>
     Object.keys(values).filter((id) => !defs.some((d) => d.id === id)).length;
   let total = count(
     model.attrs,
-    tool.modelTypes[model.manifest.modelType]?.attributes ?? [],
+    kit.modelTypes[model.manifest.modelType]?.attributes ?? [],
   );
   for (const e of Object.values(model.elements))
     total += count(
       e.attrs,
-      tool.classes[e.class]
-        ? defsOf(() => effectiveAttributes(tool, e.class))
+      kit.classes[e.class]
+        ? defsOf(() => effectiveAttributes(kit, e.class))
         : [],
     );
   for (const c of Object.values(model.connectors))
     total += count(
       c.attrs,
-      tool.relations[c.relation]
-        ? defsOf(() => effectiveRelationAttributes(tool, c.relation))
+      kit.relations[c.relation]
+        ? defsOf(() => effectiveRelationAttributes(kit, c.relation))
         : [],
     );
   return total;
 }
 
-/** The report for a model read with `tool` from a file that said `fileTool`. */
+/** The report for a model read with `kit` from a file that said `fileKit`. */
 export function describeMkModelImport(
-  tool: ToolLibrary,
-  fileTool: MkModelFile['tool'],
+  kit: Kit,
+  fileKit: MkModelFile['kit'],
   model: Model,
   idChanged: boolean,
 ): MkModelImportReport {
-  const unknownAttributes = countUnknownAttributes(tool, model);
-  const toolVersionDiffers =
-    fileTool?.version !== undefined &&
-    fileTool.version !== tool.manifest.version;
+  const unknownAttributes = countUnknownAttributes(kit, model);
+  const kitVersionDiffers =
+    fileKit?.version !== undefined && fileKit.version !== kit.manifest.version;
   const messages = [
-    `Read with the tool library "${tool.manifest.name}" (version ${tool.manifest.version}).`,
+    `Read with the Kit "${kit.manifest.name}" (version ${kit.manifest.version}).`,
   ];
-  if (toolVersionDiffers)
+  if (kitVersionDiffers)
     messages.push(
-      `The file was written with version ${fileTool?.version} of the tool library, but this workspace has version ${tool.manifest.version}. The model was imported as it is; check it for changes.`,
+      `The file was written with version ${fileKit?.version} of the Kit, but this workspace has version ${kit.manifest.version}. The model was imported as it is; check it for changes.`,
     );
   if (unknownAttributes > 0)
     messages.push(
-      `${unknownAttributes} value${unknownAttributes === 1 ? '' : 's'} belong${unknownAttributes === 1 ? 's' : ''} to attributes that this version of the tool library does not have. They are kept and shown under "Unknown attributes".`,
+      `${unknownAttributes} value${unknownAttributes === 1 ? '' : 's'} belong${unknownAttributes === 1 ? 's' : ''} to attributes that this version of the Kit does not have. They are kept and shown under "Unknown attributes".`,
     );
   if (idChanged)
     messages.push(
       'This workspace already has a model with the same id, so the imported model got a new id.',
     );
   return {
-    tool: {
-      id: tool.manifest.id,
-      name: tool.manifest.name,
-      version: tool.manifest.version,
+    kit: {
+      id: kit.manifest.id,
+      name: kit.manifest.name,
+      version: kit.manifest.version,
     },
-    fileTool: { ...fileTool },
-    toolVersionDiffers,
+    fileKit: { ...fileKit },
+    kitVersionDiffers,
     unknownAttributes,
     idChanged,
     messages,
@@ -651,8 +649,8 @@ export async function exportModelFile(
 }
 
 export interface ImportModelFileOptions {
-  /** The tool library to read the file with. By default the one the file names. */
-  toolSlug?: string;
+  /** The Kit to read the file with. By default the one the file names. */
+  kitSlug?: string;
   slug?: string;
   /** Always give the model a new id (a bundle does). By default the id of the file is kept unless it is taken. */
   newId?: boolean;
@@ -660,7 +658,7 @@ export interface ImportModelFileOptions {
 }
 
 /**
- * Adds the model of an editable model file to the workspace. The tool library is found by the id
+ * Adds the model of an editable model file to the workspace. The Kit is found by the id
  * the file names. Nothing is changed when the file has problems (`MkModelError` lists them all).
  */
 export async function importModelFile(
@@ -678,21 +676,21 @@ export async function importModelFile(
   }
   const { value } = migrate('mkmodel', parsed);
   const file = value as unknown as MkModelFile;
-  let toolSlug = options.toolSlug ?? null;
-  if (toolSlug === null) {
-    const wanted = file.tool?.id;
+  let kitSlug = options.kitSlug ?? null;
+  if (kitSlug === null) {
+    const wanted = file.kit?.id;
     if (typeof wanted !== 'string')
       throw new FormatError(
-        'The model file does not say which tool library it was made with, so choose one.',
+        'The model file does not say which Kit it was made with, so choose one.',
       );
-    toolSlug = await workspace.findToolSlug(wanted as ToolId);
-    if (toolSlug === null)
+    kitSlug = await workspace.findKitSlug(wanted as KitId);
+    if (kitSlug === null)
       throw new FormatError(
-        `The model file was made with the tool library ${file.tool?.name ? `"${file.tool.name}" ` : ''}(${wanted}), which is not in this workspace. Import the tool package or the bundle first.`,
+        `The model file was made with the Kit ${file.kit?.name ? `"${file.kit.name}" ` : ''}(${wanted}), which is not in this workspace. Import the Kit package or the bundle first.`,
       );
   }
-  const tool = (await workspace.loadTool(toolSlug)).document;
-  const read = importMkModel(tool, value, {
+  const kit = (await workspace.loadKit(kitSlug)).document;
+  const read = importMkModel(kit, value, {
     ...(options.random ? { random: options.random } : {}),
   });
   const taken = (await workspace.listModels({ includeTrashed: true })).some(
@@ -716,6 +714,6 @@ export async function importModelFile(
   return {
     slug,
     model,
-    report: describeMkModelImport(tool, file.tool, model, idChanged),
+    report: describeMkModelImport(kit, file.kit, model, idChanged),
   };
 }

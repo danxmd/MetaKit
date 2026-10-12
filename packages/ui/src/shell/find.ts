@@ -4,7 +4,7 @@ import {
   type ConnectorId,
   type ElementId,
   type Model,
-  type ToolLibrary,
+  type Kit,
 } from '@metakit-app/core';
 
 export interface FindHit {
@@ -42,7 +42,7 @@ function stringsOf(value: unknown): string[] {
  * case and accents), names first. Results keep the drawing order within each group.
  */
 export function findInModel(
-  tool: ToolLibrary,
+  kit: Kit,
   model: Model,
   query: string,
   language = 'en',
@@ -92,9 +92,9 @@ export function findInModel(
   for (const e of Object.values(model.elements).sort((a, b) =>
     a.pos < b.pos ? -1 : 1,
   )) {
-    const cls = tool.classes[e.class];
+    const cls = kit.classes[e.class];
     const defs = attributesOrNone(() =>
-      cls ? effectiveAttributes(tool, e.class) : [],
+      cls ? effectiveAttributes(kit, e.class) : [],
     );
     consider(
       e.id,
@@ -107,9 +107,9 @@ export function findInModel(
   for (const c of Object.values(model.connectors).sort((a, b) =>
     a.pos < b.pos ? -1 : 1,
   )) {
-    const rel = tool.relations[c.relation];
+    const rel = kit.relations[c.relation];
     const defs = attributesOrNone(() =>
-      rel ? effectiveRelationAttributes(tool, c.relation) : [],
+      rel ? effectiveRelationAttributes(kit, c.relation) : [],
     );
     consider(
       c.id,

@@ -1,0 +1,1070 @@
+{
+  "formatVersion": 7,
+  "manifest": {
+    "id": "kit_kpitree",
+    "name": "KPI and metric tree",
+    "version": "1.0.0",
+    "languages": ["en"]
+  },
+  "settings": {
+    "grid": {
+      "size": 10,
+      "snap": true,
+      "visible": true
+    },
+    "layers": [],
+    "numbering": {
+      "enabled": false,
+      "prefix": "",
+      "start": 1
+    }
+  },
+  "classes": {
+    "cls_goal": {
+      "id": "cls_goal",
+      "key": "Goal",
+      "kind": "node",
+      "labels": {
+        "en": "Goal"
+      },
+      "help": {
+        "en": "Something the organisation wants to achieve, with a time horizon and a way to measure it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Goal",
+          "id": "att_goal_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_goal_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Horizon",
+          "options": ["Short term", "Medium term", "Long term"],
+          "id": "att_goal_horizon",
+          "labels": {
+            "en": "Horizon"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Measure",
+          "id": "att_goal_measure",
+          "labels": {
+            "en": "Measure"
+          }
+        }
+      ],
+      "shape": "shp_goal"
+    },
+    "cls_kpi": {
+      "id": "cls_kpi",
+      "key": "KPI",
+      "kind": "node",
+      "labels": {
+        "en": "KPI"
+      },
+      "help": {
+        "en": "Anything measured against a target. Use one of its three kinds: outcome KPI, driver metric or operational metric."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "KPI",
+          "id": "att_kpi_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_kpi_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Unit",
+          "id": "att_kpi_unit",
+          "labels": {
+            "en": "Unit"
+          }
+        },
+        {
+          "type": "number",
+          "key": "Target",
+          "id": "att_kpi_target",
+          "labels": {
+            "en": "Target"
+          },
+          "help": {
+            "en": "A fixed target. Leave it empty to derive the target from the baseline and the planned change."
+          }
+        },
+        {
+          "type": "number",
+          "key": "Current",
+          "id": "att_kpi_current",
+          "labels": {
+            "en": "Current"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Direction",
+          "options": ["Higher is better", "Lower is better"],
+          "id": "att_kpi_direction",
+          "labels": {
+            "en": "Direction"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "OnTrack",
+          "formula": "Current == null || TargetValue == null ? null : (Direction == 'Lower is better' ? Current <= TargetValue : Current >= TargetValue)",
+          "result": "boolean",
+          "id": "att_kpi_ontrack",
+          "labels": {
+            "en": "On track"
+          },
+          "help": {
+            "en": "Yes when the current value has reached the target in the given direction."
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_kpi_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Frequency",
+          "options": ["Daily", "Weekly", "Monthly", "Quarterly", "Yearly"],
+          "id": "att_kpi_frequency",
+          "labels": {
+            "en": "Frequency"
+          }
+        },
+        {
+          "type": "number",
+          "key": "Baseline",
+          "id": "att_kpi_baseline",
+          "labels": {
+            "en": "Baseline"
+          },
+          "help": {
+            "en": "The value when the target was set."
+          }
+        },
+        {
+          "type": "number",
+          "key": "TargetChange",
+          "unit": "%",
+          "id": "att_kpi_targetchange",
+          "labels": {
+            "en": "Planned change"
+          },
+          "help": {
+            "en": "The planned change against the baseline, such as 15 for 15% more."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "TargetValue",
+          "formula": "Target ?? (Baseline == null || TargetChange == null ? null : round(Baseline * (1 + TargetChange / 100), 4))",
+          "result": "number",
+          "id": "att_kpi_targetvalue",
+          "labels": {
+            "en": "Target used"
+          },
+          "help": {
+            "en": "The fixed target, or the baseline with the planned change applied."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Attainment",
+          "formula": "IFERROR(Current == null || TargetValue == null ? null : round((Direction == 'Lower is better' ? TargetValue / Current : Current / TargetValue) * 100, 1), null)",
+          "result": "number",
+          "id": "att_kpi_attainment",
+          "labels": {
+            "en": "Attainment (%)"
+          },
+          "help": {
+            "en": "How much of the target is reached, in percent. Above 100 is better than the target."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Reading",
+          "formula": "(Current == null ? '-' : text(Current)) + (Unit ? ' ' + Unit : '') + ', target ' + (TargetValue == null ? '-' : text(TargetValue))",
+          "result": "text",
+          "id": "att_kpi_reading",
+          "labels": {
+            "en": "Current and target"
+          },
+          "help": {
+            "en": "The current value and the target, shown on the diagram."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Drivers",
+          "formula": "count(incoming('Drives'))",
+          "result": "number",
+          "id": "att_kpi_drivers",
+          "labels": {
+            "en": "Drivers"
+          },
+          "help": {
+            "en": "How many metrics drive this one."
+          }
+        }
+      ],
+      "abstract": true,
+      "constraints": [
+        {
+          "id": "k_kpi_target",
+          "formula": "TargetValue != null",
+          "message": "= '\"' + Name + '\" has no target: give it a target, or a baseline and a planned change.'",
+          "severity": "warning"
+        }
+      ]
+    },
+    "cls_outcomekpi": {
+      "id": "cls_outcomekpi",
+      "key": "OutcomeKPI",
+      "kind": "node",
+      "labels": {
+        "en": "Outcome KPI"
+      },
+      "help": {
+        "en": "A result the organisation is judged by, such as revenue or customer satisfaction."
+      },
+      "attributes": [],
+      "extends": "cls_kpi",
+      "constraints": [
+        {
+          "id": "k_outcome_drivers",
+          "formula": "Drivers > 0",
+          "message": "= 'Outcome KPI \"' + Name + '\" has no driver metrics yet.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_outcomekpi"
+    },
+    "cls_drivermetric": {
+      "id": "cls_drivermetric",
+      "key": "DriverMetric",
+      "kind": "node",
+      "labels": {
+        "en": "Driver metric"
+      },
+      "help": {
+        "en": "A metric that explains an outcome KPI, such as conversion rate for revenue."
+      },
+      "attributes": [],
+      "extends": "cls_kpi",
+      "constraints": [
+        {
+          "id": "k_drivermetric_drives",
+          "formula": "count(outgoing('Drives')) > 0",
+          "message": "= 'Driver metric \"' + Name + '\" drives nothing: connect it to the metric or KPI it explains with \"Drives\".'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_drivermetric"
+    },
+    "cls_operationalmetric": {
+      "id": "cls_operationalmetric",
+      "key": "OperationalMetric",
+      "kind": "node",
+      "labels": {
+        "en": "Operational metric"
+      },
+      "help": {
+        "en": "A metric of day-to-day work that a team can change directly, such as page load time."
+      },
+      "attributes": [],
+      "extends": "cls_kpi",
+      "constraints": [
+        {
+          "id": "k_operationalmetric_drives",
+          "formula": "count(outgoing('Drives')) > 0",
+          "message": "= 'Operational metric \"' + Name + '\" drives nothing: connect it to the metric or KPI it explains with \"Drives\".'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_operationalmetric"
+    }
+  },
+  "relations": {
+    "rel_measures": {
+      "id": "rel_measures",
+      "key": "Measures",
+      "labels": {
+        "en": "Measures"
+      },
+      "help": {
+        "en": "A KPI measures how well something is doing."
+      },
+      "from": ["cls_kpi"],
+      "to": ["cls_goal"],
+      "attributes": [],
+      "shape": "shp_rel_measures"
+    },
+    "rel_drives": {
+      "id": "rel_drives",
+      "key": "Drives",
+      "labels": {
+        "en": "Drives"
+      },
+      "help": {
+        "en": "The metric explains part of the one it points to."
+      },
+      "from": ["cls_drivermetric", "cls_operationalmetric"],
+      "to": ["cls_outcomekpi", "cls_drivermetric"],
+      "attributes": [
+        {
+          "type": "number",
+          "key": "Weight",
+          "unit": "%",
+          "min": 0,
+          "max": 100,
+          "id": "att_drives_weight",
+          "labels": {
+            "en": "Weight"
+          },
+          "help": {
+            "en": "How much of the target metric it explains, as a share."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Effect",
+          "options": ["Raises", "Lowers"],
+          "id": "att_drives_effect",
+          "labels": {
+            "en": "Effect"
+          },
+          "help": {
+            "en": "Whether a higher value of this metric raises or lowers the one it drives."
+          }
+        }
+      ],
+      "shape": "shp_rel_drives"
+    }
+  },
+  "modelTypes": {
+    "mt_metrictree": {
+      "id": "mt_metrictree",
+      "key": "MetricTree",
+      "labels": {
+        "en": "Metric tree"
+      },
+      "classes": [
+        "cls_goal",
+        "cls_outcomekpi",
+        "cls_drivermetric",
+        "cls_operationalmetric"
+      ],
+      "relations": ["rel_measures", "rel_drives"],
+      "views": [
+        {
+          "id": "vw_outcomes",
+          "key": "Outcomes",
+          "labels": {
+            "en": "Outcomes"
+          },
+          "classes": ["cls_goal", "cls_outcomekpi", "cls_drivermetric"],
+          "relations": ["rel_measures", "rel_drives"]
+        }
+      ],
+      "cardinalities": [
+        {
+          "kind": "count",
+          "class": "cls_outcomekpi",
+          "min": 1
+        }
+      ],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Title",
+          "required": true,
+          "maxLength": 100,
+          "id": "att_mtmetrictree_title",
+          "labels": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Period",
+          "id": "att_mtmetrictree_period",
+          "labels": {
+            "en": "Reporting period"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_mtmetrictree_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        }
+      ],
+      "help": {
+        "en": "Goals measured by outcome KPIs, explained by driver metrics and operational metrics."
+      }
+    }
+  },
+  "shapes": {
+    "shp_goal": {
+      "id": "shp_goal",
+      "name": "Goal look",
+      "kind": "node",
+      "size": {
+        "width": 120,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          ["15%", 0],
+          ["85%", 0],
+          ["100%", "50%"],
+          ["85%", "100%"],
+          ["15%", "100%"],
+          [0, "50%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            ["15%", 0],
+            ["85%", 0],
+            ["100%", "50%"],
+            ["85%", "100%"],
+            ["15%", "100%"],
+            [0, "50%"]
+          ],
+          "fill": "#b2f2bb",
+          "stroke": "#2f9e44",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": "18% + 26",
+          "y": 4,
+          "width": "64% - 26",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": "18% + 26",
+          "y": "100% - 22",
+          "width": "64% - 26",
+          "height": 18,
+          "text": "= Horizon",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z",
+          "viewBox": [0, 0, 24, 24],
+          "x": "18% + 4",
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "hexagon",
+        "fill": "#b2f2bb",
+        "border": "#2f9e44",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 120,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Horizon"
+        },
+        "icon": {
+          "name": "star"
+        }
+      }
+    },
+    "shp_rel_measures": {
+      "id": "shp_rel_measures",
+      "name": "Measures look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#2f9e44",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [2, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#2f9e44",
+        "width": 1.5,
+        "style": "dotted",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_outcomekpi": {
+      "id": "shp_outcomekpi",
+      "name": "OutcomeKPI look",
+      "kind": "node",
+      "size": {
+        "width": 200,
+        "height": 90,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          ["15%", 0],
+          ["85%", 0],
+          ["100%", "50%"],
+          ["85%", "100%"],
+          ["15%", "100%"],
+          [0, "50%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            ["15%", 0],
+            ["85%", 0],
+            ["100%", "50%"],
+            ["85%", "100%"],
+            ["15%", "100%"],
+            [0, "50%"]
+          ],
+          "fill": "= OnTrack == true ? '#b2f2bb' : OnTrack == false ? '#ffc9c9' : '#e9ecef'",
+          "stroke": "#2f9e44",
+          "strokeWidth": 2.5
+        },
+        {
+          "type": "text",
+          "x": "18%",
+          "y": 4,
+          "width": "64%",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": "18%",
+          "y": "100% - 22",
+          "width": "64%",
+          "height": 18,
+          "text": "= Reading",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "hexagon",
+        "fill": {
+          "by": "OnTrack",
+          "values": {
+            "true": "#b2f2bb",
+            "false": "#ffc9c9"
+          },
+          "fallback": "#e9ecef"
+        },
+        "border": "#2f9e44",
+        "borderWidth": 2.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 200,
+          "height": 90,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Reading"
+        }
+      }
+    },
+    "shp_drivermetric": {
+      "id": "shp_drivermetric",
+      "name": "DriverMetric look",
+      "kind": "node",
+      "size": {
+        "width": 180,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "= OnTrack == true ? '#b2f2bb' : OnTrack == false ? '#ffc9c9' : '#e9ecef'",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 2
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 4,
+          "width": "100% - 16",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 22",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= Reading",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": {
+          "by": "OnTrack",
+          "values": {
+            "true": "#b2f2bb",
+            "false": "#ffc9c9"
+          },
+          "fallback": "#e9ecef"
+        },
+        "border": "#1c7ed6",
+        "borderWidth": 2,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 180,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Reading"
+        }
+      }
+    },
+    "shp_operationalmetric": {
+      "id": "shp_operationalmetric",
+      "name": "OperationalMetric look",
+      "kind": "node",
+      "size": {
+        "width": 180,
+        "height": 54,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 999,
+          "fill": "= OnTrack == true ? '#b2f2bb' : OnTrack == false ? '#ffc9c9' : '#e9ecef'",
+          "stroke": "#868e96",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 16,
+          "y": 4,
+          "width": "100% - 32",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 16,
+          "y": "100% - 22",
+          "width": "100% - 32",
+          "height": 18,
+          "text": "= Reading",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "pill",
+        "fill": {
+          "by": "OnTrack",
+          "values": {
+            "true": "#b2f2bb",
+            "false": "#ffc9c9"
+          },
+          "fallback": "#e9ecef"
+        },
+        "border": "#868e96",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 180,
+          "height": 54,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Reading"
+        }
+      }
+    },
+    "shp_rel_drives": {
+      "id": "shp_rel_drives",
+      "name": "Drives look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#495057",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "labels": [
+        {
+          "at": "middle",
+          "text": "= Weight",
+          "font": {
+            "size": 11
+          },
+          "background": "#ffffff",
+          "visible": "= Weight != null"
+        }
+      ],
+      "look": {
+        "colour": "#495057",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": {
+          "attribute": "Weight"
+        }
+      }
+    }
+  },
+  "panels": {
+    "cls_outcomekpi": {
+      "class": "cls_outcomekpi",
+      "tabs": [
+        {
+          "label": "Metric",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Owner"
+            },
+            {
+              "attribute": "Unit"
+            },
+            {
+              "attribute": "Frequency",
+              "control": "select"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            }
+          ]
+        },
+        {
+          "label": "Target",
+          "items": [
+            {
+              "attribute": "Direction",
+              "control": "segmented"
+            },
+            {
+              "attribute": "Baseline"
+            },
+            {
+              "attribute": "TargetChange"
+            },
+            {
+              "attribute": "Target"
+            },
+            {
+              "attribute": "TargetValue"
+            },
+            {
+              "attribute": "Current"
+            },
+            {
+              "attribute": "OnTrack"
+            },
+            {
+              "attribute": "Attainment"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_drivermetric": {
+      "class": "cls_drivermetric",
+      "tabs": [
+        {
+          "label": "Metric",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Owner"
+            },
+            {
+              "attribute": "Unit"
+            },
+            {
+              "attribute": "Frequency",
+              "control": "select"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            }
+          ]
+        },
+        {
+          "label": "Target",
+          "items": [
+            {
+              "attribute": "Direction",
+              "control": "segmented"
+            },
+            {
+              "attribute": "Baseline"
+            },
+            {
+              "attribute": "TargetChange"
+            },
+            {
+              "attribute": "Target"
+            },
+            {
+              "attribute": "TargetValue"
+            },
+            {
+              "attribute": "Current"
+            },
+            {
+              "attribute": "OnTrack"
+            },
+            {
+              "attribute": "Attainment"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_operationalmetric": {
+      "class": "cls_operationalmetric",
+      "tabs": [
+        {
+          "label": "Metric",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Owner"
+            },
+            {
+              "attribute": "Unit"
+            },
+            {
+              "attribute": "Frequency",
+              "control": "select"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            }
+          ]
+        },
+        {
+          "label": "Target",
+          "items": [
+            {
+              "attribute": "Direction",
+              "control": "segmented"
+            },
+            {
+              "attribute": "Baseline"
+            },
+            {
+              "attribute": "TargetChange"
+            },
+            {
+              "attribute": "Target"
+            },
+            {
+              "attribute": "TargetValue"
+            },
+            {
+              "attribute": "Current"
+            },
+            {
+              "attribute": "OnTrack"
+            },
+            {
+              "attribute": "Attainment"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    }
+  },
+  "rules": {
+    "rule_offtrack": {
+      "id": "rule_offtrack",
+      "label": "Warn when a metric goes off track",
+      "when": {
+        "event": "attribute.changed",
+        "class": "cls_kpi",
+        "attribute": "Current"
+      },
+      "if": "= OnTrack == false",
+      "then": [
+        {
+          "action": "message",
+          "kind": "warning",
+          "text": "= '\"' + Name + '\" is off track: ' + Reading + '.'"
+        }
+      ]
+    }
+  },
+  "scripts": {}
+}

@@ -228,8 +228,12 @@
     min-height: 0;
   }
   .left {
-    padding-right: 0.25rem;
+    padding-right: var(--gap-1);
     grid-template-columns: minmax(0, 1fr);
+    /* Each part keeps its full height and the column scrolls. Otherwise, on a screen 720 px high
+       or with wider fonts, the layer list (the only part that can scroll by itself) is squeezed
+       to nothing under the gallery. */
+    grid-auto-rows: max-content;
   }
   .centre,
   .right {

@@ -2,7 +2,7 @@
 id: problems-panel
 title: Problems (validation)
 category: model
-summary: The Problems panel lists everything in the model that breaks the rules of the tool library, grouped into errors, warnings and notes, and jumps to the object concerned.
+summary: The Problems panel lists everything in the model that breaks the rules of the Kit, grouped into errors, warnings and notes, and jumps to the object concerned.
 keywords: [problems panel, validation list, validation problems, errors and warnings, filter problems]
 contexts: []
 order: 260
@@ -12,13 +12,13 @@ MetaKit checks your model all the time. The Problems panel is where you read the
 
 ## What it is
 
-*Validation* compares the model with the rules of its tool library: required values, allowed values, which objects may be connected, how many of something are needed, constraints written by the tool builder, and more. It never blocks you. It only tells you.
+*Validation* compares the model with the rules of its Kit: required values, allowed values, which objects may be connected, how many of something are needed, constraints written by the method engineer, and more. It never blocks you. It only tells you.
 
 A problem has a *severity*:
 
-- **Errors** are serious. A constraint of the tool counts as an error unless the tool builder chose otherwise. Some broken structures, such as an object that sits inside itself, are errors.
+- **Errors** are serious. A constraint of the Kit counts as an error unless the method engineer chose otherwise. Some broken structures, such as an object that sits inside itself, are errors.
 - **Warnings** are things to fix: a required value is empty, a value is out of range, an object has too few connections, a calculated value cannot be worked out.
-- **Notes** are for information: the model keeps a value that the tool no longer defines, or uses a class that no longer exists.
+- **Notes** are for information: the model keeps a value that the Kit no longer defines, or uses a class that no longer exists.
 
 ## Where to find it
 
@@ -52,7 +52,7 @@ Open **Check** and click **Problems**. A panel opens under the canvas. A number 
 | --- | --- | --- |
 | `required` | `Task "Draft plan": Name is required.` | Warning |
 | `min`, `max`, `max-length`, `pattern`, `not-integer`, `decimals` | `... Estimated effort must be at least 0.` | Warning |
-| `constraint` | The message the tool builder wrote, for example `A finished task should say how much effort it took.` | The constraint's own severity, error by default |
+| `constraint` | The message the method engineer wrote, for example `A finished task should say how much effort it took.` | The constraint's own severity, error by default |
 | `formula-error` | `... the formula of Variance cannot be calculated. ...` | Warning |
 | `count-below-min` | `The model has 0 Task elements, but at least 1 is needed.` | Warning |
 | `degree-below-min`, `degree-above-max` | `... has 0 Performs ... it, but needs at least 1.` | Warning |
@@ -61,9 +61,9 @@ Open **Check** and click **Problems**. A panel opens under the canvas. A number 
 | `abstract-class`, `abstract-relation` | The item should be one of its subclasses. | Warning |
 | `parent-not-accepted`, `parent-not-container` | An object sits in a container that does not accept it. | Warning |
 | `dangling-parent`, `parent-loop`, `dangling-end` | A container or end point is missing, or a container loop exists. | Error |
-| `unknown-model-type` | The tool library no longer has the model type. | Error |
-| `tool-mismatch` | The model was made with another tool. | Warning |
-| `unknown-attribute`, `unknown-class`, `unknown-relation` | The tool library lost something the model still uses. The data is kept. | Note |
+| `unknown-model-type` | The Kit no longer has the model type. | Error |
+| `kit-mismatch` | The model was made with another Kit. | Warning |
+| `unknown-attribute`, `unknown-class`, `unknown-relation` | The Kit lost something the model still uses. The data is kept. | Note |
 
 ## Examples
 
@@ -73,10 +73,10 @@ The Code review pipeline needs at least one **Task**. Delete all tasks and the p
 
 - Validation runs a fraction of a second after each change. The panel is not stale.
 - The field of the attribute panel shows the same message, in red under the control. See [[attribute-panel]].
-- Problems come from the tool library. To change a rule, a tool builder edits it in Build mode. See [[constraints]] and [[tool-validation]].
+- Problems come from the Kit. To change a rule, a method engineer edits it in Build mode. See [[constraints]] and [[kit-validation]].
 - Problems never stop saving, syncing or exporting.
 - Everyone sees the same list, because it is calculated from the model.
 
 ## Related
 
-[[menu-check]], [[constraints]], [[attribute-panel]], [[computed-values]], [[tool-validation]], [[containers-swimlanes]]
+[[menu-check]], [[constraints]], [[attribute-panel]], [[computed-values]], [[kit-validation]], [[containers-swimlanes]]

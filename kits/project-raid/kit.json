@@ -1,0 +1,2425 @@
+{
+  "formatVersion": 7,
+  "manifest": {
+    "id": "kit_projectraid",
+    "name": "Project delivery and RAID",
+    "version": "1.0.0",
+    "languages": ["en"]
+  },
+  "settings": {
+    "grid": {
+      "size": 10,
+      "snap": true,
+      "visible": true
+    },
+    "layers": [],
+    "numbering": {
+      "enabled": false,
+      "prefix": "",
+      "start": 1
+    }
+  },
+  "classes": {
+    "cls_workstream": {
+      "id": "cls_workstream",
+      "key": "Workstream",
+      "kind": "container",
+      "labels": {
+        "en": "Workstream"
+      },
+      "help": {
+        "en": "A part of the programme with its own lead and status. Place its tasks, deliverables and milestones inside it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Workstream",
+          "id": "att_workstream_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_workstream_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Lead",
+          "id": "att_workstream_lead",
+          "labels": {
+            "en": "Lead"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Status",
+          "options": ["Green", "Amber", "Red"],
+          "id": "att_workstream_status",
+          "labels": {
+            "en": "Status (red, amber, green)"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Effort",
+          "formula": "sum(children().Effort)",
+          "result": "number",
+          "id": "att_workstream_effort",
+          "labels": {
+            "en": "Effort (hours)"
+          },
+          "help": {
+            "en": "The effort of the tasks inside it, in hours."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Progress",
+          "formula": "IFERROR(round(sum(children().EffortDone) / sum(children().Effort) * 100, 0), null)",
+          "result": "number",
+          "id": "att_workstream_progress",
+          "labels": {
+            "en": "Progress (%)"
+          },
+          "help": {
+            "en": "The share of the effort of its tasks that is done, in percent."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Heading",
+          "formula": "Name + (Progress == null ? '' : ' · ' + Progress + '% done')",
+          "result": "text",
+          "id": "att_workstream_heading",
+          "labels": {
+            "en": "Heading"
+          },
+          "help": {
+            "en": "The name and the progress, shown as the title."
+          }
+        }
+      ],
+      "shape": "shp_workstream"
+    },
+    "cls_task": {
+      "id": "cls_task",
+      "key": "Task",
+      "kind": "node",
+      "labels": {
+        "en": "Task"
+      },
+      "help": {
+        "en": "A piece of work for one owner, with an effort and a due date."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Task",
+          "id": "att_task_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_task_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_task_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "number",
+          "key": "Effort",
+          "unit": "h",
+          "min": 0,
+          "id": "att_task_effort",
+          "labels": {
+            "en": "Effort (hours)"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Status",
+          "options": ["Not started", "In progress", "Done", "Blocked"],
+          "id": "att_task_status",
+          "labels": {
+            "en": "Status"
+          }
+        },
+        {
+          "type": "date",
+          "key": "Due",
+          "id": "att_task_due",
+          "labels": {
+            "en": "Due"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "EffortDone",
+          "formula": "Status == 'Done' ? (Effort ?? 0) : 0",
+          "result": "number",
+          "id": "att_task_effortdone",
+          "labels": {
+            "en": "Effort done (hours)"
+          },
+          "help": {
+            "en": "The effort when the task is done, otherwise 0. Workstreams add it up for their progress."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Overdue",
+          "formula": "!(Status == 'Done') && Due != null && Due < today()",
+          "result": "boolean",
+          "id": "att_task_overdue",
+          "labels": {
+            "en": "Overdue"
+          },
+          "help": {
+            "en": "Yes when it is not done and its date has passed."
+          }
+        }
+      ],
+      "shape": "shp_task"
+    },
+    "cls_deliverable": {
+      "id": "cls_deliverable",
+      "key": "Deliverable",
+      "kind": "node",
+      "labels": {
+        "en": "Deliverable"
+      },
+      "help": {
+        "en": "Something a project hands over, with a due date and how it will be accepted."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Deliverable",
+          "id": "att_deliverable_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_deliverable_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "date",
+          "key": "Due",
+          "id": "att_deliverable_due",
+          "labels": {
+            "en": "Due"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Status",
+          "options": ["Not started", "In progress", "Done", "Blocked"],
+          "id": "att_deliverable_status",
+          "labels": {
+            "en": "Status"
+          }
+        },
+        {
+          "type": "text",
+          "key": "AcceptanceCriteria",
+          "multiline": true,
+          "id": "att_deliverable_acceptancecriteria",
+          "labels": {
+            "en": "Acceptance criteria"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_deliverable_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Overdue",
+          "formula": "!(Status == 'Done') && Due != null && Due < today()",
+          "result": "boolean",
+          "id": "att_deliverable_overdue",
+          "labels": {
+            "en": "Overdue"
+          },
+          "help": {
+            "en": "Yes when it is not done and its date has passed."
+          }
+        }
+      ],
+      "shape": "shp_deliverable",
+      "constraints": [
+        {
+          "id": "k_deliverable_home",
+          "formula": "parent != null || count(incoming('Delivers')) > 0",
+          "message": "= 'Deliverable \"' + Name + '\" belongs to no workstream: place it in one, or connect a workstream or task to it with \"Delivers\".'",
+          "severity": "warning"
+        }
+      ]
+    },
+    "cls_milestone": {
+      "id": "cls_milestone",
+      "key": "Milestone",
+      "kind": "node",
+      "labels": {
+        "en": "Milestone"
+      },
+      "help": {
+        "en": "A point in time that marks progress, such as the end of a phase."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Milestone",
+          "id": "att_milestone_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_milestone_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "date",
+          "key": "Date",
+          "id": "att_milestone_date",
+          "labels": {
+            "en": "Date"
+          }
+        },
+        {
+          "type": "boolean",
+          "key": "Reached",
+          "id": "att_milestone_reached",
+          "labels": {
+            "en": "Reached"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_milestone_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "State",
+          "formula": "Reached ? 'Reached' : Date == null ? null : Date < today() ? 'Overdue' : daysBetween(today(), Date) <= 14 ? 'Due soon' : 'Planned'",
+          "result": "text",
+          "id": "att_milestone_state",
+          "labels": {
+            "en": "State"
+          },
+          "help": {
+            "en": "Reached, Overdue (its date has passed and it is not reached), Due soon (within 14 days) or Planned. It colours the shape."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "DaysLeft",
+          "formula": "Reached || Date == null ? null : daysBetween(today(), Date)",
+          "result": "number",
+          "id": "att_milestone_daysleft",
+          "labels": {
+            "en": "Days left"
+          },
+          "help": {
+            "en": "Days from today to its date; below 0 when it is overdue."
+          }
+        }
+      ],
+      "shape": "shp_milestone"
+    },
+    "cls_risk": {
+      "id": "cls_risk",
+      "key": "Risk",
+      "kind": "node",
+      "labels": {
+        "en": "Risk"
+      },
+      "help": {
+        "en": "Something that may go wrong. Score is likelihood times impact; Rating turns it into Low, Medium or High and colours the shape."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Risk",
+          "id": "att_risk_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_risk_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "Likelihood",
+          "min": 1,
+          "max": 5,
+          "id": "att_risk_likelihood",
+          "labels": {
+            "en": "Likelihood (1 to 5)"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "Impact",
+          "min": 1,
+          "max": 5,
+          "id": "att_risk_impact",
+          "labels": {
+            "en": "Impact (1 to 5)"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_risk_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Status",
+          "options": ["Open", "Mitigated", "Accepted", "Closed"],
+          "id": "att_risk_status",
+          "labels": {
+            "en": "Status"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Score",
+          "formula": "Likelihood == null || Impact == null ? null : Likelihood * Impact",
+          "result": "number",
+          "id": "att_risk_score",
+          "labels": {
+            "en": "Score"
+          },
+          "help": {
+            "en": "Likelihood times impact, from 1 to 25."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Rating",
+          "formula": "Score == null ? null : (Score >= 15 ? 'High' : (Score >= 8 ? 'Medium' : 'Low'))",
+          "result": "text",
+          "id": "att_risk_rating",
+          "labels": {
+            "en": "Rating"
+          },
+          "help": {
+            "en": "High from 15, Medium from 8, otherwise Low."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Response",
+          "options": ["Avoid", "Reduce", "Transfer", "Accept"],
+          "id": "att_risk_response",
+          "labels": {
+            "en": "Response"
+          },
+          "help": {
+            "en": "What you do about it: avoid it, reduce it, pass it on, or accept it."
+          }
+        },
+        {
+          "type": "text",
+          "key": "Mitigation",
+          "multiline": true,
+          "id": "att_risk_mitigation",
+          "labels": {
+            "en": "Mitigation"
+          },
+          "help": {
+            "en": "What is done to make it less likely or less harmful."
+          }
+        },
+        {
+          "type": "date",
+          "key": "ReviewBy",
+          "id": "att_risk_reviewby",
+          "labels": {
+            "en": "Review by"
+          }
+        }
+      ],
+      "shape": "shp_risk",
+      "constraints": [
+        {
+          "id": "k_risk_high",
+          "formula": "Rating != 'High' || Status == 'Closed' || (!isEmpty(Owner) && (!isEmpty(Mitigation) || count(incoming('Addresses')) > 0))",
+          "message": "= 'High risk \"' + Name + '\" has ' + (isEmpty(Owner) ? 'no owner' : 'no mitigation') + ': ' + (isEmpty(Owner) ? 'give it an owner.' : 'describe the mitigation, or connect a task or decision to it with \"Addresses\".')",
+          "severity": "warning"
+        }
+      ]
+    },
+    "cls_assumption": {
+      "id": "cls_assumption",
+      "key": "Assumption",
+      "kind": "node",
+      "labels": {
+        "en": "Assumption"
+      },
+      "help": {
+        "en": "Something taken as true for planning that still needs to be checked."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Assumption",
+          "id": "att_assumption_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_assumption_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "boolean",
+          "key": "Validated",
+          "id": "att_assumption_validated",
+          "labels": {
+            "en": "Validated"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Impact",
+          "options": ["Low", "Medium", "High"],
+          "id": "att_assumption_impact",
+          "labels": {
+            "en": "Impact"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_assumption_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "date",
+          "key": "CheckBy",
+          "id": "att_assumption_checkby",
+          "labels": {
+            "en": "Check by"
+          }
+        }
+      ],
+      "shape": "shp_assumption"
+    },
+    "cls_issue": {
+      "id": "cls_issue",
+      "key": "Issue",
+      "kind": "node",
+      "labels": {
+        "en": "Issue"
+      },
+      "help": {
+        "en": "A problem that is happening now and needs an owner to resolve it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Issue",
+          "id": "att_issue_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_issue_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Severity",
+          "options": ["Low", "Medium", "High", "Critical"],
+          "id": "att_issue_severity",
+          "labels": {
+            "en": "Severity"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_issue_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Status",
+          "options": ["Open", "In progress", "Resolved", "Closed"],
+          "id": "att_issue_status",
+          "labels": {
+            "en": "Status"
+          }
+        },
+        {
+          "type": "date",
+          "key": "Due",
+          "id": "att_issue_due",
+          "labels": {
+            "en": "Due"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Resolution",
+          "multiline": true,
+          "id": "att_issue_resolution",
+          "labels": {
+            "en": "Resolution"
+          }
+        }
+      ],
+      "shape": "shp_issue",
+      "constraints": [
+        {
+          "id": "k_issue_owner",
+          "formula": "Status == 'Resolved' || Status == 'Closed' || !isEmpty(Owner)",
+          "message": "= 'Issue \"' + Name + '\" is open and has no owner to resolve it.'",
+          "severity": "warning"
+        }
+      ]
+    },
+    "cls_dependency": {
+      "id": "cls_dependency",
+      "key": "Dependency",
+      "kind": "node",
+      "labels": {
+        "en": "Dependency"
+      },
+      "help": {
+        "en": "Something the work needs from elsewhere, and by when it is needed."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Dependency",
+          "id": "att_dependency_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_dependency_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Type",
+          "options": ["Internal", "External"],
+          "id": "att_dependency_type",
+          "labels": {
+            "en": "Type"
+          }
+        },
+        {
+          "type": "date",
+          "key": "NeededBy",
+          "id": "att_dependency_neededby",
+          "labels": {
+            "en": "Needed by"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Status",
+          "options": ["Open", "Agreed", "Delivered", "At risk"],
+          "id": "att_dependency_status",
+          "labels": {
+            "en": "Status"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Provider",
+          "id": "att_dependency_provider",
+          "labels": {
+            "en": "Provider"
+          },
+          "help": {
+            "en": "Who must deliver it."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Overdue",
+          "formula": "!(Status == 'Delivered') && NeededBy != null && NeededBy < today()",
+          "result": "boolean",
+          "id": "att_dependency_overdue",
+          "labels": {
+            "en": "Overdue"
+          },
+          "help": {
+            "en": "Yes when it is not done and its date has passed."
+          }
+        }
+      ],
+      "shape": "shp_dependency"
+    },
+    "cls_decision": {
+      "id": "cls_decision",
+      "key": "Decision",
+      "kind": "node",
+      "labels": {
+        "en": "Decision"
+      },
+      "help": {
+        "en": "A choice that was made or must be made, with the reason for it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Decision",
+          "id": "att_decision_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_decision_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Status",
+          "options": ["Proposed", "Agreed", "Superseded"],
+          "id": "att_decision_status",
+          "labels": {
+            "en": "Status"
+          }
+        },
+        {
+          "type": "date",
+          "key": "Date",
+          "id": "att_decision_date",
+          "labels": {
+            "en": "Date"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Rationale",
+          "multiline": true,
+          "id": "att_decision_rationale",
+          "labels": {
+            "en": "Rationale"
+          }
+        },
+        {
+          "type": "text",
+          "key": "DecidedBy",
+          "id": "att_decision_decidedby",
+          "labels": {
+            "en": "Decided by"
+          }
+        }
+      ],
+      "shape": "shp_decision",
+      "constraints": [
+        {
+          "id": "k_decision_rationale",
+          "formula": "Status != 'Agreed' || !isEmpty(Rationale)",
+          "message": "= 'Decision \"' + Name + '\" is agreed but has no rationale: write down why it was made.'",
+          "severity": "warning"
+        }
+      ]
+    },
+    "cls_programme": {
+      "id": "cls_programme",
+      "key": "Programme",
+      "kind": "container",
+      "labels": {
+        "en": "Programme"
+      },
+      "help": {
+        "en": "A project or programme. Place its workstreams, and milestones that belong to the whole programme, inside it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Programme",
+          "id": "att_programme_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_programme_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Sponsor",
+          "id": "att_programme_sponsor",
+          "labels": {
+            "en": "Sponsor"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Manager",
+          "id": "att_programme_manager",
+          "labels": {
+            "en": "Manager"
+          }
+        },
+        {
+          "type": "date",
+          "key": "Start",
+          "id": "att_programme_start",
+          "labels": {
+            "en": "Start"
+          }
+        },
+        {
+          "type": "date",
+          "key": "End",
+          "id": "att_programme_end",
+          "labels": {
+            "en": "End"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Status",
+          "options": ["Green", "Amber", "Red"],
+          "id": "att_programme_status",
+          "labels": {
+            "en": "Status (red, amber, green)"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Progress",
+          "formula": "IFERROR(round(avg(children().Progress), 0), null)",
+          "result": "number",
+          "id": "att_programme_progress",
+          "labels": {
+            "en": "Progress (%)"
+          },
+          "help": {
+            "en": "The average progress of its workstreams, in percent."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Heading",
+          "formula": "Name + (Status ? ' · ' + Status : '') + (Progress == null ? '' : ' · ' + Progress + '% done')",
+          "result": "text",
+          "id": "att_programme_heading",
+          "labels": {
+            "en": "Heading"
+          },
+          "help": {
+            "en": "The name, the status and the progress, shown as the title."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_programme_dates",
+          "formula": "Start == null || End == null || Start <= End",
+          "message": "= 'Programme \"' + Name + '\" ends before it starts.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_programme"
+    }
+  },
+  "relations": {
+    "rel_dependson": {
+      "id": "rel_dependson",
+      "key": "DependsOn",
+      "labels": {
+        "en": "Depends on"
+      },
+      "help": {
+        "en": "One thing needs another to work or to be done first."
+      },
+      "from": [
+        "cls_task",
+        "cls_deliverable",
+        "cls_milestone",
+        "cls_workstream"
+      ],
+      "to": [
+        "cls_task",
+        "cls_deliverable",
+        "cls_milestone",
+        "cls_workstream",
+        "cls_dependency"
+      ],
+      "attributes": [],
+      "shape": "shp_rel_dependson"
+    },
+    "rel_delivers": {
+      "id": "rel_delivers",
+      "key": "Delivers",
+      "labels": {
+        "en": "Delivers"
+      },
+      "help": {
+        "en": "A workstream or initiative produces a deliverable."
+      },
+      "from": ["cls_workstream", "cls_task"],
+      "to": ["cls_deliverable"],
+      "attributes": [],
+      "shape": "shp_rel_delivers"
+    },
+    "rel_neededfor": {
+      "id": "rel_neededfor",
+      "key": "NeededFor",
+      "labels": {
+        "en": "Needed for"
+      },
+      "help": {
+        "en": "The milestone is reached only once this task or deliverable is done."
+      },
+      "from": ["cls_task", "cls_deliverable"],
+      "to": ["cls_milestone"],
+      "attributes": [],
+      "shape": "shp_rel_neededfor"
+    },
+    "rel_affects": {
+      "id": "rel_affects",
+      "key": "Affects",
+      "labels": {
+        "en": "Affects"
+      },
+      "help": {
+        "en": "The risk, assumption, issue or dependency affects this part of the plan."
+      },
+      "from": ["cls_risk", "cls_assumption", "cls_issue", "cls_dependency"],
+      "to": [
+        "cls_programme",
+        "cls_workstream",
+        "cls_task",
+        "cls_deliverable",
+        "cls_milestone"
+      ],
+      "attributes": [],
+      "shape": "shp_rel_affects"
+    },
+    "rel_addresses": {
+      "id": "rel_addresses",
+      "key": "Addresses",
+      "labels": {
+        "en": "Addresses"
+      },
+      "help": {
+        "en": "The task mitigates the risk or resolves the issue, or the decision settles it."
+      },
+      "from": ["cls_task", "cls_decision"],
+      "to": ["cls_risk", "cls_issue", "cls_assumption"],
+      "attributes": [],
+      "shape": "shp_rel_addresses"
+    },
+    "rel_turnedinto": {
+      "id": "rel_turnedinto",
+      "key": "TurnedInto",
+      "labels": {
+        "en": "Turned into"
+      },
+      "help": {
+        "en": "The risk happened and is now an issue."
+      },
+      "from": ["cls_risk"],
+      "to": ["cls_issue"],
+      "attributes": [],
+      "shape": "shp_rel_turnedinto"
+    }
+  },
+  "modelTypes": {
+    "mt_project": {
+      "id": "mt_project",
+      "key": "Project",
+      "labels": {
+        "en": "Project or programme"
+      },
+      "classes": [
+        "cls_workstream",
+        "cls_task",
+        "cls_deliverable",
+        "cls_milestone",
+        "cls_risk",
+        "cls_assumption",
+        "cls_issue",
+        "cls_dependency",
+        "cls_decision",
+        "cls_programme"
+      ],
+      "relations": [
+        "rel_dependson",
+        "rel_delivers",
+        "rel_neededfor",
+        "rel_affects",
+        "rel_addresses",
+        "rel_turnedinto"
+      ],
+      "views": [
+        {
+          "id": "vw_plan",
+          "key": "Plan",
+          "labels": {
+            "en": "Plan"
+          },
+          "classes": [
+            "cls_programme",
+            "cls_workstream",
+            "cls_task",
+            "cls_deliverable",
+            "cls_milestone"
+          ],
+          "relations": ["rel_delivers", "rel_neededfor", "rel_dependson"]
+        },
+        {
+          "id": "vw_raid",
+          "key": "RAID",
+          "labels": {
+            "en": "RAID log"
+          },
+          "classes": [
+            "cls_risk",
+            "cls_assumption",
+            "cls_issue",
+            "cls_dependency",
+            "cls_decision",
+            "cls_task"
+          ],
+          "relations": ["rel_affects", "rel_addresses", "rel_turnedinto"]
+        }
+      ],
+      "cardinalities": [],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Title",
+          "required": true,
+          "maxLength": 100,
+          "id": "att_mtproject_title",
+          "labels": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Organisation",
+          "id": "att_mtproject_organisation",
+          "labels": {
+            "en": "Organisation"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Manager",
+          "id": "att_mtproject_manager",
+          "labels": {
+            "en": "Manager"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "TotalEffort",
+          "formula": "sum(objects('Task').Effort)",
+          "result": "number",
+          "id": "att_mtproject_totaleffort",
+          "labels": {
+            "en": "Total effort (hours)"
+          },
+          "help": {
+            "en": "The effort of all tasks, in hours."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Progress",
+          "formula": "IFERROR(round(sum(objects('Task').EffortDone) / sum(objects('Task').Effort) * 100, 0), null)",
+          "result": "number",
+          "id": "att_mtproject_progress",
+          "labels": {
+            "en": "Progress (%)"
+          },
+          "help": {
+            "en": "The share of the effort of all tasks that is done, in percent."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "RAIDItems",
+          "formula": "count(objects('Risk')) + count(objects('Assumption')) + count(objects('Issue')) + count(objects('Dependency'))",
+          "result": "number",
+          "id": "att_mtproject_raiditems",
+          "labels": {
+            "en": "RAID items"
+          },
+          "help": {
+            "en": "How many risks, assumptions, issues and dependencies the log holds."
+          }
+        }
+      ],
+      "help": {
+        "en": "A programme with workstreams, tasks, deliverables and milestones, and its RAID log: risks, assumptions, issues, dependencies and decisions."
+      },
+      "containers": {
+        "cls_programme": ["cls_workstream", "cls_milestone"],
+        "cls_workstream": ["cls_task", "cls_deliverable", "cls_milestone"]
+      }
+    }
+  },
+  "shapes": {
+    "shp_workstream": {
+      "id": "shp_workstream",
+      "name": "Workstream look",
+      "kind": "node",
+      "size": {
+        "width": 400,
+        "height": 240,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 6,
+          "fill": "#f8f9fa",
+          "stroke": "= Status == 'Green' ? '#2f9e44' : Status == 'Amber' ? '#f08c00' : Status == 'Red' ? '#e03131' : '#f08c00'",
+          "strokeWidth": 2,
+          "dash": [7, 4]
+        },
+        {
+          "type": "text",
+          "x": 12,
+          "y": 4,
+          "width": "100% - 48",
+          "height": 24,
+          "text": "= Heading",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "container",
+        "fill": "#f8f9fa",
+        "border": {
+          "by": "Status",
+          "values": {
+            "Green": "#2f9e44",
+            "Amber": "#f08c00",
+            "Red": "#e03131"
+          },
+          "fallback": "#f08c00"
+        },
+        "borderWidth": 2,
+        "borderStyle": "dashed",
+        "title": {
+          "attribute": "Heading",
+          "bold": true
+        },
+        "size": {
+          "width": 400,
+          "height": 240,
+          "resizable": true
+        }
+      }
+    },
+    "shp_task": {
+      "id": "shp_task",
+      "name": "Task look",
+      "kind": "node",
+      "size": {
+        "width": 150,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "= Status == 'Not started' ? '#f8f9fa' : Status == 'In progress' ? '#ffe8cc' : Status == 'Done' ? '#d3f9d8' : Status == 'Blocked' ? '#ffc9c9' : '#f8f9fa'",
+          "stroke": "= Overdue == true ? '#e03131' : Overdue == false ? '#f08c00' : '#f08c00'",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 4,
+          "width": "100% - 16",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 22",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= Owner",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": {
+          "by": "Status",
+          "values": {
+            "Not started": "#f8f9fa",
+            "In progress": "#ffe8cc",
+            "Done": "#d3f9d8",
+            "Blocked": "#ffc9c9"
+          },
+          "fallback": "#f8f9fa"
+        },
+        "border": {
+          "by": "Overdue",
+          "values": {
+            "true": "#e03131",
+            "false": "#f08c00"
+          },
+          "fallback": "#f08c00"
+        },
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 150,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Owner"
+        }
+      }
+    },
+    "shp_deliverable": {
+      "id": "shp_deliverable",
+      "name": "Deliverable look",
+      "kind": "node",
+      "size": {
+        "width": 120,
+        "height": 90,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          [0, 0],
+          ["100% - 18", 0],
+          ["100%", 18],
+          ["100%", "100%"],
+          [0, "100%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            [0, 0],
+            ["100% - 18", 0],
+            ["100%", 18],
+            ["100%", "100%"],
+            [0, "100%"]
+          ],
+          "fill": "= Status == 'Not started' ? '#f8f9fa' : Status == 'In progress' ? '#ffe8cc' : Status == 'Done' ? '#d3f9d8' : Status == 'Blocked' ? '#ffc9c9' : '#f8f9fa'",
+          "stroke": "= Overdue == true ? '#e03131' : Overdue == false ? '#f08c00' : '#f08c00'",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "polygon",
+          "points": [
+            ["100% - 18", 0],
+            ["100% - 18", 18],
+            ["100%", 18]
+          ],
+          "fill": "#00000022",
+          "stroke": "= Overdue == true ? '#e03131' : Overdue == false ? '#f08c00' : '#f08c00'",
+          "strokeWidth": 1
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 20,
+          "width": "100% - 16",
+          "height": "100% - 46",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 24",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= Due",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M6 2h8l5 5v15H6z M14 2v5h5 M9 13h7 M9 17h7",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": 4,
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "document",
+        "fill": {
+          "by": "Status",
+          "values": {
+            "Not started": "#f8f9fa",
+            "In progress": "#ffe8cc",
+            "Done": "#d3f9d8",
+            "Blocked": "#ffc9c9"
+          },
+          "fallback": "#f8f9fa"
+        },
+        "border": {
+          "by": "Overdue",
+          "values": {
+            "true": "#e03131",
+            "false": "#f08c00"
+          },
+          "fallback": "#f08c00"
+        },
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 120,
+          "height": 90,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Due"
+        },
+        "icon": {
+          "name": "document"
+        }
+      }
+    },
+    "shp_milestone": {
+      "id": "shp_milestone",
+      "name": "Milestone look",
+      "kind": "node",
+      "size": {
+        "width": 200,
+        "height": 120,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          ["50%", 0],
+          ["100%", "50%"],
+          ["50%", "100%"],
+          [0, "50%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            ["50%", 0],
+            ["100%", "50%"],
+            ["50%", "100%"],
+            [0, "50%"]
+          ],
+          "fill": "= State == 'Reached' ? '#b2f2bb' : State == 'Overdue' ? '#ffc9c9' : State == 'Due soon' ? '#ffec99' : State == 'Planned' ? '#ffd8a8' : '#e9ecef'",
+          "stroke": "#f08c00",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": "24%",
+          "y": "24% + 18",
+          "width": "52%",
+          "height": "52% - 38",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": "24%",
+          "y": "76% - 18",
+          "width": "52%",
+          "height": 18,
+          "text": "= Date",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M5 21V3 M5 4h12l-2 4 2 4H5",
+          "viewBox": [0, 0, 24, 24],
+          "x": "50% - 10",
+          "y": "14%",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "diamond",
+        "fill": {
+          "by": "State",
+          "values": {
+            "Reached": "#b2f2bb",
+            "Overdue": "#ffc9c9",
+            "Due soon": "#ffec99",
+            "Planned": "#ffd8a8"
+          },
+          "fallback": "#e9ecef"
+        },
+        "border": "#f08c00",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 200,
+          "height": 120,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Date"
+        },
+        "icon": {
+          "name": "flag"
+        }
+      }
+    },
+    "shp_risk": {
+      "id": "shp_risk",
+      "name": "Risk look",
+      "kind": "node",
+      "size": {
+        "width": 240,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 4,
+          "fill": "#ffffff",
+          "stroke": "#e03131",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": 28,
+          "radius": 4,
+          "fill": "= Rating == 'Low' ? '#d3f9d8' : Rating == 'Medium' ? '#fff3bf' : Rating == 'High' ? '#ffc9c9' : '#e9ecef'",
+          "stroke": "#e03131"
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 2,
+          "width": "100% - 36",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 34,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Owner: ' + Owner",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 50,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Score: ' + Score",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 66,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Rating: ' + Rating",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 3L2 20h20z M12 10v5 M12 18h.01",
+          "viewBox": [0, 0, 24, 24],
+          "x": "100% - 26",
+          "y": 4,
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "header-box",
+        "fill": {
+          "by": "Rating",
+          "values": {
+            "Low": "#d3f9d8",
+            "Medium": "#fff3bf",
+            "High": "#ffc9c9"
+          },
+          "fallback": "#e9ecef"
+        },
+        "border": "#e03131",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 240,
+          "height": 110,
+          "resizable": true
+        },
+        "icon": {
+          "name": "warning"
+        },
+        "fields": ["Owner", "Score", "Rating"]
+      }
+    },
+    "shp_assumption": {
+      "id": "shp_assumption",
+      "name": "Assumption look",
+      "kind": "node",
+      "size": {
+        "width": 200,
+        "height": 50,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 999,
+          "fill": "= Validated == true ? '#d3f9d8' : Validated == false ? '#fff4e6' : '#fff4e6'",
+          "stroke": "#f08c00",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 16,
+          "y": 4,
+          "width": "100% - 32",
+          "height": "100% - 8",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "pill",
+        "fill": {
+          "by": "Validated",
+          "values": {
+            "true": "#d3f9d8",
+            "false": "#fff4e6"
+          },
+          "fallback": "#fff4e6"
+        },
+        "border": "#f08c00",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 200,
+          "height": 50,
+          "resizable": true
+        }
+      }
+    },
+    "shp_issue": {
+      "id": "shp_issue",
+      "name": "Issue look",
+      "kind": "node",
+      "size": {
+        "width": 240,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 4,
+          "fill": "#ffffff",
+          "stroke": "#e8590c",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": 28,
+          "radius": 4,
+          "fill": "= Severity == 'Low' ? '#f8f9fa' : Severity == 'Medium' ? '#fff3bf' : Severity == 'High' ? '#ffd8a8' : Severity == 'Critical' ? '#ffc9c9' : '#f8f9fa'",
+          "stroke": "#e8590c"
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 2,
+          "width": "100% - 36",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 34,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Owner: ' + Owner",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 50,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Severity: ' + Severity",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 66,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Status: ' + Status",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 3L2 20h20z M12 10v5 M12 18h.01",
+          "viewBox": [0, 0, 24, 24],
+          "x": "100% - 26",
+          "y": 4,
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "header-box",
+        "fill": {
+          "by": "Severity",
+          "values": {
+            "Low": "#f8f9fa",
+            "Medium": "#fff3bf",
+            "High": "#ffd8a8",
+            "Critical": "#ffc9c9"
+          },
+          "fallback": "#f8f9fa"
+        },
+        "border": "#e8590c",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 240,
+          "height": 110,
+          "resizable": true
+        },
+        "icon": {
+          "name": "warning"
+        },
+        "fields": ["Owner", "Severity", "Status"]
+      }
+    },
+    "shp_dependency": {
+      "id": "shp_dependency",
+      "name": "Dependency look",
+      "kind": "node",
+      "size": {
+        "width": 210,
+        "height": 54,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 999,
+          "fill": "= Status == 'Open' ? '#f8f9fa' : Status == 'Agreed' ? '#e7f5ff' : Status == 'Delivered' ? '#d3f9d8' : Status == 'At risk' ? '#ffc9c9' : '#f8f9fa'",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 16,
+          "y": 4,
+          "width": "100% - 32",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 16,
+          "y": "100% - 22",
+          "width": "100% - 32",
+          "height": 18,
+          "text": "= NeededBy",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "pill",
+        "fill": {
+          "by": "Status",
+          "values": {
+            "Open": "#f8f9fa",
+            "Agreed": "#e7f5ff",
+            "Delivered": "#d3f9d8",
+            "At risk": "#ffc9c9"
+          },
+          "fallback": "#f8f9fa"
+        },
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 210,
+          "height": 54,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "NeededBy"
+        }
+      }
+    },
+    "shp_decision": {
+      "id": "shp_decision",
+      "name": "Decision look",
+      "kind": "node",
+      "size": {
+        "width": 240,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 4,
+          "fill": "#ffffff",
+          "stroke": "#6741d9",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": 28,
+          "radius": 4,
+          "fill": "= Status == 'Proposed' ? '#fff4e6' : Status == 'Agreed' ? '#e5dbff' : Status == 'Superseded' ? '#e9ecef' : '#fff4e6'",
+          "stroke": "#6741d9"
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 2,
+          "width": "100% - 36",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 34,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Status: ' + Status",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 50,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Date: ' + Date",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M4 12.5l5 5L20 6.5",
+          "viewBox": [0, 0, 24, 24],
+          "x": "100% - 26",
+          "y": 4,
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "header-box",
+        "fill": {
+          "by": "Status",
+          "values": {
+            "Proposed": "#fff4e6",
+            "Agreed": "#e5dbff",
+            "Superseded": "#e9ecef"
+          },
+          "fallback": "#fff4e6"
+        },
+        "border": "#6741d9",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 240,
+          "height": 110,
+          "resizable": true
+        },
+        "icon": {
+          "name": "check"
+        },
+        "fields": ["Status", "Date"]
+      }
+    },
+    "shp_rel_dependson": {
+      "id": "shp_rel_dependson",
+      "name": "DependsOn look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#6b7a90",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "open-arrow"
+      },
+      "look": {
+        "colour": "#6b7a90",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "open-arrow",
+        "label": null
+      }
+    },
+    "shp_rel_delivers": {
+      "id": "shp_rel_delivers",
+      "name": "Delivers look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#f08c00",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#f08c00",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_programme": {
+      "id": "shp_programme",
+      "name": "Programme look",
+      "kind": "node",
+      "size": {
+        "width": 1340,
+        "height": 640,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 6,
+          "fill": "#fff9db",
+          "stroke": "= Status == 'Green' ? '#2f9e44' : Status == 'Amber' ? '#f08c00' : Status == 'Red' ? '#e03131' : '#f08c00'",
+          "strokeWidth": 2,
+          "dash": [7, 4]
+        },
+        {
+          "type": "text",
+          "x": 12,
+          "y": 4,
+          "width": "100% - 48",
+          "height": 24,
+          "text": "= Heading",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "container",
+        "fill": "#fff9db",
+        "border": {
+          "by": "Status",
+          "values": {
+            "Green": "#2f9e44",
+            "Amber": "#f08c00",
+            "Red": "#e03131"
+          },
+          "fallback": "#f08c00"
+        },
+        "borderWidth": 2,
+        "borderStyle": "dashed",
+        "title": {
+          "attribute": "Heading",
+          "bold": true
+        },
+        "size": {
+          "width": 1340,
+          "height": 640,
+          "resizable": true
+        }
+      }
+    },
+    "shp_rel_neededfor": {
+      "id": "shp_rel_neededfor",
+      "name": "NeededFor look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#f08c00",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#f08c00",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_affects": {
+      "id": "shp_rel_affects",
+      "name": "Affects look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#e03131",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [2, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#e03131",
+        "width": 1.5,
+        "style": "dotted",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_addresses": {
+      "id": "shp_rel_addresses",
+      "name": "Addresses look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#2f9e44",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "bar"
+      },
+      "look": {
+        "colour": "#2f9e44",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "bar",
+        "label": null
+      }
+    },
+    "shp_rel_turnedinto": {
+      "id": "shp_rel_turnedinto",
+      "name": "TurnedInto look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#e03131",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "triangle"
+      },
+      "look": {
+        "colour": "#e03131",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "triangle",
+        "label": null
+      }
+    }
+  },
+  "panels": {
+    "cls_risk": {
+      "class": "cls_risk",
+      "tabs": [
+        {
+          "label": "Risk",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            },
+            {
+              "attribute": "Owner"
+            },
+            {
+              "attribute": "Status",
+              "control": "select"
+            },
+            {
+              "attribute": "ReviewBy"
+            }
+          ]
+        },
+        {
+          "label": "Assessment",
+          "items": [
+            {
+              "attribute": "Likelihood"
+            },
+            {
+              "attribute": "Impact"
+            },
+            {
+              "attribute": "Score"
+            },
+            {
+              "attribute": "Rating"
+            },
+            {
+              "attribute": "Response",
+              "control": "segmented"
+            },
+            {
+              "attribute": "Mitigation",
+              "control": "textarea"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    },
+    "cls_task": {
+      "class": "cls_task",
+      "tabs": [
+        {
+          "label": "Task",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "Owner"
+            },
+            {
+              "attribute": "Status",
+              "control": "select"
+            },
+            {
+              "attribute": "Due"
+            },
+            {
+              "attribute": "Overdue"
+            },
+            {
+              "attribute": "Effort"
+            },
+            {
+              "attribute": "EffortDone"
+            },
+            {
+              "attribute": "Description",
+              "control": "textarea"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    }
+  },
+  "rules": {},
+  "scripts": {}
+}

@@ -1,7 +1,7 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import type { ElementId, RandomSource } from '../ids';
-import { createToolStore, type ToolCommand } from '../meta/commands';
+import { createKitStore, type KitCommand } from '../meta/commands';
 import type { ClassDef } from '../meta/types';
 import {
   createModelStore,
@@ -9,7 +9,7 @@ import {
   type ModelStore,
 } from '../model/commands';
 import { inDrawingOrder } from '../model/types';
-import { SAMPLE, emptySampleModel, sampleTool } from '../testing/sample-tool';
+import { SAMPLE, emptySampleModel, sampleKit } from '../testing/sample-kit';
 import { CommandError } from './tx';
 
 function seeded(seed: number): RandomSource {
@@ -200,7 +200,7 @@ describe('undo and redo are exact (property tests)', () => {
         fc.array(intentArb, { minLength: 1, maxLength: 40 }),
         (seed, intents) => {
           const store = createModelStore(emptySampleModel(), {
-            tool: sampleTool(),
+            kit: sampleKit(),
             random: seeded(seed),
           });
           const { states, steps } = runIntents(store, intents);
@@ -229,7 +229,7 @@ describe('undo and redo are exact (property tests)', () => {
         fc.array(intentArb, { minLength: 1, maxLength: 25 }),
         (seed, intents) => {
           const store = createModelStore(emptySampleModel(), {
-            tool: sampleTool(),
+            kit: sampleKit(),
             random: seeded(seed),
           });
           runIntents(store, intents);
@@ -259,7 +259,7 @@ describe('undo and redo are exact (property tests)', () => {
         fc.array(intentArb, { minLength: 1, maxLength: 40 }),
         (seed, intents) => {
           const store = createModelStore(emptySampleModel(), {
-            tool: sampleTool(),
+            kit: sampleKit(),
             random: seeded(seed),
           });
           runIntents(store, intents);
@@ -286,16 +286,16 @@ describe('undo and redo are exact (property tests)', () => {
     );
   });
 
-  it('is exact for tool libraries too', () => {
-    const toolIntent = fc.record({
+  it('is exact for Kits too', () => {
+    const kitIntent = fc.record({
       op: fc.integer({ min: 0, max: 6 }),
       n: fc.nat({ max: 5 }),
     });
     fc.assert(
       fc.property(
-        fc.array(toolIntent, { minLength: 1, maxLength: 30 }),
+        fc.array(kitIntent, { minLength: 1, maxLength: 30 }),
         (intents) => {
-          const store = createToolStore(sampleTool());
+          const store = createKitStore(sampleKit());
           const states: unknown[] = [store.state];
           for (const { op, n } of intents) {
             const classIds = Object.keys(store.state.classes);
@@ -308,7 +308,7 @@ describe('undo and redo are exact (property tests)', () => {
                 { id: `att_${n}` as never, key: `A${n}`, type: 'text' },
               ],
             });
-            const command: ToolCommand =
+            const command: KitCommand =
               op === 0
                 ? { type: 'putClass', def: def(`cls_n${n}`) }
                 : op === 1
@@ -363,7 +363,7 @@ describe('undo and redo are exact (property tests)', () => {
   });
 
   it('handles a large import as one undoable step', () => {
-    const store = createModelStore(emptySampleModel(), { tool: sampleTool() });
+    const store = createModelStore(emptySampleModel(), { kit: sampleKit() });
     const commands: ModelCommand[] = [];
     for (let i = 0; i < 1000; i++)
       commands.push({

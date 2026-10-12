@@ -1,0 +1,1548 @@
+{
+  "formatVersion": 7,
+  "manifest": {
+    "id": "kit_requirements",
+    "name": "Requirements and user stories",
+    "version": "1.0.0",
+    "languages": ["en"]
+  },
+  "settings": {
+    "grid": {
+      "size": 10,
+      "snap": true,
+      "visible": true
+    },
+    "layers": [],
+    "numbering": {
+      "enabled": false,
+      "prefix": "",
+      "start": 1
+    }
+  },
+  "classes": {
+    "cls_goal": {
+      "id": "cls_goal",
+      "key": "Goal",
+      "kind": "node",
+      "labels": {
+        "en": "Goal"
+      },
+      "help": {
+        "en": "Something the organisation wants to achieve, with a time horizon and a way to measure it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Goal",
+          "id": "att_goal_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_goal_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Horizon",
+          "options": ["Short term", "Medium term", "Long term"],
+          "id": "att_goal_horizon",
+          "labels": {
+            "en": "Horizon"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Measure",
+          "id": "att_goal_measure",
+          "labels": {
+            "en": "Measure"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Contributions",
+          "formula": "count(incoming('ContributesTo'))",
+          "result": "number",
+          "id": "att_goal_contributions",
+          "labels": {
+            "en": "Contributions"
+          },
+          "help": {
+            "en": "How many epics, features, stories and requirements contribute to it."
+          }
+        }
+      ],
+      "shape": "shp_goal",
+      "constraints": [
+        {
+          "id": "k_goal_traced",
+          "formula": "Contributions > 0",
+          "message": "= 'Nothing in the backlog contributes to the goal \"' + Name + '\".'",
+          "severity": "warning"
+        }
+      ]
+    },
+    "cls_requirement": {
+      "id": "cls_requirement",
+      "key": "Requirement",
+      "kind": "node",
+      "labels": {
+        "en": "Requirement"
+      },
+      "help": {
+        "en": "A need that applies across stories, such as how fast or how secure the product must be, with its priority and how it will be accepted."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Requirement",
+          "id": "att_requirement_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_requirement_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Priority",
+          "options": ["Must have", "Should have", "Could have", "Won't have"],
+          "id": "att_requirement_priority",
+          "labels": {
+            "en": "Priority (MoSCoW)"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Type",
+          "options": ["Functional", "Non-functional"],
+          "id": "att_requirement_type",
+          "labels": {
+            "en": "Type"
+          }
+        },
+        {
+          "type": "text",
+          "key": "AcceptanceCriteria",
+          "multiline": true,
+          "id": "att_requirement_acceptancecriteria",
+          "labels": {
+            "en": "Acceptance criteria"
+          }
+        }
+      ],
+      "shape": "shp_requirement"
+    },
+    "cls_epic": {
+      "id": "cls_epic",
+      "key": "Epic",
+      "kind": "container",
+      "labels": {
+        "en": "Epic"
+      },
+      "help": {
+        "en": "A large piece of work that delivers value in several steps. Place its features inside it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Epic",
+          "id": "att_epic_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_epic_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Owner",
+          "id": "att_epic_owner",
+          "labels": {
+            "en": "Owner"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Priority",
+          "options": ["Must have", "Should have", "Could have", "Won't have"],
+          "id": "att_epic_priority",
+          "labels": {
+            "en": "Priority (MoSCoW)"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Stories",
+          "formula": "sum(children().Stories)",
+          "result": "number",
+          "id": "att_epic_stories",
+          "labels": {
+            "en": "Stories"
+          },
+          "help": {
+            "en": "How many user stories the epic holds."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Points",
+          "formula": "sum(children().Points)",
+          "result": "number",
+          "id": "att_epic_points",
+          "labels": {
+            "en": "Points"
+          },
+          "help": {
+            "en": "The estimates of the user stories in the epic added up, in story points."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "PointsDone",
+          "formula": "sum(children().PointsDone)",
+          "result": "number",
+          "id": "att_epic_pointsdone",
+          "labels": {
+            "en": "Points done"
+          },
+          "help": {
+            "en": "The points of the stories that are done."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Progress",
+          "formula": "IFERROR(round(PointsDone / Points * 100, 0), null)",
+          "result": "number",
+          "id": "att_epic_progress",
+          "labels": {
+            "en": "Progress (%)"
+          },
+          "help": {
+            "en": "The share of the points that is done, in percent."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Heading",
+          "formula": "Name + ' · ' + Stories + (Stories == 1 ? ' story, ' : ' stories, ') + Points + ' points'",
+          "result": "text",
+          "id": "att_epic_heading",
+          "labels": {
+            "en": "Heading"
+          },
+          "help": {
+            "en": "The name with the number of stories and points, shown as the title."
+          }
+        }
+      ],
+      "shape": "shp_epic"
+    },
+    "cls_feature": {
+      "id": "cls_feature",
+      "key": "Feature",
+      "kind": "container",
+      "labels": {
+        "en": "Feature"
+      },
+      "help": {
+        "en": "A function of the product that users can see. Place its user stories inside it."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Feature",
+          "id": "att_feature_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Description",
+          "multiline": true,
+          "id": "att_feature_description",
+          "labels": {
+            "en": "Description"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Priority",
+          "options": ["Must have", "Should have", "Could have", "Won't have"],
+          "id": "att_feature_priority",
+          "labels": {
+            "en": "Priority (MoSCoW)"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Release",
+          "id": "att_feature_release",
+          "labels": {
+            "en": "Release"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Stories",
+          "formula": "count(children())",
+          "result": "number",
+          "id": "att_feature_stories",
+          "labels": {
+            "en": "Stories"
+          },
+          "help": {
+            "en": "How many user stories the feature holds."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Points",
+          "formula": "sum(children().Estimate)",
+          "result": "number",
+          "id": "att_feature_points",
+          "labels": {
+            "en": "Points"
+          },
+          "help": {
+            "en": "The estimates of the user stories in the feature added up, in story points."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "PointsDone",
+          "formula": "sum(children().PointsDone)",
+          "result": "number",
+          "id": "att_feature_pointsdone",
+          "labels": {
+            "en": "Points done"
+          },
+          "help": {
+            "en": "The points of the stories that are done."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Progress",
+          "formula": "IFERROR(round(PointsDone / Points * 100, 0), null)",
+          "result": "number",
+          "id": "att_feature_progress",
+          "labels": {
+            "en": "Progress (%)"
+          },
+          "help": {
+            "en": "The share of the points that is done, in percent."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Heading",
+          "formula": "Name + ' · ' + Stories + (Stories == 1 ? ' story, ' : ' stories, ') + Points + ' points'",
+          "result": "text",
+          "id": "att_feature_heading",
+          "labels": {
+            "en": "Heading"
+          },
+          "help": {
+            "en": "The name with the number of stories and points, shown as the title."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_feature_epic",
+          "formula": "parent != null",
+          "message": "= 'Feature \"' + Name + '\" belongs to no epic: place it inside one.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_feature"
+    },
+    "cls_userstory": {
+      "id": "cls_userstory",
+      "key": "UserStory",
+      "kind": "node",
+      "labels": {
+        "en": "User story"
+      },
+      "help": {
+        "en": "A need written from the point of view of a user: as a …, I want …, so that …, with the criteria that say when it is done."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "User story",
+          "id": "att_userstory_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "AsA",
+          "id": "att_userstory_asa",
+          "labels": {
+            "en": "As a"
+          },
+          "help": {
+            "en": "Who wants it, such as \"patient\"."
+          }
+        },
+        {
+          "type": "text",
+          "key": "IWant",
+          "multiline": true,
+          "id": "att_userstory_iwant",
+          "labels": {
+            "en": "I want"
+          },
+          "help": {
+            "en": "What they want to do."
+          }
+        },
+        {
+          "type": "text",
+          "key": "SoThat",
+          "multiline": true,
+          "id": "att_userstory_sothat",
+          "labels": {
+            "en": "so that"
+          },
+          "help": {
+            "en": "Why they want it."
+          }
+        },
+        {
+          "type": "table",
+          "key": "AcceptanceCriteria",
+          "columns": [
+            {
+              "id": "given",
+              "key": "Given",
+              "type": "text",
+              "labels": {
+                "en": "Given"
+              }
+            },
+            {
+              "id": "when",
+              "key": "When",
+              "type": "text",
+              "labels": {
+                "en": "When"
+              }
+            },
+            {
+              "id": "then",
+              "key": "Then",
+              "type": "text",
+              "labels": {
+                "en": "Then"
+              }
+            }
+          ],
+          "id": "att_userstory_acceptancecriteria",
+          "labels": {
+            "en": "Acceptance criteria"
+          },
+          "help": {
+            "en": "One row per criterion: the situation, what happens, and the result that must follow."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Priority",
+          "options": ["Must have", "Should have", "Could have", "Won't have"],
+          "id": "att_userstory_priority",
+          "labels": {
+            "en": "Priority (MoSCoW)"
+          }
+        },
+        {
+          "type": "integer",
+          "key": "Estimate",
+          "min": 0,
+          "id": "att_userstory_estimate",
+          "labels": {
+            "en": "Estimate (points)"
+          },
+          "help": {
+            "en": "The size in story points."
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Status",
+          "options": ["Backlog", "Ready", "In progress", "Done"],
+          "id": "att_userstory_status",
+          "labels": {
+            "en": "Status"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Sprint",
+          "id": "att_userstory_sprint",
+          "labels": {
+            "en": "Sprint"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Criteria",
+          "formula": "len(AcceptanceCriteria)",
+          "result": "number",
+          "id": "att_userstory_criteria",
+          "labels": {
+            "en": "Criteria"
+          },
+          "help": {
+            "en": "How many acceptance criteria it has."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "PointsDone",
+          "formula": "Status == 'Done' ? (Estimate ?? 0) : 0",
+          "result": "number",
+          "id": "att_userstory_pointsdone",
+          "labels": {
+            "en": "Points done"
+          },
+          "help": {
+            "en": "The estimate when the story is done, otherwise 0."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "StoryText",
+          "formula": "'As ' + (AsA ?? '…') + ', I want ' + (IWant ?? '…') + ' so that ' + (SoThat ?? '…') + '.'",
+          "result": "text",
+          "id": "att_userstory_storytext",
+          "labels": {
+            "en": "Story"
+          },
+          "help": {
+            "en": "The story as one sentence."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Tests",
+          "formula": "count(incoming('Verifies'))",
+          "result": "number",
+          "id": "att_userstory_tests",
+          "labels": {
+            "en": "Tests"
+          },
+          "help": {
+            "en": "How many tests verify it."
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_story_criteria",
+          "formula": "Criteria > 0",
+          "message": "= 'User story \"' + Name + '\" has no acceptance criteria: add at least one row, so everyone knows when it is done.'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_story_form",
+          "formula": "!isEmpty(AsA) && !isEmpty(IWant)",
+          "message": "= 'User story \"' + Name + '\" does not say who wants it and what they want: fill in \"As a\" and \"I want\".'",
+          "severity": "warning"
+        },
+        {
+          "id": "k_story_estimate",
+          "formula": "Status == 'Backlog' || Status == null || Estimate != null",
+          "message": "= 'User story \"' + Name + '\" is ' + Status + ' but has no estimate.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_userstory"
+    },
+    "cls_testcase": {
+      "id": "cls_testcase",
+      "key": "TestCase",
+      "kind": "node",
+      "labels": {
+        "en": "Test"
+      },
+      "help": {
+        "en": "A test that shows a story, feature or requirement works, with the result of its last run."
+      },
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Name",
+          "required": true,
+          "default": "Test",
+          "id": "att_testcase_name",
+          "labels": {
+            "en": "Name"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Steps",
+          "multiline": true,
+          "id": "att_testcase_steps",
+          "labels": {
+            "en": "Steps"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Type",
+          "options": ["Manual", "Automated"],
+          "id": "att_testcase_type",
+          "labels": {
+            "en": "Type"
+          }
+        },
+        {
+          "type": "choice",
+          "key": "Status",
+          "options": ["Not run", "Passed", "Failed"],
+          "id": "att_testcase_status",
+          "labels": {
+            "en": "Status"
+          }
+        },
+        {
+          "type": "date",
+          "key": "LastRun",
+          "id": "att_testcase_lastrun",
+          "labels": {
+            "en": "Last run"
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "id": "k_test_target",
+          "formula": "count(outgoing('Verifies')) > 0",
+          "message": "= 'Test \"' + Name + '\" verifies nothing: connect it to a story, feature or requirement.'",
+          "severity": "warning"
+        }
+      ],
+      "shape": "shp_testcase"
+    }
+  },
+  "relations": {
+    "rel_dependson": {
+      "id": "rel_dependson",
+      "key": "DependsOn",
+      "labels": {
+        "en": "Depends on"
+      },
+      "help": {
+        "en": "One thing needs another to work or to be done first."
+      },
+      "from": ["cls_userstory", "cls_feature", "cls_epic"],
+      "to": ["cls_userstory", "cls_feature", "cls_epic"],
+      "attributes": [],
+      "shape": "shp_rel_dependson"
+    },
+    "rel_contributesto": {
+      "id": "rel_contributesto",
+      "key": "ContributesTo",
+      "labels": {
+        "en": "Contributes to"
+      },
+      "help": {
+        "en": "The epic, feature, story or requirement helps to reach the goal."
+      },
+      "from": ["cls_epic", "cls_feature", "cls_userstory", "cls_requirement"],
+      "to": ["cls_goal"],
+      "attributes": [],
+      "shape": "shp_rel_contributesto"
+    },
+    "rel_verifies": {
+      "id": "rel_verifies",
+      "key": "Verifies",
+      "labels": {
+        "en": "Verifies"
+      },
+      "help": {
+        "en": "The test shows the story, feature or requirement works."
+      },
+      "from": ["cls_testcase"],
+      "to": ["cls_userstory", "cls_feature", "cls_requirement"],
+      "attributes": [],
+      "shape": "shp_rel_verifies"
+    },
+    "rel_constrains": {
+      "id": "rel_constrains",
+      "key": "Constrains",
+      "labels": {
+        "en": "Constrains"
+      },
+      "help": {
+        "en": "The requirement applies to the epic, feature or story."
+      },
+      "from": ["cls_requirement"],
+      "to": ["cls_epic", "cls_feature", "cls_userstory"],
+      "attributes": [],
+      "shape": "shp_rel_constrains"
+    }
+  },
+  "modelTypes": {
+    "mt_backlog": {
+      "id": "mt_backlog",
+      "key": "Backlog",
+      "labels": {
+        "en": "Product backlog"
+      },
+      "classes": [
+        "cls_goal",
+        "cls_requirement",
+        "cls_epic",
+        "cls_feature",
+        "cls_userstory",
+        "cls_testcase"
+      ],
+      "relations": [
+        "rel_dependson",
+        "rel_contributesto",
+        "rel_verifies",
+        "rel_constrains"
+      ],
+      "views": [
+        {
+          "id": "vw_storymap",
+          "key": "StoryMap",
+          "labels": {
+            "en": "Story map"
+          },
+          "classes": ["cls_epic", "cls_feature", "cls_userstory"],
+          "relations": ["rel_dependson"]
+        },
+        {
+          "id": "vw_traceability",
+          "key": "Traceability",
+          "labels": {
+            "en": "Traceability"
+          },
+          "classes": [
+            "cls_goal",
+            "cls_epic",
+            "cls_feature",
+            "cls_userstory",
+            "cls_requirement",
+            "cls_testcase"
+          ],
+          "relations": ["rel_contributesto", "rel_verifies", "rel_constrains"]
+        }
+      ],
+      "cardinalities": [],
+      "attributes": [
+        {
+          "type": "text",
+          "key": "Title",
+          "required": true,
+          "maxLength": 100,
+          "id": "att_mtbacklog_title",
+          "labels": {
+            "en": "Title"
+          }
+        },
+        {
+          "type": "text",
+          "key": "Product",
+          "id": "att_mtbacklog_product",
+          "labels": {
+            "en": "Product"
+          }
+        },
+        {
+          "type": "text",
+          "key": "ProductOwner",
+          "id": "att_mtbacklog_productowner",
+          "labels": {
+            "en": "Product owner"
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Stories",
+          "formula": "count(objects('UserStory'))",
+          "result": "number",
+          "id": "att_mtbacklog_stories",
+          "labels": {
+            "en": "Stories"
+          },
+          "help": {
+            "en": "How many user stories the backlog holds."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Points",
+          "formula": "sum(objects('UserStory').Estimate)",
+          "result": "number",
+          "id": "att_mtbacklog_points",
+          "labels": {
+            "en": "Points"
+          },
+          "help": {
+            "en": "The estimates of all user stories added up."
+          }
+        },
+        {
+          "type": "formula",
+          "key": "Progress",
+          "formula": "IFERROR(round(sum(objects('UserStory').PointsDone) / Points * 100, 0), null)",
+          "result": "number",
+          "id": "att_mtbacklog_progress",
+          "labels": {
+            "en": "Progress (%)"
+          },
+          "help": {
+            "en": "The share of all points that is done, in percent."
+          }
+        }
+      ],
+      "help": {
+        "en": "Goals, epics holding features, features holding user stories, the requirements that apply across them and the tests that verify them."
+      },
+      "containers": {
+        "cls_epic": ["cls_feature"],
+        "cls_feature": ["cls_userstory"]
+      }
+    }
+  },
+  "shapes": {
+    "shp_goal": {
+      "id": "shp_goal",
+      "name": "Goal look",
+      "kind": "node",
+      "size": {
+        "width": 120,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": {
+        "type": "polygon",
+        "points": [
+          ["15%", 0],
+          ["85%", 0],
+          ["100%", "50%"],
+          ["85%", "100%"],
+          ["15%", "100%"],
+          [0, "50%"]
+        ]
+      },
+      "parts": [
+        {
+          "type": "polygon",
+          "points": [
+            ["15%", 0],
+            ["85%", 0],
+            ["100%", "50%"],
+            ["85%", "100%"],
+            ["15%", "100%"],
+            [0, "50%"]
+          ],
+          "fill": "#b2f2bb",
+          "stroke": "#2f9e44",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": "18% + 26",
+          "y": 4,
+          "width": "64% - 26",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": "18% + 26",
+          "y": "100% - 22",
+          "width": "64% - 26",
+          "height": 18,
+          "text": "= Horizon",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z",
+          "viewBox": [0, 0, 24, 24],
+          "x": "18% + 4",
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "hexagon",
+        "fill": "#b2f2bb",
+        "border": "#2f9e44",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 120,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Horizon"
+        },
+        "icon": {
+          "name": "star"
+        }
+      }
+    },
+    "shp_requirement": {
+      "id": "shp_requirement",
+      "name": "Requirement look",
+      "kind": "node",
+      "size": {
+        "width": 150,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "#ffd8a8",
+          "stroke": "#f08c00",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 4,
+          "width": "100% - 16",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": "100% - 22",
+          "width": "100% - 16",
+          "height": 18,
+          "text": "= Priority",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": "#ffd8a8",
+        "border": "#f08c00",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 150,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Priority"
+        }
+      }
+    },
+    "shp_rel_dependson": {
+      "id": "shp_rel_dependson",
+      "name": "DependsOn look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#6b7a90",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "open-arrow"
+      },
+      "look": {
+        "colour": "#6b7a90",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "open-arrow",
+        "label": null
+      }
+    },
+    "shp_epic": {
+      "id": "shp_epic",
+      "name": "Epic look",
+      "kind": "node",
+      "size": {
+        "width": 880,
+        "height": 260,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 6,
+          "fill": "#f3f0ff",
+          "stroke": "#7048e8",
+          "strokeWidth": 2,
+          "dash": [7, 4]
+        },
+        {
+          "type": "text",
+          "x": 12,
+          "y": 4,
+          "width": "100% - 48",
+          "height": 24,
+          "text": "= Heading",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "container",
+        "fill": "#f3f0ff",
+        "border": "#7048e8",
+        "borderWidth": 2,
+        "borderStyle": "dashed",
+        "title": {
+          "attribute": "Heading",
+          "bold": true
+        },
+        "size": {
+          "width": 880,
+          "height": 260,
+          "resizable": true
+        }
+      }
+    },
+    "shp_feature": {
+      "id": "shp_feature",
+      "name": "Feature look",
+      "kind": "node",
+      "size": {
+        "width": 410,
+        "height": 190,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 6,
+          "fill": "#e7f5ff",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5,
+          "dash": [7, 4]
+        },
+        {
+          "type": "text",
+          "x": 12,
+          "y": 4,
+          "width": "100% - 48",
+          "height": 24,
+          "text": "= Heading",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        }
+      ],
+      "look": {
+        "base": "container",
+        "fill": "#e7f5ff",
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "dashed",
+        "title": {
+          "attribute": "Heading",
+          "bold": true
+        },
+        "size": {
+          "width": 410,
+          "height": 190,
+          "resizable": true
+        }
+      }
+    },
+    "shp_userstory": {
+      "id": "shp_userstory",
+      "name": "UserStory look",
+      "kind": "node",
+      "size": {
+        "width": 185,
+        "height": 110,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 4,
+          "fill": "#ffffff",
+          "stroke": "#1c7ed6",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": 28,
+          "radius": 4,
+          "fill": "= Status == 'Backlog' ? '#f8f9fa' : Status == 'Ready' ? '#e7f5ff' : Status == 'In progress' ? '#fff3bf' : Status == 'Done' ? '#d3f9d8' : '#f8f9fa'",
+          "stroke": "#1c7ed6"
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 2,
+          "width": "100% - 36",
+          "height": 24,
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 34,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Priority: ' + Priority",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 50,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Estimate: ' + Estimate",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "text",
+          "x": 8,
+          "y": 66,
+          "width": "100% - 16",
+          "height": 16,
+          "text": "= 'Criteria: ' + Criteria",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "left",
+          "valign": "middle",
+          "fill": "#5a6373",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7",
+          "viewBox": [0, 0, 24, 24],
+          "x": "100% - 26",
+          "y": 4,
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "header-box",
+        "fill": {
+          "by": "Status",
+          "values": {
+            "Backlog": "#f8f9fa",
+            "Ready": "#e7f5ff",
+            "In progress": "#fff3bf",
+            "Done": "#d3f9d8"
+          },
+          "fallback": "#f8f9fa"
+        },
+        "border": "#1c7ed6",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 185,
+          "height": 110,
+          "resizable": true
+        },
+        "icon": {
+          "name": "person"
+        },
+        "fields": ["Priority", "Estimate", "Criteria"]
+      }
+    },
+    "shp_testcase": {
+      "id": "shp_testcase",
+      "name": "TestCase look",
+      "kind": "node",
+      "size": {
+        "width": 170,
+        "height": 70,
+        "resizable": true,
+        "minWidth": 40,
+        "minHeight": 28
+      },
+      "outline": "rect",
+      "parts": [
+        {
+          "type": "rect",
+          "x": 0,
+          "y": 0,
+          "width": "100%",
+          "height": "100%",
+          "radius": 10,
+          "fill": "= Status == 'Not run' ? '#f8f9fa' : Status == 'Passed' ? '#d3f9d8' : Status == 'Failed' ? '#ffc9c9' : '#f8f9fa'",
+          "stroke": "#2f9e44",
+          "strokeWidth": 1.5
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": 4,
+          "width": "100% - 42",
+          "height": "100% - 28",
+          "text": "= Name",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#1b1f27",
+          "font": {
+            "weight": 600
+          }
+        },
+        {
+          "type": "text",
+          "x": 34,
+          "y": "100% - 22",
+          "width": "100% - 42",
+          "height": 18,
+          "text": "= Status",
+          "wrap": true,
+          "fit": "shrink",
+          "align": "center",
+          "valign": "middle",
+          "fill": "#3a4252",
+          "font": {
+            "size": 11
+          }
+        },
+        {
+          "type": "path",
+          "d": "M4 12.5l5 5L20 6.5",
+          "viewBox": [0, 0, 24, 24],
+          "x": 8,
+          "y": "50% - 10",
+          "width": 20,
+          "height": 20,
+          "fill": "#00000000",
+          "stroke": "#1b1f27",
+          "strokeWidth": 1.8
+        }
+      ],
+      "look": {
+        "base": "rounded",
+        "fill": {
+          "by": "Status",
+          "values": {
+            "Not run": "#f8f9fa",
+            "Passed": "#d3f9d8",
+            "Failed": "#ffc9c9"
+          },
+          "fallback": "#f8f9fa"
+        },
+        "border": "#2f9e44",
+        "borderWidth": 1.5,
+        "borderStyle": "solid",
+        "title": {
+          "attribute": "Name",
+          "bold": true
+        },
+        "size": {
+          "width": 170,
+          "height": 70,
+          "resizable": true
+        },
+        "subtitle": {
+          "attribute": "Status"
+        },
+        "icon": {
+          "name": "check"
+        }
+      }
+    },
+    "shp_rel_contributesto": {
+      "id": "shp_rel_contributesto",
+      "name": "ContributesTo look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#2f9e44",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal"
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#2f9e44",
+        "width": 1.5,
+        "style": "solid",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    },
+    "shp_rel_verifies": {
+      "id": "shp_rel_verifies",
+      "name": "Verifies look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#2f9e44",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [7, 4]
+      },
+      "endMarker": {
+        "type": "open-arrow"
+      },
+      "look": {
+        "colour": "#2f9e44",
+        "width": 1.5,
+        "style": "dashed",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "open-arrow",
+        "label": null
+      }
+    },
+    "shp_rel_constrains": {
+      "id": "shp_rel_constrains",
+      "name": "Constrains look",
+      "kind": "relation",
+      "line": {
+        "stroke": "#f08c00",
+        "strokeWidth": 1.5,
+        "routing": "orthogonal",
+        "dash": [2, 4]
+      },
+      "endMarker": {
+        "type": "arrow"
+      },
+      "look": {
+        "colour": "#f08c00",
+        "width": 1.5,
+        "style": "dotted",
+        "routing": "orthogonal",
+        "start": "none",
+        "end": "arrow",
+        "label": null
+      }
+    }
+  },
+  "panels": {
+    "cls_userstory": {
+      "class": "cls_userstory",
+      "tabs": [
+        {
+          "label": "Story",
+          "items": [
+            {
+              "attribute": "Name"
+            },
+            {
+              "attribute": "AsA"
+            },
+            {
+              "attribute": "IWant",
+              "control": "textarea"
+            },
+            {
+              "attribute": "SoThat",
+              "control": "textarea"
+            },
+            {
+              "attribute": "StoryText"
+            }
+          ]
+        },
+        {
+          "label": "Acceptance",
+          "items": [
+            {
+              "attribute": "AcceptanceCriteria"
+            },
+            {
+              "attribute": "Criteria"
+            },
+            {
+              "attribute": "Tests"
+            }
+          ]
+        },
+        {
+          "label": "Planning",
+          "items": [
+            {
+              "attribute": "Priority",
+              "control": "segmented"
+            },
+            {
+              "attribute": "Estimate"
+            },
+            {
+              "attribute": "Status",
+              "control": "select"
+            },
+            {
+              "attribute": "Sprint"
+            }
+          ]
+        }
+      ],
+      "showRelations": true
+    }
+  },
+  "rules": {},
+  "scripts": {}
+}
