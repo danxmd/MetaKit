@@ -3,7 +3,7 @@ id: page-kits
 title: Kits page
 category: pages
 summary: The Kits of the workspace and the built-in ones, where you make, copy, add, edit, export and delete them.
-keywords: [new kit, add kit, from file, from git, edit kit, no kit yet, in this workspace, new kit dialog, start from, built-in search]
+keywords: [new kit, add kit, from file, from git, edit kit, no kit yet, in this workspace, new kit dialog, start from, domain buttons]
 contexts: [kits]
 order: 30
 ---
@@ -15,7 +15,7 @@ The Kits page is the home of **Build** mode. It shows two kinds of Kit apart: th
 A page titled **Kits** with the line "Kits define the notation and rules models use." At the top right are the **Add** menu and the **New Kit** button. Below are optional messages, then two sections:
 
 - **In this workspace**: a card for each Kit of the workspace, or an empty state.
-- **Built-in Kits**: a search box, then a card for each built-in Kit under the heading of its domain: **Data and AI**, **Business and strategy**, **Delivery**, **Architecture** and **General** ([[built-in-kits]]). These cards look different on purpose: a grey, dashed card with the badge **Built-in · read-only**.
+- **Built-in Kits**: a grey, dashed band with one button per domain, **Data and AI**, **Business and strategy**, **Delivery**, **Architecture** and **General**, each with the number of Kits in it, and **Browse built-in Kits**. They open the [[kit-catalogue]], where the Kits are listed with a picture of their sample models ([[built-in-kits]]).
 
 At the bottom is the **Deleted Kits** section.
 
@@ -34,19 +34,19 @@ Choose **Build** in the [[top-bar]] when no Kit is open. **Kits** in the locatio
 
 **Copy a Kit and extend it**
 
-1. Choose **Copy and extend…** on a built-in card, or **… > Copy and extend…** on a card of this workspace. You can also choose **New Kit** and pick the Kit under **Start from**.
+1. Choose **Copy and extend…** on a built-in Kit in the [[kit-catalogue]], or **… > Copy and extend…** on a card of this workspace. You can also choose **New Kit** and pick the Kit under **Start from**.
 2. Type a **Name** for the copy. A line under the list says what the copy starts with.
 3. Choose **Create and edit**. The copy opens in the Build view with everything the original has: classes, relation classes, model types, looks, panels, rules and scripts. Its version is `1.0.0` and its card says **Based on** with the name and version of the original. The original does not change.
 
 **Find a built-in Kit**
 
-1. Type into **Search the built-in Kits**, for example "maturity". Only the cards whose name or description holds every word stay; headings without a match are hidden.
-2. With no match the section says "No built-in Kit matches." Clear the box to see them all.
+1. Choose **Browse built-in Kits**, or a domain such as **Architecture**. The [[kit-catalogue]] opens.
+2. Choose a category or type into **Search all Kits**, then choose a Kit to see a picture of its sample model and what it defines.
 
 **Use a built-in Kit as it is**
 
-1. Choose **Use in this workspace** on a built-in card.
-2. The Kit appears under **In this workspace**, unchanged, and the built-in card now says **✓ In this workspace**. You can now make models with it, and edit it like your own.
+1. In the [[kit-catalogue]], choose the Kit and then **Use in this workspace**.
+2. The Kit appears under **In this workspace**, unchanged, and the catalogue now says **✓ In this workspace** for it. You can now make models with it, and edit it like your own.
 
 **Add a Kit from a file**
 
@@ -72,7 +72,7 @@ Choose **Build** in the [[top-bar]] when no Kit is open. **Kits** in the locatio
 | **Add > From Git…** | Opens the Git settings to bring in a Kit from GitHub or GitLab. |
 | **New Kit** | Opens the **New Kit** dialog. |
 | **Name** (dialog) | The name of the new Kit. |
-| **Start from** (dialog) | **Empty**, a Kit of this workspace, or a built-in Kit, in the order of the Built-in Kits section. Anything but Empty makes a copy. |
+| **Start from** (dialog) | **Empty**, a Kit of this workspace, or a built-in Kit, in the order of the catalogue. Anything but Empty makes a copy. |
 | **Create and edit** (dialog) | Creates the Kit and opens it for editing. |
 | **Cancel** (dialog) | Closes the dialog and creates nothing. `Escape` does the same. |
 | Card heading and badge | Kit name and **Version x.y.z**. |
@@ -84,18 +84,16 @@ Choose **Build** in the [[top-bar]] when no Kit is open. **Kits** in the locatio
 | **… > Delete** | Moves the Kit to **Deleted Kits**. |
 | **Deleted Kits (n), kept for 30 days** | Collapsible list with a **Restore** button for each. See [[trash-and-restore]]. |
 
-**Built-in cards**
+**Built-in Kits**
 
 | Control | What it does |
 | --- | --- |
-| **Search the built-in Kits** | Filters the cards by name and description. Every word typed must appear; case does not matter. |
-| Domain headings | Group the cards: **Data and AI**, **Business and strategy**, **Delivery**, **Architecture**, **General**. Only headings with a Kit are shown. |
-| **Built-in · read-only** | Built-in Kits cannot be edited where they are. |
-| **What is inside** | Opens to list the classes and relation classes of the Kit. |
-| **Use in this workspace** | Adds the Kit unchanged, keeping its id and version. Afterwards the card says **✓ In this workspace**. |
-| **Copy and extend…** | Opens the **New Kit** dialog with this Kit chosen. |
+| Domain buttons | **Data and AI**, **Business and strategy**, **Delivery**, **Architecture**, **General**, each with its number of Kits. Opens the [[kit-catalogue]] at that domain. |
+| **Browse built-in Kits** | Opens the [[kit-catalogue]] at **All Kits**. There you search, see the sample models, and choose **Use in this workspace** or **Copy and extend…**. |
 
-**Empty state "No Kit in this workspace yet".** It says "Without one there is nothing to model with" and lists four ways to start: **use a built-in one**, **copy one and extend it**, **build one from scratch** with "New Kit", or **bring one in** with Add, from a file or a Git repository.
+Built-in Kits are read-only: they cannot be edited where they are. Use one as it is, or copy it to make it your own.
+
+**Empty state "No Kit in this workspace yet".** It says "Without one there is nothing to model with" and lists four ways to start: **use a built-in one** with **Browse built-in Kits**, **copy one and extend it**, **build one from scratch** with "New Kit", or **bring one in** with Add, from a file or a Git repository.
 
 **Errors when adding a file** appear as a red message at the top:
 
@@ -108,7 +106,7 @@ The same messages area shows warnings and sharing problems as on the Models page
 
 ## Examples
 
-Anna wants her own version of the agent Kit. On the Kits page she chooses **Copy and extend…** on the built-in **Agent pipeline**, names the copy "Our agents" and chooses **Create and edit**. The copy opens in Build, where she adds a **Reviewer** class. Back on the page, the card **Our agents** says **Based on Agent pipeline 1.0.0**, and the built-in card still offers **Use in this workspace**.
+Anna wants her own version of the agent Kit. On the Kits page she chooses **Browse built-in Kits**, then **Agent pipeline** and **Copy and extend…**, names the copy "Our agents" and chooses **Create and edit**. The copy opens in Build, where she adds a **Reviewer** class. Back on the page, the card **Our agents** says **Based on Agent pipeline 1.0.0**, and the catalogue still offers **Use in this workspace** for the original.
 
 The workspace has one card: **Agent pipeline**, **Version 1.0.0**, "Used by 2 models." Choosing **Edit** opens it in Build, where you can add a Priority attribute to **Task**. Choosing **… > Export package** saves `agent-pipeline-1.0.0.mkkit`, which a colleague can add with **Import / Export** on their Models page ([[dialog-kit-import]]).
 
@@ -125,6 +123,7 @@ The workspace has one card: **Agent pipeline**, **Version 1.0.0**, "Used by 2 mo
 
 - [[concepts-kit]]
 - [[built-in-kits]]
+- [[kit-catalogue]]
 - [[page-build-view]]
 - [[dialog-kit-import]]
 - [[import-export]]

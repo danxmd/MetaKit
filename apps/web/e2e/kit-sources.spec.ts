@@ -8,6 +8,16 @@ async function emptyWorkspace(page: Page) {
   await expect(page.getByTestId('models-page')).toBeVisible();
 }
 
+/** Opens the built-in Kit catalogue from the Kits page, at a domain or at All Kits. */
+async function openCatalogue(page: Page, domain?: string) {
+  await page
+    .getByTestId(domain ? `built-in-domain-${domain}` : 'browse-built-ins')
+    .click();
+  const catalogue = page.getByTestId('kit-catalog');
+  await expect(catalogue).toBeVisible();
+  return catalogue;
+}
+
 test.describe('Built-in and workspace Kits', () => {
   test('the page shows the two sections apart, and a built-in one can be used as it is', async ({
     page,
@@ -26,25 +36,31 @@ test.describe('Built-in and workspace Kits', () => {
     await expect(
       builtIn.getByRole('heading', { name: 'Built-in Kits', exact: true }),
     ).toBeVisible();
-    expect(await builtIn.locator('li.built-in').count()).toBeGreaterThanOrEqual(
-      3,
+    // The page shows the domains; the Kits themselves are in the catalogue.
+    await expect(builtIn.getByTestId('built-in-domain-data-ai')).toContainText(
+      'Data and AI',
     );
-    await expect(page.getByTestId('built-in-tool_erlite')).toContainText(
-      'read-only',
+    await expect(builtIn.getByTestId('built-in-tool_erlite')).toHaveCount(0);
+    const catalogue = await openCatalogue(page, 'architecture');
+    await catalogue.getByTestId('built-in-tool_erlite').click();
+    const preview = catalogue.getByTestId('catalog-preview');
+    // What is inside is read when the Kit is chosen, with a picture of its sample model.
+    await expect(preview).toContainText('Entity');
+    await expect(preview.getByTestId('catalog-picture')).toBeVisible();
+
+    await catalogue.getByTestId('use-built-in-tool_erlite').click();
+    await expect(
+      catalogue.getByTestId('built-in-added-tool_erlite'),
+    ).toBeVisible();
+    await expect(catalogue.getByTestId('use-built-in-tool_erlite')).toHaveCount(
+      0,
     );
-
-    // What is inside is read on demand.
-    const card = page.getByTestId('built-in-tool_erlite');
-    await card.getByText('What is inside').click();
-    await expect(card).toContainText('Entity');
-
-    await page.getByTestId('use-built-in-tool_erlite').click();
+    await page.keyboard.press('Escape');
+    await expect(catalogue).toHaveCount(0);
     await expect(workspace.getByTestId('no-kits')).toHaveCount(0);
     await expect(
       workspace.getByRole('heading', { name: 'ER lite' }),
     ).toBeVisible();
-    await expect(page.getByTestId('built-in-added-tool_erlite')).toBeVisible();
-    await expect(page.getByTestId('use-built-in-tool_erlite')).toHaveCount(0);
   });
 
   test('copy and extend makes a new library based on the original', async ({
@@ -52,7 +68,10 @@ test.describe('Built-in and workspace Kits', () => {
   }) => {
     await emptyWorkspace(page);
     await page.getByTestId('mode-build').click();
-    await page.getByTestId('copy-built-in-tool_agentpipeline').click();
+    const catalogue = await openCatalogue(page);
+    await catalogue.getByTestId('built-in-tool_agentpipeline').click();
+    await catalogue.getByTestId('copy-built-in-tool_agentpipeline').click();
+    await expect(catalogue).toHaveCount(0);
     const dialog = page.getByTestId('new-kit-dialog');
     await expect(dialog).toBeVisible();
     await expect(
@@ -75,9 +94,12 @@ test.describe('Built-in and workspace Kits', () => {
     await expect(ours).toContainText('Based on Agent pipeline 1.0.0');
     await expect(ours).toContainText('Version 1.0.0');
     // The original is still offered as built-in, not added.
+    const again = await openCatalogue(page);
+    await again.getByTestId('built-in-tool_agentpipeline').click();
     await expect(
-      page.getByTestId('use-built-in-tool_agentpipeline'),
+      again.getByTestId('use-built-in-tool_agentpipeline'),
     ).toBeVisible();
+    await page.keyboard.press('Escape');
 
     // A workspace library can be copied too, from its … menu.
     await ours.locator('summary').click();
@@ -113,67 +135,64 @@ test.describe('Built-in and workspace Kits', () => {
 
     await page.getByTestId('crumb-area').click();
     await page.getByTestId('mode-build').click();
-    await expect(page.getByTestId('built-in-added-tool_erlite')).toBeVisible();
+    const catalogue = await openCatalogue(page);
+    await expect(
+      catalogue.getByTestId('built-in-added-tool_erlite'),
+    ).toBeVisible();
   });
-  test('the built-in Kits are grouped by domain, can be searched and keep their order in the dialogs', async ({
+  test('the catalogue groups the built-in Kits by domain, searches across them and keeps their order in the dialogs', async ({
     page,
   }) => {
     await emptyWorkspace(page);
     await page.getByTestId('mode-build').click();
-    const builtIn = page.getByTestId('built-in-kits');
-    const dataAi = page.getByTestId('built-in-domain-data-ai');
+    const catalogue = await openCatalogue(page, 'delivery');
+    const domain = (id: string) =>
+      catalogue.getByTestId(`catalog-domain-${id}`);
+    await expect(domain('delivery')).toHaveAttribute('aria-selected', 'true');
     await expect(
-      dataAi.getByRole('heading', { name: 'Data and AI', exact: true }),
+      catalogue.getByTestId('built-in-kit_projectraid'),
     ).toBeVisible();
-    await expect(dataAi.getByTestId('built-in-kit_kpitree')).toBeVisible();
-    await expect(
-      page
-        .getByTestId('built-in-domain-architecture')
-        .getByTestId('built-in-tool_erlite'),
-    ).toBeVisible();
-    await expect(
-      page
-        .getByTestId('built-in-domain-business')
-        .getByTestId('built-in-tool_bpmnlite'),
-    ).toBeVisible();
-    await expect(
-      page
-        .getByTestId('built-in-domain-delivery')
-        .getByTestId('built-in-kit_projectraid'),
-    ).toBeVisible();
-    await expect(
-      page
-        .getByTestId('built-in-domain-general')
-        .getByTestId('built-in-kit_orgchart'),
-    ).toBeVisible();
+    await expect(catalogue.getByTestId('built-in-tool_erlite')).toHaveCount(0);
+    await domain('architecture').click();
+    await expect(catalogue.getByTestId('built-in-tool_erlite')).toBeVisible();
+    await domain('business').click();
+    await expect(catalogue.getByTestId('built-in-tool_bpmnlite')).toBeVisible();
+    await domain('general').click();
+    await expect(catalogue.getByTestId('built-in-kit_orgchart')).toBeVisible();
+    await domain('data-ai').click();
+    await expect(catalogue.getByTestId('built-in-kit_kpitree')).toBeVisible();
 
-    // The search keeps the cards whose name or description holds the words.
-    const search = page.getByTestId('built-in-search');
+    // The search looks across every domain and names the domain of each match.
+    const search = catalogue.getByTestId('built-in-search');
     await search.fill('lineage');
-    await expect(page.getByTestId('built-in-tool_dataaiarch')).toBeVisible();
-    await expect(page.getByTestId('built-in-tool_erlite')).toHaveCount(0);
-    await expect(page.getByTestId('built-in-kit_kpitree')).toHaveCount(0);
-    await expect(page.getByTestId('built-in-domain-architecture')).toHaveCount(
-      0,
-    );
+    await expect(
+      catalogue.getByTestId('built-in-tool_dataaiarch'),
+    ).toContainText('Data and AI ·');
+    await expect(catalogue.getByTestId('built-in-tool_erlite')).toHaveCount(0);
+    await expect(catalogue.getByTestId('built-in-kit_kpitree')).toHaveCount(0);
     await search.fill('MATURITY gap');
-    await expect(builtIn.locator('li.built-in')).toHaveCount(1);
-    await expect(page.getByTestId('built-in-kit_dataaimaturity')).toBeVisible();
+    await expect(catalogue.getByRole('option')).toHaveCount(1);
+    await expect(
+      catalogue.getByTestId('built-in-kit_dataaimaturity'),
+    ).toBeVisible();
     await search.fill('nothing like this');
-    await expect(page.getByTestId('built-in-none')).toHaveText(
+    await expect(catalogue.getByTestId('built-in-none')).toHaveText(
       'No built-in Kit matches.',
     );
     await search.fill('');
-    await expect(page.getByTestId('built-in-tool_erlite')).toBeVisible();
-
-    // Start from in New Kit lists them in the order of the page.
-    const cards = await builtIn
-      .locator('li.built-in')
+    await domain('all').click();
+    const cards = await catalogue
+      .getByRole('option')
       .evaluateAll((els) =>
         els.map((e) =>
           e.getAttribute('data-testid')!.slice('built-in-'.length),
         ),
       );
+    expect(cards).toHaveLength(34);
+    await page.keyboard.press('Escape');
+    await expect(catalogue).toHaveCount(0);
+
+    // Start from in New Kit lists them in the order of the catalogue.
     await page.getByTestId('new-kit').click();
     const dialog = page.getByTestId('new-kit-dialog');
     const starts = await dialog
@@ -207,5 +226,61 @@ test.describe('Built-in and workspace Kits', () => {
     await expect(page.getByTestId('model-view')).toBeVisible();
     await expect(page.getByTestId('palette-class-OutcomeKPI')).toBeVisible();
     await expect(page.getByTestId('palette-class-KPI')).toHaveCount(0);
+  });
+});
+
+test.describe('The Kit catalogue', () => {
+  test('shows one tab per sample model, and moves through the Kits with the keyboard', async ({
+    page,
+  }) => {
+    await emptyWorkspace(page);
+    await page.getByTestId('mode-build').click();
+    const catalogue = await openCatalogue(page);
+    await catalogue.getByRole('option', { name: /^Data modelling/ }).click();
+    const preview = catalogue.getByTestId('catalog-preview');
+    await expect(preview.getByRole('tab')).toHaveCount(3);
+    await expect(preview.getByTestId('catalog-picture')).toBeVisible();
+    const first = await preview
+      .getByTestId('catalog-picture')
+      .getAttribute('src');
+    await preview.getByTestId('catalog-sample-2').click();
+    await expect(preview.getByTestId('catalog-sample-2')).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    expect(
+      await preview.getByTestId('catalog-picture').getAttribute('src'),
+    ).not.toBe(first);
+    await preview.getByTestId('catalog-full-size').click();
+    await expect(preview.getByTestId('catalog-full-size')).toHaveText(
+      'Fit to the box',
+    );
+
+    // Down twice from the first Kit chooses the third one, and Enter reaches its actions.
+    const options = catalogue.getByRole('option');
+    await options.first().click();
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('ArrowDown');
+    await expect(options.nth(2)).toHaveAttribute('aria-selected', 'true');
+    await expect(options.nth(2)).toBeFocused();
+    const third = (await options.nth(2).getAttribute('data-testid'))!.slice(
+      'built-in-'.length,
+    );
+    await page.keyboard.press('Enter');
+    await expect(catalogue.getByTestId(`use-built-in-${third}`)).toBeFocused();
+  });
+
+  test('Escape closes it and gives focus back to the control that opened it', async ({
+    page,
+  }) => {
+    await emptyWorkspace(page);
+    await page.getByTestId('mode-build').click();
+    const catalogue = await openCatalogue(page, 'general');
+    await expect(
+      catalogue.getByTestId('catalog-domain-general'),
+    ).toHaveAttribute('aria-selected', 'true');
+    await page.keyboard.press('Escape');
+    await expect(catalogue).toHaveCount(0);
+    await expect(page.getByTestId('built-in-domain-general')).toBeFocused();
   });
 });
