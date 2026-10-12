@@ -13,7 +13,7 @@
 - [x] 1.5 Tours: move `kits-built-in` to the band and merge `kits-use` and `kits-copy` into one step on **Browse built-in Kits**. Update the tour tests.
 - [x] 1.6 E2E: open at a domain chip; search across categories; Data modelling tabs; Use (✓ In this workspace on page and dialog); Copy and extend opens New Kit; keyboard; Escape returns focus. Update `kit-sources.spec.ts` to open the dialog first.
 - [x] 1.7 Docs: new `pages/kit-catalogue.md`; update `page-kits.md` and `built-in-kits.md`, and register the dialog's docs context.
-- [ ] 1.8 `pnpm build` size before and after, in the PR description.
+- [x] 1.8 `pnpm build` size before and after, in the PR description: start-up 309.6 KiB gzip on `main`, 312.2 KiB with the catalogue (+2.6 KiB for the band and the table of lazy sample loaders). The catalogue is a 4.0 KiB JS + 1.1 KiB CSS chunk loaded on first open.
 
 ## 2. PR 2: Browse from New model and New Kit (`feat/kit-catalogue-choose`)
 
