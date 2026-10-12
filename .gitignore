@@ -3,6 +3,7 @@ dist/
 *.tsbuildinfo
 .DS_Store
 .vite/
+localTemp/
 
 # Playwright
 test-results/

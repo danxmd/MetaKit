@@ -353,6 +353,22 @@ test.describe('connecting and placing', () => {
       await expect(page.getByTestId('tool-select')).toHaveClass(/\bon\b/);
       await expect(page.getByTestId('context-menu')).toHaveCount(0);
     });
+
+    test(`a right drag pans and keeps the mode after ${choose}`, async ({
+      page,
+    }) => {
+      const { at } = await twoKinds(page);
+      await page.getByTestId(choose).click();
+      const p = await at(300, 250);
+      await page.mouse.move(p.x, p.y);
+      await page.mouse.down({ button: 'right' });
+      await page.mouse.move(p.x + 70, p.y + 30, { steps: 5 });
+      await page.mouse.up({ button: 'right' });
+      expect(await meta(page, (m) => m.editor.activeTool.type)).not.toBe(
+        'select',
+      );
+      await expect(page.getByTestId(choose)).toHaveClass(/\bon\b/);
+    });
   }
 
   test('Escape leaves the mode too', async ({ page }) => {

@@ -21,7 +21,7 @@ Right-click on the canvas.
 ## How to use it
 
 1. Select the object the command should act on. A right-click does not select anything by itself.
-2. Right-click on the canvas. The menu opens at the pointer.
+2. Right-click on the canvas without moving the mouse. The menu opens at the pointer when you let go of the button.
 3. Click a command. The menu closes and the command runs.
 4. To close the menu without running anything, click anywhere else.
 
@@ -32,7 +32,7 @@ Right-click on the canvas.
 | Right-click with the **Select** tool and the Kit has context commands | Opens the menu at the pointer. |
 | Right-click with the **Select** tool and the Kit has no context commands | Nothing visible happens. The browser's own menu is also suppressed. |
 | Right-click while the place or connect tool is active | Leaves that tool and returns to **Select**. No menu opens. |
-| Right-click, hold and drag | Pans the canvas. See [[canvas-navigation]]. |
+| Right-click, hold and drag | Pans the canvas. No menu opens, and the place or connect tool stays on. See [[canvas-navigation]]. |
 | Click a menu item | Runs the command on the first selected object (or on none if nothing is selected). |
 | Click anywhere else | Closes the menu. |
 
