@@ -46,7 +46,7 @@ Fit:
 | **Shift** + wheel | Move the view sideways (how well this works depends on your mouse and system). |
 | **Space** held + left drag | Pan. The cursor is a hand. Space is ignored while you type in a field. |
 | Middle drag | Pan. |
-| Right drag | Pan. A right click without moving does not pan. |
+| Right drag | Pan. A right click without moving does not pan; it opens the context menu instead ([[context-menu]]). |
 | **+** / **Zoom in** | Zoom in by 25 %. |
 | **−** / **Zoom out** | Zoom out to 80 % of the current size. |
 | Fit / **Fit to window** | Shows all objects and connections with a 40 pixel margin. It never zooms in beyond 100 %. An empty model returns to 100 %. |
@@ -68,7 +68,7 @@ Open the Code review pipeline. It opens fitted. Zoom in on the **Build** stage w
 - A model opens fitted to the window.
 - The view is not saved. Reopening the model fits it again.
 - You can pan and zoom while a tool such as place or connect is active.
-- Right-click without dragging leaves place or connect mode. See [[placing-objects]] and [[connecting-objects]].
+- Right-click without dragging leaves place or connect mode. Dragging with the right button pans and keeps the mode. See [[placing-objects]] and [[connecting-objects]].
 
 ## Related
 

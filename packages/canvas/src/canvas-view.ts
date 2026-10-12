@@ -19,6 +19,8 @@ import {
 
 /** After a pan or zoom gesture stops this long, the scene is drawn sharp again. */
 const SETTLE_MS = 150;
+/** Pointer moves under this many screen pixels are clicks, not drags. */
+export const DRAG_THRESHOLD = 3;
 
 export interface CanvasViewOptions {
   grid?: GridSettings;
@@ -47,6 +49,20 @@ export class CanvasView {
   private readonly resizeObserver: ResizeObserver;
   private readonly stopScene: () => void;
   private panning: { id: number; x: number; y: number } | null = null;
+  /**
+   * The right button pans only once it has moved past the threshold; a press that stays put is a
+   * click and opens the context menu when the button goes up.
+   */
+  private rightPress: {
+    id: number;
+    startX: number;
+    startY: number;
+    moved: boolean;
+    /** A `contextmenu` that came while the button was down (macOS fires it on press). */
+    deferred: boolean;
+  } | null = null;
+  /** The last right press was a drag, so the `contextmenu` that follows it on Windows is swallowed. */
+  private rightDragged = false;
   private spaceDown = false;
   private readonly cleanups: (() => void)[] = [];
   /**
@@ -302,27 +318,74 @@ export class CanvasView {
     on(surface, 'pointerdown', (e: PointerEvent) => {
       const wantsPan =
         e.button === 1 || e.button === 2 || (e.button === 0 && this.spaceDown);
+      this.rightDragged = false;
       if (!wantsPan) return;
       e.preventDefault();
       e.stopImmediatePropagation();
       surface.setPointerCapture(e.pointerId);
       this.panning = { id: e.pointerId, x: e.clientX, y: e.clientY };
+      this.rightPress =
+        e.button === 2
+          ? {
+              id: e.pointerId,
+              startX: e.clientX,
+              startY: e.clientY,
+              moved: false,
+              deferred: false,
+            }
+          : null;
     });
     on(surface, 'pointermove', (e: PointerEvent) => {
       if (!this.panning || this.panning.id !== e.pointerId) return;
       e.stopImmediatePropagation();
+      const press = this.rightPress;
+      if (press && !press.moved) {
+        if (
+          Math.hypot(e.clientX - press.startX, e.clientY - press.startY) <
+          DRAG_THRESHOLD
+        )
+          return;
+        press.moved = true;
+      }
       this.panBy(e.clientX - this.panning.x, e.clientY - this.panning.y);
       this.panning = { id: e.pointerId, x: e.clientX, y: e.clientY };
     });
     const end = (e: PointerEvent) => {
-      if (this.panning?.id === e.pointerId) {
-        e.stopImmediatePropagation();
-        this.panning = null;
+      if (this.panning?.id !== e.pointerId) return;
+      e.stopImmediatePropagation();
+      this.panning = null;
+      const press = this.rightPress;
+      this.rightPress = null;
+      if (!press) return;
+      // Where the menu event already came on press, no second one follows to be swallowed.
+      this.rightDragged = press.moved && !press.deferred;
+      if (press.deferred && !press.moved && e.type === 'pointerup') {
+        // The menu that macOS asked for on press: now we know it was a click.
+        surface.dispatchEvent(
+          new MouseEvent('contextmenu', {
+            bubbles: true,
+            cancelable: true,
+            clientX: e.clientX,
+            clientY: e.clientY,
+            button: 2,
+          }),
+        );
       }
     };
     on(surface, 'pointerup', end);
     on(surface, 'pointercancel', end);
-    on(surface, 'contextmenu', (e: Event) => e.preventDefault());
+    // Registered before the editor's listener, so stopping it here also keeps a drag from leaving
+    // place or connect mode, and from reaching the page's context menu.
+    on(surface, 'contextmenu', (e: MouseEvent) => {
+      e.preventDefault();
+      if (this.rightPress) {
+        this.rightPress.deferred = true;
+        e.stopImmediatePropagation();
+      } else if (this.rightDragged) {
+        this.rightDragged = false;
+        e.stopImmediatePropagation();
+      }
+    });
     on(window, 'keydown', (e: KeyboardEvent) => {
       if (e.code === 'Space' && !isTyping(e.target)) {
         this.spaceDown = true;

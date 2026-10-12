@@ -16,7 +16,7 @@ import {
   type RelationId,
   type Kit,
 } from '@metakit-app/core';
-import { isTyping, type CanvasView } from './canvas-view';
+import { DRAG_THRESHOLD, isTyping, type CanvasView } from './canvas-view';
 import {
   distanceToPolyline,
   inflate,
@@ -86,8 +86,6 @@ export interface EditorOptions {
   layout?: LayoutService;
 }
 
-/** Pointer moves under this many screen pixels are clicks, not drags. */
-const DRAG_THRESHOLD = 3;
 const MIN_SIZE = 20;
 const EDGE_PX = 6;
 const HIT_PX = 6;

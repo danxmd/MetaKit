@@ -180,6 +180,23 @@ test.describe('canvas engine', () => {
     expect((await call(page, 'viewState')).ox).toBe(50);
   });
 
+  test('pans with the right button, but not for a right click that hardly moves', async ({
+    page,
+  }) => {
+    await setup(page);
+    const start = await call(page, 'client', { x: 500, y: 300 });
+    await page.mouse.move(start.x, start.y);
+    await page.mouse.down({ button: 'right' });
+    await page.mouse.move(start.x + 2, start.y + 1);
+    await page.mouse.up({ button: 'right' });
+    expect(await call(page, 'viewState')).toMatchObject({ ox: 0, oy: 0 });
+    await page.mouse.move(start.x, start.y);
+    await page.mouse.down({ button: 'right' });
+    await page.mouse.move(start.x - 60, start.y + 20, { steps: 4 });
+    await page.mouse.up({ button: 'right' });
+    expect(await call(page, 'viewState')).toMatchObject({ ox: -60, oy: 20 });
+  });
+
   test('reuses draw lists when elements move and rebuilds them when the label changes', async ({
     page,
   }) => {
