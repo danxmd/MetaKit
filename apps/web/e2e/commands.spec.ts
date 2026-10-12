@@ -69,7 +69,7 @@ test('a right drag pans without opening the context menu; a right click still op
   await page.evaluate(
     (json) =>
       (window as unknown as { __seed(t: string): Promise<void> }).__seed(json),
-    commandTool(),
+    commandKit(),
   );
   await page.reload();
   await newModel(page, 'Commands');
