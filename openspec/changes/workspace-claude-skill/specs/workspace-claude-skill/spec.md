@@ -2,7 +2,7 @@
 
 ## Purpose
 
-A workspace folder tells Claude Code what MetaKit is and how to work with it, and gives Claude readable copies of the tool libraries and models, without Claude ever writing the workspace state.
+A workspace folder tells Claude Code what MetaKit is and how to work with it, and gives Claude readable copies of the Kits and models, without Claude ever writing the workspace state.
 
 ## ADDED Requirements
 
@@ -32,16 +32,16 @@ When a workspace is created, and when a workspace is opened that has no file at 
 ### Requirement: What the skill says
 The skill SHALL be valid Claude Code skill Markdown with a `name` and `description` front matter. It SHALL state that:
 - only the highest `metakit-v*` version present is to be used;
-- `_state/`, `_presence/`, `workspace.json`, and each document's `tool.json` or `model.json` identity file must never be edited, moved or deleted;
-- the current tool libraries and models are read from the newest folder in `claude/exports/`;
-- results go to `claude/outbox/` as a tool library file (format 6) or an editable model file (`.mkmodel.json`), with a new file name for every result;
-- the person brings results into MetaKit with **Add > From file…** (a new tool library) or **Import / Export > Import file(s)…** (models and `.mktool` packages).
+- `_state/`, `_presence/`, `workspace.json`, and each document's identity file (`kit.json`, `tool.json` or `model.json`) must never be edited, moved or deleted;
+- the current Kits and models are read from the newest folder in `claude/exports/`;
+- results go to `claude/outbox/` as a Kit file (`kit.json`, format 7) or an editable model file (`.mkmodel.json`), with a new file name for every result;
+- the person brings results into MetaKit with **Add > From file…** (a new Kit) or **Import / Export > Import file(s)…** (models and `.mkkit` packages).
 
 It SHALL also describe both readable formats, the id prefixes and the use of keys, and SHALL contain no secrets and no workspace content.
 
 #### Scenario: No content in the skill
 - **WHEN** the skill text is generated for a workspace with models
-- **THEN** it contains no model, tool library or person names from that workspace
+- **THEN** it contains no model, Kit or person names from that workspace
 
 #### Scenario: Results are importable
 - **WHEN** a model file is written to `claude/outbox/` following the skill's format description and is imported
@@ -56,9 +56,9 @@ The Models page **Import / Export** menu SHALL offer **Add Claude skill**. It SH
 
 ### Requirement: Share with Claude
 The Models page **Import / Export** menu SHALL offer **Share with Claude**. It SHALL write a new folder `claude/exports/<UTC date-time>/` holding:
-- `tools/<tool slug>/tool.json` for every tool library of the workspace;
+- `kits/<kit slug>/kit.json` for every Kit of the workspace;
 - `models/<model slug>.mkmodel.json` for every model;
-- `overview.md`, which lists for each tool library its model types, classes (with attributes and their types and choices) and relation classes (with what they connect).
+- `overview.md`, which lists for each Kit its model types, classes (with attributes and their types and choices) and relation classes (with what they connect).
 
 It SHALL write nothing else, SHALL never overwrite a file, and SHALL say where the files are.
 
@@ -67,15 +67,15 @@ It SHALL write nothing else, SHALL never overwrite a file, and SHALL say where t
 - **THEN** two date-time folders exist and the first is unchanged
 
 #### Scenario: Exports read back
-- **WHEN** an exported `.mkmodel.json` and its `tool.json` are imported into an empty workspace
-- **THEN** the model and tool library are equal to the originals
+- **WHEN** an exported `.mkmodel.json` and its `kit.json` are imported into an empty workspace
+- **THEN** the model and Kit are equal to the originals
 
 #### Scenario: State untouched
 - **WHEN** a share runs
 - **THEN** no file under any `_state/` folder is written
 
 ### Requirement: The exchange folder is not part of the workspace
-MetaKit SHALL ignore `.claude/` and `claude/` when it lists tool libraries and models, checks the workspace's health, or syncs, and SHALL never read from `claude/outbox/` on its own.
+MetaKit SHALL ignore `.claude/` and `claude/` when it lists Kits and models, checks the workspace's health, or syncs, and SHALL never read from `claude/outbox/` on its own.
 
 #### Scenario: Files in the outbox
 - **WHEN** `claude/outbox/` holds a model file

@@ -30,11 +30,11 @@ Access to a workspace SHALL go through an adapter that lists folders, reads file
 - **THEN** the watcher callback is called with the folder
 
 ### Requirement: Workspace layout
-A workspace SHALL be a folder with `workspace.json`, `tools/<slug>/tool.json` and `models/<slug>/model.json` written once at creation, each document's content in `_state/<instanceId>/snapshot.json` of its folder, and assets in `tools/<slug>/assets/` named by content hash. It MAY also hold `.claude/skills/metakit-v<N>/SKILL.md` and a `claude/` exchange folder, which are not documents.
+A workspace SHALL be a folder with `workspace.json`, `kits/<slug>/kit.json` and `models/<slug>/model.json` written once at creation, each document's content in `_state/<instanceId>/snapshot.json` of its folder, and assets in the Kit folder's `assets/` named by content hash. It MAY also hold `.claude/skills/metakit-v<N>/SKILL.md` and a `claude/` exchange folder, which are not documents.
 
 #### Scenario: Create and reopen
-- **WHEN** a workspace with one tool library and one model is created, saved and opened again
-- **THEN** the tool library and the model read back equal to what was saved
+- **WHEN** a workspace with one Kit and one model is created, saved and opened again
+- **THEN** the Kit and the model read back equal to what was saved
 
 #### Scenario: Folder names never change
 - **WHEN** a model is renamed
@@ -46,4 +46,4 @@ A workspace SHALL be a folder with `workspace.json`, `tools/<slug>/tool.json` an
 
 #### Scenario: Exchange folders are not documents
 - **WHEN** a workspace holds `.claude/` and `claude/` folders
-- **THEN** opening it lists only the tool libraries under `tools/` and the models under `models/`
+- **THEN** opening it lists only the Kits under `kits/` and `tools/` and the models under `models/`
