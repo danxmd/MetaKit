@@ -21,7 +21,7 @@ A modal dialog titled **New model** with the line "A model is made with a Kit." 
 
 ## How to use it
 
-1. Choose a **Kit**. If the workspace has only one of its own, it is chosen for you. Built-in Kits are listed too ([[built-in-kits]]).
+1. Choose a **Kit**. If the workspace has only one of its own, it is chosen for you. Built-in Kits are listed too ([[built-in-kits]]). To see what their models look like first, choose **Browse…** beside **Kit**: the [[kit-catalogue]] opens, and **Choose** there picks the Kit for this dialog.
 2. Choose a **Model type**. If the Kit has only one, it is chosen for you.
 3. Type a **Name**.
 4. Optionally type or choose a **Folder**.
@@ -31,7 +31,8 @@ A modal dialog titled **New model** with the line "A model is made with a Kit." 
 
 | Field or button | What it does |
 | --- | --- |
-| **Kit** | The Kits of the workspace, each shown as "name (version)", for example "Agent pipeline (1.0.0)". Below them, under **Built-in (added to this workspace when you create)**, the built-in Kits the workspace does not have yet, in the order of the Kits page (by domain). Choosing one adds it to the workspace when you choose **Create**. The first entry, "Choose a Kit", cannot be picked. |
+| **Kit** | The Kits of the workspace, each shown as "name (version)", for example "Agent pipeline (1.0.0)". Below them, under **Built-in (added to this workspace when you create)**, the built-in Kits the workspace does not have yet, in the order of the catalogue (by domain). Choosing one adds it to the workspace when you choose **Create**. The first entry, "Choose a Kit", cannot be picked. |
+| **Browse…** | Opens the [[kit-catalogue]] over this dialog, with a picture of each built-in Kit's sample model. **Choose** closes it and selects that Kit here; a Kit the workspace already has is selected as the workspace's own. `Escape` closes only the catalogue. |
 | **Model type** | The kinds of model the chosen Kit offers, sorted by name, for example **ArtifactLineage** and **Pipeline**. Disabled until you choose a Kit. The label shown is the English label of the model type. The first entry, "Choose a model type", cannot be picked. |
 | **Name** | The name of the model. Leading and trailing spaces are ignored. Required. |
 | **Folder (optional)** | A path such as `Sales/2026`. Parts are separated by `/`. As you type, the box suggests folders already in use. Leave it empty for the top level. |

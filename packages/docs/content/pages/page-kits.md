@@ -34,7 +34,7 @@ Choose **Build** in the [[top-bar]] when no Kit is open. **Kits** in the locatio
 
 **Copy a Kit and extend it**
 
-1. Choose **Copy and extend…** on a built-in Kit in the [[kit-catalogue]], or **… > Copy and extend…** on a card of this workspace. You can also choose **New Kit** and pick the Kit under **Start from**.
+1. Choose **Copy and extend…** on a built-in Kit in the [[kit-catalogue]], or **… > Copy and extend…** on a card of this workspace. You can also choose **New Kit** and pick the Kit under **Start from**, or choose **Browse…** there to pick it in the catalogue.
 2. Type a **Name** for the copy. A line under the list says what the copy starts with.
 3. Choose **Create and edit**. The copy opens in the Build view with everything the original has: classes, relation classes, model types, looks, panels, rules and scripts. Its version is `1.0.0` and its card says **Based on** with the name and version of the original. The original does not change.
 
@@ -73,6 +73,7 @@ Choose **Build** in the [[top-bar]] when no Kit is open. **Kits** in the locatio
 | **New Kit** | Opens the **New Kit** dialog. |
 | **Name** (dialog) | The name of the new Kit. |
 | **Start from** (dialog) | **Empty**, a Kit of this workspace, or a built-in Kit, in the order of the catalogue. Anything but Empty makes a copy. |
+| **Browse…** (dialog) | Beside "A copy of a built-in Kit". Opens the [[kit-catalogue]]; **Choose** there selects that Kit under **Start from** and, if **Name** is empty, fills in "name (ours)". |
 | **Create and edit** (dialog) | Creates the Kit and opens it for editing. |
 | **Cancel** (dialog) | Closes the dialog and creates nothing. `Escape` does the same. |
 | Card heading and badge | Kit name and **Version x.y.z**. |

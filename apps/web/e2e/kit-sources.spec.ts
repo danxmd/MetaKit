@@ -283,4 +283,77 @@ test.describe('The Kit catalogue', () => {
     await expect(catalogue).toHaveCount(0);
     await expect(page.getByTestId('built-in-domain-general')).toBeFocused();
   });
+
+  test('Browse… in New model chooses a Kit, and Escape closes only the catalogue', async ({
+    page,
+  }) => {
+    await emptyWorkspace(page);
+    await page.getByTestId('new-model-empty').click();
+    const newModel = page.getByTestId('new-model-dialog');
+    await newModel.getByTestId('new-model-browse').click();
+    const catalogue = page.getByTestId('kit-catalog');
+    await expect(catalogue).toContainText('Choose a built-in Kit');
+
+    // Enter in the search must not submit New model, and Escape closes only the catalogue.
+    await catalogue.getByTestId('built-in-search').fill('storming');
+    await page.keyboard.press('Enter');
+    await expect(newModel).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(catalogue).toHaveCount(0);
+    await expect(newModel).toBeVisible();
+
+    await newModel.getByTestId('new-model-browse').click();
+    await catalogue.getByTestId('built-in-kit_eventstorming').click();
+    await catalogue.getByTestId('catalog-choose').click();
+    await expect(catalogue).toHaveCount(0);
+    await expect(newModel.getByTestId('new-model-kit')).toHaveValue(
+      'built-in:kit_eventstorming',
+    );
+    await expect(newModel.getByTestId('new-model-type')).not.toHaveValue('');
+    await newModel.getByTestId('new-model-name').fill('Checkout events');
+    await newModel.getByTestId('new-model-create').click();
+    await expect(page.getByTestId('model-view')).toBeVisible();
+  });
+
+  test('a Kit the workspace has is chosen as itself from the catalogue', async ({
+    page,
+  }) => {
+    await emptyWorkspace(page);
+    await page.getByTestId('mode-build').click();
+    const catalogue = await openCatalogue(page, 'architecture');
+    await catalogue.getByTestId('built-in-tool_erlite').click();
+    await catalogue.getByTestId('use-built-in-tool_erlite').click();
+    await page.keyboard.press('Escape');
+    await page.getByTestId('mode-model').click();
+    await page.getByTestId('new-model-empty').click();
+    await page.getByTestId('new-model-browse').click();
+    await page.getByTestId('catalog-domain-architecture').click();
+    await page.getByTestId('built-in-tool_erlite').click();
+    await page.getByTestId('catalog-choose').click();
+    const value = await page.getByTestId('new-model-kit').inputValue();
+    expect(value).not.toBe('');
+    expect(value.startsWith('built-in:')).toBe(false);
+  });
+
+  test('Browse… in New Kit chooses the built-in Kit to copy', async ({
+    page,
+  }) => {
+    await emptyWorkspace(page);
+    await page.getByTestId('mode-build').click();
+    await page.getByTestId('new-kit').click();
+    const newKit = page.getByTestId('new-kit-dialog');
+    await newKit.getByTestId('new-kit-browse').click();
+    const catalogue = page.getByTestId('kit-catalog');
+    await catalogue.getByTestId('catalog-domain-general').click();
+    await catalogue.getByTestId('built-in-kit_orgchart').click();
+    await catalogue.getByTestId('catalog-choose').click();
+    await expect(catalogue).toHaveCount(0);
+    await expect(
+      newKit.getByTestId('start-built-in-kit_orgchart'),
+    ).toBeChecked();
+    await expect(newKit.getByTestId('new-kit-name')).toHaveValue(
+      'Org chart (ours)',
+    );
+    await expect(newKit.getByTestId('new-kit-note')).toContainText('Org chart');
+  });
 });

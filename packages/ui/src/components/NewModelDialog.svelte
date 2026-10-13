@@ -3,10 +3,12 @@
   import { onMount } from 'svelte';
   import type { KitEntry } from '@metakit-app/storage';
   import type { ModelTypeDef, ModelTypeId } from '@metakit-app/core';
+  import type { BuiltInKit } from '../build/built-in';
 
   let {
     kits,
     builtIns = [],
+    catalogue = [],
     loadModelTypes,
     folders,
     initialFolder,
@@ -18,7 +20,9 @@
      * Built-in Kits that are not in the workspace yet. Their `key` is passed as the
      * kit slug; the caller adds the library before it creates the model.
      */
-    builtIns?: { key: string; name: string; version: string }[];
+    builtIns?: { id: string; key: string; name: string; version: string }[];
+    /** Every built-in Kit, for Browse…, which opens the Kit catalogue to choose one. */
+    catalogue?: readonly BuiltInKit[];
     /** Reads the model types of a Kit (a workspace slug or a built-in key). */
     loadModelTypes: (kitSlug: string) => Promise<ModelTypeDef[]>;
     folders: string[];
@@ -74,6 +78,16 @@
     return () => (current = false);
   });
 
+  /** The Kit catalogue, opened by Browse… to choose a built-in Kit. */
+  let browsing = $state(false);
+
+  /** A Kit the workspace has is chosen as itself; any other as the built-in entry. */
+  function chooseFromCatalogue(kit: BuiltInKit) {
+    const own = kits.find((k) => k.id === kit.id);
+    const key = own?.slug ?? builtIns.find((b) => b.id === kit.id)?.key;
+    if (key) kitSlug = key;
+  }
+
   const ready = $derived(
     kitSlug !== '' && modelType !== '' && name.trim() !== '',
   );
@@ -101,7 +115,17 @@
       </p>
     {:else}
       <label>
-        Kit
+        <span class="label-row"
+          >Kit
+          {#if catalogue.length > 0}
+            <button
+              type="button"
+              class="ghost browse"
+              onclick={() => (browsing = true)}
+              data-testid="new-model-browse">Browse…</button
+            >
+          {/if}</span
+        >
         <select bind:value={kitSlug} data-testid="new-model-kit">
           <option value="" disabled>Choose a Kit</option>
           {#if builtIns.length > 0 && kits.length > 0}
@@ -170,6 +194,19 @@
   </form>
 </dialog>
 
+{#if browsing}
+  <!-- Loaded on first use, and outside the form, so Enter in its search cannot submit this one. -->
+  {#await import('./KitCatalogDialog.svelte') then { default: KitCatalogDialog }}
+    <KitCatalogDialog
+      builtIns={catalogue}
+      inWorkspace={(b) => kits.some((k) => k.id === b.id)}
+      mode="choose"
+      onChoose={chooseFromCatalogue}
+      onClose={() => (browsing = false)}
+    />
+  {/await}
+{/if}
+
 <style>
   dialog {
     width: min(26rem, calc(100vw - 2rem));
@@ -188,6 +225,15 @@
   label {
     display: grid;
     gap: var(--gap-1);
+  }
+  .label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .browse {
+    padding: 0 var(--gap-1);
+    font-size: var(--text-s);
   }
   .actions {
     display: flex;

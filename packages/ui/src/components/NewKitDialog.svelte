@@ -54,6 +54,20 @@
     dialog?.showModal();
   });
 
+  /** The Kit catalogue, opened by Browse… to choose the built-in Kit to copy. */
+  let browsing = $state(false);
+
+  function chooseFromCatalogue(kit: BuiltInKit) {
+    choice = `built-in:${kit.id}`;
+    if (name.trim() === '') name = `${kit.name} (ours)`;
+    // The chosen option may be far down the list.
+    queueMicrotask(() =>
+      dialog
+        ?.querySelector(`[data-testid="start-built-in-${kit.id}"]`)
+        ?.scrollIntoView({ block: 'nearest' }),
+    );
+  }
+
   async function submit(event: Event) {
     event.preventDefault();
     if (name.trim() === '' || busy) return;
@@ -124,7 +138,15 @@
             </label>
           {/each}
         {/if}
-        <p class="group">A copy of a built-in Kit</p>
+        <p class="group built-in-head">
+          <span>A copy of a built-in Kit</span>
+          <button
+            type="button"
+            class="ghost browse"
+            onclick={() => (browsing = true)}
+            data-testid="new-kit-browse">Browse…</button
+          >
+        </p>
         {#each builtIns as kit (kit.id)}
           <label class="option">
             <input
@@ -158,6 +180,19 @@
     </div>
   </form>
 </dialog>
+
+{#if browsing}
+  <!-- Loaded on first use, and outside the form, so Enter in its search cannot submit this one. -->
+  {#await import('./KitCatalogDialog.svelte') then { default: KitCatalogDialog }}
+    <KitCatalogDialog
+      {builtIns}
+      inWorkspace={(b) => kits.some((k) => k.id === b.id)}
+      mode="choose"
+      onChoose={chooseFromCatalogue}
+      onClose={() => (browsing = false)}
+    />
+  {/await}
+{/if}
 
 <style>
   dialog {
@@ -203,6 +238,15 @@
     margin: var(--gap-2) 0 0;
     font-size: var(--text-s);
     color: var(--text-muted);
+  }
+  .built-in-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .browse {
+    padding: 0 var(--gap-1);
+    font-size: var(--text-s);
   }
   .option {
     display: flex;
