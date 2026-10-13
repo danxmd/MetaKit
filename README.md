@@ -257,11 +257,7 @@ node apps/cli/dist/bin.js import-kit bpmn-lite.mkkit --workspace my-workspace
 
 ## Support the project
 
-MetaKit is free and open source. If it saves you time, you can support its development:
-
-<a href="https://buymeacoffee.com/danial.amlashi"><img alt="Buy me a coffee" src="https://img.shields.io/badge/Buy%20me%20a%20coffee-%E2%98%95-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=000"></a>
-
-[buymeacoffee.com/danial.amlashi](https://buymeacoffee.com/danial.amlashi)
+MetaKit is free and open source. If it saves you time, you can support its development
 
 ## Licence
 
