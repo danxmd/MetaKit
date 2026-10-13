@@ -21,6 +21,7 @@ export const DOC_CONTEXTS = [
   'build.appearance',
   'build.shape-editor',
   'build.catalog',
+  'dialog.kit-catalogue',
   'dialog.new-model',
   'dialog.kit-import',
   'dialog.export',

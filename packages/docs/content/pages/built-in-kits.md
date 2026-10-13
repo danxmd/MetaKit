@@ -8,7 +8,7 @@ contexts: []
 order: 35
 ---
 
-MetaKit comes with ready-made Kits. You can model with one at once, or copy it and make it your own. They sit in their own section of the [[page-kits|Kits page]], apart from the Kits your workspace owns.
+MetaKit comes with ready-made Kits. You can model with one at once, or copy it and make it your own. You find them in the [[kit-catalogue]], which opens from the [[page-kits|Kits page]] and shows a picture of each Kit's sample model.
 
 ## What it is
 
@@ -17,7 +17,7 @@ A built-in Kit is part of MetaKit itself, not of your workspace folder. It is **
 - **use it as it is**: it is added to your workspace unchanged, with its own id and version; or
 - **copy and extend it**: you get a new Kit with a new name, version `1.0.0` and everything the original has, and its card says **Based on** the original.
 
-They are listed by domain, under one heading each:
+The catalogue lists them by domain:
 
 **Data and AI**
 

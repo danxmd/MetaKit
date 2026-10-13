@@ -4,10 +4,9 @@
     ModelEntry,
     KitEntry,
   } from '@metakit-app/storage';
-  import type { Kit } from '@metakit-app/core';
   import {
-    groupBuiltIns,
-    searchBuiltIns,
+    BUILT_IN_DOMAINS,
+    type BuiltInDomain,
     type BuiltInKit,
     type KitStart,
   } from '../build/built-in';
@@ -77,37 +76,19 @@
     if (file) onAddKit(await file.text());
   }
 
-  /** The search over the built-in Kits, by name and description. */
-  let query = $state('');
-  const groups = $derived(groupBuiltIns(searchBuiltIns(builtIns, query)));
+  /** The catalogue dialog, and the domain it opens at. */
+  let browsing = $state<{ domain: BuiltInDomain | 'all' } | null>(null);
+  const domains = $derived(
+    BUILT_IN_DOMAINS.map((d) => ({
+      ...d,
+      count: builtIns.filter((b) => b.domain === d.id).length,
+    })).filter((d) => d.count > 0),
+  );
 
   const usedBy = (kit: KitEntry) =>
     models.filter((m) => m.kit === kit.id).length;
   const inWorkspace = (b: BuiltInKit) => kits.find((t) => t.id === b.id);
   const isBuiltIn = (t: KitEntry) => builtIns.some((b) => b.id === t.id);
-
-  /** What is inside a built-in library, read when its "What is inside" opens. */
-  let contents = $state<
-    Record<string, { classes: string[]; relations: string[] }>
-  >({});
-  async function readContents(b: BuiltInKit) {
-    if (contents[b.id]) return;
-    const kit = JSON.parse(await b.load()) as Kit;
-    const label = (x: { key: string; labels?: Record<string, string> }) =>
-      x.labels?.['en'] ?? x.key;
-    const sorted = (xs: string[]) => xs.sort((a, c) => a.localeCompare(c));
-    contents = {
-      ...contents,
-      [b.id]: {
-        classes: sorted(
-          Object.values(kit.classes)
-            .filter((c) => !c.abstract)
-            .map(label),
-        ),
-        relations: sorted(Object.values(kit.relations).map(label)),
-      },
-    };
-  }
 </script>
 
 <PageFrame
@@ -170,7 +151,8 @@
         </p>
         <ul>
           <li>
-            <strong>Use a built-in one</strong> as it is, from the list below.
+            <strong>Use a built-in one</strong> as it is: choose
+            <em>Browse built-in Kits</em> below.
           </li>
           <li>
             <strong>Copy one and extend it</strong> with “Copy and extend”, or with
@@ -252,93 +234,32 @@
     <div class="section-head">
       <h2 id="built-in-kits" data-tour="kits-built-in">Built-in Kits</h2>
       <p class="muted">
-        Ready-made Kits that come with MetaKit. They cannot be changed here: use
+        Ready-made Kits that come with MetaKit, each with a sample model. Use
         one as it is, or copy it to make it your own.
       </p>
     </div>
-    <input
-      type="search"
-      class="search"
-      placeholder="Search the built-in Kits"
-      aria-label="Search the built-in Kits"
-      bind:value={query}
-      data-testid="built-in-search"
-    />
-    {#each groups as group (group.id)}
-      <div class="domain" data-testid="built-in-domain-{group.id}">
-        <h3 class="domain-head">{group.label}</h3>
-        <ul class="grid">
-          {#each group.kits as b (b.id)}
-            {@const added = inWorkspace(b)}
-            <li class="card kit built-in" data-testid="built-in-{b.id}">
-              <div class="head">
-                <h4>{b.name}</h4>
-                <span class="badge lock" title="Built-in Kits are read-only"
-                  ><svg
-                    viewBox="0 0 20 20"
-                    width="11"
-                    height="11"
-                    aria-hidden="true"
-                    ><path
-                      d="M6 9V6.5a4 4 0 0 1 8 0V9M5 9h10v8H5z"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="1.8"
-                      stroke-linejoin="round"
-                    /></svg
-                  >Built-in · read-only</span
-                >
-              </div>
-              <p class="muted">{b.description}</p>
-              <details
-                class="inside"
-                ontoggle={(e) => {
-                  if ((e.currentTarget as HTMLDetailsElement).open)
-                    readContents(b);
-                }}
-              >
-                <summary>What is inside</summary>
-                {#if contents[b.id]}
-                  <p>
-                    <strong>Classes:</strong>
-                    {contents[b.id]!.classes.join(', ')}
-                  </p>
-                  {#if contents[b.id]!.relations.length > 0}
-                    <p>
-                      <strong>Relation classes:</strong>
-                      {contents[b.id]!.relations.join(', ')}
-                    </p>
-                  {/if}
-                {:else}
-                  <p class="muted">Reading…</p>
-                {/if}
-              </details>
-              <div class="foot">
-                {#if added}
-                  <span class="muted in-use" data-testid="built-in-added-{b.id}"
-                    >✓ In this workspace</span
-                  >
-                {:else}
-                  <button
-                    onclick={() => onUseBuiltIn(b)}
-                    data-testid="use-built-in-{b.id}"
-                    data-tour="kits-use">Use in this workspace</button
-                  >
-                {/if}
-                <button
-                  class="ghost"
-                  onclick={() => (creating = { kind: 'built-in', kit: b })}
-                  data-testid="copy-built-in-{b.id}"
-                  data-tour="kits-copy">Copy and extend…</button
-                >
-              </div>
-            </li>
-          {/each}
-        </ul>
-      </div>
-    {:else}
-      <p class="muted" data-testid="built-in-none">No built-in Kit matches.</p>
-    {/each}
+    <div class="band">
+      <ul class="chips" aria-label="Built-in Kits by domain">
+        {#each domains as d (d.id)}
+          <li>
+            <button
+              type="button"
+              class="chip"
+              onclick={() => (browsing = { domain: d.id })}
+              data-testid="built-in-domain-{d.id}"
+              >{d.label}<span class="count">{d.count}</span></button
+            >
+          </li>
+        {/each}
+      </ul>
+      <button
+        type="button"
+        class="primary"
+        onclick={() => (browsing = { domain: 'all' })}
+        data-testid="browse-built-ins"
+        data-tour="kits-browse">Browse built-in Kits</button
+      >
+    </div>
   </section>
 
   {#if trashedKits.length > 0}
@@ -358,6 +279,20 @@
     </details>
   {/if}
 </PageFrame>
+
+{#if browsing}
+  <!-- Loaded on first use, so the catalogue and its pictures cost nothing at start-up. -->
+  {#await import('./KitCatalogDialog.svelte') then { default: KitCatalogDialog }}
+    <KitCatalogDialog
+      {builtIns}
+      inWorkspace={(b) => inWorkspace(b) !== undefined}
+      initialDomain={browsing.domain}
+      onUse={onUseBuiltIn}
+      onCopy={(b) => (creating = { kind: 'built-in', kit: b })}
+      onClose={() => (browsing = null)}
+    />
+  {/await}
+{/if}
 
 {#if creating}
   <NewKitDialog
@@ -385,19 +320,6 @@
   .section-head p {
     margin: 0;
     font-size: var(--text-s);
-  }
-  .search {
-    max-width: 22rem;
-  }
-  .domain {
-    display: grid;
-    gap: var(--gap-2);
-  }
-  .domain-head {
-    margin: 0;
-    font-size: var(--text-s);
-    font-weight: 600;
-    color: var(--text-muted);
   }
   .empty {
     padding: var(--gap-5);
@@ -428,8 +350,7 @@
     gap: var(--gap-3);
     align-content: space-between;
   }
-  .kit h3,
-  .kit h4 {
+  .kit h3 {
     margin: 0;
     font-size: var(--text-m);
   }
@@ -440,12 +361,6 @@
     display: grid;
     gap: var(--gap-1);
   }
-  /* Built-in cards read as a shelf to take from, not as the team's own work. */
-  .built-in {
-    background: var(--surface-2);
-    border-style: dashed;
-    box-shadow: none;
-  }
   .head {
     display: flex;
     justify-content: space-between;
@@ -455,21 +370,6 @@
   .badge {
     white-space: nowrap;
   }
-  .lock {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-  }
-  .inside {
-    font-size: var(--text-s);
-  }
-  .inside summary {
-    cursor: pointer;
-    color: var(--text-muted);
-  }
-  .inside p {
-    margin: var(--gap-1) 0 0;
-  }
   .foot {
     display: flex;
     justify-content: space-between;
@@ -477,11 +377,39 @@
     gap: var(--gap-2);
     flex-wrap: wrap;
   }
-  .in-use {
-    font-size: var(--text-s);
-  }
   details.more > summary::after {
     content: none;
+  }
+  /* The built-in Kits read as a shelf to take from, not as the team's own work. */
+  .band {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--gap-3);
+    padding: var(--gap-3) var(--gap-4);
+    border: 1px dashed var(--line);
+    border-radius: var(--radius);
+    background: var(--surface-2);
+  }
+  .chips {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gap-2);
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--gap-2);
+    border-radius: 999px;
+  }
+  .count {
+    color: var(--text-muted);
+    font-size: var(--text-s);
+    font-variant-numeric: tabular-nums;
   }
   .trash {
     color: var(--text-muted);

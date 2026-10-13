@@ -1,11 +1,27 @@
 import { describe, expect, it } from 'vitest';
 import { validateKit, type Kit } from '@metakit-app/core';
-import { BUILT_IN_KITS, groupBuiltIns, searchBuiltIns } from './built-in';
+import {
+  BUILT_IN_KITS,
+  builtInSamples,
+  groupBuiltIns,
+  searchBuiltIns,
+} from './built-in';
 
 describe('built-in Kits', () => {
   it('have unique ids', () => {
     const ids = BUILT_IN_KITS.map((t) => t.id);
     expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('name the folder their loader reads, and have sample models there', async () => {
+    for (const entry of BUILT_IN_KITS) {
+      expect(entry.load.toString(), entry.name).toContain(
+        `kits/${entry.folder}/kit.json`,
+      );
+      expect((await builtInSamples(entry)).length, entry.name).toBeGreaterThan(
+        0,
+      );
+    }
   });
 
   for (const entry of BUILT_IN_KITS)
