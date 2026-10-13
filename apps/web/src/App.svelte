@@ -641,7 +641,13 @@
       kits={app.kits}
       builtIns={BUILT_IN_KITS.filter(
         (b) => !app.kits.some((t) => t.id === b.id),
-      ).map((b) => ({ key: builtInKey(b), name: b.name, version: b.version }))}
+      ).map((b) => ({
+        id: b.id,
+        key: builtInKey(b),
+        name: b.name,
+        version: b.version,
+      }))}
+      catalogue={BUILT_IN_KITS}
       loadModelTypes={modelTypesFor}
       {folders}
       initialFolder=""

@@ -31,6 +31,8 @@ On the [[page-kits|Kits page]], under **Built-in Kits**:
 - **Browse built-in Kits** opens the catalogue at **All Kits**.
 - A domain, for example **Architecture 5**, opens it at that domain.
 
+It also opens from **Browse…** in the [[dialog-new-model|New model]] dialog and beside "A copy of a built-in Kit" in the **New Kit** dialog. There it is titled **Choose a built-in Kit**, and its only button is **Choose**, which closes it and picks the Kit in the dialog underneath.
+
 ## How to use it
 
 **Find a Kit**
@@ -68,6 +70,7 @@ On the [[page-kits|Kits page]], under **Built-in Kits**:
 | **Model types**, **Classes**, **Relation classes** | What the Kit defines, in alphabetical order. |
 | **Use in this workspace** | Adds the Kit unchanged. When the workspace already has it, **✓ In this workspace** is shown instead. |
 | **Copy and extend…** | Closes the catalogue and opens the **New Kit** dialog with this Kit chosen. |
+| **Choose** | Shown instead of the two buttons above when the catalogue was opened from New model or New Kit. Picks the Kit there and closes the catalogue. |
 
 **Keyboard.** With a category focused, `↑` and `↓` move between categories. With a Kit focused, `↑` and `↓` choose the previous or next Kit, and `Enter` moves to its first button. `Escape` closes the catalogue and returns to the control that opened it.
 

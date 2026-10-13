@@ -17,10 +17,10 @@
 
 ## 2. PR 2: Browse from New model and New Kit (`feat/kit-catalogue-choose`)
 
-- [ ] 2.1 `'choose'` mode with a single **Choose** action.
-- [ ] 2.2 **Browse…** in New model's built-in group and in New Kit's Start from; **Choose** sets the Kit in the dialog underneath.
-- [ ] 2.3 E2E for both routes.
-- [ ] 2.4 Docs: `new-model` and `new-kit` dialog topics.
+- [x] 2.1 `'choose'` mode with a single **Choose** action.
+- [x] 2.2 **Browse…** in New model's built-in group and in New Kit's Start from; **Choose** sets the Kit in the dialog underneath.
+- [x] 2.3 E2E for both routes.
+- [x] 2.4 Docs: `dialog-new-model`, and the New Kit dialog rows in `page-kits` (New Kit has no topic of its own); `kit-catalogue` names both routes.
 
 ## 3. Needs Danial
 
