@@ -37,6 +37,8 @@ interface Mounted {
   minimap: Minimap;
   host: HTMLElement;
   messages: string[];
+  /** What the editor reported through onLinkChange, in order. */
+  links: (string | null)[];
 }
 
 let current: Mounted | null = null;
@@ -78,11 +80,15 @@ function mount(kit: Kit, workerSource?: string): void {
   const view = new CanvasView(host, scene, { grid: kit.settings.grid });
   view.setView({ s: 1, ox: 0, oy: 0 }, false);
   const messages: string[] = [];
+  const links: (string | null)[] = [];
   const editor = new Editor({
     store,
     kit,
     view,
-    host: { onMessage: (t) => messages.push(t) },
+    host: {
+      onMessage: (t) => messages.push(t),
+      onLinkChange: (from) => links.push(from),
+    },
     layout: workerSource
       ? new LayoutService({
           workerFactory: () =>
@@ -98,7 +104,7 @@ function mount(kit: Kit, workerSource?: string): void {
   mapHost.style.cssText = 'position:absolute;right:8px;bottom:8px;';
   host.append(mapHost);
   const minimap = new Minimap(mapHost, view);
-  current = { kit, store, scene, view, editor, minimap, host, messages };
+  current = { kit, store, scene, view, editor, minimap, host, messages, links };
   view.paint();
 }
 
@@ -184,6 +190,9 @@ const api = {
     return { elements: [...s.elements], connectors: [...s.connectors] };
   },
   messages: () => need().messages,
+  links: () => need().links,
+  /** The elements outlined as possible ends of the relation being connected, sorted. */
+  ends: () => [...need().view.active.ends].sort(),
   clearMessages: () => {
     need().messages.length = 0;
   },

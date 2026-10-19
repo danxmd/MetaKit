@@ -381,6 +381,8 @@
     { class: ClassId } | { relation: RelationId } | null
   >(null);
   let connectorHover = $state<ConnectorId | null>(null);
+  /** True while a connection is being drawn from a concept where it may start. */
+  let linkPicked = $state(false);
   const hintText = $derived.by(() => {
     if (!assist.hints) return '';
     const t = activeTool;
@@ -394,7 +396,7 @@
       const relation = t.relation ? kit.relations[t.relation] : undefined;
       if (!relation)
         return 'Choose a relation in the palette, then click the concept it should start at.';
-      state = { kind: 'connect', relation, picked: false };
+      state = { kind: 'connect', relation, picked: linkPicked };
     } else if (paletteHover && 'relation' in paletteHover) {
       const relation = kit.relations[paletteHover.relation];
       state = relation
@@ -419,7 +421,7 @@
         selected: selection.elements.size + selection.connectors.size,
       };
     }
-    return hintFor(kit, state);
+    return hintFor(kit, state, { modelType });
   });
 
   /** The name a concept shows: its label attribute when it has one, else the class name. */
@@ -726,6 +728,7 @@
             chooser = { options, x: screen.x, y: screen.y, resolve };
           }),
         onEditText: beginLabelEdit,
+        onLinkChange: (from) => (linkPicked = from !== null),
       },
     });
     minimap = new Minimap(mapHost, view);
@@ -1106,6 +1109,7 @@
         onConnect={chooseConnect}
         onDragClass={dragStart}
         onHover={(target) => (paletteHover = target)}
+        {modelType}
         {viewId}
         onViewChange={changeView}
       />
