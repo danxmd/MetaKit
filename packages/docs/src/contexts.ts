@@ -25,6 +25,7 @@ export const DOC_CONTEXTS = [
   'dialog.new-model',
   'dialog.kit-import',
   'dialog.export',
+  'dialog.concept-wizard',
   'dialog.permission',
   'settings.git',
   'settings.assistant',

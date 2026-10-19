@@ -18,6 +18,7 @@ A narrow column on the left of the [[page-model-view|model view]]. From top to b
 - the **Select** tool
 - a list headed **Objects**
 - a list headed **Relations**
+- at the bottom, **+ New class or relation…**, which adds a class or relation class to the Kit step by step ([[concept-wizard]])
 
 Each entry shows a small drawing of the shape and its name. A heading is left out when its list would be empty, for example **Relations** in a view without relations.
 
@@ -55,6 +56,7 @@ To see fewer kinds at once, choose a view in the **View** list at the top of the
 | **Relations** entry | Click, then drag between two objects to connect them with that relation. |
 | Hover for a moment | Shows a [[palette-preview|preview card]] with the shape, help text and attributes. |
 | Keyboard focus | Entries are buttons. Tab to one and press **Enter** or **Space** to choose it. The preview card opens at once. |
+| **+ New class or relation…** | Opens the step-by-step wizard. It adds the new class or relation class to the Kit and to this model type, then picks it in the palette, ready to use. See [[concept-wizard]]. |
 | **No objects in this view** | Shown when the chosen view offers no objects and no relations. Choose another view, or **All**, in the **View** list. |
 
 Objects of kind container or swimlane show as normal entries. They are placed the same way. See [[containers-swimlanes]].

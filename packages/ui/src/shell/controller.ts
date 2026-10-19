@@ -244,6 +244,10 @@ export interface ControllerPort {
   /** The rule engine of an open model's behaviour, for panel buttons. */
   rulesOf(behaviour: Behaviour): RulesHandle | undefined;
   scriptsOf(behaviour: Behaviour): Promise<ScriptsHandle> | undefined;
+  /** Runs a command on the open model's Kit: the class wizard in the model view (ADR 0014). */
+  runKit(command: KitCommandOrBatch): CommandResult;
+  /** Undoes the last command run with `runKit`. */
+  undoKit(): boolean;
 }
 
 /** What the Build mode view asks of the controller. */
@@ -1542,6 +1546,33 @@ export class AppController {
         return { ok: false, error: error.message };
       throw error;
     }
+  }
+
+  /**
+   * Runs a command on the Kit of the open model, which is otherwise only changed in Build mode.
+   * It goes through the Kit's own store, so it is synced and undone like a change in Build mode,
+   * and the model follows it through `kitChanged` (ADR 0014).
+   */
+  runKit(command: KitCommandOrBatch): CommandResult {
+    const open = this.current.open;
+    if (!open) return { ok: false, error: 'No model is open.' };
+    try {
+      const result = open.kitStore.execute(command);
+      if (!result.ok)
+        return {
+          ok: false,
+          error: result.reason ?? 'The change was cancelled.',
+        };
+      return { ok: true, value: result.value };
+    } catch (error) {
+      if (error instanceof CommandError)
+        return { ok: false, error: error.message };
+      throw error;
+    }
+  }
+
+  undoKit(): boolean {
+    return this.current.open?.kitStore.undo() ?? false;
   }
 
   undoBuild(): boolean {

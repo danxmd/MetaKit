@@ -12,8 +12,10 @@
     type ModelTypeId,
     type RelationId,
     type Kit,
+    type KitCommand,
   } from '@metakit-app/core';
   import { uniqueKey } from '../build/attributes';
+  import type { WizardDraft } from '../build/concept-wizard';
   import type { AppState, BuildPort } from '../shell/controller';
   import { menuBehaviour } from '../shell/menu-action';
   import { tours, type TourRun } from '../tours/tour-state';
@@ -188,6 +190,22 @@
     note = null;
     return result;
   };
+
+  // The step-by-step wizard (issue #48); the same one the model view opens.
+  let wizardKind = $state<'class' | 'relation' | null>(null);
+
+  function addFromWizard(
+    commands: KitCommand[],
+    id: ClassId | RelationId,
+    draft: WizardDraft,
+  ): string | null {
+    const result = run({ type: 'batch', commands } as never);
+    if (!result.ok) return result.error;
+    if (draft.kind === 'class') selected = { ...selected, classes: id };
+    else selected = { ...selected, relations: id };
+    note = `Added "${draft.label.trim()}".`;
+    return null;
+  }
 
   async function openCatalog() {
     catalogOpen = true;
@@ -604,6 +622,15 @@
             data-tour="build-catalog">Add from catalog…</button
           >
         {/if}
+        {#if section === 'classes' || section === 'relations'}
+          <button
+            type="button"
+            class="wizard-open"
+            onclick={() =>
+              (wizardKind = section === 'classes' ? 'class' : 'relation')}
+            data-testid="build-wizard-open">Step by step…</button
+          >
+        {/if}
         {#if sortedItems.length === 0}
           <p class="empty muted" data-testid="build-list-empty">
             {EMPTY_LIST[section]}
@@ -771,6 +798,18 @@
     {/if}
   {/if}
 
+  {#if wizardKind}
+    <!-- Loaded on first use, like the catalog. -->
+    {#await import('./build/ConceptWizard.svelte') then { default: ConceptWizard }}
+      <ConceptWizard
+        {kit}
+        kind={wizardKind}
+        onCreate={addFromWizard}
+        onClose={() => (wizardKind = null)}
+      />
+    {/await}
+  {/if}
+
   {#if catalogOpen && CatalogDialog}
     <CatalogDialog
       {kit}
@@ -900,7 +939,8 @@
     display: flex;
     gap: var(--gap-1);
   }
-  .catalog-open {
+  .catalog-open,
+  .wizard-open {
     margin-top: calc(-1 * var(--gap-2));
   }
   .new-row input {

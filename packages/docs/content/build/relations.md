@@ -29,6 +29,8 @@ Open Build mode, choose **Relation classes** under **Metamodel** and click a rel
 5. Allow the relation class in a model type, otherwise modellers cannot use it ([[model-types]]).
 6. Try it in the [[try-it-preview]]: choose the relation class button, click the first object, then the second.
 
+To be walked through the name, the ends, the line, the attributes and the model types one at a time, press **Step by step…** instead ([[concept-wizard]]). The same wizard opens from the palette in the model view.
+
 ## Every option explained
 
 ### Identity

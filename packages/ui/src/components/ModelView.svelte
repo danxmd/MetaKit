@@ -17,6 +17,7 @@
     type ConnectorId,
     type ElementId,
     type Json,
+    type KitCommand,
     type Model,
     type RelationDef,
     type RelationId,
@@ -67,6 +68,7 @@
   import DocumentStatus from './DocumentStatus.svelte';
   import { useDocumentBar } from '../shell/document-bar';
   import PaletteList from './Palette.svelte';
+  import type { WizardDraft } from '../build/concept-wizard';
 
   let {
     app,
@@ -751,6 +753,50 @@
     editor.setTool({ type: 'connect', relation });
   const chooseSelect = () => editor.setTool({ type: 'select' });
 
+  // The class wizard (issue #48): it changes the Kit, and the palette follows (ADR 0014).
+  let wizardOpen = $state(false);
+
+  function addFromWizard(
+    commands: KitCommand[],
+    id: ClassId | RelationId,
+    draft: WizardDraft,
+  ): string | null {
+    const result = controller.runKit({ type: 'batch', commands });
+    if (!result.ok) return result.error;
+    const noun = draft.kind === 'class' ? 'class' : 'relation class';
+    const used = () =>
+      draft.kind === 'class'
+        ? Object.values((store.state as Model).elements).some(
+            (e) => e.class === id,
+          )
+        : Object.values((store.state as Model).connectors).some(
+            (c) => c.relation === id,
+          );
+    toasts.show(
+      `Added the ${noun} "${draft.label.trim()}" to the Kit ${kit.manifest.name}.`,
+      {
+        undo: () => {
+          // Undoing the Kit change would leave objects of a class that no longer exists.
+          if (used())
+            toasts.show(
+              `"${draft.label.trim()}" is already used in this model, so it stays. Delete what uses it first, or remove it in Build mode.`,
+            );
+          else controller.undoKit();
+        },
+      },
+    );
+    // The Kit has changed by now: show the new one in the palette and pick it, ready to use.
+    queueMicrotask(() => {
+      const visible =
+        palette.classes.some((c) => c.id === id) ||
+        palette.relations.some((r) => r.id === id);
+      if (!visible && viewId !== '') viewId = '';
+      if (draft.kind === 'relation') chooseConnect(id as RelationId);
+      else if (!draft.abstract) choosePlace(id as ClassId);
+    });
+    return null;
+  }
+
   function dragStart(event: DragEvent, cls: ClassId) {
     event.dataTransfer?.setData('application/x-metakit-class', cls);
     event.dataTransfer!.effectAllowed = 'copy';
@@ -973,7 +1019,27 @@
       {viewId}
       onViewChange={changeView}
     />
+    <button
+      type="button"
+      class="ghost new-concept"
+      onclick={() => (wizardOpen = true)}
+      title="Add a class or relation class to the Kit, step by step"
+      data-testid="palette-new-concept">+ New class or relation…</button
+    >
   </div>
+
+  {#if wizardOpen}
+    <!-- Loaded on first use, so the model view does not grow at start-up. -->
+    {#await import('./build/ConceptWizard.svelte') then { default: ConceptWizard }}
+      <ConceptWizard
+        {kit}
+        modelType={modelType?.id}
+        where="model"
+        onCreate={addFromWizard}
+        onClose={() => (wizardOpen = false)}
+      />
+    {/await}
+  {/if}
 
   <div class="centre">
     <div
@@ -1197,6 +1263,14 @@
     grid-area: palette;
     min-height: 0;
     display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+  .new-concept {
+    justify-self: stretch;
+    text-align: left;
+    font-size: var(--text-s);
+    border-top: 1px solid var(--line);
+    border-radius: 0;
   }
   .centre {
     grid-area: centre;
