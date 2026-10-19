@@ -71,6 +71,11 @@ export interface ActiveState {
   hover: ElementId | null;
   /** Elements a suggestion could connect to, outlined softly (smart modelling). */
   suggest: ReadonlySet<ElementId>;
+  /**
+   * Elements the relation being connected can start at, or end at once the start is picked,
+   * outlined softly like `suggest`. The editor sets it when the tool or the gesture changes.
+   */
+  ends: ReadonlySet<ElementId>;
   /** Show resize handles on a single selected element. */
   handles: boolean;
   /** Elements other people have selected, outlined in their colour with their initials. */
@@ -97,7 +102,8 @@ export function isActiveEmpty(state: ActiveState): boolean {
     state.guides.x.length === 0 &&
     state.guides.y.length === 0 &&
     state.hover === null &&
-    state.suggest.size === 0
+    state.suggest.size === 0 &&
+    state.ends.size === 0
   );
 }
 
@@ -113,6 +119,7 @@ export function emptyActiveState(): ActiveState {
     target: null,
     hover: null,
     suggest: new Set(),
+    ends: new Set(),
     handles: true,
     remote: [],
   };
@@ -519,9 +526,7 @@ export class Renderer {
       }
     }
 
-    for (const id of state.suggest) {
-      const rect = this.boxOf(id, state);
-      if (!rect) continue;
+    const soft = (rect: Rect) => {
       ctx.globalAlpha = 0.1;
       ctx.fillStyle = selectColor;
       ctx.fillRect(
@@ -541,6 +546,16 @@ export class Renderer {
         rect.maxY - rect.minY,
       );
       ctx.setLineDash([]);
+    };
+    for (const id of state.suggest) {
+      const rect = this.boxOf(id, state);
+      if (rect) soft(rect);
+    }
+    // The ends of a relation can be most of a large model, so only those on screen are drawn.
+    for (const id of state.ends) {
+      if (state.suggest.has(id)) continue;
+      const rect = this.boxOf(id, state);
+      if (rect && intersects(rect, area)) soft(rect);
     }
 
     if (state.target) {

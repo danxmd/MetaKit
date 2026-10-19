@@ -401,6 +401,31 @@ test.describe('connect', () => {
     expect(connectors[0]).toMatchObject({ relation: FLOW, from: a, to: b });
   });
 
+  test('outlines where the relation can start, then where it can end', async ({
+    page,
+  }) => {
+    const t = await setup(page);
+    const a = await t.create(TASK, 100, 100);
+    const b = await t.create(GATEWAY, 400, 100);
+    await t.create(LANE, 100, 300, 300, 120);
+    expect(await call(page, 'ends')).toEqual([]);
+    await call(page, 'setTool', { type: 'connect', relation: FLOW } as never);
+    // A sequence flow joins flow nodes, never a lane.
+    expect(await call(page, 'ends')).toEqual([a, b].sort());
+    const start = await t.at({ x: 160, y: 130 });
+    await page.mouse.move(start.x, start.y);
+    await page.mouse.down();
+    expect(await call(page, 'links')).toEqual([a]);
+    expect(await call(page, 'ends')).toEqual([b]);
+    const empty = await t.at({ x: 700, y: 600 });
+    await page.mouse.move(empty.x, empty.y, { steps: 3 });
+    await page.mouse.up();
+    expect(await call(page, 'links')).toEqual([a, null]);
+    expect(await call(page, 'ends')).toEqual([a, b].sort());
+    await call(page, 'setTool', { type: 'select' } as never);
+    expect(await call(page, 'ends')).toEqual([]);
+  });
+
   test('connects by dragging from the edge of the selected element', async ({
     page,
   }) => {

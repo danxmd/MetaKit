@@ -15,6 +15,7 @@ export * from './events/bridge';
 export * from './meta/values';
 export * from './meta/guards';
 export * from './meta/inherit';
+export * from './meta/ends';
 export * from './meta/commands';
 export * from './model/types';
 export * from './model/guards';

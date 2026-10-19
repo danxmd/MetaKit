@@ -18,6 +18,7 @@ A narrow column on the left of the [[page-model-view|model view]]. From top to b
 - the **Select** tool
 - a list headed **Objects**
 - a list headed **Relations**
+- at the bottom, **+ New class or relation…**, which adds a class or relation class to the Kit step by step ([[concept-wizard]])
 
 Each entry shows a small drawing of the shape and its name. A heading is left out when its list would be empty, for example **Relations** in a view without relations.
 
@@ -25,7 +26,9 @@ The Kit decides the content. The palette shows only the classes and relations th
 
 ## Where to find it
 
-Left side of the model view, 13.5 rem wide. It scrolls when the list is long.
+Left side of the model view, 13.5 rem wide, under the heading **Palette**. It scrolls when the list is long.
+
+To give the canvas more room, click the **×** in the header ("Hide palette"), or untick **Palette** in the **View** menu ([[menu-view]]). A slim strip with an arrow stays on the left; click it ("Show palette") to bring the palette back. Your browser remembers the choice. While the palette is hidden, the tool you chose stays active, and **Escape** still goes back to **Select**.
 
 ## How to use it
 
@@ -55,6 +58,7 @@ To see fewer kinds at once, choose a view in the **View** list at the top of the
 | **Relations** entry | Click, then drag between two objects to connect them with that relation. |
 | Hover for a moment | Shows a [[palette-preview|preview card]] with the shape, help text and attributes. |
 | Keyboard focus | Entries are buttons. Tab to one and press **Enter** or **Space** to choose it. The preview card opens at once. |
+| **+ New class or relation…** | Opens the step-by-step wizard. It adds the new class or relation class to the Kit and to this model type, then picks it in the palette, ready to use. See [[concept-wizard]]. |
 | **No objects in this view** | Shown when the chosen view offers no objects and no relations. Choose another view, or **All**, in the **View** list. |
 
 Objects of kind container or swimlane show as normal entries. They are placed the same way. See [[containers-swimlanes]].
@@ -78,7 +82,7 @@ In the Agent pipeline Kit the **Objects** list shows **Agent**, **Artifact**, **
 - The names are the labels the method engineer gave to the classes and relations.
 - The palette view is not remembered. A new visit starts with **All**.
 
-> **Tip**: Hover over a relation to read, for example, "Performs: from Actor to Task". That tells you what it can connect. An abstract class such as Actor stands for all its subclasses, here Agent and Human.
+> **Tip**: Hover over a relation to read, for example, "Connects an Agent or a Human to a Task." That tells you what it can connect. The Kit may list an abstract class such as Actor; the card names the classes you can place instead, here Agent and Human.
 
 ## Related
 

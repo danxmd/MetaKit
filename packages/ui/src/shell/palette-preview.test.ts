@@ -82,8 +82,21 @@ describe('the preview card of a relation class', () => {
     const info = previewOfRelation(pipeline, performs);
     expect(info.kind).toBe('relation');
     expect(info.kindLabel).toBe('Relation');
-    expect(info.ends).toEqual({ from: ['Actor'], to: ['Task'] });
-    expect(info.sentence).toBe('Performs: from Actor to Task');
+    // Actor is abstract: the card names the classes a modeller can place.
+    expect(info.ends).toEqual({ from: ['Agent', 'Human'], to: ['Task'] });
+    expect(info.sentence).toBe('Connects an Agent or a Human to a Task.');
+  });
+
+  it('leaves out the classes the model type does not allow', () => {
+    const performs = findRelationByKey(pipeline, 'Performs')!;
+    const lineage = Object.values(pipeline.modelTypes).find(
+      (m) => m.key === 'ArtifactLineage',
+    )!;
+    const info = previewOfRelation(pipeline, performs, 'en', lineage);
+    expect(info.ends).toEqual({ from: [], to: ['Task'] });
+    expect(info.sentence).toBe(
+      'Connects nothing in this model type to a Task.',
+    );
   });
 
   it('lists several allowed classes with "or"', () => {
@@ -103,7 +116,7 @@ describe('the preview card of a relation class', () => {
       { ...kit, relations: { ...kit.relations, [flow.id]: open } },
       open,
     );
-    expect(info.sentence).toMatch(/from any object to any object$/);
+    expect(info.sentence).toBe('Connects any object to any object.');
   });
 });
 

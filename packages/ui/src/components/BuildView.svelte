@@ -12,8 +12,10 @@
     type ModelTypeId,
     type RelationId,
     type Kit,
+    type KitCommand,
   } from '@metakit-app/core';
   import { uniqueKey } from '../build/attributes';
+  import type { WizardDraft } from '../build/concept-wizard';
   import type { AppState, BuildPort } from '../shell/controller';
   import { menuBehaviour } from '../shell/menu-action';
   import { tours, type TourRun } from '../tours/tour-state';
@@ -169,7 +171,24 @@
           : `build.${section}`,
   );
   $effect(() => pushDocsContext(docsContextNow));
-  let showPreview = $state(true);
+  // Try it stays open or closed as the person last left it, per browser where that is possible.
+  const PREVIEW_KEY = 'metakit.build.preview';
+  function readPreviewChoice(): boolean {
+    try {
+      return localStorage.getItem(PREVIEW_KEY) !== 'off';
+    } catch {
+      return true;
+    }
+  }
+  let showPreview = $state(readPreviewChoice());
+  function setPreview(on: boolean) {
+    showPreview = on;
+    try {
+      localStorage.setItem(PREVIEW_KEY, on ? 'on' : 'off');
+    } catch {
+      // Not remembered; it still applies to this page.
+    }
+  }
   let committing = $state(false);
   const git = $derived(app.git);
 
@@ -188,6 +207,22 @@
     note = null;
     return result;
   };
+
+  // The step-by-step wizard (issue #48); the same one the model view opens.
+  let wizardKind = $state<'class' | 'relation' | null>(null);
+
+  function addFromWizard(
+    commands: KitCommand[],
+    id: ClassId | RelationId,
+    draft: WizardDraft,
+  ): string | null {
+    const result = run({ type: 'batch', commands } as never);
+    if (!result.ok) return result.error;
+    if (draft.kind === 'class') selected = { ...selected, classes: id };
+    else selected = { ...selected, relations: id };
+    note = `Added "${draft.label.trim()}".`;
+    return null;
+  }
 
   async function openCatalog() {
     catalogOpen = true;
@@ -470,7 +505,7 @@
     <button
       type="button"
       aria-pressed={showPreview}
-      onclick={() => (showPreview = !showPreview)}
+      onclick={() => setPreview(!showPreview)}
       data-testid="build-preview-toggle"
       data-tour="build-try">Try it</button
     >
@@ -604,6 +639,15 @@
             data-tour="build-catalog">Add from catalog…</button
           >
         {/if}
+        {#if section === 'classes' || section === 'relations'}
+          <button
+            type="button"
+            class="wizard-open"
+            onclick={() =>
+              (wizardKind = section === 'classes' ? 'class' : 'relation')}
+            data-testid="build-wizard-open">Step by step…</button
+          >
+        {/if}
         {#if sortedItems.length === 0}
           <p class="empty muted" data-testid="build-list-empty">
             {EMPTY_LIST[section]}
@@ -704,7 +748,7 @@
     </main>
     {#if showPreview}
       <aside class="dock" aria-label="Try it">
-        <KitPreview {kit} onCollapse={() => (showPreview = false)} />
+        <KitPreview {kit} onCollapse={() => setPreview(false)} />
       </aside>
     {/if}
   </div>
@@ -769,6 +813,18 @@
         {/key}
       </div>
     {/if}
+  {/if}
+
+  {#if wizardKind}
+    <!-- Loaded on first use, like the catalog. -->
+    {#await import('./build/ConceptWizard.svelte') then { default: ConceptWizard }}
+      <ConceptWizard
+        {kit}
+        kind={wizardKind}
+        onCreate={addFromWizard}
+        onClose={() => (wizardKind = null)}
+      />
+    {/await}
   {/if}
 
   {#if catalogOpen && CatalogDialog}
@@ -900,7 +956,8 @@
     display: flex;
     gap: var(--gap-1);
   }
-  .catalog-open {
+  .catalog-open,
+  .wizard-open {
     margin-top: calc(-1 * var(--gap-2));
   }
   .new-row input {

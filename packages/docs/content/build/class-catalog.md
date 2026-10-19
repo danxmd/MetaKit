@@ -94,7 +94,7 @@ There are 65 relation classes:
 - **AI:** Trains on, Uses model, Evaluates, Deployed as, Monitors, Produces, Version of, Documents, Reviewed by, Searches, Embeds with, Can use, Powered by.
 - **Governance and privacy:** Mitigates, Has risk, Governed by, Satisfies, Assesses, Processes, Lawful under, Shared with.
 
-The right pane of the dialog lists the relation classes of the class you point at, with their ends.
+The right pane of the dialog lists the relation classes of the class you point at, each with a sentence that says what it connects, for example "Connects a Person, a Team or a Data owner to any class."
 
 A relation class comes along when one of the classes you picked sits on one of its named ends, and both its ends are there: picked now, or already in the Kit under the same key. **Owns** runs from a person, team or data owner to any class, so it comes along when you pick **Person**, **Team** or **Data owner**. **Depends on** joins any two classes, so it never comes along by itself: tick **Also add “Depends on”, between any two classes** at the bottom of the dialog if you want it. Ends that allow any class are filled with every class the Kit has after the add. Add classes later and tick them under **From** or **To** yourself ([[relations]]).
 

@@ -274,6 +274,21 @@ test.describe('Page tours', () => {
     await walkTour(page, 'modelling');
   });
 
+  test('Modelling a model: hidden side bars show for the tour and hide again after it', async ({
+    page,
+  }) => {
+    await prepare(page);
+    await newModel(page);
+    await page.getByRole('button', { name: 'Hide palette' }).click();
+    await page.getByRole('button', { name: 'Hide attribute panel' }).click();
+    await expect(page.getByTestId('palette')).toHaveCount(0);
+    await startTour(page, 'modelling');
+    await expect(page.getByTestId('palette')).toBeVisible();
+    await walkTour(page, 'modelling');
+    await expect(page.getByTestId('palette')).toHaveCount(0);
+    await expect(page.getByTestId('attribute-panel')).toHaveCount(0);
+  });
+
   test('Kits page: started from the Models page, it opens the Kits page and walks it', async ({
     page,
   }) => {

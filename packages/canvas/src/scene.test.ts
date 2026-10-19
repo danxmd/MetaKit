@@ -214,6 +214,54 @@ describe('Scene', () => {
     expect(rank(b)).toBeGreaterThan(rank(c));
   });
 
+  it('picks the item drawn on top for a click: object, then connector, then container', () => {
+    const { store, scene } = setup();
+    const make = (
+      cls: string,
+      x: number,
+      y: number,
+      w: number,
+      h: number,
+      parent?: ElementId,
+    ) => {
+      const result = store.execute({
+        type: 'createElement',
+        class: cls as never,
+        x,
+        y,
+        w,
+        h,
+        ...(parent ? { parent } : {}),
+      });
+      if (!result.ok) throw new Error('cancelled');
+      return result.value as ElementId;
+    };
+    const outer = make(BPMN.lane, 0, 0, 800, 400);
+    const lane = make(BPMN.lane, 20, 20, 700, 300, outer);
+    const a = make(BPMN.task, 100, 100, 100, 50, lane);
+    const b = make(BPMN.task, 500, 100, 100, 50, lane);
+    const result = store.execute({
+      type: 'createConnector',
+      relation: BPMN.flow,
+      from: a,
+      to: b,
+    });
+    if (!result.ok) throw new Error('cancelled');
+    const cn = result.value as string;
+    // The line runs over the lane's fill at y = 125; the lane is under it but drawn below it.
+    expect(scene.elementAt({ x: 350, y: 125 })?.id).toBe(lane);
+    expect(scene.itemAt({ x: 350, y: 125 }, 4)).toMatchObject({
+      kind: 'connector',
+      id: cn,
+    });
+    // Near the line's ends the tasks are drawn above it and win.
+    expect(scene.itemAt({ x: 195, y: 125 }, 4)?.id).toBe(a);
+    // Empty lane space gives the inner lane, and outside it the outer one.
+    expect(scene.itemAt({ x: 350, y: 250 }, 4)?.id).toBe(lane);
+    expect(scene.itemAt({ x: 10, y: 10 }, 4)?.id).toBe(outer);
+    expect(scene.itemAt({ x: 900, y: 900 }, 4)).toBeUndefined();
+  });
+
   it('reports what changed', () => {
     const { store, scene, create } = setup();
     const changes: { ids: string[]; structural: boolean }[] = [];

@@ -55,7 +55,7 @@ Switch to Build mode with the mode switch in the top bar, then open a Kit with *
 | --- | --- |
 | Undo and Redo (curved arrows) | Step back and forward through your changes. They are greyed out when there is nothing to undo or redo. |
 | **Source control** | Appears only for a Kit linked to GitHub or GitLab. It holds **Commit and push**, **Pull** and **Releases**. See the next section. |
-| **Try it** | Shows or hides the preview on the right. The **»** button inside the preview hides it too. |
+| **Try it** | Shows or hides the preview on the right. The **»** button inside the preview hides it too. Your browser remembers the choice. |
 
 ### Section list
 

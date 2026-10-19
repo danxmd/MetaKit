@@ -17,6 +17,7 @@
     type ConnectorId,
     type ElementId,
     type Json,
+    type KitCommand,
     type Model,
     type RelationDef,
     type RelationId,
@@ -67,6 +68,9 @@
   import DocumentStatus from './DocumentStatus.svelte';
   import { useDocumentBar } from '../shell/document-bar';
   import PaletteList from './Palette.svelte';
+  import type { WizardDraft } from '../build/concept-wizard';
+  import Icon from './Icon.svelte';
+  import { tours } from '../tours/tour-state';
 
   let {
     app,
@@ -334,6 +338,40 @@
       return true;
     }
   }
+  // Each side bar can be hidden too, remembered the same way.
+  const PALETTE_KEY = 'metakit.side.palette';
+  const ATTRIBUTES_KEY = 'metakit.side.attributes';
+  function readShown(key: string): boolean {
+    try {
+      return localStorage.getItem(key) !== 'off';
+    } catch {
+      return true;
+    }
+  }
+  function rememberShown(key: string, on: boolean) {
+    try {
+      localStorage.setItem(key, on ? 'on' : 'off');
+    } catch {
+      // Not remembered; it still applies to this page.
+    }
+  }
+  let paletteOn = $state(readShown(PALETTE_KEY));
+  let attributesOn = $state(readShown(ATTRIBUTES_KEY));
+  function setPalette(on: boolean) {
+    paletteOn = on;
+    rememberShown(PALETTE_KEY, on);
+  }
+  function setAttributes(on: boolean) {
+    attributesOn = on;
+    rememberShown(ATTRIBUTES_KEY, on);
+  }
+  // The model tour points at both side bars, so they show while it runs; the choice is kept.
+  let touring = $state(false);
+  $effect(() =>
+    tours.subscribe(({ run }) => (touring = run?.tour.page === 'model')),
+  );
+  const paletteShown = $derived(paletteOn || touring);
+  const attributesShown = $derived(attributesOn || touring);
   // Help while modelling (per browser): hints and smart modelling.
   const assistStore = pageAssist();
   let assist = $state<ModelingAssist>(assistStore.value);
@@ -343,6 +381,8 @@
     { class: ClassId } | { relation: RelationId } | null
   >(null);
   let connectorHover = $state<ConnectorId | null>(null);
+  /** True while a connection is being drawn from a concept where it may start. */
+  let linkPicked = $state(false);
   const hintText = $derived.by(() => {
     if (!assist.hints) return '';
     const t = activeTool;
@@ -356,7 +396,7 @@
       const relation = t.relation ? kit.relations[t.relation] : undefined;
       if (!relation)
         return 'Choose a relation in the palette, then click the concept it should start at.';
-      state = { kind: 'connect', relation, picked: false };
+      state = { kind: 'connect', relation, picked: linkPicked };
     } else if (paletteHover && 'relation' in paletteHover) {
       const relation = kit.relations[paletteHover.relation];
       state = relation
@@ -381,7 +421,7 @@
         selected: selection.elements.size + selection.connectors.size,
       };
     }
-    return hintFor(kit, state);
+    return hintFor(kit, state, { modelType });
   });
 
   /** The name a concept shows: its label attribute when it has one, else the class name. */
@@ -610,6 +650,37 @@
     }
   }
 
+  // The data exports read the folder; the controller writes pending edits first.
+  let exportingData = $state(false);
+  const DATA_EXPORTS = {
+    'model-file': {
+      run: () => controller.exportModelFile(slug),
+      done: 'Exported the model file.',
+    },
+    bundle: {
+      run: () => controller.exportBundle([slug]),
+      done: 'Exported the bundle with the model and its Kit.',
+    },
+    csv: {
+      run: () => controller.exportCsv(slug),
+      done: 'Exported the CSV files.',
+    },
+  } as const;
+  async function exportData(kind: keyof typeof DATA_EXPORTS) {
+    if (exportingData) return;
+    exportingData = true;
+    try {
+      const ok = await DATA_EXPORTS[kind].run();
+      say(
+        ok
+          ? DATA_EXPORTS[kind].done
+          : `Could not export: ${app.error ?? 'something went wrong.'}`,
+      );
+    } finally {
+      exportingData = false;
+    }
+  }
+
   function say(text: string) {
     toasts.show(text);
   }
@@ -657,6 +728,7 @@
             chooser = { options, x: screen.x, y: screen.y, resolve };
           }),
         onEditText: beginLabelEdit,
+        onLinkChange: (from) => (linkPicked = from !== null),
       },
     });
     minimap = new Minimap(mapHost, view);
@@ -750,6 +822,50 @@
   const chooseConnect = (relation: RelationId) =>
     editor.setTool({ type: 'connect', relation });
   const chooseSelect = () => editor.setTool({ type: 'select' });
+
+  // The class wizard (issue #48): it changes the Kit, and the palette follows (ADR 0014).
+  let wizardOpen = $state(false);
+
+  function addFromWizard(
+    commands: KitCommand[],
+    id: ClassId | RelationId,
+    draft: WizardDraft,
+  ): string | null {
+    const result = controller.runKit({ type: 'batch', commands });
+    if (!result.ok) return result.error;
+    const noun = draft.kind === 'class' ? 'class' : 'relation class';
+    const used = () =>
+      draft.kind === 'class'
+        ? Object.values((store.state as Model).elements).some(
+            (e) => e.class === id,
+          )
+        : Object.values((store.state as Model).connectors).some(
+            (c) => c.relation === id,
+          );
+    toasts.show(
+      `Added the ${noun} "${draft.label.trim()}" to the Kit ${kit.manifest.name}.`,
+      {
+        undo: () => {
+          // Undoing the Kit change would leave objects of a class that no longer exists.
+          if (used())
+            toasts.show(
+              `"${draft.label.trim()}" is already used in this model, so it stays. Delete what uses it first, or remove it in Build mode.`,
+            );
+          else controller.undoKit();
+        },
+      },
+    );
+    // The Kit has changed by now: show the new one in the palette and pick it, ready to use.
+    queueMicrotask(() => {
+      const visible =
+        palette.classes.some((c) => c.id === id) ||
+        palette.relations.some((r) => r.id === id);
+      if (!visible && viewId !== '') viewId = '';
+      if (draft.kind === 'relation') chooseConnect(id as RelationId);
+      else if (!draft.abstract) choosePlace(id as ClassId);
+    });
+    return null;
+  }
 
   function dragStart(event: DragEvent, cls: ClassId) {
     event.dataTransfer?.setData('application/x-metakit-class', cls);
@@ -890,7 +1006,12 @@
   />
 {/snippet}
 
-<div class="workbench" data-testid="model-view">
+<div
+  class="workbench"
+  class:palette-hidden={!paletteShown}
+  class:attributes-hidden={!attributesShown}
+  data-testid="model-view"
+>
   <div class="bar">
     <ModelToolbar
       {canUndo}
@@ -909,8 +1030,14 @@
       onDistribute={(axis) => editor.distribute(axis)}
       onAutoLayout={autoLayout}
       onExport={() => (exportOpen = true)}
+      onExportData={exportData}
+      exportBusy={exportingData}
       {minimapOn}
       onToggleMinimap={toggleMinimap}
+      paletteOn={paletteShown}
+      onTogglePalette={() => setPalette(!paletteShown)}
+      attributesOn={attributesShown}
+      onToggleAttributes={() => setAttributes(!attributesShown)}
       {assist}
       onAssist={(patch) => assistStore.set(patch)}
       {problemsOpen}
@@ -960,20 +1087,65 @@
     </ModelToolbar>
   </div>
 
-  <div class="palette-slot" data-tour="model-palette">
-    <PaletteList
-      {kit}
-      {palette}
-      {activeTool}
-      onSelect={chooseSelect}
-      onPlace={choosePlace}
-      onConnect={chooseConnect}
-      onDragClass={dragStart}
-      onHover={(target) => (paletteHover = target)}
-      {viewId}
-      onViewChange={changeView}
-    />
-  </div>
+  {#if paletteShown}
+    <div class="palette-slot" data-tour="model-palette">
+      <div class="side-head">
+        <span class="side-title">Palette</span>
+        <button
+          type="button"
+          class="ghost icon"
+          onclick={() => setPalette(false)}
+          aria-label="Hide palette"
+          title="Hide palette"
+          data-testid="hide-palette"><Icon name="close" size={14} /></button
+        >
+      </div>
+      <PaletteList
+        {kit}
+        {palette}
+        {activeTool}
+        onSelect={chooseSelect}
+        onPlace={choosePlace}
+        onConnect={chooseConnect}
+        onDragClass={dragStart}
+        onHover={(target) => (paletteHover = target)}
+        {modelType}
+        {viewId}
+        onViewChange={changeView}
+      />
+      <button
+        type="button"
+        class="ghost new-concept"
+        onclick={() => (wizardOpen = true)}
+        title="Add a class or relation class to the Kit, step by step"
+        data-testid="palette-new-concept">+ New class or relation…</button
+      >
+    </div>
+  {:else}
+    <div class="side-rail palette-rail">
+      <button
+        type="button"
+        class="ghost icon"
+        onclick={() => setPalette(true)}
+        aria-label="Show palette"
+        title="Show palette"
+        data-testid="show-palette"><Icon name="forward" /></button
+      >
+    </div>
+  {/if}
+
+  {#if wizardOpen}
+    <!-- Loaded on first use, so the model view does not grow at start-up. -->
+    {#await import('./build/ConceptWizard.svelte') then { default: ConceptWizard }}
+      <ConceptWizard
+        {kit}
+        modelType={modelType?.id}
+        where="model"
+        onCreate={addFromWizard}
+        onClose={() => (wizardOpen = false)}
+      />
+    {/await}
+  {/if}
 
   <div class="centre">
     <div
@@ -1161,25 +1333,54 @@
     />
   {/if}
 
-  <div class="side" data-tour="model-attributes">
-    <AttributePanel
-      {sections}
-      count={targets.length}
-      {heading}
-      {references}
-      onEdit={edit}
-      {layoutPanel}
-      {unknown}
-      onRemoveUnknown={removeUnknown}
-      messages={panelMessages}
-    />
-  </div>
+  {#if attributesShown}
+    <div class="side" data-tour="model-attributes">
+      <div class="side-head">
+        <span class="side-title">Attributes</span>
+        <button
+          type="button"
+          class="ghost icon"
+          onclick={() => setAttributes(false)}
+          aria-label="Hide attribute panel"
+          title="Hide attribute panel"
+          data-testid="hide-attributes"><Icon name="close" size={14} /></button
+        >
+      </div>
+      <AttributePanel
+        {sections}
+        count={targets.length}
+        {heading}
+        {references}
+        onEdit={edit}
+        {layoutPanel}
+        {unknown}
+        onRemoveUnknown={removeUnknown}
+        messages={panelMessages}
+      />
+    </div>
+  {:else}
+    <div class="side-rail attributes-rail">
+      <button
+        type="button"
+        class="ghost icon"
+        onclick={() => setAttributes(true)}
+        aria-label="Show attribute panel"
+        title="Show attribute panel"
+        data-testid="show-attributes"><Icon name="back" /></button
+      >
+    </div>
+  {/if}
 </div>
 
 <style>
   .workbench {
+    --palette-width: 13.5rem;
+    --side-width: 20rem;
     display: grid;
-    grid-template-columns: 13.5rem minmax(0, 1fr) 20rem;
+    /* A hidden side bar leaves only its slim rail; the canvas takes the rest. */
+    grid-template-columns: var(--palette-width) minmax(0, 1fr) var(
+        --side-width
+      );
     grid-template-rows: auto minmax(0, 1fr);
     grid-template-areas: 'bar bar bar' 'palette centre side';
     /* The app shell gives this a container with a height; it fills it. */
@@ -1193,10 +1394,61 @@
     position: relative;
     z-index: 20;
   }
+  .workbench.palette-hidden {
+    --palette-width: auto;
+  }
+  .workbench.attributes-hidden {
+    --side-width: auto;
+  }
   .palette-slot {
     grid-area: palette;
     min-height: 0;
     display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    background: var(--surface-2);
+  }
+  .side-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--gap-2);
+    padding: var(--gap-1) var(--gap-1) 0 var(--gap-4);
+  }
+  .side-head button {
+    width: 1.75rem;
+    min-height: 1.75rem;
+    color: var(--text-muted);
+  }
+  .side-title {
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    font-weight: var(--label-weight);
+    text-transform: var(--label-case);
+    letter-spacing: var(--label-tracking);
+    color: var(--label-text);
+  }
+  .side-rail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--gap-2) var(--gap-1);
+    min-height: 0;
+  }
+  .palette-rail {
+    grid-area: palette;
+    background: var(--surface-2);
+  }
+  .attributes-rail {
+    grid-area: side;
+    border-left: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .new-concept {
+    justify-self: stretch;
+    text-align: left;
+    font-size: var(--text-s);
+    border-top: 1px solid var(--line);
+    border-radius: 0;
   }
   .centre {
     grid-area: centre;
@@ -1226,6 +1478,8 @@
     border-left: 1px solid var(--line);
     background: var(--surface);
     min-height: 0;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
   }
   .dock {
     flex: none;

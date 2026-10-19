@@ -2,7 +2,7 @@
 id: model-toolbar
 title: Toolbar and menus
 category: model
-summary: The toolbar of the model view is one row with the six menus, the icon buttons and the find box.
+summary: The toolbar of the model view is one row with the six menus, the icon buttons, the Export menu and the find box.
 keywords: [model toolbar, menu bar, toolbar buttons, model menus, header bar]
 contexts: []
 order: 20
@@ -16,9 +16,9 @@ The toolbar gives you every action that is not a direct mouse gesture on the can
 
 | Menu | What is in it | Topic |
 | --- | --- | --- |
-| **File** | Export as image or PDF | [[menu-file]] |
+| **File** | Export as image or PDF, export data | [[menu-file]] |
 | **Edit** | Undo, redo, find, select all, delete | [[menu-edit]] |
-| **View** | Zoom, minimap, assistance | [[menu-view]] |
+| **View** | Zoom, minimap, palette, attribute panel, assistance | [[menu-view]] |
 | **Arrange** | Align, distribute, auto-layout | [[menu-arrange]] |
 | **Check** | Problems, script console | [[menu-check]] |
 | **Commands** | Commands that rules and scripts add | [[menu-commands]] |
@@ -42,6 +42,7 @@ It is the strip right under the [[top-bar]]. It is always visible while a model 
 - The six menus listed above. **Commands** only appears when the Kit has commands for the model menu. The **Check** menu always appears and shows a number when the model has problems.
 - **Undo** and **Redo** icon buttons (curved arrows). Tooltips: "Undo (Ctrl+Z)" and "Redo (Ctrl+Shift+Z)". They are grey when there is nothing to undo or redo. See [[undo-redo]].
 - **Zoom out** (**−**), **Fit to window** (four corner marks, tooltip "Show the whole model") and **Zoom in** (**+**). See [[canvas-navigation]].
+- **Export** (an arrow into a tray, tooltip "Export this model"): a menu with **Image or PDF…**, **Model file (.mkmodel.json)**, **Bundle with Kit (.mkbundle)** and **CSV files (.csv.zip)**. The same as in the **File** menu. See [[menu-file]] and [[export-image]].
 - Extra buttons that the Kit adds to the toolbar (commands placed in the toolbar). See [[behaviour-commands]].
 - **Find box** at the right end: type to search this model. Placeholder: "Find (Ctrl+F)". See [[find-in-model]].
 
@@ -65,12 +66,12 @@ All other items are always available. Toolbar buttons that come from the Kit are
 
 - A menu is a list under its name. You open it with a click, or with the keyboard: **Tab** to the name and press **Enter**, **Space** or the down arrow. The up and down arrows move between the items.
 - Choosing an item closes the menu. Choosing a grey item does nothing and leaves it open.
-- The tick (✓) in front of **Minimap**, **Interaction hints** and **Smart modelling** shows that the option is on. Clicking toggles it.
+- The tick (✓) in front of **Minimap**, **Palette**, **Attribute panel**, **Interaction hints** and **Smart modelling** shows that the option is on. Clicking toggles it.
 - Shortcuts shown on the right of an item (for example **Ctrl+F** next to **Find**) are only reminders. Pressing them works with the menu closed.
 
 ### What is remembered
 
-The toolbar itself stores nothing in the model. Three settings are remembered in your browser: whether the minimap is shown, whether interaction hints are on, and whether smart modelling is on. They apply to every model you open in this browser.
+The toolbar itself stores nothing in the model. Five settings are remembered in your browser: whether the minimap, the palette and the attribute panel are shown, whether interaction hints are on, and whether smart modelling is on. They apply to every model you open in this browser.
 
 ## Examples
 

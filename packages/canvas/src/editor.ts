@@ -73,6 +73,11 @@ export interface EditorHost {
   ): Promise<RelationDef | null> | RelationDef | null;
   /** The user double-clicked an element to edit its text. */
   onEditText?(id: ElementId): void;
+  /**
+   * A connection was started on an element where it may start (the pointer went down on it), or
+   * ended or was given up (null). Hints use it to say what to do next.
+   */
+  onLinkChange?(from: ElementId | null): void;
 }
 
 export interface EditorOptions {
@@ -156,7 +161,13 @@ export class Editor {
     this.view = options.view;
     this.host = options.host ?? {};
     this.install();
-    this.cleanups.push(this.view.scene.onChange(() => this.pruneSelection()));
+    this.cleanups.push(
+      this.view.scene.onChange(() => {
+        this.pruneSelection();
+        // New or changed elements may become ends; the set is only kept while connecting.
+        if (this.endsShown) this.refreshEnds();
+      }),
+    );
   }
 
   get selection(): Selection {
@@ -180,12 +191,14 @@ export class Editor {
   /** Takes a changed Kit (hot reload); the next action follows its rules. */
   useKit(kit: Kit): void {
     this.kit = kit;
+    this.refreshEnds();
   }
 
   setTool(tool: EditorTool): void {
     this.currentTool = tool;
     this.connectHover = null;
     this.cancelGesture();
+    this.refreshEnds();
     this.publishActive({});
     this.view.surface.style.cursor = tool.type === 'select' ? '' : 'crosshair';
     this.host.onToolChange?.(tool);
@@ -527,9 +540,85 @@ export class Editor {
 
   private cancelGesture(): void {
     if (this.mode.kind !== 'idle') {
+      const wasLink = this.mode.kind === 'link';
       this.mode = { kind: 'idle' };
+      if (wasLink) this.linkEnded();
       this.publishActive({});
     }
+  }
+
+  // Ends of the relation being connected --------------------------------------------------------
+
+  /** Whether the active layer currently outlines possible ends, so scene changes refresh them. */
+  private endsShown = false;
+  /** The start of the connection being drawn, when it is one where the relation may start. */
+  private linkFrom: ElementId | null = null;
+
+  /**
+   * Outlines where the connection can go: with the connect tool, every element it may start at;
+   * once a start is picked, every element it may end at. One pass over the elements, with the
+   * answer kept per class, so a large model costs little and nothing is worked out per frame.
+   */
+  private refreshEnds(): void {
+    const mode = this.mode;
+    const linking = mode.kind === 'link';
+    const tool = this.currentTool;
+    const modelType = this.kit.modelTypes[this.model.manifest.modelType];
+    const ends = new Set<ElementId>();
+    if (modelType && (linking || tool.type === 'connect')) {
+      const scene = this.view.scene;
+      const from = linking ? scene.elements.get(mode.from) : undefined;
+      const relation = linking
+        ? mode.relation
+        : tool.type === 'connect'
+          ? tool.relation
+          : undefined;
+      const only = this.onlyRelations();
+      const byClass = new Map<ClassId, boolean>();
+      const fits = (cls: ClassId): boolean => {
+        let ok = byClass.get(cls);
+        if (ok === undefined) {
+          ok = canConnectAt(this.kit, modelType, cls, {
+            relation,
+            from: from?.cls,
+            only,
+          });
+          byClass.set(cls, ok);
+        }
+        return ok;
+      };
+      for (const item of scene.elements.values())
+        if (item.id !== from?.id && fits(item.cls)) ends.add(item.id);
+    }
+    if (ends.size === 0 && !this.endsShown) return;
+    this.endsShown = ends.size > 0;
+    this.view.setActive({ ends });
+  }
+
+  /** Starts a connection at an element: outlines its possible ends and tells the host. */
+  private linkStarted(): void {
+    const mode = this.mode;
+    if (mode.kind !== 'link') return;
+    const from = this.view.scene.elements.get(mode.from);
+    const modelType = this.kit.modelTypes[this.model.manifest.modelType];
+    const valid =
+      from !== undefined &&
+      modelType !== undefined &&
+      canConnectAt(this.kit, modelType, from.cls, {
+        relation: mode.relation,
+        only: this.onlyRelations(),
+      });
+    if (!valid) return;
+    this.linkFrom = mode.from;
+    this.refreshEnds();
+    this.host.onLinkChange?.(mode.from);
+  }
+
+  private linkEnded(): void {
+    this.refreshEnds();
+    if (this.linkFrom === null) return;
+    this.linkFrom = null;
+    this.host.onLinkChange?.(null);
   }
 
   private hitTolerance(): number {
@@ -563,6 +652,7 @@ export class Editor {
           ...(relation ? { relation } : {}),
           start: world,
         };
+        this.linkStarted();
       }
       return;
     }
@@ -582,6 +672,7 @@ export class Editor {
         // 3. The edge of a selected element starts a connector.
         if (this.onEdge(rect, world)) {
           this.mode = { kind: 'link', from: id, start: world };
+          this.linkStarted();
           return;
         }
       }
@@ -593,9 +684,10 @@ export class Editor {
       if (item && this.startConnectorGesture(item, world, screen)) return;
     }
 
-    // 4. An element.
-    const hit = scene.elementAt(world);
-    if (hit) {
+    // 4. An element or 5. a connector, whichever is drawn on top: a connector over a
+    // container's fill wins over the container.
+    const hit = scene.itemAt(world, this.hitTolerance());
+    if (hit?.kind === 'element') {
       const selected = elements.has(hit.id);
       let collapseTo: ElementId | null = null;
       if (e.shiftKey) {
@@ -634,15 +726,17 @@ export class Editor {
     }
 
     // 5. A connector.
-    const c = scene.connectorAt(world, this.hitTolerance());
-    if (c) {
+    if (hit) {
       if (e.shiftKey) {
         const next = new Set(connectors);
-        if (next.has(c.id)) next.delete(c.id);
-        else next.add(c.id);
+        if (next.has(hit.id)) next.delete(hit.id);
+        else next.add(hit.id);
         this.setSelection({ elements: new Set(elements), connectors: next });
       } else {
-        this.setSelection({ elements: new Set(), connectors: new Set([c.id]) });
+        this.setSelection({
+          elements: new Set(),
+          connectors: new Set([hit.id]),
+        });
       }
       return;
     }
@@ -813,7 +907,8 @@ export class Editor {
         }
       }
     }
-    surface.style.cursor = this.view.scene.elementAt(world) ? 'move' : '';
+    const hit = this.view.scene.itemAt(world, this.hitTolerance());
+    surface.style.cursor = hit?.kind === 'element' ? 'move' : '';
   }
 
   private moveGesture(
@@ -995,7 +1090,7 @@ export class Editor {
       options,
       reason:
         options.length === 0
-          ? refusalReason(this.kit, from.cls, target.cls, wanted)
+          ? refusalReason(this.kit, from.cls, target.cls, wanted, modelType)
           : '',
     };
   }
@@ -1172,6 +1267,7 @@ export class Editor {
         return;
       }
       case 'link': {
+        this.linkEnded();
         this.publishActive({});
         const from = this.view.scene.elements.get(mode.from);
         if (!from) return;
@@ -1227,6 +1323,7 @@ export class Editor {
                 mode.end === 'from' ? target.cls : other.cls,
                 mode.end === 'from' ? other.cls : target.cls,
                 relation,
+                this.kit.modelTypes[this.model.manifest.modelType],
               ),
             );
           return;
@@ -1267,13 +1364,13 @@ export class Editor {
         }
       }
     }
-    const element = scene.elementAt(world);
-    if (element) {
-      this.host.onEditText?.(element.id);
+    const hit = scene.itemAt(world, this.hitTolerance());
+    if (hit?.kind === 'element') {
+      this.host.onEditText?.(hit.id);
       return;
     }
-    const connector = scene.connectorAt(world, this.hitTolerance());
-    if (connector) {
+    if (hit) {
+      const connector = hit;
       const segment = nearestSegment(world, connector.route);
       const index =
         connector.bends.length === 0

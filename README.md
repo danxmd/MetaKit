@@ -192,6 +192,15 @@ It checks Node, installs or updates the dependencies (with [pnpm](https://pnpm.i
 | `--no-install` | Skip the dependency check                                 |
 | `--no-open`    | Do not open the browser                                   |
 
+### Updating
+
+A copy you run yourself tells you on its Start page when a newer version is published under [Releases](https://github.com/danxmd/MetaKit/releases). It asks GitHub once a day and sends nothing of yours (see [ADR 0015](docs/decisions/0015-update-check.md)). To update:
+
+- **Cloned with Git:** stop MetaKit, run `git pull`, and start it again.
+- **Downloaded as a zip:** download the newest zip from [Releases](https://github.com/danxmd/MetaKit/releases), unpack it and start that copy.
+
+Your workspaces live in their own folders, so nothing has to be moved. The [GitHub Pages copy](https://danxmd.github.io/MetaKit/) is always the newest.
+
 ### Browsers
 
 MetaKit needs the File System Access API to work with folders, so use **Chrome or Edge on a desktop computer**. Other browsers load the app and say so.
@@ -245,6 +254,14 @@ node apps/cli/dist/bin.js import-kit bpmn-lite.mkkit --workspace my-workspace
 ```
 
 `--help` lists every command. `validate` exits with 1 on errors (or on warnings with `--strict`). The names from before the Kit rename, `export-tool`, `import-tool`, `--tool` and `--no-tool`, still work.
+
+**Releasing a new version**
+
+1. Set the same new `version` (for example `0.2.0`) in `package.json` and `apps/web/package.json`, and commit it through a pull request.
+2. After it is merged, tag that commit on `main` and push the tag: `git tag v0.2.0` and `git push origin v0.2.0`.
+3. On GitHub, choose **Releases > Draft a new release**, pick the tag, write what changed and choose **Publish release**. Do not mark it as a pre-release; local copies only count full releases.
+
+Local copies notice the release within a day. Nothing publishes a release automatically.
 
 **How the project is built**
 

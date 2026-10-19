@@ -28,27 +28,28 @@ The setting belongs to you and your browser. It is not saved in the model and do
 
 ## Every option explained
 
-The line shows one of these sentences. Names are the keys of classes and relations (for example `HandsOverTo`), not their display labels.
+The line shows one of these sentences. Classes and relations are named by their labels (for example **Hands over to**). The classes at each end of a relation are the ones you can place: an abstract class such as **Actor** is named by the classes that extend it, **Agent** and **Human**, and only classes the model type allows are named.
 
 | What you do | What the line says |
 | --- | --- |
 | Nothing selected, Select tool | "Choose a concept on the left and click on the canvas to place it. Drag from a concept to connect it." |
 | One object selected | "Edit the attributes on the right. Drag the handles to resize. Delete removes it." |
 | Several selected | "3 selected. Drag to move them together, or use Arrange to align them." |
-| Placing an object | "Click on the canvas to place a Task. Press Escape to stop." |
-| Connect tool active | "Click the concept where the Performs should start. Performs connects an Actor to a Task." |
+| Placing an object | "Click on the canvas to place a Task. Press Escape to stop." ("an" before a vowel, as in "place an Artifact") |
+| Connect tool active | "Press on an outlined concept where the Performs should start and drag to where it ends. Performs connects an Agent or a Human to a Task." |
+| Connect tool, after pressing on a start | "Let go on an outlined concept where the Performs should end. Performs connects an Agent or a Human to a Task." |
 | Connect tool without a relation | "Choose a relation in the palette, then click the concept it should start at." |
-| Pointer over a relation in the palette | "Performs connects an Actor to a Task." |
-| Pointer over an object in the palette | "Task can be connected with Feeds, HandsOverTo, Performs, Produces." Or "Stage: click on the canvas to place it." if nothing can connect to it. |
-| Pointer over a connection (Select tool) | "Performs: Agent to Task. Performs connects an Actor to a Task." |
+| Pointer over a relation in the palette | "Performs connects an Agent or a Human to a Task." |
+| Pointer over an object in the palette | "Task can be connected with Feeds, Hands over to, Performs or Produces." Every relation of the model type that may start or end at the class, or at a class it extends, is named. Or "Stage: click on the canvas to place it." if nothing can connect to it. |
+| Pointer over a connection (Select tool) | "Performs: Agent to Task. Performs connects an Agent or a Human to a Task." |
 
-Where a relation can start or end at several kinds, the sentence lists them: "HandsOverTo connects a Task or a Gate to a Task or a Gate." When an end is not limited it says "anything".
+Where a relation can start or end at several kinds, the sentence lists them: "Hands over to connects a Gate or a Task to a Gate or a Task." When the model type allows none of the classes at an end, it says "nothing in this model type".
 
 The words "concept" and "object" mean the same thing.
 
 ## Examples
 
-Switch hints on and click **Performs** in the palette of the Code review pipeline. The line says "Click the concept where the Performs should start. Performs connects an Actor to a Task." You know now to start at an agent or a human. Press **Escape**, then move the pointer over any **Performs** connection and the line names both ends, for example "Performs: Agent to Task."
+Switch hints on and click **Performs** in the palette of the Code review pipeline. The agents and humans are outlined, and the line says "Press on an outlined concept where the Performs should start and drag to where it ends. Performs connects an Agent or a Human to a Task." Press on the agent **Planner**: now the tasks are outlined and the line says "Let go on an outlined concept where the Performs should end." Press **Escape**, then move the pointer over any **Performs** connection and the line names both ends, for example "Performs: Agent to Task."
 
 ## Good to know
 

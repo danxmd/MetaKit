@@ -39,6 +39,8 @@ test.describe('the toolbar menus', () => {
 
     let menu = await openMenu(page, 'File');
     await expect(menu.getByTestId('export-open')).toBeVisible();
+    for (const kind of ['model-file', 'bundle', 'csv'])
+      await expect(menu.getByTestId(`file-export-${kind}`)).toBeVisible();
 
     menu = await openMenu(page, 'Edit');
     // Opening another menu closes the first.
@@ -70,6 +72,11 @@ test.describe('the toolbar menus', () => {
     // The quick buttons stay on the bar, with names for screen readers.
     for (const name of ['Undo', 'Redo', 'Zoom in', 'Zoom out', 'Fit to window'])
       await expect(header.getByRole('button', { name })).toBeVisible();
+    // So is Export, a menu of its own.
+    menu = await openMenu(page, 'Export');
+    for (const kind of ['image', 'model-file', 'bundle', 'csv'])
+      await expect(menu.getByTestId(`model-export-${kind}`)).toBeVisible();
+    await page.keyboard.press('Escape');
     await expect(page.getByTestId('crumb-area')).toBeVisible();
     await expect(page.getByTestId('model-name')).toHaveText(
       'Code review pipeline',
@@ -105,6 +112,99 @@ test.describe('the toolbar menus', () => {
     await expect(page.getByTestId('minimap')).toBeHidden();
     await chooseFromMenu(page, 'View', 'minimap-toggle');
     await expect(page.getByTestId('minimap')).toBeVisible();
+  });
+
+  test('the palette and the attribute panel hide separately from the View menu', async ({
+    page,
+  }) => {
+    await openPipeline(page);
+    const canvasWidth = async () =>
+      (await page.getByTestId('canvas-host').boundingBox())!.width;
+    const full = await canvasWidth();
+
+    await chooseFromMenu(page, 'View', 'palette-toggle');
+    await expect(page.getByTestId('palette')).toHaveCount(0);
+    await expect(page.getByTestId('attribute-panel')).toBeVisible();
+    await expect(page.getByTestId('show-palette')).toBeVisible();
+    // The canvas follows the freed space.
+    await expect.poll(canvasWidth).toBeGreaterThan(full + 150);
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const { view } = (
+            window as unknown as { __metakit: { view: { width: number } } }
+          ).__metakit;
+          return view.width;
+        }),
+      )
+      .toBeGreaterThan(full + 150);
+    let menu = await openMenu(page, 'View');
+    await expect(menu.getByTestId('palette-toggle')).toHaveAttribute(
+      'aria-checked',
+      'false',
+    );
+    await expect(menu.getByTestId('attributes-toggle')).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    await page.keyboard.press('Escape');
+
+    await chooseFromMenu(page, 'View', 'attributes-toggle');
+    await expect(page.getByTestId('attribute-panel')).toHaveCount(0);
+    await expect(page.getByTestId('show-attributes')).toBeVisible();
+    const both = await canvasWidth();
+    expect(both).toBeGreaterThan(full + 400);
+
+    await chooseFromMenu(page, 'View', 'palette-toggle');
+    await expect(page.getByTestId('palette')).toBeVisible();
+    await expect(page.getByTestId('attribute-panel')).toHaveCount(0);
+    menu = await openMenu(page, 'View');
+    await expect(menu.getByTestId('palette-toggle')).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    await menu.getByTestId('attributes-toggle').click();
+    await expect(page.getByTestId('attribute-panel')).toBeVisible();
+  });
+
+  test('the side bars close with × and come back from their edge, and stay as left after a reload', async ({
+    page,
+  }) => {
+    await openPipeline(page);
+    await page.getByRole('button', { name: 'Hide palette' }).click();
+    await page.getByRole('button', { name: 'Hide attribute panel' }).click();
+    await expect(page.getByTestId('palette')).toHaveCount(0);
+    await expect(page.getByTestId('attribute-panel')).toHaveCount(0);
+
+    // Selecting an object does not bring the panel back.
+    await page.evaluate(() => {
+      const { editor, store } = (
+        window as unknown as {
+          __metakit: {
+            editor: { select(ids: string[]): void };
+            store: { state: { elements: Record<string, unknown> } };
+          };
+        }
+      ).__metakit;
+      editor.select([Object.keys(store.state.elements)[0]!]);
+    });
+    await expect(page.getByTestId('attribute-panel')).toHaveCount(0);
+
+    await page.reload();
+    await page.getByTestId('open-folder').click();
+    await page
+      .getByRole('tree')
+      .getByRole('button', { name: 'Code review pipeline' })
+      .click();
+    await expect(page.getByTestId('model-view')).toBeVisible();
+    await expect(page.getByTestId('palette')).toHaveCount(0);
+    await expect(page.getByTestId('attribute-panel')).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Show palette' }).click();
+    await expect(page.getByTestId('palette')).toBeVisible();
+    await page.getByRole('button', { name: 'Show attribute panel' }).click();
+    await expect(page.getByTestId('attribute-panel')).toBeVisible();
+    await expect(page.getByTestId('show-palette')).toHaveCount(0);
   });
 
   test('Fit to window right after opening shows the whole model, left side included', async ({
@@ -195,9 +295,11 @@ test.describe('the palette preview', () => {
     await expect(page.getByTestId('palette-preview-kind')).toHaveText(
       'Relation',
     );
+    // The Kit allows the abstract Actor; the card names the classes that can be placed.
     await expect(page.getByTestId('palette-preview-ends')).toHaveText(
-      'Performs: from Actor to Task',
+      'Connects an Agent or a Human to a Task.',
     );
+    await expect(page.getByTestId('palette-preview-from')).toHaveCount(0);
     await page.mouse.move(700, 500);
     await expect(card).toHaveCount(0);
   });
@@ -233,8 +335,12 @@ test.describe('the palette preview', () => {
     await expect(page.getByTestId('palette-preview')).toBeVisible();
     await expect(page.getByTestId('palette-preview-attributes')).toBeVisible();
     await page.getByTestId('palette-relation-SequenceFlow').hover();
-    await expect(page.getByTestId('palette-preview-ends')).toContainText(
-      'from',
+    await expect(page.getByTestId('palette-preview-ends')).toHaveText(
+      'Connects an End event, a Gateway, a Start event or a Task to an End event, a Gateway, a Start event or a Task.',
+    );
+    // A long sentence also comes as two lists.
+    await expect(page.getByTestId('palette-preview-from')).toHaveText(
+      'End event, Gateway, Start event, Task',
     );
   });
 });
@@ -379,5 +485,90 @@ test.describe('connecting and placing', () => {
     await expect(
       page.getByTestId('palette-relation-SequenceFlow'),
     ).not.toHaveClass(/\bon\b/);
+  });
+});
+
+test.describe('exporting from the model view', () => {
+  /** Renames the task "Implement" through a command, as the panel would, and returns at once. */
+  async function editRightBeforeExport(page: Page) {
+    await page.evaluate(() => {
+      const { store } = (
+        window as unknown as {
+          __metakit: {
+            store: {
+              state: {
+                elements: Record<string, { attrs: Record<string, unknown> }>;
+              };
+              execute(command: unknown): void;
+            };
+          };
+        }
+      ).__metakit;
+      for (const [id, element] of Object.entries(store.state.elements))
+        for (const [attr, value] of Object.entries(element.attrs))
+          if (value === 'Implement') {
+            store.execute({
+              type: 'setAttribute',
+              target: id,
+              attr,
+              value: 'Implement the change',
+            });
+            return;
+          }
+      throw new Error('No task called Implement');
+    });
+  }
+
+  async function download(page: Page, menu: 'Export' | 'File', id: string) {
+    const opened = await openMenu(page, menu);
+    const [file] = await Promise.all([
+      page.waitForEvent('download'),
+      opened.getByTestId(id).click(),
+    ]);
+    return {
+      name: file.suggestedFilename(),
+      bytes: readFileSync((await file.path())!),
+    };
+  }
+
+  test('the Export button opens the image dialog', async ({ page }) => {
+    await openPipeline(page);
+    await chooseFromMenu(page, 'Export', 'model-export-image');
+    await expect(page.getByTestId('export-dialog')).toBeVisible();
+  });
+
+  test('the model file has an edit made just before exporting', async ({
+    page,
+  }) => {
+    await openPipeline(page);
+    await editRightBeforeExport(page);
+    const file = await download(page, 'Export', 'model-export-model-file');
+    expect(file.name).toBe('code-review-pipeline.mkmodel.json');
+    expect(file.bytes.toString('utf8')).toContain('Implement the change');
+    await expect(page.getByTestId('message')).toContainText(
+      'Exported the model file.',
+    );
+  });
+
+  test('the bundle and the CSV files download, also from the File menu', async ({
+    page,
+  }) => {
+    await openPipeline(page);
+    await editRightBeforeExport(page);
+    const bundle = await download(page, 'Export', 'model-export-bundle');
+    expect(bundle.name).toBe('code-review-pipeline.mkbundle');
+    // A zip file.
+    expect(bundle.bytes.subarray(0, 2).toString('latin1')).toBe('PK');
+    await expect(page.getByTestId('message')).toContainText(
+      'Exported the bundle',
+    );
+
+    const csv = await download(page, 'Export', 'model-export-csv');
+    expect(csv.name).toMatch(/^code-review-pipeline.*\.csv\.zip$/);
+    expect(csv.bytes.subarray(0, 2).toString('latin1')).toBe('PK');
+
+    const again = await download(page, 'File', 'file-export-model-file');
+    expect(again.name).toBe('code-review-pipeline.mkmodel.json');
+    expect(again.bytes.toString('utf8')).toContain('Implement the change');
   });
 });

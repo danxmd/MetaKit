@@ -244,6 +244,14 @@ export interface ControllerPort {
   /** The rule engine of an open model's behaviour, for panel buttons. */
   rulesOf(behaviour: Behaviour): RulesHandle | undefined;
   scriptsOf(behaviour: Behaviour): Promise<ScriptsHandle> | undefined;
+  /** Runs a command on the open model's Kit: the class wizard in the model view (ADR 0014). */
+  runKit(command: KitCommandOrBatch): CommandResult;
+  /** Undoes the last command run with `runKit`. */
+  undoKit(): boolean;
+  /** The data exports; each writes the open model's pending edits first, and is false when it failed. */
+  exportModelFile(slug: string): Promise<boolean>;
+  exportBundle(slugs: string[]): Promise<boolean>;
+  exportCsv(slug: string): Promise<boolean>;
 }
 
 /** What the Build mode view asks of the controller. */
@@ -973,17 +981,38 @@ export class AppController {
 
   private pendingKit: PreparedKitImport | null = null;
 
+  /**
+   * The exports read the model from the folder, so the open model's pending edits are written
+   * first and the file has the latest changes.
+   */
+  private async flushBeforeExport(slugs: string[]): Promise<void> {
+    const open = this.current.open;
+    if (open && slugs.includes(open.slug)) await open.session.flush();
+  }
+
+  /** Runs an export; false when it failed, with the reason in `state.error`. */
+  private async exporting(action: () => Promise<void>): Promise<boolean> {
+    return (
+      (await this.attempt(async () => {
+        await action();
+        return true;
+      })) ?? false
+    );
+  }
+
   /** Downloads one model as a `.mkmodel.json` file. */
-  exportModelFile(slug: string): Promise<void | undefined> {
-    return this.attempt(async () => {
+  exportModelFile(slug: string): Promise<boolean> {
+    return this.exporting(async () => {
+      await this.flushBeforeExport([slug]);
       const { fileName, text } = await exportModelFile(this.need(), slug);
       downloadFile(fileName, text, 'application/json');
     });
   }
 
   /** Downloads models, with their Kit, as one `.mkbundle` file. */
-  exportBundle(slugs: string[]): Promise<void | undefined> {
-    return this.attempt(async () => {
+  exportBundle(slugs: string[]): Promise<boolean> {
+    return this.exporting(async () => {
+      await this.flushBeforeExport(slugs);
       const { fileName, bytes } = await exportBundle(this.need(), {
         models: slugs,
         includeKit: true,
@@ -993,8 +1022,9 @@ export class AppController {
   }
 
   /** Downloads one CSV file per class of a model, zipped. */
-  exportCsv(slug: string): Promise<void | undefined> {
-    return this.attempt(async () => {
+  exportCsv(slug: string): Promise<boolean> {
+    return this.exporting(async () => {
+      await this.flushBeforeExport([slug]);
       const ws = this.need();
       const model = (await ws.loadModel(slug)).document;
       const kitSlug = await ws.findKitSlug(model.manifest.kit);
@@ -1542,6 +1572,33 @@ export class AppController {
         return { ok: false, error: error.message };
       throw error;
     }
+  }
+
+  /**
+   * Runs a command on the Kit of the open model, which is otherwise only changed in Build mode.
+   * It goes through the Kit's own store, so it is synced and undone like a change in Build mode,
+   * and the model follows it through `kitChanged` (ADR 0014).
+   */
+  runKit(command: KitCommandOrBatch): CommandResult {
+    const open = this.current.open;
+    if (!open) return { ok: false, error: 'No model is open.' };
+    try {
+      const result = open.kitStore.execute(command);
+      if (!result.ok)
+        return {
+          ok: false,
+          error: result.reason ?? 'The change was cancelled.',
+        };
+      return { ok: true, value: result.value };
+    } catch (error) {
+      if (error instanceof CommandError)
+        return { ok: false, error: error.message };
+      throw error;
+    }
+  }
+
+  undoKit(): boolean {
+    return this.current.open?.kitStore.undo() ?? false;
   }
 
   undoBuild(): boolean {

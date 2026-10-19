@@ -40,6 +40,8 @@ Open Build mode, choose **Classes** in the section list under **Metamodel** and 
 
 To start from ready-made classes such as Dataset, Risk or AI use case instead, press **Add from catalog…** under the **New class** box. The catalog adds classes with their attributes and looks, and the relation classes between them, in one step ([[class-catalog]]).
 
+To be walked through a new class one question at a time (name, look, attributes, model types), press **Step by step…** ([[concept-wizard]]). The same wizard opens from the palette in the model view, so you can add a class without leaving your model.
+
 ## Every option explained
 
 ### Identity

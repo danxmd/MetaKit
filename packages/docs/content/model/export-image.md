@@ -16,12 +16,12 @@ A dialog titled **Export image**. You choose the format and what to include. Met
 
 ## Where to find it
 
-**File**, **Export as image or PDF…** in the model view. See [[menu-file]].
+**File**, **Export as image or PDF…** in the model view, or **Export**, **Image or PDF…** on the toolbar. See [[menu-file]].
 
 ## How to use it
 
 1. Optionally select what you want to export.
-2. Open **File**, **Export as image or PDF…**.
+2. Open **File**, **Export as image or PDF…** (or **Export**, **Image or PDF…**).
 3. Choose a **Format**.
 4. Choose **What to export**: **The whole model** or **The selection only**.
 5. Set the options that appear for the format.
@@ -68,7 +68,7 @@ Select the stage **Build** in the Code review pipeline. Choose **PNG image**, **
 - Objects and connections are stacked as on screen: containers and swimlanes at the bottom, then connections, then the other objects.
 - The file shows the objects and connections only. The grid, selection outlines, handles and the minimap are not part of it. Without **Transparent background**, a PNG has a white background.
 - Many browsers show a save dialog where you pick the folder. Others save to the download folder.
-- To get model *data* out, not a picture, see [[import-export]].
+- To get model *data* out, not a picture, use **Export data** in the same **File** menu, or the **Export** menu. See [[import-export]].
 
 ## Related
 
