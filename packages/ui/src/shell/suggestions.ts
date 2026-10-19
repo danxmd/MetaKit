@@ -1,6 +1,8 @@
 import { allowedRelations } from '@metakit-app/canvas';
 import {
+  describeRelationEnds,
   isA,
+  labelOfDef,
   modelTypeAllowsClass,
   type ClassDef,
   type ClassId,
@@ -97,18 +99,15 @@ export function suggestConnections(
   return [...groups.values()].sort((a, b) => byKey(a.relation, b.relation));
 }
 
-/** "Performs: from an Actor to a Task", for hints and previews. */
-export function describeEnds(kit: Kit, relation: RelationDef): string {
-  const a = (word: string) => `${/^[aeiou]/i.test(word) ? 'an' : 'a'} ${word}`;
-  const names = (ids: readonly ClassId[]) => {
-    const keys = ids.map((id) => kit.classes[id]?.key ?? id);
-    return keys.length === 0
-      ? 'anything'
-      : keys.length === 1
-        ? a(keys[0]!)
-        : `${keys.slice(0, -1).map(a).join(', ')} or ${a(keys.at(-1)!)}`;
-  };
-  return `${relation.key} connects ${names(relation.from)} to ${names(relation.to)}.`;
+/** "Performs connects an Agent or a Human to a Task.", for hints. */
+export function describeEnds(
+  kit: Kit,
+  relation: RelationDef,
+  options: { language?: string; modelType?: ModelTypeDef } = {},
+): string {
+  const language = options.language ?? 'en';
+  const { phrase } = describeRelationEnds(kit, relation, options);
+  return `${labelOfDef(relation, language)} connects ${phrase}.`;
 }
 
 /** One line per row of the suggestion card: "Performs → Task". */

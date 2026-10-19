@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import {
+    connectsSentence,
     createEmptyKit,
     createKitStore,
     type ClassId,
@@ -128,8 +129,13 @@
     else error = 'The classes could not be added.';
   }
 
-  const endText = (end: string[]) =>
-    end.length === 0 ? 'any class' : end.map(labelOf).join(', ');
+  /** "Connects a Person or a Team to any class." An empty end allows every class of the Kit. */
+  const endsText = (r: { from: string[]; to: string[] }) =>
+    connectsSentence(r.from.map(labelOf), r.to.map(labelOf), {
+      from: r.from.length === 0,
+      to: r.to.length === 0,
+      word: 'any class',
+    });
 </script>
 
 <!-- A click on the backdrop lands on the dialog element itself. -->
@@ -269,8 +275,8 @@
           {#each relationsOfClass(detail.key) as r (r.key)}
             <li>
               <strong>{r.labels.en}</strong>
-              <span class="muted"
-                >from {endText(r.from)} to {endText(r.to)}</span
+              <span class="muted" data-testid="catalog-relation-ends"
+                >{endsText(r)}</span
               >
             </li>
           {/each}

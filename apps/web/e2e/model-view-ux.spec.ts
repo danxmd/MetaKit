@@ -295,9 +295,11 @@ test.describe('the palette preview', () => {
     await expect(page.getByTestId('palette-preview-kind')).toHaveText(
       'Relation',
     );
+    // The Kit allows the abstract Actor; the card names the classes that can be placed.
     await expect(page.getByTestId('palette-preview-ends')).toHaveText(
-      'Performs: from Actor to Task',
+      'Connects an Agent or a Human to a Task.',
     );
+    await expect(page.getByTestId('palette-preview-from')).toHaveCount(0);
     await page.mouse.move(700, 500);
     await expect(card).toHaveCount(0);
   });
@@ -333,8 +335,12 @@ test.describe('the palette preview', () => {
     await expect(page.getByTestId('palette-preview')).toBeVisible();
     await expect(page.getByTestId('palette-preview-attributes')).toBeVisible();
     await page.getByTestId('palette-relation-SequenceFlow').hover();
-    await expect(page.getByTestId('palette-preview-ends')).toContainText(
-      'from',
+    await expect(page.getByTestId('palette-preview-ends')).toHaveText(
+      'Connects an End event, a Gateway, a Start event or a Task to an End event, a Gateway, a Start event or a Task.',
+    );
+    // A long sentence also comes as two lists.
+    await expect(page.getByTestId('palette-preview-from')).toHaveText(
+      'End event, Gateway, Start event, Task',
     );
   });
 });

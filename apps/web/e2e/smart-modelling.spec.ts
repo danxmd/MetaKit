@@ -96,11 +96,11 @@ test.describe('hints and smart modelling', () => {
     await chooseFromMenu(page, 'View', 'assist-hints');
     await page.getByTestId('palette-relation-Performs').hover();
     await expect(page.getByTestId('hint-line')).toContainText(
-      'Performs connects an Actor to a Task',
+      'Performs connects an Agent or a Human to a Task',
     );
     await page.getByTestId('palette-relation-Performs').click();
     await expect(page.getByTestId('hint-line')).toContainText(
-      'Click the concept where the Performs should start',
+      'Press on an outlined concept where the Performs should start',
     );
     // A right-click leaves the mode and the hint goes back to the general one.
     const box = (await page.getByTestId('canvas-host').boundingBox())!;

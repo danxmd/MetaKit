@@ -110,9 +110,16 @@ describe('suggestConnections', () => {
 describe('describeEnds', () => {
   it('says what a relation connects', () => {
     expect(describeEnds(kit, rel('Performs'))).toBe(
-      'Performs connects an Actor to a Task.',
+      'Performs connects an Agent or a Human to a Task.',
     );
-    expect(describeEnds(kit, rel('HandsOverTo'))).toContain('a Task or a Gate');
+    expect(describeEnds(kit, rel('HandsOverTo'))).toContain('a Gate or a Task');
+    // Only what the model type allows.
+    const lineage = Object.values(kit.modelTypes).find(
+      (m) => m.key === 'ArtifactLineage',
+    )!;
+    expect(describeEnds(kit, rel('Feeds'), { modelType: lineage })).toBe(
+      'Feeds connects an Artifact to a Task.',
+    );
   });
 });
 
@@ -148,14 +155,14 @@ describe('hintFor', () => {
         relation: rel('Performs'),
         picked: false,
       }),
-    ).toContain('Performs connects an Actor to a Task');
+    ).toContain('Performs connects an Agent or a Human to a Task');
     expect(
       hintFor(kit, {
         kind: 'connect',
         relation: rel('Performs'),
         picked: true,
       }),
-    ).toContain('where the Performs should end');
+    ).toContain('Let go on an outlined concept where the Performs should end');
     expect(hintFor(kit, { kind: 'refused', reason: 'Not allowed.' })).toBe(
       'Not allowed.',
     );
@@ -165,5 +172,26 @@ describe('hintFor', () => {
     expect(
       hintFor(kit, { kind: 'palette-class', class: cls('Gate') }),
     ).toContain('Gate can be connected with');
+  });
+
+  it('names the relations a palette class can take part in, by inheritance', () => {
+    // Agent is a kind of Actor, so Performs and Delegates to start at it; nothing else touches it.
+    expect(hintFor(kit, { kind: 'palette-class', class: cls('Agent') })).toBe(
+      'Agent can be connected with Delegates to or Performs.',
+    );
+    // An Artifact is never the start or end of Performs, which goes from an Actor to a Task.
+    expect(
+      hintFor(kit, { kind: 'palette-class', class: cls('Artifact') }),
+    ).toBe('Artifact can be connected with Approves, Feeds or Produces.');
+    const lineage = Object.values(kit.modelTypes).find(
+      (m) => m.key === 'ArtifactLineage',
+    )!;
+    expect(
+      hintFor(
+        kit,
+        { kind: 'palette-class', class: cls('Task') },
+        { modelType: lineage },
+      ),
+    ).not.toContain('Performs');
   });
 });

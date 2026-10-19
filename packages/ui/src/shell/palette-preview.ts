@@ -1,11 +1,12 @@
 import {
   classChain,
   relationChain,
+  describeRelationEnds,
   effectiveAttributes,
-  effectiveEnds,
   effectiveRelationAttributes,
   type AttributeDef,
   type ClassDef,
+  type ModelTypeDef,
   type RelationDef,
   type Kit,
 } from '@metakit-app/core';
@@ -32,9 +33,9 @@ export interface PreviewInfo {
   /** The first attributes; `moreAttributes` counts the rest. */
   attributes: PreviewAttribute[];
   moreAttributes: number;
-  /** Relations only: the classes allowed at each end, by label. */
+  /** Relations only: the concrete classes allowed at each end, by label. */
   ends: { from: string[]; to: string[] } | null;
-  /** Relations only: "Performs: from Actor to Task". */
+  /** Relations only: "Connects an Agent or a Human to a Task." */
   sentence: string | null;
 }
 
@@ -132,40 +133,36 @@ export function previewOfClass(
   };
 }
 
-/** The card for a relation class: its attributes and which classes it joins. */
+/**
+ * The card for a relation class: its attributes and which classes it joins, named as the concrete
+ * classes a modeller can place (and only those of the model type, when it is given).
+ */
 export function previewOfRelation(
   kit: Kit,
   rel: RelationDef,
   language = 'en',
+  modelType?: ModelTypeDef,
 ): PreviewInfo {
   let defs: AttributeDef[] = rel.attributes;
-  let ends = { from: rel.from, to: rel.to };
   try {
     defs = effectiveRelationAttributes(kit, rel.id);
-    ends = effectiveEnds(kit, rel.id);
   } catch {
     // See previewOfClass.
   }
-  const names = (ids: string[]) =>
-    ids.map((id) => {
-      const c = kit.classes[id as keyof typeof kit.classes];
-      return c ? labelOf(c, language) : id;
-    });
-  const from = names(ends.from);
-  const to = names(ends.to);
-  const list = (items: string[]) =>
-    items.length === 0 ? 'any object' : items.join(' or ');
-  const title = labelOf(rel, language);
+  const ends = describeRelationEnds(kit, rel, {
+    language,
+    ...(modelType ? { modelType } : {}),
+  });
   return {
     kind: 'relation',
     kindLabel: 'Relation',
-    title,
+    title: labelOf(rel, language),
     key: rel.key,
     help:
       helpOf(rel.help, language) ??
       inheritedHelp(() => relationChain(kit, rel.id), language),
     ...attributesOf(defs, language),
-    ends: { from, to },
-    sentence: `${title}: from ${list(from)} to ${list(to)}`,
+    ends: { from: ends.from, to: ends.to },
+    sentence: ends.sentence,
   };
 }

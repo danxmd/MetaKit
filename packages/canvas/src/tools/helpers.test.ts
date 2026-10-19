@@ -71,6 +71,18 @@ describe('allowedRelations', () => {
     const kit = loadKit('bpmn-lite');
     expect(refusalReason(kit, 'cls_lane', 'cls_task')).toContain('Lane');
   });
+
+  it('puts a or an before the names and says what the relation does connect', () => {
+    const kit = loadKit('bpmn-lite');
+    const flow = kit.relations['rel_flow' as keyof typeof kit.relations]!;
+    expect(refusalReason(kit, 'cls_end', 'cls_lane', flow)).toBe(
+      'A "Sequence flow" connector cannot go from an End event to a Lane in this model type. ' +
+        'It connects an End event, a Gateway, a Start event or a Task to an End event, a Gateway, a Start event or a Task.',
+    );
+    expect(refusalReason(kit, 'cls_end', 'cls_lane')).toBe(
+      'No relation allows a connector from an End event to a Lane in this model type.',
+    );
+  });
 });
 
 describe('snapMove', () => {

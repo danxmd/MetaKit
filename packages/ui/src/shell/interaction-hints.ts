@@ -1,4 +1,15 @@
-import type { ClassDef, RelationDef, Kit } from '@metakit-app/core';
+import {
+  allowsEnd,
+  labelOfDef,
+  modelTypeAllowsRelation,
+  orList,
+  withArticle,
+  type ClassDef,
+  type ModelTypeDef,
+  type RelationDef,
+  type RelationId,
+  type Kit,
+} from '@metakit-app/core';
 import { describeEnds } from './suggestions';
 
 /**
@@ -15,7 +26,42 @@ export type HintState =
   | { kind: 'connector'; relation: RelationDef; from: string; to: string }
   | { kind: 'refused'; reason: string };
 
-export function hintFor(kit: Kit, state: HintState): string {
+export interface HintOptions {
+  language?: string;
+  /** Limits what the hints name to what this model type allows. */
+  modelType?: ModelTypeDef;
+}
+
+/** Whether a relation may start or end at elements of the class (by inheritance). */
+function connectsClass(
+  kit: Kit,
+  relation: RelationDef,
+  cls: ClassDef,
+  modelType: ModelTypeDef | undefined,
+): boolean {
+  if (relation.abstract) return false;
+  if (modelType && !modelTypeAllowsRelation(kit, modelType, relation.id))
+    return false;
+  try {
+    return (
+      allowsEnd(kit, relation.id as RelationId, 'from', cls.id) ||
+      allowsEnd(kit, relation.id as RelationId, 'to', cls.id)
+    );
+  } catch {
+    // A broken inheritance chain is reported in Build mode.
+    return false;
+  }
+}
+
+export function hintFor(
+  kit: Kit,
+  state: HintState,
+  options: HintOptions = {},
+): string {
+  const language = options.language ?? 'en';
+  const ends = (relation: RelationDef) => describeEnds(kit, relation, options);
+  const name = (def: { key: string; labels?: Record<string, string> }) =>
+    labelOfDef(def, language);
   switch (state.kind) {
     case 'idle':
       return state.selected === 0
@@ -24,32 +70,25 @@ export function hintFor(kit: Kit, state: HintState): string {
           ? 'Edit the attributes on the right. Drag the handles to resize. Delete removes it.'
           : `${state.selected} selected. Drag to move them together, or use Arrange to align them.`;
     case 'place':
-      return `Click on the canvas to place a ${state.class.key}. Press Escape to stop.`;
+      return `Click on the canvas to place ${withArticle(name(state.class))}. Press Escape to stop.`;
     case 'connect':
       return state.picked
-        ? `Now click the concept where the ${state.relation.key} should end. ${describeEnds(kit, state.relation)}`
-        : `Click the concept where the ${state.relation.key} should start. ${describeEnds(kit, state.relation)}`;
+        ? `Let go on an outlined concept where the ${name(state.relation)} should end. ${ends(state.relation)}`
+        : `Press on an outlined concept where the ${name(state.relation)} should start and drag to where it ends. ${ends(state.relation)}`;
     case 'palette-relation':
-      return describeEnds(kit, state.relation);
+      return ends(state.relation);
     case 'palette-class': {
-      const uses = Object.values(kit.relations).filter(
-        (r) =>
-          (!r.abstract &&
-            (r.from.length === 0 ||
-              r.from.some(
-                (c) => c === state.class.id || kit.classes[c]?.abstract,
-              ))) ||
-          r.to.some((c) => c === state.class.id),
-      );
+      const cls = state.class;
+      const uses = Object.values(kit.relations)
+        .filter((r) => connectsClass(kit, r, cls, options.modelType))
+        .map(name)
+        .sort((a, b) => a.localeCompare(b));
       return uses.length === 0
-        ? `${state.class.key}: click on the canvas to place it.`
-        : `${state.class.key} can be connected with ${uses
-            .map((r) => r.key)
-            .sort()
-            .join(', ')}.`;
+        ? `${name(cls)}: click on the canvas to place it.`
+        : `${name(cls)} can be connected with ${orList(uses)}.`;
     }
     case 'connector':
-      return `${state.relation.key}: ${state.from} to ${state.to}. ${describeEnds(kit, state.relation)}`;
+      return `${name(state.relation)}: ${state.from} to ${state.to}. ${ends(state.relation)}`;
     case 'refused':
       return state.reason;
   }

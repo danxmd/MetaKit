@@ -1,6 +1,9 @@
 import {
   allowsEnd,
+  describeRelationEnds,
+  labelOfDef,
   modelTypeAllowsRelation,
+  withArticle,
   type ClassId,
   type RelationId,
   type ModelTypeDef,
@@ -63,15 +66,29 @@ export function canConnectAt(
   );
 }
 
-/** Why no relation fits, in plain English, for the message shown when a drop is refused. */
+/**
+ * Why no relation fits, in plain English, for the message shown when a drop is refused. With a
+ * chosen relation it also says what that relation does connect.
+ */
 export function refusalReason(
   kit: Kit,
   fromClass: ClassId,
   toClass: ClassId,
   relation?: RelationDef,
+  modelType?: ModelTypeDef,
 ): string {
-  const name = (id: ClassId) => kit.classes[id]?.key ?? id;
-  if (relation)
-    return `A "${relation.key}" cannot go from a ${name(fromClass)} to a ${name(toClass)} in this model type.`;
-  return `No relation allows a connector from a ${name(fromClass)} to a ${name(toClass)} in this model type.`;
+  const name = (id: ClassId) => {
+    const c = kit.classes[id];
+    return withArticle(c ? labelOfDef(c) : id);
+  };
+  const between = `from ${name(fromClass)} to ${name(toClass)} in this model type.`;
+  if (!relation) return `No relation allows a connector ${between}`;
+  const label = labelOfDef(relation);
+  const article = withArticle(label).split(' ')[0]!;
+  const { phrase } = describeRelationEnds(
+    kit,
+    relation,
+    modelType ? { modelType } : {},
+  );
+  return `${article === 'an' ? 'An' : 'A'} "${label}" connector cannot go ${between} It connects ${phrase}.`;
 }

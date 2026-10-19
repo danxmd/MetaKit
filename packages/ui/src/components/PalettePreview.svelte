@@ -49,6 +49,17 @@
   {#if info.sentence}
     <p class="ends" data-testid="palette-preview-ends">{info.sentence}</p>
   {/if}
+  {#if info.ends && info.ends.from.length + info.ends.to.length > 3}
+    <!-- A long sentence is easier to read as two lists. -->
+    <dl class="end-lists">
+      <dt>From</dt>
+      <dd data-testid="palette-preview-from">
+        {info.ends.from.join(', ') || '–'}
+      </dd>
+      <dt>To</dt>
+      <dd data-testid="palette-preview-to">{info.ends.to.join(', ') || '–'}</dd>
+    </dl>
+  {/if}
   {#if info.help}
     <p class="help" data-testid="palette-preview-help">{info.help}</p>
   {/if}
@@ -116,6 +127,15 @@
     font-size: var(--text-s);
     font-weight: 600;
     color: var(--text-strong);
+  }
+  .end-lists {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--gap-1) var(--gap-2);
+    font-size: var(--text-s);
+  }
+  .end-lists dt {
+    color: var(--text-faint);
   }
   .help {
     font-size: var(--text-s);

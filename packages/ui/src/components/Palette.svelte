@@ -1,7 +1,12 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import type { EditorTool, PreviewTarget } from '@metakit-app/canvas';
-  import type { ClassId, RelationId, Kit } from '@metakit-app/core';
+  import type {
+    ClassId,
+    ModelTypeDef,
+    RelationId,
+    Kit,
+  } from '@metakit-app/core';
   import { labelOf, type Palette } from '../shell/palette';
   import {
     previewOfClass,
@@ -23,6 +28,7 @@
     viewId = '',
     onViewChange,
     language = 'en',
+    modelType,
   }: {
     kit: Kit;
     palette: Palette;
@@ -38,6 +44,8 @@
     /** Gets the list itself, so that a rule that cancels the switch can put the old view back. */
     onViewChange?: (select: HTMLSelectElement) => void;
     language?: string;
+    /** The model type of the open model; relation cards name only the classes it allows. */
+    modelType?: ModelTypeDef;
   } = $props();
 
   /** The entry the card is about, and where the card goes. */
@@ -101,7 +109,7 @@
       event,
       rel.id,
       { relation: rel.id },
-      () => previewOfRelation(kit, rel, language),
+      () => previewOfRelation(kit, rel, language, modelType),
       delay,
     );
 
