@@ -171,7 +171,24 @@
           : `build.${section}`,
   );
   $effect(() => pushDocsContext(docsContextNow));
-  let showPreview = $state(true);
+  // Try it stays open or closed as the person last left it, per browser where that is possible.
+  const PREVIEW_KEY = 'metakit.build.preview';
+  function readPreviewChoice(): boolean {
+    try {
+      return localStorage.getItem(PREVIEW_KEY) !== 'off';
+    } catch {
+      return true;
+    }
+  }
+  let showPreview = $state(readPreviewChoice());
+  function setPreview(on: boolean) {
+    showPreview = on;
+    try {
+      localStorage.setItem(PREVIEW_KEY, on ? 'on' : 'off');
+    } catch {
+      // Not remembered; it still applies to this page.
+    }
+  }
   let committing = $state(false);
   const git = $derived(app.git);
 
@@ -488,7 +505,7 @@
     <button
       type="button"
       aria-pressed={showPreview}
-      onclick={() => (showPreview = !showPreview)}
+      onclick={() => setPreview(!showPreview)}
       data-testid="build-preview-toggle"
       data-tour="build-try">Try it</button
     >
@@ -731,7 +748,7 @@
     </main>
     {#if showPreview}
       <aside class="dock" aria-label="Try it">
-        <KitPreview {kit} onCollapse={() => (showPreview = false)} />
+        <KitPreview {kit} onCollapse={() => setPreview(false)} />
       </aside>
     {/if}
   </div>

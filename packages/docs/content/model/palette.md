@@ -26,7 +26,9 @@ The Kit decides the content. The palette shows only the classes and relations th
 
 ## Where to find it
 
-Left side of the model view, 13.5 rem wide. It scrolls when the list is long.
+Left side of the model view, 13.5 rem wide, under the heading **Palette**. It scrolls when the list is long.
+
+To give the canvas more room, click the **×** in the header ("Hide palette"), or untick **Palette** in the **View** menu ([[menu-view]]). A slim strip with an arrow stays on the left; click it ("Show palette") to bring the palette back. Your browser remembers the choice. While the palette is hidden, the tool you chose stays active, and **Escape** still goes back to **Select**.
 
 ## How to use it
 

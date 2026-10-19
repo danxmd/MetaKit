@@ -107,6 +107,99 @@ test.describe('the toolbar menus', () => {
     await expect(page.getByTestId('minimap')).toBeVisible();
   });
 
+  test('the palette and the attribute panel hide separately from the View menu', async ({
+    page,
+  }) => {
+    await openPipeline(page);
+    const canvasWidth = async () =>
+      (await page.getByTestId('canvas-host').boundingBox())!.width;
+    const full = await canvasWidth();
+
+    await chooseFromMenu(page, 'View', 'palette-toggle');
+    await expect(page.getByTestId('palette')).toHaveCount(0);
+    await expect(page.getByTestId('attribute-panel')).toBeVisible();
+    await expect(page.getByTestId('show-palette')).toBeVisible();
+    // The canvas follows the freed space.
+    await expect.poll(canvasWidth).toBeGreaterThan(full + 150);
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const { view } = (
+            window as unknown as { __metakit: { view: { width: number } } }
+          ).__metakit;
+          return view.width;
+        }),
+      )
+      .toBeGreaterThan(full + 150);
+    let menu = await openMenu(page, 'View');
+    await expect(menu.getByTestId('palette-toggle')).toHaveAttribute(
+      'aria-checked',
+      'false',
+    );
+    await expect(menu.getByTestId('attributes-toggle')).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    await page.keyboard.press('Escape');
+
+    await chooseFromMenu(page, 'View', 'attributes-toggle');
+    await expect(page.getByTestId('attribute-panel')).toHaveCount(0);
+    await expect(page.getByTestId('show-attributes')).toBeVisible();
+    const both = await canvasWidth();
+    expect(both).toBeGreaterThan(full + 400);
+
+    await chooseFromMenu(page, 'View', 'palette-toggle');
+    await expect(page.getByTestId('palette')).toBeVisible();
+    await expect(page.getByTestId('attribute-panel')).toHaveCount(0);
+    menu = await openMenu(page, 'View');
+    await expect(menu.getByTestId('palette-toggle')).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    await menu.getByTestId('attributes-toggle').click();
+    await expect(page.getByTestId('attribute-panel')).toBeVisible();
+  });
+
+  test('the side bars close with × and come back from their edge, and stay as left after a reload', async ({
+    page,
+  }) => {
+    await openPipeline(page);
+    await page.getByRole('button', { name: 'Hide palette' }).click();
+    await page.getByRole('button', { name: 'Hide attribute panel' }).click();
+    await expect(page.getByTestId('palette')).toHaveCount(0);
+    await expect(page.getByTestId('attribute-panel')).toHaveCount(0);
+
+    // Selecting an object does not bring the panel back.
+    await page.evaluate(() => {
+      const { editor, store } = (
+        window as unknown as {
+          __metakit: {
+            editor: { select(ids: string[]): void };
+            store: { state: { elements: Record<string, unknown> } };
+          };
+        }
+      ).__metakit;
+      editor.select([Object.keys(store.state.elements)[0]!]);
+    });
+    await expect(page.getByTestId('attribute-panel')).toHaveCount(0);
+
+    await page.reload();
+    await page.getByTestId('open-folder').click();
+    await page
+      .getByRole('tree')
+      .getByRole('button', { name: 'Code review pipeline' })
+      .click();
+    await expect(page.getByTestId('model-view')).toBeVisible();
+    await expect(page.getByTestId('palette')).toHaveCount(0);
+    await expect(page.getByTestId('attribute-panel')).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Show palette' }).click();
+    await expect(page.getByTestId('palette')).toBeVisible();
+    await page.getByRole('button', { name: 'Show attribute panel' }).click();
+    await expect(page.getByTestId('attribute-panel')).toBeVisible();
+    await expect(page.getByTestId('show-palette')).toHaveCount(0);
+  });
+
   test('Fit to window right after opening shows the whole model, left side included', async ({
     page,
   }) => {

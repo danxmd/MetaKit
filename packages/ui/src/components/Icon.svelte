@@ -10,6 +10,7 @@
     help: 'M7.5 7.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V12M10 15h.01M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z',
     more: 'M5 10h.01M10 10h.01M15 10h.01',
     back: 'M12 15 7 10l5-5',
+    forward: 'm8 15 5-5-5-5',
   } as const;
   export type IconName = keyof typeof PATHS;
 </script>

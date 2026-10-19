@@ -68,6 +68,22 @@ test.describe('Build view structure', () => {
     await expect(page.getByTestId('kit-preview')).toBeVisible();
   });
 
+  test('the preview stays closed when the Kit is opened again', async ({
+    page,
+  }) => {
+    await openNewKit(page);
+    await page.getByTestId('build-preview-toggle').click();
+    await expect(page.getByTestId('kit-preview')).toHaveCount(0);
+    await page.getByTestId('crumb-area').click();
+    await page.locator('[data-testid^="edit-kit-"]').first().click();
+    await expect(page.getByTestId('build-view')).toBeVisible();
+    await expect(page.getByTestId('kit-preview')).toHaveCount(0);
+    await expect(page.getByTestId('build-preview-toggle')).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+  });
+
   test('follows the dark theme', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'light' });
     await openNewKit(page);

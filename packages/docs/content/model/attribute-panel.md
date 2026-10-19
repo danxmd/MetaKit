@@ -16,7 +16,9 @@ The panel is the right-hand column of the [[page-model-view|model view]], 20 rem
 
 ## Where to find it
 
-Right side of the model view. Select an object or a connection on the canvas and the panel fills.
+Right side of the model view, under the heading **Attributes**. Select an object or a connection on the canvas and the panel fills.
+
+To give the canvas more room, click the **×** in the header ("Hide attribute panel"), or untick **Attribute panel** in the **View** menu ([[menu-view]]). A slim strip with an arrow stays on the right; click it ("Show attribute panel") to bring the panel back. Your browser remembers the choice. Selecting an object does not open a hidden panel.
 
 ## How to use it
 

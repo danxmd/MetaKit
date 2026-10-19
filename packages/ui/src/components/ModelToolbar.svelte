@@ -29,6 +29,10 @@
     onExport,
     minimapOn,
     onToggleMinimap,
+    paletteOn,
+    onTogglePalette,
+    attributesOn,
+    onToggleAttributes,
     assist,
     onAssist,
     problemsOpen,
@@ -60,6 +64,10 @@
     onExport: () => void;
     minimapOn: boolean;
     onToggleMinimap: () => void;
+    paletteOn: boolean;
+    onTogglePalette: () => void;
+    attributesOn: boolean;
+    onToggleAttributes: () => void;
     /** Help while modelling; a preference of the person, not part of the model. */
     assist: ModelingAssist;
     onAssist: (patch: Partial<ModelingAssist>) => void;
@@ -134,6 +142,19 @@
           aria-checked={minimapOn}
           onclick={onToggleMinimap}
           data-testid="minimap-toggle">{minimapOn ? '✓ ' : ''}Minimap</button
+        >
+        <button
+          role="menuitemcheckbox"
+          aria-checked={paletteOn}
+          onclick={onTogglePalette}
+          data-testid="palette-toggle">{paletteOn ? '✓ ' : ''}Palette</button
+        >
+        <button
+          role="menuitemcheckbox"
+          aria-checked={attributesOn}
+          onclick={onToggleAttributes}
+          data-testid="attributes-toggle"
+          >{attributesOn ? '✓ ' : ''}Attribute panel</button
         >
         <div class="menu-sep"></div>
         <div class="menu-heading">Assistance</div>

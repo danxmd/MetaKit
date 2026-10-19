@@ -67,7 +67,7 @@ Open the sample model **Code review pipeline** from the Agent pipeline Kit. The 
 ## Good to know
 
 - You never press a save button. Every change is saved as you make it. See [[concepts-no-server]].
-- The layout is fixed: palette 13.5 rem wide, panel 20 rem wide. The canvas takes the rest.
+- The palette is 13.5 rem wide and the panel 20 rem. The canvas takes the rest. To give the canvas more room, close either side bar with the **×** in its header or from the **View** menu. A slim strip with an arrow stays at the edge; click it (**Show palette** or **Show attribute panel**) to bring the side bar back. Your browser remembers the choice for every model. See [[menu-view]].
 - If the Kit changes in Build mode while you work, the canvas and the panel follow the change at once.
 - Chrome and Edge on a desktop computer are supported. See [[browser-support]].
 
