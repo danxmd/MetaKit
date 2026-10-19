@@ -56,6 +56,7 @@ interface Point {
 const TASK = 'cls_task';
 const START = 'cls_start';
 const LANE = 'cls_lane';
+const FLOW = 'rel_flow';
 
 async function setup(page: Page) {
   await loadHarness(page, './canvas-harness.ts');
@@ -220,6 +221,44 @@ test.describe('containers and swimlanes', () => {
     await page.mouse.up();
     expect((await t.el(start)).parent).toBeUndefined();
     expect(await t.el(lane)).toMatchObject({ w: 500, h: 300 });
+  });
+
+  test('a connector between two tasks in a swimlane can be clicked over the lane fill', async ({
+    page,
+  }) => {
+    const t = await setup(page);
+    const lane = await t.create(LANE, 50, 50, 500, 300);
+    const a = await t.create(TASK, 100, 150, 120, 60, lane);
+    const b = await t.create(TASK, 350, 150, 120, 60, lane);
+    const cn = (await call(page, 'exec', {
+      type: 'createConnector',
+      relation: FLOW,
+      from: a,
+      to: b,
+    } as never)) as string;
+    const click = async (p: Point) => {
+      const c = await call(page, 'client', p);
+      await page.mouse.click(c.x, c.y);
+    };
+    // The line runs from x 220 to 350 at y 180, over the lane's fill.
+    await click({ x: 285, y: 180 });
+    expect(await call(page, 'selection')).toEqual({
+      elements: [],
+      connectors: [cn],
+    });
+    // Empty lane space still selects the lane.
+    await click({ x: 480, y: 320 });
+    expect(await call(page, 'selection')).toEqual({
+      elements: [lane],
+      connectors: [],
+    });
+    // A double click on the line adds a bend to it rather than editing the lane.
+    const p = await call(page, 'client', { x: 285, y: 180 });
+    await page.mouse.dblclick(p.x, p.y);
+    expect(
+      (await call(page, 'model')).connectors[cn as never]!.bends,
+    ).toHaveLength(1);
+    expect((await call(page, 'selection')).connectors).toEqual([cn]);
   });
 
   test('creating an element from the palette inside a swimlane sets its parent', async ({

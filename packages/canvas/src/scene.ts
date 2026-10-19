@@ -702,6 +702,19 @@ export class Scene {
   }
 
   /**
+   * The item drawn on top at a point, for clicks: an object, then a connector, then a container
+   * (inner before outer). Containers are drawn below the connectors, so a line over a
+   * container's fill is what the person sees and clicks there.
+   */
+  itemAt(p: Point, tolerance: number): Item | undefined {
+    const element = this.elementAt(p);
+    // Ranks put every container below every other object, so a container on top means no
+    // other object is under the point.
+    if (element && !element.container) return element;
+    return this.connectorAt(p, tolerance) ?? element;
+  }
+
+  /**
    * Elements and connectors for a rubber band. `inside` asks for items that lie fully in the
    * rectangle; otherwise any overlap counts.
    */

@@ -75,7 +75,7 @@ Messages show over the canvas for six seconds. See [[status-and-messages]].
 
 Without bend points the line leaves the facing edges of the two objects and turns at right angles in the middle. With bend points it runs in straight pieces through them. The arrowheads and line style come from the Kit.
 
-Connections are drawn above containers and swimlanes and below every other object, so a line between two objects in the same lane stays visible. See [[containers-swimlanes]].
+Connections are drawn above containers and swimlanes and below every other object, so a line between two objects in the same lane stays visible. Clicks follow the same order: click the line over the lane to select it or double-click it to add a bend; click empty lane space to select the lane. See [[containers-swimlanes]].
 
 ## Examples
 

@@ -593,9 +593,10 @@ export class Editor {
       if (item && this.startConnectorGesture(item, world, screen)) return;
     }
 
-    // 4. An element.
-    const hit = scene.elementAt(world);
-    if (hit) {
+    // 4. An element or 5. a connector, whichever is drawn on top: a connector over a
+    // container's fill wins over the container.
+    const hit = scene.itemAt(world, this.hitTolerance());
+    if (hit?.kind === 'element') {
       const selected = elements.has(hit.id);
       let collapseTo: ElementId | null = null;
       if (e.shiftKey) {
@@ -634,15 +635,17 @@ export class Editor {
     }
 
     // 5. A connector.
-    const c = scene.connectorAt(world, this.hitTolerance());
-    if (c) {
+    if (hit) {
       if (e.shiftKey) {
         const next = new Set(connectors);
-        if (next.has(c.id)) next.delete(c.id);
-        else next.add(c.id);
+        if (next.has(hit.id)) next.delete(hit.id);
+        else next.add(hit.id);
         this.setSelection({ elements: new Set(elements), connectors: next });
       } else {
-        this.setSelection({ elements: new Set(), connectors: new Set([c.id]) });
+        this.setSelection({
+          elements: new Set(),
+          connectors: new Set([hit.id]),
+        });
       }
       return;
     }
@@ -813,7 +816,8 @@ export class Editor {
         }
       }
     }
-    surface.style.cursor = this.view.scene.elementAt(world) ? 'move' : '';
+    const hit = this.view.scene.itemAt(world, this.hitTolerance());
+    surface.style.cursor = hit?.kind === 'element' ? 'move' : '';
   }
 
   private moveGesture(
@@ -1267,13 +1271,13 @@ export class Editor {
         }
       }
     }
-    const element = scene.elementAt(world);
-    if (element) {
-      this.host.onEditText?.(element.id);
+    const hit = scene.itemAt(world, this.hitTolerance());
+    if (hit?.kind === 'element') {
+      this.host.onEditText?.(hit.id);
       return;
     }
-    const connector = scene.connectorAt(world, this.hitTolerance());
-    if (connector) {
+    if (hit) {
+      const connector = hit;
       const segment = nearestSegment(world, connector.route);
       const index =
         connector.bends.length === 0
