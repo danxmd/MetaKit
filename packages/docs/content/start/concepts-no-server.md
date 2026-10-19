@@ -39,6 +39,7 @@ What stays where:
 | The folder you last used | In your browser (IndexedDB), as a permission handle. |
 | Your name and colour | In your browser (IndexedDB). |
 | Look and light or dark choice | In your browser (local storage). See [[theme]]. |
+| When MetaKit last looked for a new version | In your browser (local storage). See [[update-notice]]. |
 | Git tokens, assistant key, script permissions | In your browser (IndexedDB) only. Never in the workspace folder. See [[git-tokens]]. |
 
 Things that do leave your computer, only when you ask for them:
@@ -46,6 +47,8 @@ Things that do leave your computer, only when you ask for them:
 - **Git mode** talks to GitHub or GitLab to read and write a Kit ([[git-mode]]).
 - **The assistant**, if you switch it on, sends Kit definitions (not model data) to the AI service with your own key ([[assistant-privacy]]).
 - **Scripts** can use the network only if you grant the permission ([[script-permissions]]).
+
+One thing happens by itself, and only in a copy of MetaKit you run yourself (not on GitHub Pages): once a day it asks GitHub for the latest release, to tell you about a newer version. The request is read-only and sends nothing of yours: no files, no name, no token ([[update-notice]]).
 
 ## Examples
 
@@ -65,3 +68,4 @@ A consultant works on a customer's laptop. The Agent pipeline workspace sits in 
 - [[git-tokens]]
 - [[assistant-privacy]]
 - [[file-formats]]
+- [[update-notice]]

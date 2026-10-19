@@ -20,6 +20,7 @@ The page has two columns (one on a narrow window). The left column holds the hea
   2. **Add a Kit, or build one.** A Kit defines the kinds of objects, connections, shapes and rules. Use a ready-made one or make your own in Build.
   3. **Model.** Draw models with the Kit in Model. Several people can work in the same folder at once.
 - **Tutorials** and **Help**, at the top right. **Tutorials** opens the Tutorials page with the guided tours ([[guided-tours]]); **Help** opens the Help side bar ([[docs-help]]).
+- **Update notice**, below the buttons, only when you run your own copy of MetaKit and a newer version is out: "MetaKit 0.2.0 is available (you have 0.1.0)." See [[update-notice]].
 - **What is a workspace folder?** A normal folder with plain JSON files. Keep it in OneDrive, SharePoint, Google Drive or Dropbox and your team shares it through that service. MetaKit runs in your browser and uploads nothing anywhere. See [[concepts-workspace]] and [[concepts-no-server]].
 
 ## Where to find it
@@ -64,6 +65,7 @@ It opens by itself when you start MetaKit, and again after you choose **Close wo
 | **Help** | Opens or closes the Help side bar (also `F1`). |
 | Buttons are greyed out | MetaKit is busy opening or creating. Wait a moment. |
 | Red message below the buttons | An error from opening the folder, quoted below. |
+| "MetaKit X is available (you have Y)." | A newer version is out. **release page** opens it on GitHub; **Dismiss** hides the notice for that version. See [[update-notice]]. |
 | Warning "Local folders need Chrome or Edge on a desktop computer. This browser cannot open them, so MetaKit cannot start here." | Unsupported browser. See [[browser-support]]. |
 
 Error messages you may see:
@@ -79,7 +81,7 @@ Anna opens MetaKit for the first time, picks `C:\Work\Pipelines` (empty), types 
 
 ## Good to know
 
-- **Footer.** At the bottom of the page are a link to the source code on GitHub and **Buy me a coffee**, where you can support MetaKit's development. Both open in a new tab; MetaKit stays free either way.
+- **Footer.** At the bottom of the page are the version you run ("MetaKit 0.1.0 is free and open source."), a link to the source code on GitHub and **Buy me a coffee**, where you can support MetaKit's development. Both links open in a new tab; MetaKit stays free either way. See [[update-notice]].
 - **MetaKit never deletes or changes your other files.** A workspace is added next to them.
 - **The remembered folder is kept in this browser only** (IndexedDB), not in the folder. On another computer you choose it again.
 - **Closing the workspace** does not delete anything; it only returns to this page.
@@ -94,3 +96,4 @@ Anna opens MetaKit for the first time, picks `C:\Work\Pipelines` (empty), types 
 - [[guided-tours]]
 - [[profile]]
 - [[page-models]]
+- [[update-notice]]
