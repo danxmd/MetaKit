@@ -82,7 +82,7 @@ In the Agent pipeline Kit the **Objects** list shows **Agent**, **Artifact**, **
 - The names are the labels the method engineer gave to the classes and relations.
 - The palette view is not remembered. A new visit starts with **All**.
 
-> **Tip**: Hover over a relation to read, for example, "Performs: from Actor to Task". That tells you what it can connect. An abstract class such as Actor stands for all its subclasses, here Agent and Human.
+> **Tip**: Hover over a relation to read, for example, "Connects an Agent or a Human to a Task." That tells you what it can connect. The Kit may list an abstract class such as Actor; the card names the classes you can place instead, here Agent and Human.
 
 ## Related
 

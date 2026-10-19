@@ -55,13 +55,13 @@ In the **Identity** block of a class: the **Extends** list and the **Abstract (o
 | Place | Rule |
 | --- | --- |
 | Model type | A class is allowed when it or any of its parents is ticked in **Classes allowed in the model**. |
-| Relation class end | **From** and **To** allow the listed classes and all their children. |
+| Relation class end | **From** and **To** allow the listed classes and all their children. The relation editor, the palette card and the hints name the concrete classes, so modellers read "Agent or Human" rather than "Actor". |
 | Palette | Abstract classes are left out; their concrete children are offered. |
 | View | A view that lists an abstract class brings in its concrete children. |
 
 ## Examples
 
-In the Agent pipeline Kit, **Actor** is abstract and owns **Name** (required, default "New actor"), **Role** and **Notes**. **Agent** extends Actor and adds the group Agent: AgentKind, Autonomy, ModelName, CostLimit and Capabilities. **Human** extends Actor and adds Team and Availability. The relation class **Performs** allows only **Actor** at From, so Agent and Human can both perform a Task, and **DelegatesTo** goes from Actor to Actor.
+In the Agent pipeline Kit, **Actor** is abstract and owns **Name** (required, default "New actor"), **Role** and **Notes**. **Agent** extends Actor and adds the group Agent: AgentKind, Autonomy, ModelName, CostLimit and Capabilities. **Human** extends Actor and adds Team and Availability. The relation class **Performs** allows only **Actor** at From, so Agent and Human can both perform a Task, and **DelegatesTo** goes from Actor to Actor. In Model mode the palette card of Performs says "Connects an Agent or a Human to a Task."
 
 ## Good to know
 

@@ -47,7 +47,7 @@ These are examples of what a message can say:
 
 | Message | Cause |
 | --- | --- |
-| `A "Performs" cannot go from a Agent to a Human in this model type.` | A refused connection. See [[connecting-objects]]. |
+| `A "Performs" connector cannot go from an Agent to a Human in this model type. It connects an Agent or a Human to a Task.` | A refused connection. See [[connecting-objects]]. |
 | `A connector needs two different elements.` | You dropped a connection on its own start. |
 | `This kind of object has no text to edit. Use the panel on the right.` | Double-click on an object without a text attribute. See [[editing-labels]]. |
 | `Anna is editing this text too. You can go on; the last change wins.` | Someone else has the same text open. |
@@ -78,7 +78,7 @@ Rules and scripts can show messages of three kinds: information, warning and err
 
 ## Examples
 
-With **Performs** chosen in the palette, you drag from the agent **Planner** onto the human **Sam**. Nothing is created, but a message says that a Performs cannot go from an Agent to a Human. Aim at a task instead and try again.
+With **Performs** chosen in the palette, you drag from the agent **Planner** onto the human **Sam**. Nothing is created, but a message says that a Performs connector cannot go from an Agent to a Human, and that it connects an Agent or a Human to a Task. Aim at a task instead and try again.
 
 ## Good to know
 

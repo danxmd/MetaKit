@@ -22,8 +22,8 @@ In the **Relations** list of the [[palette]], and on the canvas. [[smart-modelli
 
 Way 1, with the palette:
 
-1. Click a relation under **Relations**, for example **Performs**. The cursor is a crosshair. Objects where this relation can start are outlined when you point at them.
-2. Press on the start object and keep the button down.
+1. Click a relation under **Relations**, for example **Performs**. The cursor is a crosshair. Every object where this relation can start gets a soft dashed outline, and the one under the pointer a solid one.
+2. Press on the start object and keep the button down. Now the objects where the connection can end are outlined instead.
 3. Drag to the end object. A line follows the pointer. It is shown as allowed when the relation fits, and the end object is outlined.
 4. Let go. The connection appears.
 5. Draw more with the same relation, or press **Escape**, right-click, or click **Select** to stop.
@@ -32,7 +32,7 @@ Way 2, from the edge of an object:
 
 1. Click an object to select it.
 2. Move the pointer to its edge (about 6 pixels wide band). The cursor becomes a crosshair.
-3. Press, drag to another object and let go.
+3. Press, drag to another object and let go. While you drag, the objects that some relation can join to this one are outlined.
 4. If more than one relation fits, a small menu lists them by name. Click one, or click **Cancel**. If only one fits it is used at once.
 
 Change an existing connection:
@@ -65,8 +65,8 @@ Change an existing connection:
 
 ### Messages when a connection is refused
 
-- `A "Performs" cannot go from a Agent to a Human in this model type.` appears when the chosen relation does not allow these two kinds. The names are the keys of the relation and the classes, in the pattern `A "<relation>" cannot go from a <class> to a <class> in this model type.`
-- `No relation allows a connector from a Artifact to a Artifact in this model type.` appears when you drag from the edge and no relation fits at all.
+- `A "Performs" connector cannot go from an Agent to a Human in this model type. It connects an Agent or a Human to a Task.` appears when the chosen relation does not allow these two kinds. The names are the labels of the relation and the classes, and the second sentence says what the relation does connect.
+- `No relation allows a connector from an Artifact to an Artifact in this model type.` appears when you drag from the edge and no relation fits at all.
 - `A connector needs two different elements.` appears when you drop on the object you started from.
 
 Messages show over the canvas for six seconds. See [[status-and-messages]].
@@ -79,7 +79,7 @@ Connections are drawn above containers and swimlanes and below every other objec
 
 ## Examples
 
-In the Code review pipeline, click **Performs**, press on the agent **Planner**, drag to the task **Draft plan** and let go. The connection is created. Now press on **Planner** and drop on **Sam**, a **Human**, with **Performs** still chosen. Nothing is created. The message says that a **Performs** cannot go from an Agent to a Human, because the Kit says **Performs** goes from an *Actor* (an Agent or a Human) to a *Task*.
+In the Code review pipeline, click **Performs**, press on the agent **Planner**, drag to the task **Draft plan** and let go. The connection is created. Now press on **Planner** and drop on **Sam**, a **Human**, with **Performs** still chosen. Nothing is created. The message says that a **Performs** connector cannot go from an Agent to a Human, and that it connects an Agent or a Human to a Task. The Kit lists the abstract *Actor* at the start, which stands for both.
 
 Select the **Merge** task and drag from its edge to the gate **Code review**. Only **Hands over to** fits Task to Gate, so no menu appears. Drag from an artifact to a task: only **Feeds** fits, and it is created.
 

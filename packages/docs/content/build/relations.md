@@ -23,7 +23,7 @@ Open Build mode, choose **Relation classes** under **Metamodel** and click a rel
 ## How to use it
 
 1. Type a name in **New relation class** (for example "Assigned to") and press **Add**. The key becomes `Assignedto` and the label stays "Assigned to". A grey arrow is its first look.
-2. Under **Connects**, tick the classes allowed at **From** and at **To**.
+2. Under **Connects**, tick the classes allowed at **From** and at **To**. The **Can connect** line above the lists says what the ticks mean for modellers.
 3. Under **Appearance**, press **Edit appearance** to set colour, line style, route and ends ([[appearance-relations]]).
 4. Add attributes of the connection, such as a Role ([[attributes]]).
 5. Allow the relation class in a model type, otherwise modellers cannot use it ([[model-types]]).
@@ -48,7 +48,8 @@ The help line reads: "Leave a list empty to allow what the parent allows. A clas
 
 | Field | What it does |
 | --- | --- |
-| **From (where a connection may start)** | One checkbox for every class, labelled with its key. |
+| **Can connect** | One line that names the classes a modeller can place at each end, for example "Can connect: Agent or Human → Task". An abstract class is named by the classes that extend it, a class that others extend is named once, and inherited lists are used when the relation class's own are empty. "nothing yet" means no class is allowed at that end. |
+| **From (where a connection may start)** | One checkbox for every class, labelled with its key and, when it differs, its label. A class that others extend also says what it brings in: "means Agent or Human" for an abstract class, "and User task" for a class with subclasses. |
 | **To (where it may end)** | The same for the other end. |
 
 - Ticking an abstract class allows all its concrete children.
@@ -73,7 +74,7 @@ Attributes work as in [[attributes]]. In **Constraints** the names `from` and `t
 
 In the Agent pipeline Kit:
 
-- **Performs** goes from **Actor** to **Task** and has a choice attribute **Role** (Responsible, Reviewer, Consulted). Because Actor is abstract and Agent and Human extend it, both can perform a task.
+- **Performs** goes from **Actor** to **Task** and has a choice attribute **Role** (Responsible, Reviewer, Consulted). Because Actor is abstract and Agent and Human extend it, both can perform a task. The **Actor** checkbox says "means Agent or Human", and the summary reads "Can connect: Agent or Human → Task".
 - **HandsOverTo** goes from **Task** or **Gate** to **Task** or **Gate**. Its attributes are **Condition** (Text) and **Handoff** (Automatic or Needs human).
 - **Produces** goes from **Task** to **Artifact**, **Feeds** from **Artifact** to **Task** and **Approves** from **Gate** to **Artifact**. They have no attributes.
 - **DelegatesTo** goes from **Actor** to **Actor** and has a **Scope**.
