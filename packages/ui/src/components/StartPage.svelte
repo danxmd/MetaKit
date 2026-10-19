@@ -1,6 +1,8 @@
 <script lang="ts">
   import SupportFooter from './SupportFooter.svelte';
   import BrandMark from './BrandMark.svelte';
+  import UpdateNotice from './UpdateNotice.svelte';
+  import { APP_VERSION, type Release } from '../shell/update-check';
 
   let {
     supported,
@@ -15,6 +17,8 @@
     helpOpen = false,
     onHelp,
     onTutorials,
+    update = null,
+    onDismissUpdate = () => {},
   }: {
     supported: boolean;
     /** The name of the remembered folder, if there is one. */
@@ -32,6 +36,9 @@
     onHelp: () => void;
     /** Opens the Tutorials page, with the guided tours. */
     onTutorials: () => void;
+    /** A newer release of MetaKit on GitHub, for copies run from a download. */
+    update?: Release | null;
+    onDismissUpdate?: () => void;
   } = $props();
 
   let name = $state('');
@@ -158,6 +165,14 @@
         <p role="alert" class="notice error" data-testid="start-error">
           {error}
         </p>
+      {/if}
+
+      {#if update}
+        <UpdateNotice
+          release={update}
+          current={APP_VERSION}
+          onDismiss={onDismissUpdate}
+        />
       {/if}
     </section>
 

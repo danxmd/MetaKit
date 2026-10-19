@@ -12,8 +12,14 @@
     type PanelState,
   } from '@metakit-app/ui/docs';
   import {
+    APP_VERSION,
     AppController,
+    browserUpdateStorage,
+    checkForUpdate,
+    dismissUpdate,
     provideDocumentBar,
+    updateCheckApplies,
+    type Release,
     ReferenceIndex,
     type DocumentBar,
     type ReferenceServices,
@@ -36,6 +42,7 @@
   import KitImportDialog from '@metakit-app/ui/components/KitImportDialog.svelte';
   import KitsPage from '@metakit-app/ui/components/KitsPage.svelte';
   import TopBar from '@metakit-app/ui/components/TopBar.svelte';
+  import UpdateNotice from '@metakit-app/ui/components/UpdateNotice.svelte';
   import { pageTheme } from '@metakit-app/ui/theme';
   import ModelView from '@metakit-app/ui/components/ModelView.svelte';
   import NewModelDialog from '@metakit-app/ui/components/NewModelDialog.svelte';
@@ -66,6 +73,7 @@
     adapterFor,
     askAccess,
     loadProfile,
+    latestRelease,
     pickFolder,
     saveProfile,
     rememberedFolder,
@@ -106,8 +114,28 @@
   onMount(() => {
     const stopDocs = docsOpen.subscribe((p) => (docs = p));
     void bootProfile();
+    void lookForUpdate();
     return stopDocs;
   });
+
+  // A newer release on GitHub, for copies run from a download (ADR 0015).
+  let update = $state<Release | null>(null);
+  const updateStorage = browserUpdateStorage();
+
+  async function lookForUpdate() {
+    if (!updateCheckApplies(location.hostname)) return;
+    update = await checkForUpdate({
+      current: APP_VERSION,
+      storage: updateStorage,
+      now: Date.now,
+      latest: latestRelease,
+    });
+  }
+
+  function dismissUpdateNotice() {
+    if (update) dismissUpdate(updateStorage, update.version);
+    update = null;
+  }
 
   async function bootProfile() {
     const stored = await loadProfile();
@@ -505,6 +533,8 @@
         helpOpen={docs.open}
         onHelp={toggleDocs}
         onTutorials={showTutorials}
+        {update}
+        onDismissUpdate={dismissUpdateNotice}
       />
     </div>
     {#if docs.open}
@@ -528,6 +558,14 @@
       onProfile={() => (showProfile = true)}
       onCloseWorkspace={closeWorkspace}
     />
+    {#if update}
+      <UpdateNotice
+        release={update}
+        current={APP_VERSION}
+        banner
+        onDismiss={dismissUpdateNotice}
+      />
+    {/if}
     <div class="row">
       <!-- The views fill this box (height: 100%); the home pages scroll inside it. -->
       <div class="content">

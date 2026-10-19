@@ -57,6 +57,8 @@ export interface PrepareOptions {
   layout?: 'current' | 'before-kit-rename';
   /** The Kit to seed, as JSON text; BPMN lite when left out. */
   kit?: string;
+  /** What "GitHub" answers for the latest release; none when left out, so no test asks GitHub. */
+  latestRelease?: { version: string; url: string } | null;
 }
 
 export async function prepare(page: Page, options: PrepareOptions = {}) {
@@ -64,7 +66,7 @@ export async function prepare(page: Page, options: PrepareOptions = {}) {
   // system. It is not remembered: the headless browser used in CI crashes when it is stored.
   const folder = options.folder ?? `ws-${Math.random().toString(36).slice(2)}`;
   await page.addInitScript(
-    ([name, colour, wanted]) => {
+    ([name, colour, wanted, release]) => {
       if (!sessionStorage.getItem('e2e-folder'))
         sessionStorage.setItem('e2e-folder', wanted!);
       (window as unknown as { __METAKIT_TEST__: unknown }).__METAKIT_TEST__ = {
@@ -77,9 +79,15 @@ export async function prepare(page: Page, options: PrepareOptions = {}) {
             { create: true },
           );
         },
+        latestRelease: async () => release,
       };
     },
-    [options.name ?? 'Tester', options.colour ?? '#1971c2', folder],
+    [
+      options.name ?? 'Tester',
+      options.colour ?? '#1971c2',
+      folder,
+      options.latestRelease ?? null,
+    ] as const,
   );
   if (options.seed === false) {
     await page.goto('/MetaKit/');

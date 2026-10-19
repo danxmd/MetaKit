@@ -10,6 +10,7 @@ import {
   type Profile,
   type StorageAdapter,
 } from '@metakit-app/storage';
+import { fetchLatestRelease, type Release } from '@metakit-app/ui';
 
 /**
  * A seam for end-to-end tests, which cannot drive the browser's folder dialog: they provide a
@@ -29,6 +30,8 @@ export interface TestHooks {
     folder: string,
     token: string,
   ) => GitRemote;
+  /** Replaces the question to GitHub for the latest release (ADR 0015); null for none. */
+  latestRelease?: () => Promise<Release | null>;
 }
 
 function hooks(): TestHooks | undefined {
@@ -109,3 +112,13 @@ export async function saveProfile(profile: Profile): Promise<void> {
 
 /** The remote that e2e tests put in place of the real services, if any. */
 export const testGitRemote = (): TestHooks['gitRemote'] => hooks()?.gitRemote;
+
+/**
+ * GitHub's latest release of MetaKit. Under the test seam it is only what the test provides, so
+ * no end-to-end test ever asks GitHub, even one that sets up its own hooks.
+ */
+export function latestRelease(): Promise<Release | null> {
+  const test = hooks();
+  if (test) return test.latestRelease?.() ?? Promise.resolve(null);
+  return fetchLatestRelease(fetch.bind(window));
+}

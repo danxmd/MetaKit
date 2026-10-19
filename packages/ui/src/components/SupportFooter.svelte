@@ -1,11 +1,16 @@
 <script lang="ts">
-  /** Where the project lives and how to support it; shown at the foot of the home pages. */
+  import { APP_VERSION } from '../shell/update-check';
+
+  /** The version, where the project lives and how to support it; shown at the foot of the home pages. */
   const SOURCE = 'https://github.com/danxmd/MetaKit';
   const COFFEE = 'https://buymeacoffee.com/danial.amlashi';
 </script>
 
 <footer class="support" data-testid="support-footer">
-  <span>MetaKit is free and open source.</span>
+  <span
+    >MetaKit <span data-testid="app-version">{APP_VERSION}</span> is free and open
+    source.</span
+  >
   <a href={SOURCE} target="_blank" rel="noopener noreferrer">Source on GitHub</a
   >
   <a
