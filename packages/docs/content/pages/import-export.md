@@ -14,14 +14,15 @@ Import and export move work between workspaces and into other programs. MetaKit 
 
 | Kind | File name ends with | What it holds | Made by |
 | --- | --- | --- | --- |
-| **Model file** | `.mkmodel.json` | One model as readable, editable JSON. Classes, relations and attributes are written by their keys, not their internal ids. | **Export > Model file** |
-| **Bundle** | `.mkbundle` | One model plus its Kit, packed in a zip file. | **Export > Bundle (model and Kit)** |
-| **CSV files** | `.csv.zip` | One spreadsheet table per class and per relation class, zipped. For reports and Excel. Export only. | **Export > CSV files** |
+| **Model file** | `.mkmodel.json` | One model as readable, editable JSON. Classes, relations and attributes are written by their keys, not their internal ids. | **Export > Model file**, or **Model file** in the model view |
+| **Bundle** | `.mkbundle` | One model plus its Kit, packed in a zip file. | **Export > Bundle (model and Kit)**, or **Bundle with Kit** in the model view |
+| **CSV files** | `.csv.zip` | One spreadsheet table per class and per relation class, zipped. For reports and Excel. Export only. | **Export > CSV files**, or **CSV files** in the model view |
 | **Kit package** | `.mkkit` | One Kit with its scripts and assets, packed in a zip file. | **… > Export package** on the Kits page |
 
 ## Where to find it
 
 - **Import / Export** at the top right of the [[page-models|Models page]] holds import and the first three exports.
+- Inside a model, the **Export** menu on the toolbar and **Export data** in the **File** menu make the same three exports of the open model. See [[menu-file]].
 - **… > Export package** on a card of the [[page-kits|Kits page]] exports a Kit.
 - Pictures and PDF are a different export, made inside a model: [[export-image]].
 
@@ -38,6 +39,12 @@ Import and export move work between workspaces and into other programs. MetaKit 
 1. Choose **Import / Export**.
 2. Under **Export**, pick the **Model** in the box (it starts with the first model of the list).
 3. Click **Model file**, **Bundle (model and Kit)** or **CSV files**. The file is saved by your browser, usually in the Downloads folder.
+
+Or, in the open model:
+
+1. Click **Export** on the toolbar (or **File**).
+2. Click **Model file (.mkmodel.json)**, **Bundle with Kit (.mkbundle)** or **CSV files (.csv.zip)**.
+3. A message says "Exported the model file." (or the bundle, or the CSV files). Changes you made a moment ago are written first, so they are in the file.
 
 **Export a Kit**
 
@@ -92,4 +99,5 @@ Anna exports "Code review pipeline" as a **Bundle**, mails it to Ben, who has an
 - [[page-kits]]
 - [[dialog-kit-import]]
 - [[export-image]]
+- [[menu-file]]
 - [[file-formats]]

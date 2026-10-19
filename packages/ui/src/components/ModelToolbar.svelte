@@ -9,6 +9,7 @@
     label: string;
   }
   type AlignMode = 'left' | 'centre' | 'right' | 'top' | 'middle' | 'bottom';
+  type DataExport = 'model-file' | 'bundle' | 'csv';
 
   let {
     canUndo,
@@ -27,6 +28,8 @@
     onDistribute,
     onAutoLayout,
     onExport,
+    onExportData,
+    exportBusy,
     minimapOn,
     onToggleMinimap,
     paletteOn,
@@ -61,7 +64,12 @@
     onAlign: (mode: AlignMode) => void;
     onDistribute: (axis: 'horizontal' | 'vertical') => void;
     onAutoLayout: () => void;
+    /** Opens the image and PDF export dialog. */
     onExport: () => void;
+    /** Downloads the model as data. */
+    onExportData: (kind: DataExport) => void;
+    /** A data export is running; its items wait. */
+    exportBusy: boolean;
     minimapOn: boolean;
     onToggleMinimap: () => void;
     paletteOn: boolean;
@@ -92,7 +100,35 @@
     ['middle', 'Align middle'],
     ['bottom', 'Align bottom'],
   ];
+  const dataExports: [DataExport, string, string][] = [
+    [
+      'model-file',
+      'Model file (.mkmodel.json)',
+      'The model as an editable file that MetaKit can import again',
+    ],
+    [
+      'bundle',
+      'Bundle with Kit (.mkbundle)',
+      'The model and its Kit in one file, for a workspace that does not have the Kit',
+    ],
+    [
+      'csv',
+      'CSV files (.csv.zip)',
+      'One table per class and relation, for a spreadsheet',
+    ],
+  ];
 </script>
+
+{#snippet dataItems(prefix: string)}
+  {#each dataExports as [kind, label, hint] (kind)}
+    <button
+      onclick={() => onExportData(kind)}
+      disabled={exportBusy}
+      title={hint}
+      data-testid="{prefix}-{kind}">{label}</button
+    >
+  {/each}
+{/snippet}
 
 <header class="header" data-testid="model-header">
   <div
@@ -107,6 +143,9 @@
         <button onclick={onExport} data-testid="export-open"
           >Export as image or PDF…</button
         >
+        <div class="menu-sep"></div>
+        <div class="menu-heading">Export data</div>
+        {@render dataItems('file-export')}
       </div>
     </details>
 
@@ -286,6 +325,20 @@
       title="Zoom in"><Icon name="zoom-in" /></button
     >
 
+    <span class="sep"></span>
+
+    <details class="menu export" use:menuBehaviour>
+      <summary data-testid="model-export-menu" title="Export this model"
+        ><Icon name="export" />Export</summary
+      >
+      <div class="menu-list">
+        <button onclick={onExport} data-testid="model-export-image"
+          >Image or PDF…</button
+        >
+        {@render dataItems('model-export')}
+      </div>
+    </details>
+
     {#if toolbarCommands.length > 0}
       <span class="sep"></span>
       {#each toolbarCommands as command (command.id)}
@@ -328,6 +381,11 @@
     margin-left: var(--gap-5);
     color: var(--text-faint);
     font-size: 0.72rem;
+  }
+  .export > summary {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--gap-2);
   }
   .badge.count {
     margin-left: var(--gap-2);

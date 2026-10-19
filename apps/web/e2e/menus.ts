@@ -1,8 +1,8 @@
 import type { Locator, Page } from '@playwright/test';
 
-/** The model view's toolbar menus: File, Edit, View, Arrange, Check and Commands. */
+/** The model view's toolbar menus: File, Edit, View, Arrange, Check, Commands and Export. */
 export type MenuName =
-  'File' | 'Edit' | 'View' | 'Arrange' | 'Check' | 'Commands';
+  'File' | 'Edit' | 'View' | 'Arrange' | 'Check' | 'Commands' | 'Export';
 
 /** Opens a toolbar menu (if it is not open already) and returns it. */
 export async function openMenu(page: Page, name: MenuName): Promise<Locator> {

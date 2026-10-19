@@ -248,6 +248,10 @@ export interface ControllerPort {
   runKit(command: KitCommandOrBatch): CommandResult;
   /** Undoes the last command run with `runKit`. */
   undoKit(): boolean;
+  /** The data exports; each writes the open model's pending edits first, and is false when it failed. */
+  exportModelFile(slug: string): Promise<boolean>;
+  exportBundle(slugs: string[]): Promise<boolean>;
+  exportCsv(slug: string): Promise<boolean>;
 }
 
 /** What the Build mode view asks of the controller. */
@@ -977,17 +981,38 @@ export class AppController {
 
   private pendingKit: PreparedKitImport | null = null;
 
+  /**
+   * The exports read the model from the folder, so the open model's pending edits are written
+   * first and the file has the latest changes.
+   */
+  private async flushBeforeExport(slugs: string[]): Promise<void> {
+    const open = this.current.open;
+    if (open && slugs.includes(open.slug)) await open.session.flush();
+  }
+
+  /** Runs an export; false when it failed, with the reason in `state.error`. */
+  private async exporting(action: () => Promise<void>): Promise<boolean> {
+    return (
+      (await this.attempt(async () => {
+        await action();
+        return true;
+      })) ?? false
+    );
+  }
+
   /** Downloads one model as a `.mkmodel.json` file. */
-  exportModelFile(slug: string): Promise<void | undefined> {
-    return this.attempt(async () => {
+  exportModelFile(slug: string): Promise<boolean> {
+    return this.exporting(async () => {
+      await this.flushBeforeExport([slug]);
       const { fileName, text } = await exportModelFile(this.need(), slug);
       downloadFile(fileName, text, 'application/json');
     });
   }
 
   /** Downloads models, with their Kit, as one `.mkbundle` file. */
-  exportBundle(slugs: string[]): Promise<void | undefined> {
-    return this.attempt(async () => {
+  exportBundle(slugs: string[]): Promise<boolean> {
+    return this.exporting(async () => {
+      await this.flushBeforeExport(slugs);
       const { fileName, bytes } = await exportBundle(this.need(), {
         models: slugs,
         includeKit: true,
@@ -997,8 +1022,9 @@ export class AppController {
   }
 
   /** Downloads one CSV file per class of a model, zipped. */
-  exportCsv(slug: string): Promise<void | undefined> {
-    return this.attempt(async () => {
+  exportCsv(slug: string): Promise<boolean> {
+    return this.exporting(async () => {
+      await this.flushBeforeExport([slug]);
       const ws = this.need();
       const model = (await ws.loadModel(slug)).document;
       const kitSlug = await ws.findKitSlug(model.manifest.kit);

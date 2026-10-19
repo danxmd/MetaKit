@@ -40,7 +40,7 @@ To leave the model, click **Models** in the location of the [[top-bar]]. MetaKit
 4. Pick a relation on the palette, for example **Performs**, and drag from one object to another. See [[connecting-objects]].
 5. Press **Ctrl+Z** if you change your mind. See [[undo-redo]].
 6. Open **Check** and **Problems** to see whether the model follows the rules of the Kit. See [[problems-panel]].
-7. Use **File** and **Export as image or PDF…** to share a picture. See [[export-image]].
+7. Use **Export** on the toolbar to share a picture, or the model as a file. See [[export-image]] and [[menu-file]].
 
 ## Every option explained
 
@@ -53,6 +53,7 @@ To leave the model, click **Models** in the location of the [[top-bar]]. MetaKit
 | Round avatars (in the top bar) | Show who else has this model open. | [[people-in-model]] |
 | Menus **File**, **Edit**, **View**, **Arrange**, **Check**, **Commands** | The things you can do. | [[model-toolbar]] |
 | Icon buttons | Undo, redo, zoom out, fit, zoom in. | [[model-toolbar]] |
+| **Export** | Image or PDF, model file, bundle with Kit, CSV files. | [[menu-file]], [[export-image]] |
 | Find box | Searches names and values in this model. | [[find-in-model]] |
 | Palette | Chooses what to place or connect. | [[palette]] |
 | Canvas | Where you draw. | [[canvas-navigation]], [[selecting]] |

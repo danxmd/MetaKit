@@ -39,6 +39,8 @@ test.describe('the toolbar menus', () => {
 
     let menu = await openMenu(page, 'File');
     await expect(menu.getByTestId('export-open')).toBeVisible();
+    for (const kind of ['model-file', 'bundle', 'csv'])
+      await expect(menu.getByTestId(`file-export-${kind}`)).toBeVisible();
 
     menu = await openMenu(page, 'Edit');
     // Opening another menu closes the first.
@@ -70,6 +72,11 @@ test.describe('the toolbar menus', () => {
     // The quick buttons stay on the bar, with names for screen readers.
     for (const name of ['Undo', 'Redo', 'Zoom in', 'Zoom out', 'Fit to window'])
       await expect(header.getByRole('button', { name })).toBeVisible();
+    // So is Export, a menu of its own.
+    menu = await openMenu(page, 'Export');
+    for (const kind of ['image', 'model-file', 'bundle', 'csv'])
+      await expect(menu.getByTestId(`model-export-${kind}`)).toBeVisible();
+    await page.keyboard.press('Escape');
     await expect(page.getByTestId('crumb-area')).toBeVisible();
     await expect(page.getByTestId('model-name')).toHaveText(
       'Code review pipeline',
@@ -472,5 +479,90 @@ test.describe('connecting and placing', () => {
     await expect(
       page.getByTestId('palette-relation-SequenceFlow'),
     ).not.toHaveClass(/\bon\b/);
+  });
+});
+
+test.describe('exporting from the model view', () => {
+  /** Renames the task "Implement" through a command, as the panel would, and returns at once. */
+  async function editRightBeforeExport(page: Page) {
+    await page.evaluate(() => {
+      const { store } = (
+        window as unknown as {
+          __metakit: {
+            store: {
+              state: {
+                elements: Record<string, { attrs: Record<string, unknown> }>;
+              };
+              execute(command: unknown): void;
+            };
+          };
+        }
+      ).__metakit;
+      for (const [id, element] of Object.entries(store.state.elements))
+        for (const [attr, value] of Object.entries(element.attrs))
+          if (value === 'Implement') {
+            store.execute({
+              type: 'setAttribute',
+              target: id,
+              attr,
+              value: 'Implement the change',
+            });
+            return;
+          }
+      throw new Error('No task called Implement');
+    });
+  }
+
+  async function download(page: Page, menu: 'Export' | 'File', id: string) {
+    const opened = await openMenu(page, menu);
+    const [file] = await Promise.all([
+      page.waitForEvent('download'),
+      opened.getByTestId(id).click(),
+    ]);
+    return {
+      name: file.suggestedFilename(),
+      bytes: readFileSync((await file.path())!),
+    };
+  }
+
+  test('the Export button opens the image dialog', async ({ page }) => {
+    await openPipeline(page);
+    await chooseFromMenu(page, 'Export', 'model-export-image');
+    await expect(page.getByTestId('export-dialog')).toBeVisible();
+  });
+
+  test('the model file has an edit made just before exporting', async ({
+    page,
+  }) => {
+    await openPipeline(page);
+    await editRightBeforeExport(page);
+    const file = await download(page, 'Export', 'model-export-model-file');
+    expect(file.name).toBe('code-review-pipeline.mkmodel.json');
+    expect(file.bytes.toString('utf8')).toContain('Implement the change');
+    await expect(page.getByTestId('message')).toContainText(
+      'Exported the model file.',
+    );
+  });
+
+  test('the bundle and the CSV files download, also from the File menu', async ({
+    page,
+  }) => {
+    await openPipeline(page);
+    await editRightBeforeExport(page);
+    const bundle = await download(page, 'Export', 'model-export-bundle');
+    expect(bundle.name).toBe('code-review-pipeline.mkbundle');
+    // A zip file.
+    expect(bundle.bytes.subarray(0, 2).toString('latin1')).toBe('PK');
+    await expect(page.getByTestId('message')).toContainText(
+      'Exported the bundle',
+    );
+
+    const csv = await download(page, 'Export', 'model-export-csv');
+    expect(csv.name).toMatch(/^code-review-pipeline.*\.csv\.zip$/);
+    expect(csv.bytes.subarray(0, 2).toString('latin1')).toBe('PK');
+
+    const again = await download(page, 'File', 'file-export-model-file');
+    expect(again.name).toBe('code-review-pipeline.mkmodel.json');
+    expect(again.bytes.toString('utf8')).toContain('Implement the change');
   });
 });

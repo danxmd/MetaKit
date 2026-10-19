@@ -11,6 +11,7 @@
     more: 'M5 10h.01M10 10h.01M15 10h.01',
     back: 'M12 15 7 10l5-5',
     forward: 'm8 15 5-5-5-5',
+    export: 'M10 3v10M6 9l4 4 4-4M4 17h12',
   } as const;
   export type IconName = keyof typeof PATHS;
 </script>

@@ -2,7 +2,7 @@
 id: model-toolbar
 title: Toolbar and menus
 category: model
-summary: The toolbar of the model view is one row with the six menus, the icon buttons and the find box.
+summary: The toolbar of the model view is one row with the six menus, the icon buttons, the Export menu and the find box.
 keywords: [model toolbar, menu bar, toolbar buttons, model menus, header bar]
 contexts: []
 order: 20
@@ -16,7 +16,7 @@ The toolbar gives you every action that is not a direct mouse gesture on the can
 
 | Menu | What is in it | Topic |
 | --- | --- | --- |
-| **File** | Export as image or PDF | [[menu-file]] |
+| **File** | Export as image or PDF, export data | [[menu-file]] |
 | **Edit** | Undo, redo, find, select all, delete | [[menu-edit]] |
 | **View** | Zoom, minimap, palette, attribute panel, assistance | [[menu-view]] |
 | **Arrange** | Align, distribute, auto-layout | [[menu-arrange]] |
@@ -42,6 +42,7 @@ It is the strip right under the [[top-bar]]. It is always visible while a model 
 - The six menus listed above. **Commands** only appears when the Kit has commands for the model menu. The **Check** menu always appears and shows a number when the model has problems.
 - **Undo** and **Redo** icon buttons (curved arrows). Tooltips: "Undo (Ctrl+Z)" and "Redo (Ctrl+Shift+Z)". They are grey when there is nothing to undo or redo. See [[undo-redo]].
 - **Zoom out** (**−**), **Fit to window** (four corner marks, tooltip "Show the whole model") and **Zoom in** (**+**). See [[canvas-navigation]].
+- **Export** (an arrow into a tray, tooltip "Export this model"): a menu with **Image or PDF…**, **Model file (.mkmodel.json)**, **Bundle with Kit (.mkbundle)** and **CSV files (.csv.zip)**. The same as in the **File** menu. See [[menu-file]] and [[export-image]].
 - Extra buttons that the Kit adds to the toolbar (commands placed in the toolbar). See [[behaviour-commands]].
 - **Find box** at the right end: type to search this model. Placeholder: "Find (Ctrl+F)". See [[find-in-model]].
 

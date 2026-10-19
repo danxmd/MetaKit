@@ -648,6 +648,37 @@
     }
   }
 
+  // The data exports read the folder; the controller writes pending edits first.
+  let exportingData = $state(false);
+  const DATA_EXPORTS = {
+    'model-file': {
+      run: () => controller.exportModelFile(slug),
+      done: 'Exported the model file.',
+    },
+    bundle: {
+      run: () => controller.exportBundle([slug]),
+      done: 'Exported the bundle with the model and its Kit.',
+    },
+    csv: {
+      run: () => controller.exportCsv(slug),
+      done: 'Exported the CSV files.',
+    },
+  } as const;
+  async function exportData(kind: keyof typeof DATA_EXPORTS) {
+    if (exportingData) return;
+    exportingData = true;
+    try {
+      const ok = await DATA_EXPORTS[kind].run();
+      say(
+        ok
+          ? DATA_EXPORTS[kind].done
+          : `Could not export: ${app.error ?? 'something went wrong.'}`,
+      );
+    } finally {
+      exportingData = false;
+    }
+  }
+
   function say(text: string) {
     toasts.show(text);
   }
@@ -996,6 +1027,8 @@
       onDistribute={(axis) => editor.distribute(axis)}
       onAutoLayout={autoLayout}
       onExport={() => (exportOpen = true)}
+      onExportData={exportData}
+      exportBusy={exportingData}
       {minimapOn}
       onToggleMinimap={toggleMinimap}
       paletteOn={paletteShown}
