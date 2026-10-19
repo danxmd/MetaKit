@@ -71,13 +71,10 @@ describe('GitHub answer', () => {
   });
 
   it('asks the latest-release endpoint and fails quietly', async () => {
-    const ok = vi.fn(
-      async (_url: string, _init?: RequestInit) =>
-        new Response(JSON.stringify(answer), { status: 200 }),
+    const ok = vi.fn<typeof fetch>(
+      async () => new Response(JSON.stringify(answer), { status: 200 }),
     );
-    expect(await fetchLatestRelease(ok as typeof fetch)).toEqual(
-      release('0.2.0'),
-    );
+    expect(await fetchLatestRelease(ok)).toEqual(release('0.2.0'));
     expect(ok.mock.calls[0]![0]).toBe(LATEST_RELEASE_URL);
 
     const limited = async () => new Response('{}', { status: 403 });
