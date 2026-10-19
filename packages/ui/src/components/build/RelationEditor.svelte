@@ -1,6 +1,10 @@
 <script lang="ts">
   import {
+    describeRelationEnds,
+    includedSubclasses,
+    labelOfDef,
     newId,
+    orList,
     type ClassId,
     type RelationDef,
     type RelationId,
@@ -49,6 +53,26 @@
   const classes = $derived(
     Object.values(kit.classes).sort((a, b) => a.key.localeCompare(b.key)),
   );
+  const language = $derived(languages[0] ?? 'en');
+  /** What the ticks mean, in the concrete classes a modeller can place. */
+  const ends = $derived(
+    def ? describeRelationEnds(kit, def, { language }) : null,
+  );
+  /** What each class brings in besides itself when it is ticked. */
+  const brings = $derived(
+    new Map(
+      classes.map((c) => [
+        c.id,
+        includedSubclasses(kit, c.id, language).map((s) =>
+          labelOfDef(s, language),
+        ),
+      ]),
+    ),
+  );
+  const sides = [
+    { end: 'from' as const, legend: 'From (where a connection may start)' },
+    { end: 'to' as const, legend: 'To (where it may end)' },
+  ];
   const parents = $derived(
     Object.values(kit.relations)
       .filter((r) => r.id !== id && r.extends !== id)
@@ -130,35 +154,40 @@
       title="Connects"
       help="Leave a list empty to allow what the parent allows. A class that others extend allows all of them."
     >
+      <p class="summary" data-testid="relation-ends-summary">
+        <strong>Can connect:</strong>
+        {orList(ends?.from ?? []) || 'nothing yet'} → {orList(ends?.to ?? []) ||
+          'nothing yet'}
+      </p>
       <div class="ends">
-        <fieldset>
-          <legend>From (where a connection may start)</legend>
-          {#each classes as c (c.id)}
-            <label class="inline"
-              ><input
-                type="checkbox"
-                checked={def.from.includes(c.id)}
-                onchange={(e) => toggle('from', c.id, e.currentTarget.checked)}
-                data-testid="relation-from-{c.key}"
-              />
-              {c.key}</label
-            >
-          {/each}
-        </fieldset>
-        <fieldset>
-          <legend>To (where it may end)</legend>
-          {#each classes as c (c.id)}
-            <label class="inline"
-              ><input
-                type="checkbox"
-                checked={def.to.includes(c.id)}
-                onchange={(e) => toggle('to', c.id, e.currentTarget.checked)}
-                data-testid="relation-to-{c.key}"
-              />
-              {c.key}</label
-            >
-          {/each}
-        </fieldset>
+        {#each sides as side (side.end)}
+          <fieldset>
+            <legend>{side.legend}</legend>
+            {#each classes as c (c.id)}
+              {@const label = labelOfDef(c, language)}
+              {@const more = brings.get(c.id) ?? []}
+              <label class="inline"
+                ><input
+                  type="checkbox"
+                  checked={def[side.end].includes(c.id)}
+                  onchange={(e) =>
+                    toggle(side.end, c.id, e.currentTarget.checked)}
+                  data-testid="relation-{side.end}-{c.key}"
+                />
+                <span
+                  >{c.key}{#if label !== c.key}
+                    <span class="muted">{label}</span>{/if}{#if more.length > 0}
+                    <small
+                      class="muted"
+                      data-testid="relation-{side.end}-{c.key}-brings"
+                      >{c.abstract ? 'means' : 'and'}
+                      {orList(more)}</small
+                    >{/if}</span
+                ></label
+              >
+            {/each}
+          </fieldset>
+        {/each}
       </div>
     </Section>
     <Section
@@ -227,6 +256,9 @@
     gap: var(--gap-4);
     flex-wrap: wrap;
     align-items: end;
+  }
+  .summary {
+    margin: 0;
   }
   .ends {
     display: flex;

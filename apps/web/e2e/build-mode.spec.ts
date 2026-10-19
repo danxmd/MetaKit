@@ -58,8 +58,14 @@ test.describe('Build mode', () => {
 
     // A relation class between entities.
     await addItem(page, 'relations', 'Relationship');
+    await expect(page.getByTestId('relation-ends-summary')).toHaveText(
+      'Can connect: nothing yet → nothing yet',
+    );
     await page.getByTestId('relation-from-Entity').check();
     await page.getByTestId('relation-to-Entity').check();
+    await expect(page.getByTestId('relation-ends-summary')).toHaveText(
+      'Can connect: Entity → Entity',
+    );
 
     // A model type that allows both.
     await addItem(page, 'modelTypes', 'ER diagram');
